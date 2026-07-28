@@ -12,6 +12,7 @@ const PANELS := [
     {"name":"Transferencias", "scene":preload("res://scenes/TransfersPanel.tscn")}
 ]
 
+const ARENA_CONTROLLER = preload("res://scripts/ui/arena_experience_controller.gd")
 const MAX_ATTACH_ATTEMPTS := 30
 
 func _ready() -> void:
@@ -26,6 +27,7 @@ func _attach_when_ready() -> void:
         var tabs := root.find_child("Tabs", true, false)
         if tabs is TabContainer:
             _attach_panels(tabs)
+            _attach_arena_controller(tabs)
             return
     push_error("No se encontró el TabContainer principal llamado Tabs después de esperar la escena activa.")
 
@@ -41,3 +43,16 @@ func _attach_panels(tabs: TabContainer) -> void:
         var panel := packed_scene.instantiate()
         panel.name = panel_name
         tabs.add_child(panel)
+
+func _attach_arena_controller(tabs: TabContainer) -> void:
+    var arena := tabs.get_node_or_null("Arena") as VBoxContainer
+    if arena == null:
+        push_error("No se encontró la pestaña Arena para activar el combate mejorado.")
+        return
+    if arena.has_meta("enhanced_combat_ui"):
+        return
+    var controller := Node.new()
+    controller.name = "ArenaExperienceController"
+    controller.set_script(ARENA_CONTROLLER)
+    arena.add_child(controller)
+    controller.call_deferred("setup", arena)
