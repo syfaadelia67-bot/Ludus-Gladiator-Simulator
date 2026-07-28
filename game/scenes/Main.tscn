@@ -1,6 +1,7 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=3 format=3]
 
 [ext_resource path="res://scripts/ui/main.gd" type="Script" id="1"]
+[ext_resource path="res://scripts/ui/equipment_panel.gd" type="Script" id="2"]
 
 [node name="Main" type="Control"]
 layout_mode = 3
@@ -171,6 +172,81 @@ custom_minimum_size = Vector2(450, 170)
 layout_mode = 2
 bbcode_enabled = true
 text = "Vacío"
+
+[node name="Equipamiento" type="VBoxContainer" parent="Margin/VBox/Tabs"]
+layout_mode = 2
+theme_override_constants/separation = 10
+script = ExtResource("2")
+
+[node name="GladiatorSelector" type="OptionButton" parent="Margin/VBox/Tabs/Equipamiento"]
+layout_mode = 2
+
+[node name="Status" type="RichTextLabel" parent="Margin/VBox/Tabs/Equipamiento"]
+custom_minimum_size = Vector2(0, 170)
+layout_mode = 2
+bbcode_enabled = true
+text = "Seleccioná un gladiador."
+
+[node name="WeaponRow" type="HBoxContainer" parent="Margin/VBox/Tabs/Equipamiento"]
+layout_mode = 2
+
+[node name="WeaponLabel" type="Label" parent="Margin/VBox/Tabs/Equipamiento/WeaponRow"]
+layout_mode = 2
+text = "Arma"
+
+[node name="WeaponSelector" type="OptionButton" parent="Margin/VBox/Tabs/Equipamiento/WeaponRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="EquipWeapon" type="Button" parent="Margin/VBox/Tabs/Equipamiento/WeaponRow"]
+layout_mode = 2
+text = "Equipar"
+
+[node name="ArmorRow" type="HBoxContainer" parent="Margin/VBox/Tabs/Equipamiento"]
+layout_mode = 2
+
+[node name="ArmorLabel" type="Label" parent="Margin/VBox/Tabs/Equipamiento/ArmorRow"]
+layout_mode = 2
+text = "Armadura"
+
+[node name="ArmorSelector" type="OptionButton" parent="Margin/VBox/Tabs/Equipamiento/ArmorRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="EquipArmor" type="Button" parent="Margin/VBox/Tabs/Equipamiento/ArmorRow"]
+layout_mode = 2
+text = "Equipar"
+
+[node name="ShieldRow" type="HBoxContainer" parent="Margin/VBox/Tabs/Equipamiento"]
+layout_mode = 2
+
+[node name="ShieldLabel" type="Label" parent="Margin/VBox/Tabs/Equipamiento/ShieldRow"]
+layout_mode = 2
+text = "Escudo"
+
+[node name="ShieldSelector" type="OptionButton" parent="Margin/VBox/Tabs/Equipamiento/ShieldRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="EquipShield" type="Button" parent="Margin/VBox/Tabs/Equipamiento/ShieldRow"]
+layout_mode = 2
+text = "Equipar"
+
+[node name="UnequipRow" type="HBoxContainer" parent="Margin/VBox/Tabs/Equipamiento"]
+layout_mode = 2
+alignment = 1
+
+[node name="UnequipWeapon" type="Button" parent="Margin/VBox/Tabs/Equipamiento/UnequipRow"]
+layout_mode = 2
+text = "Quitar arma"
+
+[node name="UnequipArmor" type="Button" parent="Margin/VBox/Tabs/Equipamiento/UnequipRow"]
+layout_mode = 2
+text = "Quitar armadura"
+
+[node name="UnequipShield" type="Button" parent="Margin/VBox/Tabs/Equipamiento/UnequipRow"]
+layout_mode = 2
+text = "Quitar escudo"
 
 [node name="Arena" type="VBoxContainer" parent="Margin/VBox/Tabs"]
 layout_mode = 2
