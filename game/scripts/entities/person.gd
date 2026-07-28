@@ -46,7 +46,8 @@ func process_day() -> Dictionary:
             result.intel = maxi(1, intelligence + agility / 2)
             fatigue += 6
         "training":
-            var gained := maxi(1, endurance + strength / 2)
+            var base_gain := maxi(1, endurance + strength / 2)
+            var gained := int(round(base_gain * EstateManager.get_training_multiplier()))
             training += gained
             result.training = gained
             fatigue += 7
@@ -54,7 +55,8 @@ func process_day() -> Dictionary:
                 role = "gladiator"
                 job = "idle"
         _:
-            fatigue = maxi(0, fatigue - 6)
+            fatigue = maxi(0, fatigue - 6 - EstateManager.get_recovery_bonus())
+            morale = mini(100, morale + 2)
     morale = clampi(morale - fatigue / 25, 0, 100)
     return result
 
