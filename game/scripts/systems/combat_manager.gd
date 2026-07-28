@@ -63,7 +63,7 @@ func simulate_duel(gladiator_id: String, tactic: String = "balanced") -> Diction
     fighter.fatigue = mini(100, fighter.fatigue + 8 + round / 2)
 
     if victory:
-        reward = 70 + enemy.attack * 3
+        reward = int(round((70 + enemy.attack * 3) * float(player.get("reward_multiplier", 1.0))))
         reputation = 2 + enemy.defense / 8
         GameState.denarii += reward
         GameState.reputation += reputation
@@ -160,9 +160,12 @@ func _resolve_injury(fighter, player: Dictionary, victory: bool, surrendered: bo
 
 func _build_combatant(person, tactic: String) -> Dictionary:
     var equipment := EquipmentManager.get_equipped_stats(person)
-    var attack := person.get_base_attack() + int(equipment.get("power", 0))
-    var defense := person.get_base_defense() + int(equipment.get("defense", 0))
-    var accuracy := 55 + person.agility * 3
+    var progression := GladiatorProgressionManager.get_modifiers(person.id)
+    var attack := int(round((person.get_base_attack() + int(equipment.get("power", 0)) + int(progression.get("attack_bonus", 0))) * float(progression.get("attack", 1.0))))
+    var defense := int(round((person.get_base_defense() + int(equipment.get("defense", 0)) + int(progression.get("defense_bonus", 0))) * float(progression.get("defense", 1.0))))
+    var max_health := int(round(person.get_max_health() * float(progression.get("health", 1.0))))
+    var max_energy := int(round((person.get_max_energy() + int(progression.get("energy_bonus", 0))) * float(progression.get("energy", 1.0))))
+    var accuracy := 55 + person.agility * 3 + int(progression.get("accuracy_bonus", 0))
     var energy_cost := 12
     match tactic:
         "aggressive":
@@ -179,14 +182,15 @@ func _build_combatant(person, tactic: String) -> Dictionary:
             energy_cost = 10
     return {
         "name": person.display_name,
-        "health": person.get_max_health(),
-        "max_health": person.get_max_health(),
-        "energy": person.get_max_energy(),
-        "max_energy": person.get_max_energy(),
+        "health": max_health,
+        "max_health": max_health,
+        "energy": max_energy,
+        "max_energy": max_energy,
         "attack": attack,
         "defense": defense,
         "accuracy": accuracy,
-        "energy_cost": energy_cost
+        "energy_cost": energy_cost,
+        "reward_multiplier": float(progression.get("reward_multiplier", 1.0))
     }
 
 func _generate_enemy(person) -> Dictionary:
