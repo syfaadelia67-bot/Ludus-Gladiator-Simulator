@@ -24,7 +24,7 @@ func _ready() -> void:
     _refresh()
 
 func _refresh() -> void:
-    var selected_id := _get_selected_gladiator_id()
+    var selected_id: String = _get_selected_gladiator_id()
     gladiator_selector.clear()
     gladiator_ids.clear()
     for person in RosterManager.get_people():
@@ -44,9 +44,9 @@ func _refresh() -> void:
 func _refresh_specializations() -> void:
     specialization_selector.clear()
     specialization_ids = GladiatorProgressionManager.get_specialization_ids()
-    var person_id := _get_selected_gladiator_id()
-    var record := GladiatorProgressionManager.get_record(person_id) if not person_id.is_empty() else {}
-    var current := str(record.get("specialization", "balanced"))
+    var person_id: String = _get_selected_gladiator_id()
+    var record: Dictionary = GladiatorProgressionManager.get_record(person_id) if not person_id.is_empty() else {}
+    var current: String = str(record.get("specialization", "balanced"))
     for specialization_id in specialization_ids:
         specialization_selector.add_item(GladiatorProgressionManager.get_specialization_name(specialization_id))
         if specialization_id == current:
@@ -55,20 +55,20 @@ func _refresh_specializations() -> void:
 func _refresh_techniques() -> void:
     technique_selector.clear()
     technique_ids.clear()
-    var person_id := _get_selected_gladiator_id()
+    var person_id: String = _get_selected_gladiator_id()
     if person_id.is_empty():
         return
-    var record := GladiatorProgressionManager.get_record(person_id)
+    var record: Dictionary = GladiatorProgressionManager.get_record(person_id)
     var learned: Array = record.get("techniques", [])
     for technique_id in GladiatorProgressionManager.get_technique_ids():
         if learned.has(technique_id):
             continue
-        var data := GladiatorProgressionManager.get_technique(technique_id)
+        var data: Dictionary = GladiatorProgressionManager.get_technique(technique_id)
         technique_ids.append(technique_id)
-        technique_selector.add_item("%s (Nv. %d, %d punto)" % [data.get("name", technique_id), int(data.get("level", 1)), int(data.get("cost", 1))])
+        technique_selector.add_item("%s (Nv. %d, %d punto)" % [data.get("name", technique_id), int(data.get("min_level", 1)), int(data.get("cost", 1))])
 
 func _refresh_details() -> void:
-    var person_id := _get_selected_gladiator_id()
+    var person_id: String = _get_selected_gladiator_id()
     if person_id.is_empty():
         summary.text = "No hay gladiadores disponibles."
         apply_specialization.disabled = true
@@ -76,20 +76,20 @@ func _refresh_details() -> void:
         retire_button.disabled = true
         return
     var person = RosterManager.get_person(person_id)
-    var record := GladiatorProgressionManager.get_record(person_id)
-    var modifiers := GladiatorProgressionManager.get_modifiers(person_id)
+    var record: Dictionary = GladiatorProgressionManager.get_record(person_id)
+    var modifiers: Dictionary = GladiatorProgressionManager.get_modifiers(person_id)
     var learned_names: Array[String] = []
     for technique_id in record.get("techniques", []):
-        learned_names.append(str(GladiatorProgressionManager.get_technique(technique_id).get("name", technique_id)))
-    var required := GladiatorProgressionManager.get_experience_required(int(record.get("level", 1)))
-    summary.text = "[b]%s[/b]\nNivel %d — XP %d/%d\nEspecialización: %s\nFama: %d | Victorias: %d | Derrotas: %d\nCarrera: %s (%d días)\nPuntos de técnica: %d\nValor de mercado: %d denarios\nBonificadores: ATQ x%.2f | DEF x%.2f | VIDA x%.2f | ENE x%.2f | PREC x%.2f\nTécnicas: %s" % [
+        learned_names.append(str(GladiatorProgressionManager.get_technique(str(technique_id)).get("name", technique_id)))
+    var required: int = GladiatorProgressionManager.get_experience_required(int(record.get("level", 1)))
+    summary.text = "[b]%s[/b]\nNivel %d — XP %d/%d\nEspecialización: %s\nFama: %d | Victorias: %d | Derrotas: %d\nCarrera: %s (%d días)\nPuntos de técnica: %d\nValor de mercado: %d denarios\nBonificadores: ATQ x%.2f | DEF x%.2f | VIDA x%.2f | ENE x%.2f | PREC %d\nTécnicas: %s" % [
         person.display_name,
         int(record.get("level", 1)), int(record.get("experience", 0)), required,
         GladiatorProgressionManager.get_specialization_name(str(record.get("specialization", "balanced"))),
         int(record.get("fame", 0)), int(record.get("wins", 0)), int(record.get("losses", 0)),
         str(record.get("career_state", "activo")).capitalize(), int(record.get("age_days", 0)),
         int(record.get("technique_points", 0)), GladiatorProgressionManager.get_market_value(person_id),
-        float(modifiers.get("attack", 1.0)), float(modifiers.get("defense", 1.0)), float(modifiers.get("health", 1.0)), float(modifiers.get("energy", 1.0)), float(modifiers.get("accuracy", 1.0)),
+        float(modifiers.get("attack", 1.0)), float(modifiers.get("defense", 1.0)), float(modifiers.get("health", 1.0)), float(modifiers.get("energy", 1.0)), int(modifiers.get("accuracy_bonus", 0)),
         ", ".join(learned_names) if not learned_names.is_empty() else "Ninguna"
     ]
     apply_specialization.disabled = false
@@ -105,7 +105,7 @@ func _refresh_retired_history() -> void:
     retired_history.text = "\n".join(lines)
 
 func _get_selected_gladiator_id() -> String:
-    var index := gladiator_selector.selected
+    var index: int = gladiator_selector.selected
     if index < 0 or index >= gladiator_ids.size():
         return ""
     return gladiator_ids[index]
@@ -117,11 +117,11 @@ func _on_gladiator_selected(_index: int) -> void:
     _refresh_details()
 
 func _on_apply_specialization() -> void:
-    var person_id := _get_selected_gladiator_id()
-    var index := specialization_selector.selected
+    var person_id: String = _get_selected_gladiator_id()
+    var index: int = specialization_selector.selected
     if person_id.is_empty() or index < 0 or index >= specialization_ids.size():
         return
-    var specialization_id := specialization_ids[index]
+    var specialization_id: String = specialization_ids[index]
     if GladiatorProgressionManager.set_specialization(person_id, specialization_id):
         feedback.text = "Especialización actualizada."
     else:
@@ -129,18 +129,18 @@ func _on_apply_specialization() -> void:
     _refresh()
 
 func _on_learn_technique() -> void:
-    var person_id := _get_selected_gladiator_id()
-    var index := technique_selector.selected
+    var person_id: String = _get_selected_gladiator_id()
+    var index: int = technique_selector.selected
     if person_id.is_empty() or index < 0 or index >= technique_ids.size():
         return
-    if GladiatorProgressionManager.learn_technique(person_id, technique_ids[index]):
+    if GladiatorProgressionManager.unlock_technique(person_id, technique_ids[index]):
         feedback.text = "Técnica aprendida."
     else:
         feedback.text = "No hay nivel o puntos suficientes para aprenderla."
     _refresh()
 
 func _on_retire() -> void:
-    var person_id := _get_selected_gladiator_id()
+    var person_id: String = _get_selected_gladiator_id()
     if person_id.is_empty():
         return
     if GladiatorProgressionManager.retire_gladiator(person_id):
