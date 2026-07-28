@@ -13,10 +13,15 @@ var reputation: int = 0
 func advance_day() -> void:
     var report: Dictionary = RosterManager.process_day()
     var rival_events: Array = RivalManager.process_day()
+    var narrative_event: Dictionary = EventManager.process_day()
     report["rival_events"] = rival_events
+    report["narrative_event"] = narrative_event
     day += 1
-    food = maxi(0, food - maxi(1, RosterManager.people.size()))
+    var base_consumption := maxi(1, RosterManager.people.size())
+    var food_consumed := maxi(1, int(ceil(float(base_consumption) * EventManager.get_food_consumption_multiplier())))
+    food = maxi(0, food - food_consumed)
     ore += int(report.get("ore", 0))
+    report["food_consumed"] = food_consumed
     day_advanced.emit(day)
     resources_changed.emit()
     daily_report.emit(report)
