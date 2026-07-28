@@ -80,6 +80,14 @@ func simulate_duel(gladiator_id: String, tactic: String = "balanced") -> Diction
     if not injury.is_empty():
         combat_log.append("Consecuencia: %s." % injury)
 
+    EconomyManager.register_combat_result(victory)
+    var tournament_result := TournamentManager.register_combat_result(fighter.id, victory)
+    if not tournament_result.is_empty():
+        if victory:
+            combat_log.append("Contrato cumplido: +%d denarios adicionales." % int(tournament_result.get("reward_paid", 0)))
+        else:
+            combat_log.append("Contrato de combate perdido: reputación %d." % int(tournament_result.get("reputation_change", 0)))
+
     last_result = {
         "victory": victory,
         "surrendered": surrendered,
@@ -104,6 +112,7 @@ func simulate_duel(gladiator_id: String, tactic: String = "balanced") -> Diction
         "reputation": reputation,
         "injury": injury,
         "injury_days": fighter.injury_days,
+        "tournament": tournament_result,
         "log": combat_log
     }
     GameState.resources_changed.emit()
