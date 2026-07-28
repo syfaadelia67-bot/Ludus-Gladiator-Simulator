@@ -20,7 +20,31 @@ jobs:
         run: godot --version
 
       - name: Import project and validate scripts
-        run: godot --headless --editor --path game --quit-after 20
+        shell: bash
+        run: |
+          set -o pipefail
+          godot --headless --editor --path game --quit-after 20 2>&1 | tee godot-import.log
+          if grep -Eiq 'Parse Error|Compile Error|Failed to load script|Failed to create an autoload|SCRIPT ERROR|ERROR:' godot-import.log; then
+            echo 'Godot reported script or project errors during import.'
+            exit 1
+          fi
 
       - name: Validate main scene startup
-        run: godot --headless --path game --quit-after 5
+        shell: bash
+        run: |
+          set -o pipefail
+          godot --headless --path game --quit-after 5 2>&1 | tee godot-startup.log
+          if grep -Eiq 'Parse Error|Compile Error|Failed to load script|Failed to create an autoload|SCRIPT ERROR|ERROR:' godot-startup.log; then
+            echo 'Godot reported errors while starting the main scene.'
+            exit 1
+          fi
+
+      - name: Upload Godot validation logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: godot-validation-logs
+          path: |
+            godot-import.log
+            godot-startup.log
+          if-no-files-found: ignore
