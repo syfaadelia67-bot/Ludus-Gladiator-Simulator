@@ -5,7 +5,7 @@ signal load_completed(path: String)
 signal save_failed(reason: String)
 signal load_failed(reason: String)
 
-const SAVE_VERSION := 7
+const SAVE_VERSION := 8
 const SAVE_PATH := "user://ludus_save.json"
 const BACKUP_PATH := "user://ludus_save.backup.json"
 const PERSON_SCRIPT = preload("res://scripts/entities/person.gd")
@@ -37,11 +37,7 @@ func get_save_metadata() -> Dictionary:
     var data := _read_payload(SAVE_PATH)
     if data.is_empty():
         return {}
-    return {
-        "version": int(data.get("version", 0)),
-        "saved_at_unix": int(data.get("saved_at_unix", 0)),
-        "day": int(data.get("game_state", {}).get("day", 1))
-    }
+    return {"version":int(data.get("version",0)),"saved_at_unix":int(data.get("saved_at_unix",0)),"day":int(data.get("game_state",{}).get("day",1))}
 
 func save_game() -> bool:
     var payload := _build_payload()
@@ -81,56 +77,32 @@ func delete_save() -> bool:
     return success
 
 func _read_payload(path: String) -> Dictionary:
-    if not FileAccess.file_exists(path):
-        return {}
+    if not FileAccess.file_exists(path): return {}
     var file := FileAccess.open(path, FileAccess.READ)
-    if file == null:
-        return {}
+    if file == null: return {}
     var parsed = JSON.parse_string(file.get_as_text())
     file.close()
     return parsed if parsed is Dictionary else {}
 
 func _build_payload() -> Dictionary:
     var people_data: Array = []
-    for person in RosterManager.get_people():
-        people_data.append(_serialize_person(person))
+    for person in RosterManager.get_people(): people_data.append(_serialize_person(person))
     return {
         "version": SAVE_VERSION,
         "saved_at_unix": int(Time.get_unix_time_from_system()),
-        "game_state": {
-            "day": GameState.day,
-            "denarii": GameState.denarii,
-            "food": GameState.food,
-            "ore": GameState.ore,
-            "reputation": GameState.reputation
-        },
-        "roster": {
-            "people": people_data,
-            "capacity": RosterManager.capacity,
-            "security_score": RosterManager.security_score,
-            "intelligence_points": RosterManager.intelligence_points
-        },
-        "estate": {"levels": EstateManager.levels.duplicate(true)},
-        "equipment": {
-            "inventory": EquipmentManager.inventory.duplicate(true),
-            "serial": EquipmentManager.serial
-        },
-        "market": {
-            "offers": MarketManager.offers.duplicate(true),
-            "serial": MarketManager._serial
-        },
-        "rivals": {
-            "entries": RivalManager.rivals.duplicate(true),
-            "hostility_heat": RivalManager.hostility_heat,
-            "operations_completed": RivalManager.operations_completed,
-            "operations_detected": RivalManager.operations_detected
-        },
-        "events": EventManager.export_state(),
-        "economy": EconomyManager.export_state(),
-        "tournaments": TournamentManager.export_state(),
-        "campaign": CampaignManager.export_state(),
-        "personality": PersonalityManager.export_state(),
-        "gladiator_progression": GladiatorProgressionManager.export_state()
+        "game_state":{"day":GameState.day,"denarii":GameState.denarii,"food":GameState.food,"ore":GameState.ore,"reputation":GameState.reputation},
+        "roster":{"people":people_data,"capacity":RosterManager.capacity,"security_score":RosterManager.security_score,"intelligence_points":RosterManager.intelligence_points},
+        "estate":{"levels":EstateManager.levels.duplicate(true)},
+        "equipment":{"inventory":EquipmentManager.inventory.duplicate(true),"serial":EquipmentManager.serial},
+        "market":{"offers":MarketManager.offers.duplicate(true),"serial":MarketManager._serial},
+        "rivals":{"entries":RivalManager.rivals.duplicate(true),"hostility_heat":RivalManager.hostility_heat,"operations_completed":RivalManager.operations_completed,"operations_detected":RivalManager.operations_detected},
+        "events":EventManager.export_state(),
+        "economy":EconomyManager.export_state(),
+        "tournaments":TournamentManager.export_state(),
+        "campaign":CampaignManager.export_state(),
+        "personality":PersonalityManager.export_state(),
+        "relationships":RelationshipManager.export_state(),
+        "gladiator_progression":GladiatorProgressionManager.export_state()
     }
 
 func _apply_payload(data: Dictionary) -> bool:
@@ -140,12 +112,6 @@ func _apply_payload(data: Dictionary) -> bool:
     var equipment_data: Dictionary = data.get("equipment", {})
     var market_data: Dictionary = data.get("market", {})
     var rival_data: Dictionary = data.get("rivals", {})
-    var event_data: Dictionary = data.get("events", {})
-    var economy_data: Dictionary = data.get("economy", {})
-    var tournament_data: Dictionary = data.get("tournaments", {})
-    var campaign_data: Dictionary = data.get("campaign", {})
-    var personality_data: Dictionary = data.get("personality", {})
-    var progression_data: Dictionary = data.get("gladiator_progression", {})
 
     GameState.day = maxi(1, int(game_data.get("day", 1)))
     GameState.denarii = maxi(0, int(game_data.get("denarii", 500)))
@@ -155,10 +121,8 @@ func _apply_payload(data: Dictionary) -> bool:
 
     RosterManager.people.clear()
     for person_data in roster_data.get("people", []):
-        if person_data is Dictionary:
-            RosterManager.people.append(_deserialize_person(person_data))
-    if RosterManager.people.is_empty():
-        RosterManager._seed_initial_roster()
+        if person_data is Dictionary: RosterManager.people.append(_deserialize_person(person_data))
+    if RosterManager.people.is_empty(): RosterManager._seed_initial_roster()
     RosterManager.capacity = maxi(1, int(roster_data.get("capacity", 8)))
     RosterManager.security_score = maxi(0, int(roster_data.get("security_score", 0)))
     RosterManager.intelligence_points = maxi(0, int(roster_data.get("intelligence_points", 0)))
@@ -173,21 +137,21 @@ func _apply_payload(data: Dictionary) -> bool:
     EquipmentManager.serial = maxi(0, int(equipment_data.get("serial", 0)))
     MarketManager.offers.assign(market_data.get("offers", []))
     MarketManager._serial = maxi(0, int(market_data.get("serial", 0)))
-    if MarketManager.offers.is_empty():
-        MarketManager.refresh_market(false)
+    if MarketManager.offers.is_empty(): MarketManager.refresh_market(false)
 
     RivalManager.rivals.assign(rival_data.get("entries", []))
-    if RivalManager.rivals.is_empty():
-        RivalManager._seed_rivals()
+    if RivalManager.rivals.is_empty(): RivalManager._seed_rivals()
     RivalManager.hostility_heat = maxi(0, int(rival_data.get("hostility_heat", 0)))
     RivalManager.operations_completed = maxi(0, int(rival_data.get("operations_completed", 0)))
     RivalManager.operations_detected = maxi(0, int(rival_data.get("operations_detected", 0)))
-    EventManager.import_state(event_data)
-    EconomyManager.import_state(economy_data)
-    TournamentManager.import_state(tournament_data)
-    CampaignManager.import_state(campaign_data)
-    PersonalityManager.import_state(personality_data)
-    GladiatorProgressionManager.import_state(progression_data)
+
+    EventManager.import_state(data.get("events", {}))
+    EconomyManager.import_state(data.get("economy", {}))
+    TournamentManager.import_state(data.get("tournaments", {}))
+    CampaignManager.import_state(data.get("campaign", {}))
+    PersonalityManager.import_state(data.get("personality", {}))
+    RelationshipManager.import_state(data.get("relationships", {}))
+    GladiatorProgressionManager.import_state(data.get("gladiator_progression", {}))
 
     GameState.resources_changed.emit()
     RosterManager.roster_changed.emit()
@@ -200,31 +164,17 @@ func _apply_payload(data: Dictionary) -> bool:
     TournamentManager.calendar_changed.emit()
     CampaignManager.campaign_changed.emit()
     PersonalityManager.personality_changed.emit("")
+    RelationshipManager.relationships_changed.emit()
     GladiatorProgressionManager.progression_changed.emit()
     return true
 
 func _serialize_person(person) -> Dictionary:
     return {
-        "id": person.id,
-        "name": person.display_name,
-        "role": person.role,
-        "job": person.job,
-        "origin": person.origin,
-        "strength": person.strength,
-        "agility": person.agility,
-        "endurance": person.endurance,
-        "intelligence": person.intelligence,
-        "loyalty": person.loyalty,
-        "morale": person.morale,
-        "fatigue": person.fatigue,
-        "training": person.training,
-        "traits": person.traits.duplicate(),
-        "equipped_weapon_id": person.equipped_weapon_id,
-        "equipped_armor_id": person.equipped_armor_id,
-        "equipped_shield_id": person.equipped_shield_id,
-        "injury_severity": person.injury_severity,
-        "injury_days": person.injury_days,
-        "injury_name": person.injury_name
+        "id":person.id,"name":person.display_name,"role":person.role,"job":person.job,"origin":person.origin,
+        "strength":person.strength,"agility":person.agility,"endurance":person.endurance,"intelligence":person.intelligence,
+        "loyalty":person.loyalty,"morale":person.morale,"fatigue":person.fatigue,"training":person.training,
+        "traits":person.traits.duplicate(),"equipped_weapon_id":person.equipped_weapon_id,"equipped_armor_id":person.equipped_armor_id,
+        "equipped_shield_id":person.equipped_shield_id,"injury_severity":person.injury_severity,"injury_days":person.injury_days,"injury_name":person.injury_name
     }
 
 func _deserialize_person(data: Dictionary):
@@ -241,12 +191,10 @@ func _deserialize_person(data: Dictionary):
 
 func _copy_file(source_path: String, target_path: String) -> void:
     var source := FileAccess.open(source_path, FileAccess.READ)
-    if source == null:
-        return
+    if source == null: return
     var contents := source.get_buffer(source.get_length())
     source.close()
     var target := FileAccess.open(target_path, FileAccess.WRITE)
-    if target == null:
-        return
+    if target == null: return
     target.store_buffer(contents)
     target.close()
