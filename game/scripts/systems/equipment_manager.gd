@@ -15,6 +15,13 @@ const RECIPES := {
     "tower_shield": {"name":"Escudo de torre","type":"shield","forge_level":3,"ore":20,"denarii":120,"defense":15}
 }
 
+const UNIVERSAL_TECHNIQUES: Array[String] = ["basic_attack", "guard", "feint", "warcry", "throw_sand"]
+const WEAPON_TECHNIQUES := {
+    "gladius": ["lunge", "disarm", "execute"],
+    "spear": ["lunge", "disarm", "execute"],
+    "mace": ["sunder", "disarm", "execute"]
+}
+
 var inventory: Array[Dictionary] = []
 var serial: int = 0
 
@@ -142,6 +149,42 @@ func get_equipped_stats(person) -> Dictionary:
         stats.power += int(round(int(item.get("power", 0)) * multiplier))
         stats.defense += int(round(int(item.get("defense", 0)) * multiplier))
     return stats
+
+func get_equipped_loadout(person) -> Dictionary:
+    if person == null:
+        return {"weapon":"", "armor":"", "shield":"", "weapon_name":"Ninguno", "armor_name":"Ninguna", "shield_name":"Ninguno"}
+    var weapon := get_item(person.equipped_weapon_id)
+    var armor := get_item(person.equipped_armor_id)
+    var shield := get_item(person.equipped_shield_id)
+    return {
+        "weapon": str(weapon.get("recipe_id", "")),
+        "armor": str(armor.get("recipe_id", "")),
+        "shield": str(shield.get("recipe_id", "")),
+        "weapon_name": get_item_name(person.equipped_weapon_id),
+        "armor_name": get_item_name(person.equipped_armor_id),
+        "shield_name": get_item_name(person.equipped_shield_id)
+    }
+
+func get_allowed_combat_techniques(person) -> Array[String]:
+    var allowed: Array[String] = UNIVERSAL_TECHNIQUES.duplicate()
+    if person == null:
+        return allowed
+    var loadout := get_equipped_loadout(person)
+    var weapon_id := str(loadout.get("weapon", ""))
+    for technique in WEAPON_TECHNIQUES.get(weapon_id, []):
+        if not allowed.has(str(technique)):
+            allowed.append(str(technique))
+    if not str(loadout.get("shield", "")).is_empty() and not allowed.has("shield_bash"):
+        allowed.append("shield_bash")
+    return allowed
+
+func get_technique_requirement(technique_id: String) -> String:
+    match technique_id:
+        "shield_bash": return "Requiere un escudo equipado."
+        "lunge": return "Requiere gladius o lanza."
+        "sunder": return "Requiere una maza pesada."
+        "disarm", "execute": return "Requiere un arma equipada."
+        _: return "Disponible sin requisito de equipo."
 
 func _quality_multiplier(quality: String) -> float:
     match quality:
