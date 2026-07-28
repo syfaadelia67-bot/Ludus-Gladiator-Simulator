@@ -9,7 +9,8 @@ const PANELS := [
     {"name":"Progresión", "scene":preload("res://scenes/ProgressionPanel.tscn")},
     {"name":"Personalidad", "scene":preload("res://scenes/PersonalityPanel.tscn")},
     {"name":"Relaciones", "scene":preload("res://scenes/RelationshipsPanel.tscn")},
-    {"name":"Transferencias", "scene":preload("res://scenes/TransfersPanel.tscn")}
+    {"name":"Transferencias", "scene":preload("res://scenes/TransfersPanel.tscn")},
+    {"name":"Historial", "scene":preload("res://scenes/CombatHistoryPanel.tscn")}
 ]
 
 const ARENA_CONTROLLER = preload("res://scripts/ui/arena_experience_controller.gd")
