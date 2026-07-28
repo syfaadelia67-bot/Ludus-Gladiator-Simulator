@@ -13,6 +13,10 @@ config_version=5
 config/name="Ludus Gladiator Simulator"
 run/main_scene="res://scenes/Main.tscn"
 
+[debug]
+
+gdscript/warnings/treat_warnings_as_errors=false
+
 [display]
 
 window/size/viewport_width=1280
