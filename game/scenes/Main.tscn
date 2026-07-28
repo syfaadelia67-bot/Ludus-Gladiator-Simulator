@@ -25,10 +25,10 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 40.0
-offset_top = 32.0
-offset_right = -40.0
-offset_bottom = -32.0
+offset_left = 32.0
+offset_top = 24.0
+offset_right = -32.0
+offset_bottom = -24.0
 
 [node name="VBox" type="VBoxContainer" parent="Margin"]
 layout_mode = 2
@@ -36,54 +36,75 @@ theme_override_constants/separation = 14
 
 [node name="Title" type="Label" parent="Margin/VBox"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 32
+theme_override_font_sizes/font_size = 30
 text = "LUDUS GLADIATOR SIMULATOR"
-
-[node name="Subtitle" type="Label" parent="Margin/VBox"]
-layout_mode = 2
-text = "Gestión inicial de la finca y sus habitantes"
 
 [node name="Resources" type="Label" parent="Margin/VBox"]
 layout_mode = 2
 text = "Recursos"
 
-[node name="Columns" type="HBoxContainer" parent="Margin/VBox"]
-layout_mode = 2
-size_flags_vertical = 3
-theme_override_constants/separation = 20
-
-[node name="RosterPanel" type="VBoxContainer" parent="Margin/VBox/Columns"]
-layout_mode = 2
-size_flags_horizontal = 3
-
-[node name="RosterTitle" type="Label" parent="Margin/VBox/Columns/RosterPanel"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 20
-text = "Personajes"
-
-[node name="Roster" type="RichTextLabel" parent="Margin/VBox/Columns/RosterPanel"]
-custom_minimum_size = Vector2(0, 260)
-layout_mode = 2
-size_flags_vertical = 3
-bbcode_enabled = true
-fit_content = false
-
-[node name="LogPanel" type="VBoxContainer" parent="Margin/VBox/Columns"]
-layout_mode = 2
-size_flags_horizontal = 3
-
-[node name="LogTitle" type="Label" parent="Margin/VBox/Columns/LogPanel"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 20
-text = "Registro diario"
-
-[node name="Log" type="RichTextLabel" parent="Margin/VBox/Columns/LogPanel"]
-custom_minimum_size = Vector2(0, 260)
-layout_mode = 2
-size_flags_vertical = 3
-bbcode_enabled = true
-text = "[b]Registro[/b]\nLa finca está lista para comenzar."
-
 [node name="AdvanceDay" type="Button" parent="Margin/VBox"]
 layout_mode = 2
 text = "Avanzar un día"
+
+[node name="Columns" type="HSplitContainer" parent="Margin/VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+split_offset = 390
+
+[node name="RosterPanel" type="VBoxContainer" parent="Margin/VBox/Columns"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="RosterTitle" type="Label" parent="Margin/VBox/Columns/RosterPanel"]
+layout_mode = 2
+text = "PERSONAL"
+
+[node name="RosterList" type="ItemList" parent="Margin/VBox/Columns/RosterPanel"]
+custom_minimum_size = Vector2(330, 220)
+layout_mode = 2
+size_flags_vertical = 3
+select_mode = 0
+
+[node name="DetailTitle" type="Label" parent="Margin/VBox/Columns/RosterPanel"]
+layout_mode = 2
+text = "FICHA"
+
+[node name="Details" type="RichTextLabel" parent="Margin/VBox/Columns/RosterPanel"]
+custom_minimum_size = Vector2(330, 170)
+layout_mode = 2
+bbcode_enabled = true
+fit_content = true
+text = "Seleccioná un personaje."
+
+[node name="JobRow" type="HBoxContainer" parent="Margin/VBox/Columns/RosterPanel"]
+layout_mode = 2
+
+[node name="JobLabel" type="Label" parent="Margin/VBox/Columns/RosterPanel/JobRow"]
+layout_mode = 2
+text = "Trabajo:"
+
+[node name="JobSelector" type="OptionButton" parent="Margin/VBox/Columns/RosterPanel/JobRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="AssignJob" type="Button" parent="Margin/VBox/Columns/RosterPanel"]
+layout_mode = 2
+text = "Asignar trabajo"
+
+[node name="LogPanel" type="VBoxContainer" parent="Margin/VBox/Columns"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="LogTitle" type="Label" parent="Margin/VBox/Columns/LogPanel"]
+layout_mode = 2
+text = "REGISTRO DE LA FINCA"
+
+[node name="Log" type="RichTextLabel" parent="Margin/VBox/Columns/LogPanel"]
+custom_minimum_size = Vector2(460, 420)
+layout_mode = 2
+size_flags_vertical = 3
+bbcode_enabled = true
+scroll_active = true
+scroll_following = true
+text = "[b]Registro[/b]\nLa finca está lista para comenzar."
