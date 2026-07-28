@@ -24,7 +24,7 @@ jobs:
         run: |
           set -o pipefail
           godot --headless --editor --path game --quit-after 20 2>&1 | tee godot-import.log
-          if grep -Eiq 'Parse Error|Compile Error|Failed to load script|Failed to create an autoload|SCRIPT ERROR|ERROR:' godot-import.log; then
+          if grep -Eiq 'Parse Error|Compile Error|Failed to load script|Failed to create an autoload|SCRIPT ERROR|Invalid call|Invalid get index|Node not found|Can.t use get_node' godot-import.log; then
             echo 'Godot reported script or project errors during import.'
             exit 1
           fi
@@ -34,7 +34,7 @@ jobs:
         run: |
           set -o pipefail
           godot --headless --path game --quit-after 5 2>&1 | tee godot-startup.log
-          if grep -Eiq 'Parse Error|Compile Error|Failed to load script|Failed to create an autoload|SCRIPT ERROR|ERROR:' godot-startup.log; then
+          if grep -Eiq 'Parse Error|Compile Error|Failed to load script|Failed to create an autoload|SCRIPT ERROR|Invalid call|Invalid get index|Node not found|Can.t use get_node' godot-startup.log; then
             echo 'Godot reported errors while starting the main scene.'
             exit 1
           fi
