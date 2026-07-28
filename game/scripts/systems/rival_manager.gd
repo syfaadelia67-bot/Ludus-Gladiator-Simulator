@@ -51,7 +51,7 @@ func get_operation(operation_id: String) -> Dictionary:
     return data
 
 func run_operation(rival_id: String, operation_id: String, agent_id: String = "") -> Dictionary:
-    var rival := get_rival(rival_id)
+    var rival: Dictionary = get_rival(rival_id)
     if rival.is_empty():
         operation_failed.emit("El rival seleccionado no existe.")
         return {}
@@ -66,8 +66,8 @@ func run_operation(rival_id: String, operation_id: String, agent_id: String = ""
     if agent.injury_days > 0:
         operation_failed.emit("El agente está herido y no puede operar.")
         return {}
-    var intel_cost := int(operation.get("intel_cost", 0))
-    var denarii_cost := int(operation.get("denarii_cost", 0))
+    var intel_cost: int = int(operation.get("intel_cost", 0))
+    var denarii_cost: int = int(operation.get("denarii_cost", 0))
     if RosterManager.intelligence_points < intel_cost:
         operation_failed.emit("No hay suficientes puntos de inteligencia.")
         return {}
@@ -78,17 +78,17 @@ func run_operation(rival_id: String, operation_id: String, agent_id: String = ""
 
     var rng := RandomNumberGenerator.new()
     rng.randomize()
-    var skill := agent.intelligence * 6 + agent.agility * 3 + agent.loyalty / 5
+    var skill: int = agent.intelligence * 6 + agent.agility * 3 + floori(float(agent.loyalty) / 5.0)
     if agent.traits.has("mentor"):
         skill += 6
     if agent.traits.has("freedom_seeker"):
         skill -= 5
-    var defense := int(rival.get("security", 50)) + int(rival.get("suspicion", 0)) / 2
-    var success_chance := clampi(45 + skill / 3 - defense / 2, 12, 92)
-    var detected_chance := clampi(int(operation.get("risk", 20)) + defense / 4 - agent.agility * 2, 5, 85)
-    var success := rng.randi_range(1, 100) <= success_chance
-    var detected := rng.randi_range(1, 100) <= detected_chance
-    var effect_text := ""
+    var defense: int = int(rival.get("security", 50)) + floori(float(int(rival.get("suspicion", 0))) / 2.0)
+    var success_chance: int = clampi(45 + floori(float(skill) / 3.0) - floori(float(defense) / 2.0), 12, 92)
+    var detected_chance: int = clampi(int(operation.get("risk", 20)) + floori(float(defense) / 4.0) - agent.agility * 2, 5, 85)
+    var success: bool = rng.randi_range(1, 100) <= success_chance
+    var detected: bool = rng.randi_range(1, 100) <= detected_chance
+    var effect_text: String = ""
 
     if success:
         effect_text = _apply_success(rival, operation_id, rng)
@@ -108,7 +108,7 @@ func run_operation(rival_id: String, operation_id: String, agent_id: String = ""
     else:
         rival["suspicion"] = maxi(0, int(rival.get("suspicion", 0)) - 3)
 
-    var result := {
+    var result: Dictionary = {
         "rival_id": rival_id,
         "rival_name": rival.get("name", rival_id),
         "operation_id": operation_id,
@@ -133,7 +133,7 @@ func process_day() -> Array:
     for rival in rivals:
         rival["suspicion"] = maxi(0, int(rival.get("suspicion", 0)) - 1)
         if int(rival.get("relation", 0)) <= -45 and randf() < 0.10 + float(hostility_heat) / 300.0:
-            var event := _resolve_rival_retaliation(rival)
+            var event: Dictionary = _resolve_rival_retaliation(rival)
             events.append(event)
             rival_event.emit(event)
     if not events.is_empty():
@@ -147,11 +147,11 @@ func _resolve_agent(agent_id: String):
         if selected != null and selected.job == "espionage":
             return selected
     var best = null
-    var best_score := -1
+    var best_score: int = -1
     for person in RosterManager.get_people():
         if person.job != "espionage" or person.injury_days > 0:
             continue
-        var score := person.intelligence * 2 + person.agility
+        var score: int = person.intelligence * 2 + person.agility
         if score > best_score:
             best = person
             best_score = score
@@ -160,7 +160,7 @@ func _resolve_agent(agent_id: String):
 func _apply_success(rival: Dictionary, operation_id: String, rng: RandomNumberGenerator) -> String:
     match operation_id:
         "scout":
-            var gained := rng.randi_range(8, 16)
+            var gained: int = rng.randi_range(8, 16)
             rival["intel"] = mini(100, int(rival.get("intel", 0)) + gained)
             RosterManager.intelligence_points += 3
             return "Se obtuvieron datos sobre seguridad, riqueza y gladiadores del rival."
@@ -186,11 +186,11 @@ func _apply_success(rival: Dictionary, operation_id: String, rng: RandomNumberGe
 func _resolve_rival_retaliation(rival: Dictionary) -> Dictionary:
     var rng := RandomNumberGenerator.new()
     rng.randomize()
-    var security := RosterManager.security_score + EstateManager.get_security_bonus()
-    var attack_strength := int(rival.get("wealth", 50)) / 3 + int(rival.get("suspicion", 0)) / 2
-    var blocked := security + rng.randi_range(1, 30) >= attack_strength
-    var description := ""
-    var loss := 0
+    var security: int = RosterManager.security_score + EstateManager.get_security_bonus()
+    var attack_strength: int = floori(float(int(rival.get("wealth", 50))) / 3.0) + floori(float(int(rival.get("suspicion", 0))) / 2.0)
+    var blocked: bool = security + rng.randi_range(1, 30) >= attack_strength
+    var description: String = ""
+    var loss: int = 0
     if blocked:
         description = "Los guardias frustraron una represalia enviada por %s." % rival.get("name", "un rival")
         rival["relation"] = maxi(-100, int(rival.get("relation", 0)) - 2)
