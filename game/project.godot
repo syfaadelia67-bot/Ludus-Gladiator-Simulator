@@ -20,3 +20,4 @@ renderer/rendering_method.mobile="gl_compatibility"
 
 GameState="*res://scripts/core/game_state.gd"
 DataRepository="*res://scripts/core/data_repository.gd"
+RosterManager="*res://scripts/systems/roster_manager.gd"
