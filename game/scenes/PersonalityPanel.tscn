@@ -1,0 +1,65 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource path="res://scripts/ui/personality_panel.gd" type="Script" id="1"]
+
+[node name="Personalidad" type="VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 8
+script = ExtResource("1")
+
+[node name="Title" type="Label" parent="."]
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "PERSONALIDAD Y DISCIPLINA"
+
+[node name="PersonSelector" type="OptionButton" parent="."]
+layout_mode = 2
+
+[node name="MainSplit" type="HSplitContainer" parent="."]
+layout_mode = 2
+size_flags_vertical = 3
+split_offset = 560
+
+[node name="Left" type="VBoxContainer" parent="MainSplit"]
+layout_mode = 2
+
+[node name="Details" type="RichTextLabel" parent="MainSplit/Left"]
+custom_minimum_size = Vector2(520, 330)
+layout_mode = 2
+size_flags_vertical = 3
+bbcode_enabled = true
+text = "Seleccioná un miembro del ludus."
+
+[node name="Actions" type="HBoxContainer" parent="MainSplit/Left"]
+layout_mode = 2
+
+[node name="Reward" type="Button" parent="MainSplit/Left/Actions"]
+layout_mode = 2
+text = "Recompensar (25)"
+
+[node name="Leniency" type="Button" parent="MainSplit/Left/Actions"]
+layout_mode = 2
+text = "Mostrar clemencia"
+
+[node name="Punishment" type="Button" parent="MainSplit/Left/Actions"]
+layout_mode = 2
+text = "Castigar"
+
+[node name="Right" type="VBoxContainer" parent="MainSplit"]
+layout_mode = 2
+
+[node name="Incident" type="RichTextLabel" parent="MainSplit/Right"]
+custom_minimum_size = Vector2(460, 120)
+layout_mode = 2
+bbcode_enabled = true
+text = "No hay conflictos pendientes."
+
+[node name="Choices" type="VBoxContainer" parent="MainSplit/Right"]
+layout_mode = 2
+
+[node name="History" type="RichTextLabel" parent="MainSplit/Right"]
+custom_minimum_size = Vector2(460, 250)
+layout_mode = 2
+size_flags_vertical = 3
+bbcode_enabled = true
+text = "Historial reciente"
