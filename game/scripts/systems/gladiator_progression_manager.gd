@@ -121,12 +121,10 @@ func unlock_technique(person_id: String, technique_id: String) -> bool:
     return true
 
 func retire_gladiator(person_id: String) -> bool:
+    if not can_retire(person_id):
+        return false
     var person = RosterManager.get_person(person_id)
-    if person == null or person.role != "gladiator":
-        return false
     var record: Dictionary = ensure_record(person_id)
-    if int(record.get("age_days", 0)) < 180:
-        return false
     var summary: Dictionary = record.duplicate(true)
     summary["id"] = person_id
     summary["name"] = person.display_name
@@ -139,6 +137,16 @@ func retire_gladiator(person_id: String) -> bool:
     RosterManager.roster_changed.emit()
     progression_changed.emit()
     return true
+
+func can_retire(person_id: String) -> bool:
+    var person = RosterManager.get_person(person_id)
+    if person == null or person.role != "gladiator":
+        return false
+    var record: Dictionary = ensure_record(person_id)
+    return int(record.get("age_days", 0)) >= 180
+
+func get_retired_history() -> Array[Dictionary]:
+    return retired_gladiators.duplicate(true)
 
 func get_record(person_id: String) -> Dictionary:
     return ensure_record(person_id).duplicate(true)
