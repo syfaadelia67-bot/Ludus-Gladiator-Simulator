@@ -40,8 +40,13 @@ func simulate_duel(gladiator_id: String, tactic: String = "balanced") -> Diction
     var combat_log: Array[String] = []
     var round := 0
     var surrendered := false
+    var relationship_bonus := RelationshipManager.get_combat_morale_bonus(fighter.id)
 
     combat_log.append("%s entra a la arena con táctica %s." % [fighter.display_name, get_tactic_name(tactic)])
+    if relationship_bonus > 0:
+        combat_log.append("El apoyo y la rivalidad de sus compañeros fortalecen su determinación.")
+    elif relationship_bonus < 0:
+        combat_log.append("Las enemistades dentro del ludus pesan sobre su ánimo.")
     while player.health > 0 and enemy.health > 0 and round < 30:
         round += 1
         combat_log.append("--- Ronda %d ---" % round)
@@ -67,14 +72,14 @@ func simulate_duel(gladiator_id: String, tactic: String = "balanced") -> Diction
         reputation = 2 + enemy.defense / 8
         GameState.denarii += reward
         GameState.reputation += reputation
-        fighter.morale = mini(100, fighter.morale + 8)
+        fighter.morale = mini(100, fighter.morale + 8 + maxi(0, relationship_bonus))
         combat_log.append("%s obtiene la victoria." % fighter.display_name)
     elif surrendered:
-        fighter.morale = maxi(0, fighter.morale - 6)
+        fighter.morale = maxi(0, fighter.morale - 6 + relationship_bonus)
         GameState.reputation = maxi(0, GameState.reputation - 1)
         combat_log.append("La rendición preserva su vida, pero daña la reputación del ludus.")
     else:
-        fighter.morale = maxi(0, fighter.morale - 10)
+        fighter.morale = maxi(0, fighter.morale - 10 + relationship_bonus)
         combat_log.append("%s pierde el combate." % fighter.display_name)
 
     if not injury.is_empty():
@@ -118,6 +123,7 @@ func simulate_duel(gladiator_id: String, tactic: String = "balanced") -> Diction
         "injury_days": fighter.injury_days,
         "tournament": tournament_result,
         "personality": personality_event,
+        "relationship_bonus": relationship_bonus,
         "log": combat_log
     }
     GameState.resources_changed.emit()
@@ -132,7 +138,8 @@ func _should_surrender(fighter, player: Dictionary, tactic: String, rng: RandomN
     if health_ratio > 0.28:
         return false
     var personality := PersonalityManager.get_combat_modifiers(fighter.id, fighter.traits)
-    var chance := 20 + maxi(0, 45 - fighter.morale) + fighter.fatigue / 5 + int(personality.get("surrender", 0))
+    var relationship_bonus := RelationshipManager.get_combat_morale_bonus(fighter.id)
+    var chance := 20 + maxi(0, 45 - fighter.morale) + fighter.fatigue / 5 + int(personality.get("surrender", 0)) - relationship_bonus
     if tactic == "aggressive": chance -= 12
     if tactic == "careful": chance += 8
     if fighter.traits.has("arena_lover"): chance -= 8
@@ -170,11 +177,13 @@ func _build_combatant(person, tactic: String) -> Dictionary:
     var equipment := EquipmentManager.get_equipped_stats(person)
     var progression := GladiatorProgressionManager.get_modifiers(person.id)
     var personality := PersonalityManager.get_combat_modifiers(person.id, person.traits)
-    var attack := int(round((person.get_base_attack() + int(equipment.get("power", 0)) + int(progression.get("attack_bonus", 0))) * float(progression.get("attack", 1.0)) * float(personality.get("attack", 1.0))))
-    var defense := int(round((person.get_base_defense() + int(equipment.get("defense", 0)) + int(progression.get("defense_bonus", 0))) * float(progression.get("defense", 1.0)) * float(personality.get("defense", 1.0))))
+    var relationship_bonus := RelationshipManager.get_combat_morale_bonus(person.id)
+    var relationship_multiplier := 1.0 + float(relationship_bonus) * 0.01
+    var attack := int(round((person.get_base_attack() + int(equipment.get("power", 0)) + int(progression.get("attack_bonus", 0))) * float(progression.get("attack", 1.0)) * float(personality.get("attack", 1.0)) * relationship_multiplier))
+    var defense := int(round((person.get_base_defense() + int(equipment.get("defense", 0)) + int(progression.get("defense_bonus", 0))) * float(progression.get("defense", 1.0)) * float(personality.get("defense", 1.0)) * relationship_multiplier))
     var max_health := int(round(person.get_max_health() * float(progression.get("health", 1.0))))
-    var max_energy := int(round((person.get_max_energy() + int(progression.get("energy_bonus", 0))) * float(progression.get("energy", 1.0))))
-    var accuracy := 55 + person.agility * 3 + int(progression.get("accuracy_bonus", 0)) + int(personality.get("accuracy", 0))
+    var max_energy := int(round((person.get_max_energy() + int(progression.get("energy_bonus", 0)) + maxi(0, relationship_bonus)) * float(progression.get("energy", 1.0))))
+    var accuracy := 55 + person.agility * 3 + int(progression.get("accuracy_bonus", 0)) + int(personality.get("accuracy", 0)) + relationship_bonus
     var energy_cost := 12
     match tactic:
         "aggressive":
