@@ -25,27 +25,40 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 32.0
-offset_top = 24.0
-offset_right = -32.0
-offset_bottom = -24.0
+offset_left = 24.0
+offset_top = 20.0
+offset_right = -24.0
+offset_bottom = -20.0
 
 [node name="VBox" type="VBoxContainer" parent="Margin"]
 layout_mode = 2
-theme_override_constants/separation = 14
+theme_override_constants/separation = 10
 
 [node name="Title" type="Label" parent="Margin/VBox"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 30
+theme_override_font_sizes/font_size = 28
 text = "LUDUS GLADIATOR SIMULATOR"
 
 [node name="Resources" type="Label" parent="Margin/VBox"]
 layout_mode = 2
 text = "Recursos"
 
-[node name="AdvanceDay" type="Button" parent="Margin/VBox"]
+[node name="TopButtons" type="HBoxContainer" parent="Margin/VBox"]
+layout_mode = 2
+
+[node name="AdvanceDay" type="Button" parent="Margin/VBox/TopButtons"]
 layout_mode = 2
 text = "Avanzar un día"
+
+[node name="RefreshMarket" type="Button" parent="Margin/VBox/TopButtons"]
+layout_mode = 2
+text = "Renovar mercado (25)"
+
+[node name="Capacity" type="Label" parent="Margin/VBox/TopButtons"]
+layout_mode = 2
+size_flags_horizontal = 3
+horizontal_alignment = 2
+text = "Capacidad: 0/0"
 
 [node name="Columns" type="HSplitContainer" parent="Margin/VBox"]
 layout_mode = 2
@@ -54,24 +67,19 @@ split_offset = 390
 
 [node name="RosterPanel" type="VBoxContainer" parent="Margin/VBox/Columns"]
 layout_mode = 2
-theme_override_constants/separation = 8
+theme_override_constants/separation = 6
 
 [node name="RosterTitle" type="Label" parent="Margin/VBox/Columns/RosterPanel"]
 layout_mode = 2
 text = "PERSONAL"
 
 [node name="RosterList" type="ItemList" parent="Margin/VBox/Columns/RosterPanel"]
-custom_minimum_size = Vector2(330, 220)
+custom_minimum_size = Vector2(330, 150)
 layout_mode = 2
 size_flags_vertical = 3
-select_mode = 0
-
-[node name="DetailTitle" type="Label" parent="Margin/VBox/Columns/RosterPanel"]
-layout_mode = 2
-text = "FICHA"
 
 [node name="Details" type="RichTextLabel" parent="Margin/VBox/Columns/RosterPanel"]
-custom_minimum_size = Vector2(330, 170)
+custom_minimum_size = Vector2(330, 145)
 layout_mode = 2
 bbcode_enabled = true
 fit_content = true
@@ -80,31 +88,45 @@ text = "Seleccioná un personaje."
 [node name="JobRow" type="HBoxContainer" parent="Margin/VBox/Columns/RosterPanel"]
 layout_mode = 2
 
-[node name="JobLabel" type="Label" parent="Margin/VBox/Columns/RosterPanel/JobRow"]
-layout_mode = 2
-text = "Trabajo:"
-
 [node name="JobSelector" type="OptionButton" parent="Margin/VBox/Columns/RosterPanel/JobRow"]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="AssignJob" type="Button" parent="Margin/VBox/Columns/RosterPanel"]
+[node name="AssignJob" type="Button" parent="Margin/VBox/Columns/RosterPanel/JobRow"]
 layout_mode = 2
-text = "Asignar trabajo"
+text = "Asignar"
 
-[node name="LogPanel" type="VBoxContainer" parent="Margin/VBox/Columns"]
+[node name="RightPanel" type="VBoxContainer" parent="Margin/VBox/Columns"]
 layout_mode = 2
-theme_override_constants/separation = 8
+theme_override_constants/separation = 6
 
-[node name="LogTitle" type="Label" parent="Margin/VBox/Columns/LogPanel"]
+[node name="MarketTitle" type="Label" parent="Margin/VBox/Columns/RightPanel"]
 layout_mode = 2
-text = "REGISTRO DE LA FINCA"
+text = "MERCADO"
 
-[node name="Log" type="RichTextLabel" parent="Margin/VBox/Columns/LogPanel"]
-custom_minimum_size = Vector2(460, 420)
+[node name="MarketList" type="ItemList" parent="Margin/VBox/Columns/RightPanel"]
+custom_minimum_size = Vector2(470, 145)
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="MarketDetails" type="RichTextLabel" parent="Margin/VBox/Columns/RightPanel"]
+custom_minimum_size = Vector2(470, 90)
+layout_mode = 2
+bbcode_enabled = true
+text = "Seleccioná una oferta."
+
+[node name="BuyOffer" type="Button" parent="Margin/VBox/Columns/RightPanel"]
+layout_mode = 2
+text = "Comprar candidato"
+
+[node name="LogTitle" type="Label" parent="Margin/VBox/Columns/RightPanel"]
+layout_mode = 2
+text = "REGISTRO"
+
+[node name="Log" type="RichTextLabel" parent="Margin/VBox/Columns/RightPanel"]
+custom_minimum_size = Vector2(470, 130)
 layout_mode = 2
 size_flags_vertical = 3
 bbcode_enabled = true
-scroll_active = true
 scroll_following = true
 text = "[b]Registro[/b]\nLa finca está lista para comenzar."
