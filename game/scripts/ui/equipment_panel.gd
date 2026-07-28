@@ -32,19 +32,19 @@ func _ready() -> void:
     _refresh()
 
 func _refresh() -> void:
-    var previous_id := _selected_gladiator_id()
+    var previous_id: String = _selected_gladiator_id()
     gladiator_selector.clear()
     gladiator_ids.clear()
     for person in RosterManager.get_people():
         if person.role == "gladiator":
             gladiator_ids.append(person.id)
-            var state := "Disponible" if person.is_available_for_combat() else person.get_injury_summary()
+            var state: String = "Disponible" if person.is_available_for_combat() else person.get_injury_summary()
             gladiator_selector.add_item("%s — %s" % [person.display_name, state])
     if gladiator_ids.is_empty():
         status.text = "No hay gladiadores disponibles."
         _set_controls_enabled(false)
         return
-    var selected_index := gladiator_ids.find(previous_id)
+    var selected_index: int = gladiator_ids.find(previous_id)
     gladiator_selector.select(selected_index if selected_index >= 0 else 0)
     _refresh_items()
     _refresh_status()
@@ -54,7 +54,7 @@ func _on_gladiator_selected(_index: int) -> void:
     _refresh_status()
 
 func _refresh_items() -> void:
-    var person_id := _selected_gladiator_id()
+    var person_id: String = _selected_gladiator_id()
     _populate_item_selector(weapon_selector, weapon_ids, "weapon", person_id)
     _populate_item_selector(armor_selector, armor_ids, "armor", person_id)
     _populate_item_selector(shield_selector, shield_ids, "shield", person_id)
@@ -65,7 +65,7 @@ func _populate_item_selector(selector: OptionButton, ids: Array[String], item_ty
     ids.clear()
     for item in EquipmentManager.get_available_items(item_type, person_id):
         ids.append(str(item.get("id", "")))
-        var stat := int(item.get("power", item.get("defense", 0)))
+        var stat: int = int(item.get("power", item.get("defense", 0)))
         selector.add_item("%s — %s — %d" % [item.get("name", "Objeto"), item.get("quality", "Común"), stat])
     selector.disabled = ids.is_empty()
 
@@ -73,7 +73,7 @@ func _refresh_status() -> void:
     var person = RosterManager.get_person(_selected_gladiator_id())
     if person == null:
         return
-    var bonuses := EquipmentManager.get_equipped_stats(person)
+    var bonuses: Dictionary = EquipmentManager.get_equipped_stats(person)
     status.text = "[b]%s[/b]\nArma: %s\nArmadura: %s\nEscudo: %s\n\nAtaque final: %d | Defensa final: %d\nEstado: %s | Fatiga: %d | Moral: %d" % [
         person.display_name,
         EquipmentManager.get_item_name(person.equipped_weapon_id),
@@ -87,7 +87,7 @@ func _refresh_status() -> void:
     ]
 
 func _equip_selected(slot: String) -> void:
-    var person_id := _selected_gladiator_id()
+    var person_id: String = _selected_gladiator_id()
     var ids: Array[String]
     var selector: OptionButton
     match slot:
