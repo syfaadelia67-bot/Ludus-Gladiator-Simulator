@@ -15,6 +15,9 @@ var morale: int = 50
 var fatigue: int = 0
 var training: int = 0
 var traits: Array[String] = []
+var equipped_weapon_id: String = ""
+var equipped_armor_id: String = ""
+var equipped_shield_id: String = ""
 
 func _init(data: Dictionary = {}) -> void:
     id = str(data.get("id", "person_%s" % Time.get_ticks_usec()))
@@ -59,6 +62,18 @@ func process_day() -> Dictionary:
             morale = mini(100, morale + 2)
     morale = clampi(morale - fatigue / 25, 0, 100)
     return result
+
+func get_max_health() -> int:
+    return 70 + endurance * 8 + strength * 2
+
+func get_max_energy() -> int:
+    return 55 + endurance * 5 + agility * 3
+
+func get_base_attack() -> int:
+    return strength * 2 + agility
+
+func get_base_defense() -> int:
+    return endurance + agility
 
 func summary() -> String:
     return "%s | %s | trabajo: %s | lealtad: %d | moral: %d | fatiga: %d" % [
