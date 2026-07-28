@@ -12,20 +12,27 @@ const PANELS := [
     {"name":"Transferencias", "scene":preload("res://scenes/TransfersPanel.tscn")}
 ]
 
-func _ready() -> void:
-    call_deferred("_attach_panels")
+const MAX_ATTACH_ATTEMPTS := 30
 
-func _attach_panels() -> void:
-    var root := get_tree().current_scene
-    if root == null:
-        return
-    var tabs := root.find_child("Tabs", true, false)
-    if tabs == null or not tabs is TabContainer:
-        push_error("No se encontró el TabContainer principal llamado Tabs.")
-        return
+func _ready() -> void:
+    _attach_when_ready()
+
+func _attach_when_ready() -> void:
+    for _attempt in range(MAX_ATTACH_ATTEMPTS):
+        await get_tree().process_frame
+        var root := get_tree().current_scene
+        if root == null or not root.is_inside_tree():
+            continue
+        var tabs := root.find_child("Tabs", true, false)
+        if tabs is TabContainer:
+            _attach_panels(tabs)
+            return
+    push_error("No se encontró el TabContainer principal llamado Tabs después de esperar la escena activa.")
+
+func _attach_panels(tabs: TabContainer) -> void:
     for panel_data in PANELS:
         var panel_name := str(panel_data.get("name", ""))
-        if panel_name.is_empty() or tabs.has_node(NodePath(panel_name)):
+        if panel_name.is_empty() or tabs.get_node_or_null(NodePath(panel_name)) != null:
             continue
         var packed_scene: PackedScene = panel_data.get("scene")
         if packed_scene == null:
