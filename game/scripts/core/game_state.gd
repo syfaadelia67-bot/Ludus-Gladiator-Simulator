@@ -12,12 +12,15 @@ var reputation: int = 0
 
 func advance_day() -> void:
     var report: Dictionary = RosterManager.process_day()
+    var rival_events: Array = RivalManager.process_day()
+    report["rival_events"] = rival_events
     day += 1
     food = maxi(0, food - maxi(1, RosterManager.people.size()))
     ore += int(report.get("ore", 0))
     day_advanced.emit(day)
     resources_changed.emit()
     daily_report.emit(report)
+    SaveManager.save_game()
 
 func spend_denarii(amount: int) -> bool:
     if amount < 0 or denarii < amount:
