@@ -64,7 +64,8 @@ func process_day() -> Dictionary:
             fatigue += 6
         "training":
             var base_gain := maxi(1, endurance + strength / 2)
-            var gained := int(round(base_gain * EstateManager.get_training_multiplier()))
+            var multiplier := EstateManager.get_training_multiplier() * EventManager.get_training_multiplier()
+            var gained := int(round(base_gain * multiplier))
             training += gained
             result.training = gained
             fatigue += 7
