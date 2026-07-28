@@ -3,6 +3,7 @@ extends Node
 signal inventory_changed
 signal craft_completed(item_name: String, cost_ore: int, cost_denarii: int)
 signal craft_failed(reason: String)
+signal equipment_changed(person_id: String)
 
 const RECIPES := {
     "gladius": {"name":"Gladius","type":"weapon","forge_level":1,"ore":8,"denarii":45,"power":12},
@@ -51,19 +52,62 @@ func craft(recipe_id: String) -> bool:
     item["id"] = "%s_%d" % [recipe_id, serial]
     item["recipe_id"] = recipe_id
     item["quality"] = _roll_quality()
+    item["equipped_by"] = ""
     inventory.append(item)
     GameState.resources_changed.emit()
     inventory_changed.emit()
     craft_completed.emit(str(recipe.get("name", recipe_id)), ore_cost, denarii_cost)
     return true
 
+func equip_item(person_id: String, item_id: String) -> bool:
+    var person = RosterManager.get_person(person_id)
+    var item := get_item(item_id)
+    if person == null or item.is_empty():
+        return false
+    if not str(item.get("equipped_by", "")).is_empty():
+        return false
+    var item_type := str(item.get("type", ""))
+    var previous_id := ""
+    match item_type:
+        "weapon": previous_id = person.equipped_weapon_id; person.equipped_weapon_id = item_id
+        "armor": previous_id = person.equipped_armor_id; person.equipped_armor_id = item_id
+        "shield": previous_id = person.equipped_shield_id; person.equipped_shield_id = item_id
+        _: return false
+    if not previous_id.is_empty():
+        var previous := get_item(previous_id)
+        if not previous.is_empty(): previous["equipped_by"] = ""
+    item["equipped_by"] = person_id
+    inventory_changed.emit()
+    equipment_changed.emit(person_id)
+    return true
+
+func get_item(item_id: String) -> Dictionary:
+    for item in inventory:
+        if str(item.get("id", "")) == item_id:
+            return item
+    return {}
+
+func get_equipped_stats(person) -> Dictionary:
+    var stats := {"power": 0, "defense": 0}
+    for item_id in [person.equipped_weapon_id, person.equipped_armor_id, person.equipped_shield_id]:
+        if item_id.is_empty(): continue
+        var item := get_item(item_id)
+        var multiplier := _quality_multiplier(str(item.get("quality", "Común")))
+        stats.power += int(round(int(item.get("power", 0)) * multiplier))
+        stats.defense += int(round(int(item.get("defense", 0)) * multiplier))
+    return stats
+
+func _quality_multiplier(quality: String) -> float:
+    match quality:
+        "Superior": return 1.15
+        "Magistral": return 1.35
+        _: return 1.0
+
 func _roll_quality() -> String:
     var roll := randf()
     var forge_level := EstateManager.get_forge_level()
-    if roll < 0.04 * forge_level:
-        return "Magistral"
-    if roll < 0.15 + 0.05 * forge_level:
-        return "Superior"
+    if roll < 0.04 * forge_level: return "Magistral"
+    if roll < 0.15 + 0.05 * forge_level: return "Superior"
     return "Común"
 
 func get_inventory() -> Array:
