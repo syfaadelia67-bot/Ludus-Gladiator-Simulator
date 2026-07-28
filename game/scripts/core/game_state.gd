@@ -2,6 +2,7 @@ extends Node
 
 signal day_advanced(day: int)
 signal resources_changed
+signal daily_report(report: Dictionary)
 
 var day: int = 1
 var denarii: int = 500
@@ -10,13 +11,21 @@ var ore: int = 20
 var reputation: int = 0
 
 func advance_day() -> void:
+    var report: Dictionary = RosterManager.process_day()
     day += 1
-    food = maxi(0, food - 5)
-    ore += 2
+    food = maxi(0, food - maxi(1, RosterManager.people.size()))
+    ore += int(report.get("ore", 0))
     day_advanced.emit(day)
     resources_changed.emit()
+    daily_report.emit(report)
 
 func get_resource_summary() -> String:
-    return "Día: %d | Denarios: %d | Comida: %d | Mineral: %d | Reputación: %d" % [
-        day, denarii, food, ore, reputation
+    return "Día: %d | Denarios: %d | Comida: %d | Mineral: %d | Reputación: %d | Seguridad: %d | Intel: %d" % [
+        day,
+        denarii,
+        food,
+        ore,
+        reputation,
+        RosterManager.security_score,
+        RosterManager.intelligence_points
     ]
