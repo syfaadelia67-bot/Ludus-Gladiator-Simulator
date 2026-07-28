@@ -15,6 +15,7 @@ const JOBS := {
 var people: Array = []
 var security_score: int = 0
 var intelligence_points: int = 0
+var capacity: int = 8
 
 func _ready() -> void:
     if people.is_empty():
@@ -34,6 +35,19 @@ func _seed_initial_roster() -> void:
     people[2].assign_job("idle")
     people[3].assign_job("training")
     roster_changed.emit()
+
+func add_person(person) -> bool:
+    if not has_capacity() or person == null:
+        return false
+    people.append(person)
+    roster_changed.emit()
+    return true
+
+func has_capacity() -> bool:
+    return people.size() < capacity
+
+func get_capacity_summary() -> String:
+    return "%d/%d" % [people.size(), capacity]
 
 func assign_job(person_id: String, job_id: String) -> bool:
     if not JOBS.has(job_id):
