@@ -1,25 +1,28 @@
 extends VBoxContainer
 
 @onready var person_selector: OptionButton = $PersonSelector
-@onready var details: RichTextLabel = $Details
-@onready var incident: RichTextLabel = $Incident
-@onready var choices: VBoxContainer = $Choices
-@onready var history: RichTextLabel = $History
+@onready var details: RichTextLabel = $MainSplit/Left/Details
+@onready var incident: RichTextLabel = $MainSplit/Right/Incident
+@onready var choices: VBoxContainer = $MainSplit/Right/Choices
+@onready var history: RichTextLabel = $MainSplit/Right/History
+@onready var reward_button: Button = $MainSplit/Left/Actions/Reward
+@onready var leniency_button: Button = $MainSplit/Left/Actions/Leniency
+@onready var punishment_button: Button = $MainSplit/Left/Actions/Punishment
 
 var person_ids: Array[String] = []
 
 func _ready() -> void:
     person_selector.item_selected.connect(_on_person_selected)
-    $Actions/Reward.pressed.connect(func(): _apply_action("reward"))
-    $Actions/Leniency.pressed.connect(func(): _apply_action("leniency"))
-    $Actions/Punishment.pressed.connect(func(): _apply_action("punishment"))
+    reward_button.pressed.connect(func(): _apply_action("reward"))
+    leniency_button.pressed.connect(func(): _apply_action("leniency"))
+    punishment_button.pressed.connect(func(): _apply_action("punishment"))
     PersonalityManager.personality_changed.connect(func(_id): _refresh())
     PersonalityManager.incident_changed.connect(_refresh)
     RosterManager.roster_changed.connect(_rebuild_people)
     _rebuild_people()
 
 func _rebuild_people() -> void:
-    var previous := ""
+    var previous: String = ""
     if person_selector.selected >= 0 and person_selector.selected < person_ids.size():
         previous = person_ids[person_selector.selected]
     person_selector.clear()
@@ -47,12 +50,12 @@ func _refresh() -> void:
     _refresh_history()
 
 func _refresh_person() -> void:
-    var person_id := _selected_person_id()
+    var person_id: String = _selected_person_id()
     var person = RosterManager.get_person(person_id)
     if person == null:
         details.text = "Seleccioná un miembro del ludus."
         return
-    var record := PersonalityManager.get_record(person_id)
+    var record: Dictionary = PersonalityManager.get_record(person_id)
     var trait_lines: Array[String] = []
     for trait_id in person.traits:
         trait_lines.append("• [b]%s[/b]: %s" % [PersonalityManager.get_trait_name(trait_id), PersonalityManager.get_trait_description(trait_id)])
@@ -95,7 +98,7 @@ func _refresh_incident() -> void:
             _add_choice("Aplicar un castigo", "punish")
 
 func _add_choice(label: String, choice_id: String) -> void:
-    var button := Button.new()
+    var button: Button = Button.new()
     button.text = label
     button.pressed.connect(func():
         PersonalityManager.resolve_pending_incident(choice_id)
@@ -104,7 +107,7 @@ func _add_choice(label: String, choice_id: String) -> void:
     choices.add_child(button)
 
 func _apply_action(action: String) -> void:
-    var person_id := _selected_person_id()
+    var person_id: String = _selected_person_id()
     if person_id.is_empty():
         return
     PersonalityManager.apply_discipline(person_id, action)
