@@ -8,11 +8,12 @@ var surrender_selector: OptionButton
 var finisher_toggle: CheckButton
 var technique_selector: OptionButton
 var technique_list: RichTextLabel
+var loadout_summary: RichTextLabel
 var report: RichTextLabel
 var speed_selector: OptionButton
 var replay_button: Button
 var action_queue: Array[Dictionary] = []
-var selected_techniques: Array[String] = ["basic_attack", "guard", "feint", "lunge", "shield_bash"]
+var selected_techniques: Array[String] = ["basic_attack", "guard", "feint"]
 var replay_index: int = 0
 var replay_timer: Timer
 var last_result: Dictionary = {}
@@ -26,6 +27,7 @@ func setup(target_arena: VBoxContainer) -> void:
     _build_interface()
     _connect_signals()
     _refresh_event()
+    _refresh_available_techniques()
 
 func _build_interface() -> void:
     event_card = RichTextLabel.new()
@@ -65,20 +67,23 @@ func _build_interface() -> void:
     finisher_toggle = CheckButton.new()
     finisher_toggle.text = "Permitir ejecución"
     finisher_toggle.button_pressed = true
-    finisher_toggle.tooltip_text = "Autoriza técnicas de remate cuando el rival está muy herido."
+    finisher_toggle.tooltip_text = "Autoriza técnicas de remate cuando el rival está muy herido. Requiere un arma."
     instructions_row.add_child(finisher_toggle)
+
+    loadout_summary = RichTextLabel.new()
+    loadout_summary.bbcode_enabled = true
+    loadout_summary.fit_content = true
+    loadout_summary.custom_minimum_size = Vector2(0, 54)
+    arena.add_child(loadout_summary)
+    arena.move_child(loadout_summary, 3)
 
     var technique_row := HBoxContainer.new()
     technique_row.name = "TechniqueLoadout"
     arena.add_child(technique_row)
-    arena.move_child(technique_row, 3)
+    arena.move_child(technique_row, 4)
 
     technique_selector = OptionButton.new()
     technique_selector.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-    for technique_id in CombatManager.get_technique_ids():
-        var data: Dictionary = CombatManager.get_technique(technique_id)
-        technique_selector.add_item("%s — %s" % [data.get("name", technique_id), data.get("description", "")])
-        technique_selector.set_item_metadata(technique_selector.item_count - 1, technique_id)
     technique_row.add_child(technique_selector)
 
     var add_button := Button.new()
@@ -93,11 +98,10 @@ func _build_interface() -> void:
 
     technique_list = RichTextLabel.new()
     technique_list.bbcode_enabled = true
-    technique_list.custom_minimum_size = Vector2(0, 62)
+    technique_list.custom_minimum_size = Vector2(0, 70)
     technique_list.fit_content = true
     arena.add_child(technique_list)
-    arena.move_child(technique_list, 4)
-    _refresh_technique_list()
+    arena.move_child(technique_list, 5)
 
     var setup := arena.get_node_or_null("Setup")
     if setup is HBoxContainer:
@@ -105,6 +109,9 @@ func _build_interface() -> void:
         event_label.text = "Combatiente / táctica"
         setup.add_child(event_label)
         setup.move_child(event_label, 0)
+        var gladiator_selector := setup.get_node_or_null("GladiatorSelector") as OptionButton
+        if gladiator_selector != null:
+            gladiator_selector.item_selected.connect(func(_index: int): _refresh_available_techniques())
         var start_button := setup.get_node_or_null("StartDuel")
         if start_button is Button:
             start_button.text = "Preparar y disputar evento"
@@ -145,8 +152,53 @@ func _connect_signals() -> void:
     CombatManager.combat_finished.connect(_on_combat_finished)
     CombatManager.combat_failed.connect(_on_combat_failed)
     GameState.day_advanced.connect(func(_day: int): _refresh_event())
+    EquipmentManager.equipment_changed.connect(func(_person_id: String): _refresh_available_techniques())
+    RosterManager.roster_changed.connect(_refresh_available_techniques)
+
+func _selected_gladiator():
+    var selector := arena.get_node_or_null("Setup/GladiatorSelector") as OptionButton
+    if selector == null or selector.selected < 0:
+        return null
+    var selected_text := selector.get_item_text(selector.selected)
+    for person in RosterManager.get_people():
+        if person.role == "gladiator" and selected_text.begins_with(person.display_name):
+            return person
+    return null
+
+func _refresh_available_techniques() -> void:
+    if technique_selector == null:
+        return
+    var fighter = _selected_gladiator()
+    var allowed: Array[String] = EquipmentManager.get_allowed_combat_techniques(fighter)
+    technique_selector.clear()
+    for technique_id in CombatManager.get_technique_ids():
+        var data: Dictionary = CombatManager.get_technique(technique_id)
+        var available := allowed.has(technique_id)
+        var label := "%s — %s" % [data.get("name", technique_id), data.get("description", "")]
+        if not available:
+            label += " [BLOQUEADA: %s]" % EquipmentManager.get_technique_requirement(technique_id)
+        technique_selector.add_item(label)
+        var item_index := technique_selector.item_count - 1
+        technique_selector.set_item_metadata(item_index, technique_id)
+        technique_selector.set_item_disabled(item_index, not available)
+
+    var valid_selection: Array[String] = []
+    for technique_id in selected_techniques:
+        if allowed.has(technique_id):
+            valid_selection.append(technique_id)
+    if not valid_selection.has("basic_attack"):
+        valid_selection.push_front("basic_attack")
+    selected_techniques = valid_selection.slice(0, 5)
+
+    if fighter == null:
+        loadout_summary.text = "[b]Equipamiento de combate[/b]\nSeleccioná un gladiador para ver técnicas disponibles."
+    else:
+        var loadout := EquipmentManager.get_equipped_loadout(fighter)
+        loadout_summary.text = "[b]Equipamiento de %s[/b]\nArma: %s | Armadura: %s | Escudo: %s" % [fighter.display_name, loadout.get("weapon_name", "Ninguno"), loadout.get("armor_name", "Ninguna"), loadout.get("shield_name", "Ninguno")]
+    _refresh_technique_list()
 
 func _configure_battle() -> void:
+    _refresh_available_techniques()
     var energy_rule := "balanced"
     if energy_selector.selected == 1:
         energy_rule = "conserve"
@@ -166,7 +218,7 @@ func _configure_battle() -> void:
     })
 
 func _add_selected_technique() -> void:
-    if technique_selector.selected < 0:
+    if technique_selector.selected < 0 or technique_selector.is_item_disabled(technique_selector.selected):
         return
     var technique_id := str(technique_selector.get_item_metadata(technique_selector.selected))
     if selected_techniques.has(technique_id):
@@ -181,14 +233,17 @@ func _add_selected_technique() -> void:
     _refresh_technique_list()
 
 func _reset_techniques() -> void:
-    selected_techniques = ["basic_attack", "guard", "feint", "lunge", "shield_bash"]
-    _refresh_technique_list()
+    selected_techniques = ["basic_attack", "guard", "feint"]
+    _refresh_available_techniques()
 
 func _refresh_technique_list() -> void:
+    if technique_list == null:
+        return
     var lines: Array[String] = ["[b]Técnicas equipadas (máximo 5)[/b]"]
     for technique_id in selected_techniques:
         var data: Dictionary = CombatManager.get_technique(technique_id)
         lines.append("• %s — energía %d, recarga %d" % [data.get("name", technique_id), int(data.get("energy", 0)), int(data.get("cooldown", 0))])
+    lines.append("[i]Las técnicas especiales dependen del arma y el escudo equipados.[/i]")
     technique_list.text = "\n".join(lines)
 
 func _refresh_event() -> void:
