@@ -42,7 +42,7 @@ func assign_job(new_job: String) -> void:
     job = new_job
 
 func process_day() -> Dictionary:
-    var result := {"ore": 0, "food": 0, "security": 0, "intel": 0, "training": 0}
+    var result := {"ore": 0, "food": 0, "security": 0, "intel": 0, "training": 0, "personality": {}}
     if injury_days > 0:
         job = "idle"
         injury_days = maxi(0, injury_days - 1 - EstateManager.get_recovery_bonus() / 4)
@@ -51,6 +51,7 @@ func process_day() -> Dictionary:
         if injury_days == 0:
             injury_severity = 0
             injury_name = ""
+        result.personality = PersonalityManager.process_person_day(self, result)
         return result
     match job:
         "mining":
@@ -75,7 +76,10 @@ func process_day() -> Dictionary:
         _:
             fatigue = maxi(0, fatigue - 6 - EstateManager.get_recovery_bonus())
             morale = mini(100, morale + 2)
+    result.personality = PersonalityManager.process_person_day(self, result)
     morale = clampi(morale - fatigue / 25, 0, 100)
+    loyalty = clampi(loyalty, 0, 100)
+    fatigue = clampi(fatigue, 0, 100)
     return result
 
 func apply_injury(name_value: String, severity: int, days: int) -> void:
