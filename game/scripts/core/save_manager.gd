@@ -5,7 +5,7 @@ signal load_completed(path: String)
 signal save_failed(reason: String)
 signal load_failed(reason: String)
 
-const SAVE_VERSION := 5
+const SAVE_VERSION := 6
 const SAVE_PATH := "user://ludus_save.json"
 const BACKUP_PATH := "user://ludus_save.backup.json"
 const PERSON_SCRIPT = preload("res://scripts/entities/person.gd")
@@ -128,7 +128,8 @@ func _build_payload() -> Dictionary:
         "events": EventManager.export_state(),
         "economy": EconomyManager.export_state(),
         "tournaments": TournamentManager.export_state(),
-        "campaign": CampaignManager.export_state()
+        "campaign": CampaignManager.export_state(),
+        "gladiator_progression": GladiatorProgressionManager.export_state()
     }
 
 func _apply_payload(data: Dictionary) -> bool:
@@ -142,6 +143,7 @@ func _apply_payload(data: Dictionary) -> bool:
     var economy_data: Dictionary = data.get("economy", {})
     var tournament_data: Dictionary = data.get("tournaments", {})
     var campaign_data: Dictionary = data.get("campaign", {})
+    var progression_data: Dictionary = data.get("gladiator_progression", {})
 
     GameState.day = maxi(1, int(game_data.get("day", 1)))
     GameState.denarii = maxi(0, int(game_data.get("denarii", 500)))
@@ -182,6 +184,7 @@ func _apply_payload(data: Dictionary) -> bool:
     EconomyManager.import_state(economy_data)
     TournamentManager.import_state(tournament_data)
     CampaignManager.import_state(campaign_data)
+    GladiatorProgressionManager.import_state(progression_data)
 
     GameState.resources_changed.emit()
     RosterManager.roster_changed.emit()
@@ -193,6 +196,7 @@ func _apply_payload(data: Dictionary) -> bool:
     EconomyManager.economy_changed.emit()
     TournamentManager.calendar_changed.emit()
     CampaignManager.campaign_changed.emit()
+    GladiatorProgressionManager.progression_changed.emit()
     return true
 
 func _serialize_person(person) -> Dictionary:
