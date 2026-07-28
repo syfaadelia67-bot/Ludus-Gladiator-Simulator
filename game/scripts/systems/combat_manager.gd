@@ -11,6 +11,7 @@ const TACTICS := {
 }
 
 var last_result: Dictionary = {}
+var last_combat_day: int = -1
 
 func get_tactic_ids() -> Array[String]:
     var result: Array[String] = []
@@ -21,10 +22,37 @@ func get_tactic_ids() -> Array[String]:
 func get_tactic_name(tactic_id: String) -> String:
     return str(TACTICS.get(tactic_id, tactic_id.capitalize()))
 
+func get_current_event_type() -> String:
+    if GameState.day % 7 == 0:
+        return "official"
+    if GameState.day % 3 == 0:
+        return "underground"
+    return "none"
+
+func get_current_event_name() -> String:
+    match get_current_event_type():
+        "official": return "Torneo oficial de la arena"
+        "underground": return "Combate clandestino del bajo mundo"
+        _: return "No hay combates programados hoy"
+
+func get_next_event_summary() -> String:
+    if get_current_event_type() != "none":
+        return get_current_event_name()
+    var next_underground: int = GameState.day + (3 - GameState.day % 3)
+    var next_official: int = GameState.day + (7 - GameState.day % 7)
+    return "Próximo combate clandestino: día %d. Próximo torneo oficial: día %d." % [next_underground, next_official]
+
 func simulate_duel(gladiator_id: String, tactic: String = "balanced") -> Dictionary:
+    var event_type: String = get_current_event_type()
+    if event_type == "none":
+        combat_failed.emit("Hoy no hay combates. %s" % get_next_event_summary())
+        return {}
+    if last_combat_day == GameState.day:
+        combat_failed.emit("El ludus ya participó en un combate durante el día %d." % GameState.day)
+        return {}
     var fighter = RosterManager.get_person(gladiator_id)
     if fighter == null or fighter.role != "gladiator":
-        combat_failed.emit("Seleccioná un gladiador válido.")
+        combat_failed.emit("Solo un gladiador puede ser inscrito en la arena.")
         return {}
     if not fighter.is_available_for_combat():
         combat_failed.emit("El gladiador está herido o demasiado fatigado.")
@@ -33,7 +61,7 @@ func simulate_duel(gladiator_id: String, tactic: String = "balanced") -> Diction
         combat_failed.emit("La táctica seleccionada no existe.")
         return {}
 
-    var enemy: Dictionary = _generate_enemy(fighter)
+    var enemy: Dictionary = _generate_enemy(fighter, event_type)
     var player: Dictionary = _build_combatant(fighter, tactic)
     var rng := RandomNumberGenerator.new()
     rng.randomize()
@@ -42,11 +70,17 @@ func simulate_duel(gladiator_id: String, tactic: String = "balanced") -> Diction
     var surrendered: bool = false
     var relationship_bonus: int = RelationshipManager.get_combat_morale_bonus(fighter.id)
 
-    combat_log.append("%s entra a la arena con táctica %s." % [fighter.display_name, get_tactic_name(tactic)])
+    combat_log.append("[b]%s — Día %d[/b]" % [get_current_event_name(), GameState.day])
+    combat_log.append("%s entra al combate con táctica %s." % [fighter.display_name, get_tactic_name(tactic)])
+    if event_type == "official":
+        combat_log.append("El combate es oficial: otorga reputación y puede cumplir contratos de torneo.")
+    else:
+        combat_log.append("La pelea es clandestina: paga más denarios, pero no otorga prestigio oficial.")
     if relationship_bonus > 0:
-        combat_log.append("El apoyo y la rivalidad de sus compañeros fortalecen su determinación.")
+        combat_log.append("El apoyo de sus compañeros fortalece su determinación.")
     elif relationship_bonus < 0:
         combat_log.append("Las enemistades dentro del ludus pesan sobre su ánimo.")
+
     while player.health > 0 and enemy.health > 0 and round < 30:
         round += 1
         combat_log.append("--- Ronda %d ---" % round)
@@ -68,16 +102,19 @@ func simulate_duel(gladiator_id: String, tactic: String = "balanced") -> Diction
     fighter.fatigue = mini(100, fighter.fatigue + 8 + floori(float(round) / 2.0))
 
     if victory:
-        reward = int(round((70 + int(enemy.attack) * 3) * float(player.get("reward_multiplier", 1.0))))
-        reputation = 2 + floori(float(int(enemy.defense)) / 8.0)
+        var base_reward: int = 70 + int(enemy.attack) * 3
+        var event_multiplier: float = 1.35 if event_type == "underground" else 1.0
+        reward = int(round(base_reward * event_multiplier * float(player.get("reward_multiplier", 1.0))))
+        reputation = 0 if event_type == "underground" else 2 + floori(float(int(enemy.defense)) / 8.0)
         GameState.denarii += reward
         GameState.reputation += reputation
         fighter.morale = mini(100, fighter.morale + 8 + maxi(0, relationship_bonus))
         combat_log.append("%s obtiene la victoria." % fighter.display_name)
     elif surrendered:
         fighter.morale = maxi(0, fighter.morale - 6 + relationship_bonus)
-        GameState.reputation = maxi(0, GameState.reputation - 1)
-        combat_log.append("La rendición preserva su vida, pero daña la reputación del ludus.")
+        if event_type == "official":
+            GameState.reputation = maxi(0, GameState.reputation - 1)
+        combat_log.append("La rendición preserva su vida.")
     else:
         fighter.morale = maxi(0, fighter.morale - 10 + relationship_bonus)
         combat_log.append("%s pierde el combate." % fighter.display_name)
@@ -90,14 +127,19 @@ func simulate_duel(gladiator_id: String, tactic: String = "balanced") -> Diction
         combat_log.append("Reacción: %s" % personality_event.get("description", ""))
 
     EconomyManager.register_combat_result(victory)
-    var tournament_result: Dictionary = TournamentManager.register_combat_result(fighter.id, victory)
-    if not tournament_result.is_empty():
-        if victory:
-            combat_log.append("Contrato cumplido: +%d denarios adicionales." % int(tournament_result.get("reward_paid", 0)))
-        else:
-            combat_log.append("Contrato de combate perdido: reputación %d." % int(tournament_result.get("reputation_change", 0)))
+    var tournament_result: Dictionary = {}
+    if event_type == "official":
+        tournament_result = TournamentManager.register_combat_result(fighter.id, victory)
+        if not tournament_result.is_empty():
+            if victory:
+                combat_log.append("Contrato oficial cumplido: +%d denarios adicionales." % int(tournament_result.get("reward_paid", 0)))
+            else:
+                combat_log.append("Contrato oficial perdido: reputación %d." % int(tournament_result.get("reputation_change", 0)))
 
+    last_combat_day = GameState.day
     last_result = {
+        "event_type": event_type,
+        "event_name": get_current_event_name(),
         "victory": victory,
         "surrendered": surrendered,
         "rounds": round,
@@ -211,10 +253,12 @@ func _build_combatant(person, tactic: String) -> Dictionary:
         "reward_multiplier": float(progression.get("reward_multiplier", 1.0))
     }
 
-func _generate_enemy(person) -> Dictionary:
+func _generate_enemy(person, event_type: String) -> Dictionary:
     var tier: int = maxi(1, floori(float(person.strength + person.agility + person.endurance) / 8.0))
+    if event_type == "official":
+        tier += 1
     return {
-        "name": "Gladiador rival nivel %d" % tier,
+        "name": ("Campeón oficial" if event_type == "official" else "Luchador clandestino") + " nivel %d" % tier,
         "health": 75 + tier * 20,
         "max_health": 75 + tier * 20,
         "energy": 70 + tier * 8,
