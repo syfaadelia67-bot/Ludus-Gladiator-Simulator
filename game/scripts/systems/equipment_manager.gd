@@ -4,6 +4,7 @@ signal inventory_changed
 signal craft_completed(item_name: String, cost_ore: int, cost_denarii: int)
 signal craft_failed(reason: String)
 signal equipment_changed(person_id: String)
+signal equipment_failed(reason: String)
 
 const RECIPES := {
     "gladius": {"name":"Gladius","type":"weapon","forge_level":1,"ore":8,"denarii":45,"power":12},
@@ -63,8 +64,13 @@ func equip_item(person_id: String, item_id: String) -> bool:
     var person = RosterManager.get_person(person_id)
     var item := get_item(item_id)
     if person == null or item.is_empty():
+        equipment_failed.emit("Personaje u objeto inválido.")
         return false
-    if not str(item.get("equipped_by", "")).is_empty():
+    if person.role != "gladiator":
+        equipment_failed.emit("Solo los gladiadores pueden equiparse.")
+        return false
+    if not str(item.get("equipped_by", "")).is_empty() and str(item.get("equipped_by", "")) != person_id:
+        equipment_failed.emit("Ese objeto ya está equipado por otro gladiador.")
         return false
     var item_type := str(item.get("type", ""))
     var previous_id := ""
@@ -72,8 +78,10 @@ func equip_item(person_id: String, item_id: String) -> bool:
         "weapon": previous_id = person.equipped_weapon_id; person.equipped_weapon_id = item_id
         "armor": previous_id = person.equipped_armor_id; person.equipped_armor_id = item_id
         "shield": previous_id = person.equipped_shield_id; person.equipped_shield_id = item_id
-        _: return false
-    if not previous_id.is_empty():
+        _:
+            equipment_failed.emit("Tipo de objeto no equipable.")
+            return false
+    if not previous_id.is_empty() and previous_id != item_id:
         var previous := get_item(previous_id)
         if not previous.is_empty(): previous["equipped_by"] = ""
     item["equipped_by"] = person_id
@@ -81,11 +89,49 @@ func equip_item(person_id: String, item_id: String) -> bool:
     equipment_changed.emit(person_id)
     return true
 
+func unequip_slot(person_id: String, slot: String) -> bool:
+    var person = RosterManager.get_person(person_id)
+    if person == null:
+        equipment_failed.emit("Personaje inválido.")
+        return false
+    var item_id := ""
+    match slot:
+        "weapon": item_id = person.equipped_weapon_id; person.equipped_weapon_id = ""
+        "armor": item_id = person.equipped_armor_id; person.equipped_armor_id = ""
+        "shield": item_id = person.equipped_shield_id; person.equipped_shield_id = ""
+        _:
+            equipment_failed.emit("Ranura inválida.")
+            return false
+    if not item_id.is_empty():
+        var item := get_item(item_id)
+        if not item.is_empty(): item["equipped_by"] = ""
+    inventory_changed.emit()
+    equipment_changed.emit(person_id)
+    return true
+
+func get_available_items(item_type: String, person_id: String = "") -> Array[Dictionary]:
+    var result: Array[Dictionary] = []
+    for item in inventory:
+        if str(item.get("type", "")) != item_type:
+            continue
+        var owner := str(item.get("equipped_by", ""))
+        if owner.is_empty() or owner == person_id:
+            result.append(item.duplicate(true))
+    return result
+
 func get_item(item_id: String) -> Dictionary:
     for item in inventory:
         if str(item.get("id", "")) == item_id:
             return item
     return {}
+
+func get_item_name(item_id: String) -> String:
+    if item_id.is_empty():
+        return "Ninguno"
+    var item := get_item(item_id)
+    if item.is_empty():
+        return "Ninguno"
+    return "%s (%s)" % [item.get("name", "Objeto"), item.get("quality", "Común")]
 
 func get_equipped_stats(person) -> Dictionary:
     var stats := {"power": 0, "defense": 0}
