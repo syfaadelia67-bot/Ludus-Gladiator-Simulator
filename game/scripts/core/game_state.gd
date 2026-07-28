@@ -20,7 +20,6 @@ func advance_day() -> void:
     day_advanced.emit(day)
     resources_changed.emit()
     daily_report.emit(report)
-    SaveManager.save_game()
 
 func spend_denarii(amount: int) -> bool:
     if amount < 0 or denarii < amount:
