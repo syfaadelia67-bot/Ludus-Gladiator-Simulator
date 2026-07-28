@@ -19,6 +19,17 @@ func advance_day() -> void:
     resources_changed.emit()
     daily_report.emit(report)
 
+func spend_denarii(amount: int) -> bool:
+    if amount < 0 or denarii < amount:
+        return false
+    denarii -= amount
+    resources_changed.emit()
+    return true
+
+func add_denarii(amount: int) -> void:
+    denarii += maxi(0, amount)
+    resources_changed.emit()
+
 func get_resource_summary() -> String:
     return "Día: %d | Denarios: %d | Comida: %d | Mineral: %d | Reputación: %d | Seguridad: %d | Intel: %d" % [
         day,
