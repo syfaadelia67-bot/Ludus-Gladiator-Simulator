@@ -88,6 +88,7 @@ func process_day() -> Dictionary:
         totals.training += int(result.training)
         if previous_role == "slave" and person.role == "gladiator":
             totals.promotions.append(person.display_name)
+    totals.security += EstateManager.get_security_bonus()
     security_score = totals.security
     intelligence_points += totals.intel
     daily_results.emit(totals)
