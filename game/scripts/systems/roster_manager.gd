@@ -78,7 +78,7 @@ func get_job_name(job_id: String) -> String:
     return str(JOBS.get(job_id, job_id))
 
 func process_day() -> Dictionary:
-    var totals := {"ore":0,"food":0,"security":0,"intel":0,"training":0,"promotions":[]}
+    var totals := {"ore":0,"food":0,"security":0,"intel":0,"training":0,"promotions":[],"relationship_events":[]}
     for person in people:
         var previous_role: String = person.role
         var result: Dictionary = person.process_day()
@@ -88,6 +88,7 @@ func process_day() -> Dictionary:
         totals.training += int(result.training)
         if previous_role == "slave" and person.role == "gladiator":
             totals.promotions.append(person.display_name)
+    totals.relationship_events = RelationshipManager.process_day(totals)
     totals.security += EstateManager.get_security_bonus()
     security_score = totals.security
     intelligence_points += totals.intel
