@@ -18,18 +18,20 @@ func _ready() -> void:
     call_deferred("_ensure_all_pairs")
 
 func _pair_key(a_id: String, b_id: String) -> String:
-    return "%s|%s" % ([a_id, b_id] if a_id < b_id else [b_id, a_id])
+    if a_id < b_id:
+        return "%s|%s" % [a_id, b_id]
+    return "%s|%s" % [b_id, a_id]
 
 func _ensure_all_pairs() -> void:
-    var people := RosterManager.get_people()
-    for i in range(people.size()):
-        for j in range(i + 1, people.size()):
-            ensure_relationship(people[i].id, people[j].id)
+    var people: Array = RosterManager.get_people()
+    for i: int in range(people.size()):
+        for j: int in range(i + 1, people.size()):
+            ensure_relationship(str(people[i].id), str(people[j].id))
 
 func ensure_relationship(a_id: String, b_id: String) -> Dictionary:
     if a_id == b_id:
         return {}
-    var key := _pair_key(a_id, b_id)
+    var key: String = _pair_key(a_id, b_id)
     if not relationships.has(key):
         relationships[key] = {
             "a_id": a_id,
@@ -42,30 +44,36 @@ func ensure_relationship(a_id: String, b_id: String) -> Dictionary:
             "state": "neutral",
             "last_change": ""
         }
-    return relationships[key]
+    return relationships[key] as Dictionary
 
 func process_day(totals: Dictionary) -> Array:
     _ensure_all_pairs()
     day_serial += 1
     incident_cooldown = maxi(0, incident_cooldown - 1)
     var events: Array = []
-    for relation in relationships.values():
+    for relation_value: Variant in relationships.values():
+        var relation: Dictionary = relation_value as Dictionary
         var a = RosterManager.get_person(str(relation.get("a_id", "")))
         var b = RosterManager.get_person(str(relation.get("b_id", "")))
         if a == null or b == null:
             continue
-        var changed := false
+        var changed: bool = false
         if a.job == b.job and a.job != "idle":
             relation["affinity"] = clampi(int(relation.get("affinity", 0)) + 1, -100, 100)
             relation["respect"] = clampi(int(relation.get("respect", 0)) + 1, -100, 100)
             changed = true
         if a.job == "training" and b.job == "training":
-            relation["mentorship"] = clampi(int(relation.get("mentorship", 0)) + (2 if a.traits.has("mentor") or b.traits.has("mentor") else 1), 0, 100)
+            var mentoring_gain: int = 2 if a.traits.has("mentor") or b.traits.has("mentor") else 1
+            relation["mentorship"] = clampi(int(relation.get("mentorship", 0)) + mentoring_gain, 0, 100)
             totals["training"] = int(totals.get("training", 0)) + 1
             changed = true
-        var a_progress := GladiatorProgressionManager.get_record(a.id) if a.role == "gladiator" else {}
-        var b_progress := GladiatorProgressionManager.get_record(b.id) if b.role == "gladiator" else {}
-        var fame_gap := abs(int(a_progress.get("fame", 0)) - int(b_progress.get("fame", 0)))
+        var a_progress: Dictionary = {}
+        var b_progress: Dictionary = {}
+        if a.role == "gladiator":
+            a_progress = GladiatorProgressionManager.get_record(str(a.id))
+        if b.role == "gladiator":
+            b_progress = GladiatorProgressionManager.get_record(str(b.id))
+        var fame_gap: int = absi(int(a_progress.get("fame", 0)) - int(b_progress.get("fame", 0)))
         if fame_gap >= 20 and (a.traits.has("ambitious") or b.traits.has("ambitious")):
             relation["jealousy"] = clampi(int(relation.get("jealousy", 0)) + 1, 0, 100)
             changed = true
@@ -75,10 +83,10 @@ func process_day(totals: Dictionary) -> Array:
         if int(relation.get("rivalry", 0)) >= 60:
             a.fatigue = mini(100, a.fatigue + 1)
             b.fatigue = mini(100, b.fatigue + 1)
-        var previous_state := str(relation.get("state", "neutral"))
+        var previous_state: String = str(relation.get("state", "neutral"))
         relation["state"] = _derive_state(relation)
-        if previous_state != relation["state"]:
-            var event := _build_state_event(a, b, relation)
+        if previous_state != str(relation["state"]):
+            var event: Dictionary = _build_state_event(a, b, relation)
             events.append(event)
             _push_event(event)
             changed = true
@@ -90,7 +98,7 @@ func process_day(totals: Dictionary) -> Array:
     return events
 
 func register_interaction(a_id: String, b_id: String, interaction: String) -> Dictionary:
-    var relation := ensure_relationship(a_id, b_id)
+    var relation: Dictionary = ensure_relationship(a_id, b_id)
     if relation.is_empty():
         return {}
     var a = RosterManager.get_person(a_id)
@@ -118,7 +126,7 @@ func register_interaction(a_id: String, b_id: String, interaction: String) -> Di
             return {}
     relation["state"] = _derive_state(relation)
     relation["last_change"] = "Día %d" % GameState.day
-    var event := {
+    var event: Dictionary = {
         "type": "relationship_interaction",
         "a_id": a_id,
         "b_id": b_id,
@@ -132,96 +140,91 @@ func register_interaction(a_id: String, b_id: String, interaction: String) -> Di
 func resolve_social_incident(choice_id: String) -> Dictionary:
     if pending_incident.is_empty():
         return {}
-    var relation := ensure_relationship(str(pending_incident.get("a_id", "")), str(pending_incident.get("b_id", "")))
+    var relation: Dictionary = ensure_relationship(str(pending_incident.get("a_id", "")), str(pending_incident.get("b_id", "")))
     var a = RosterManager.get_person(str(pending_incident.get("a_id", "")))
     var b = RosterManager.get_person(str(pending_incident.get("b_id", "")))
     if relation.is_empty() or a == null or b == null:
         pending_incident.clear()
         relationships_changed.emit()
         return {}
-    var incident_type := str(pending_incident.get("type", ""))
-    var description := ""
+    var incident_type: String = str(pending_incident.get("type", ""))
+    var description: String = ""
     match incident_type:
         "jealousy":
-            match choice_id:
-                "recognize_both":
-                    if not GameState.spend_denarii(30): return {}
-                    relation["jealousy"] = maxi(0, int(relation.get("jealousy", 0)) - 18)
-                    relation["affinity"] = clampi(int(relation.get("affinity", 0)) + 6, -100, 100)
-                    a.morale = mini(100, a.morale + 5)
-                    b.morale = mini(100, b.morale + 5)
-                    description = "El reconocimiento compartido redujo los celos."
-                "choose_favorite":
-                    relation["jealousy"] = mini(100, int(relation.get("jealousy", 0)) + 15)
-                    relation["rivalry"] = mini(100, int(relation.get("rivalry", 0)) + 10)
-                    a.morale = mini(100, a.morale + 6)
-                    b.morale = maxi(0, b.morale - 8)
-                    description = "Elegir un favorito intensificó la rivalidad."
-                "ignore":
-                    relation["jealousy"] = mini(100, int(relation.get("jealousy", 0)) + 8)
-                    description = "La tensión continuó creciendo sin intervención."
-                _: return {}
+            if choice_id == "recognize_both":
+                if not GameState.spend_denarii(30): return {}
+                relation["jealousy"] = maxi(0, int(relation.get("jealousy", 0)) - 18)
+                relation["affinity"] = clampi(int(relation.get("affinity", 0)) + 6, -100, 100)
+                a.morale = mini(100, a.morale + 5)
+                b.morale = mini(100, b.morale + 5)
+                description = "El reconocimiento compartido redujo los celos."
+            elif choice_id == "choose_favorite":
+                relation["jealousy"] = mini(100, int(relation.get("jealousy", 0)) + 15)
+                relation["rivalry"] = mini(100, int(relation.get("rivalry", 0)) + 10)
+                a.morale = mini(100, a.morale + 6)
+                b.morale = maxi(0, b.morale - 8)
+                description = "Elegir un favorito intensificó la rivalidad."
+            elif choice_id == "ignore":
+                relation["jealousy"] = mini(100, int(relation.get("jealousy", 0)) + 8)
+                description = "La tensión continuó creciendo sin intervención."
+            else: return {}
         "mentorship":
-            match choice_id:
-                "formalize":
-                    relation["mentorship"] = mini(100, int(relation.get("mentorship", 0)) + 20)
-                    relation["respect"] = mini(100, int(relation.get("respect", 0)) + 10)
-                    a.training += 8
-                    b.training += 8
-                    description = "La mentoría fue formalizada y mejoró el entrenamiento."
-                "separate":
-                    relation["mentorship"] = maxi(0, int(relation.get("mentorship", 0)) - 15)
-                    relation["affinity"] = clampi(int(relation.get("affinity", 0)) - 5, -100, 100)
-                    description = "La separación debilitó el vínculo de aprendizaje."
-                _: return {}
+            if choice_id == "formalize":
+                relation["mentorship"] = mini(100, int(relation.get("mentorship", 0)) + 20)
+                relation["respect"] = mini(100, int(relation.get("respect", 0)) + 10)
+                a.training += 8
+                b.training += 8
+                description = "La mentoría fue formalizada y mejoró el entrenamiento."
+            elif choice_id == "separate":
+                relation["mentorship"] = maxi(0, int(relation.get("mentorship", 0)) - 15)
+                relation["affinity"] = clampi(int(relation.get("affinity", 0)) - 5, -100, 100)
+                description = "La separación debilitó el vínculo de aprendizaje."
+            else: return {}
         "friendship":
-            match choice_id:
-                "celebrate":
-                    if not GameState.spend_denarii(20): return {}
-                    relation["affinity"] = clampi(int(relation.get("affinity", 0)) + 10, -100, 100)
-                    a.morale = mini(100, a.morale + 7)
-                    b.morale = mini(100, b.morale + 7)
-                    description = "La celebración fortaleció la amistad."
-                "exploit":
-                    relation["respect"] = maxi(-100, int(relation.get("respect", 0)) - 8)
-                    relation["affinity"] = clampi(int(relation.get("affinity", 0)) - 6, -100, 100)
-                    GameState.denarii += 25
-                    description = "El ludus explotó el vínculo y obtuvo ingresos, pero perdió respeto."
-                _: return {}
+            if choice_id == "celebrate":
+                if not GameState.spend_denarii(20): return {}
+                relation["affinity"] = clampi(int(relation.get("affinity", 0)) + 10, -100, 100)
+                a.morale = mini(100, a.morale + 7)
+                b.morale = mini(100, b.morale + 7)
+                description = "La celebración fortaleció la amistad."
+            elif choice_id == "exploit":
+                relation["respect"] = maxi(-100, int(relation.get("respect", 0)) - 8)
+                relation["affinity"] = clampi(int(relation.get("affinity", 0)) - 6, -100, 100)
+                GameState.denarii += 25
+                description = "El ludus explotó el vínculo y obtuvo ingresos, pero perdió respeto."
+            else: return {}
         "protection":
-            match choice_id:
-                "honor_protector":
-                    relation["respect"] = mini(100, int(relation.get("respect", 0)) + 15)
-                    relation["affinity"] = clampi(int(relation.get("affinity", 0)) + 8, -100, 100)
-                    a.loyalty = mini(100, a.loyalty + 4)
-                    b.loyalty = mini(100, b.loyalty + 4)
-                    GameState.reputation += 2
-                    description = "El acto de protección fue honrado públicamente."
-                "punish_interference":
-                    relation["affinity"] = clampi(int(relation.get("affinity", 0)) - 12, -100, 100)
-                    relation["rivalry"] = mini(100, int(relation.get("rivalry", 0)) + 8)
-                    a.morale = maxi(0, a.morale - 5)
-                    description = "Castigar la intervención dañó profundamente el vínculo."
-                _: return {}
+            if choice_id == "honor_protector":
+                relation["respect"] = mini(100, int(relation.get("respect", 0)) + 15)
+                relation["affinity"] = clampi(int(relation.get("affinity", 0)) + 8, -100, 100)
+                a.loyalty = mini(100, a.loyalty + 4)
+                b.loyalty = mini(100, b.loyalty + 4)
+                GameState.reputation += 2
+                description = "El acto de protección fue honrado públicamente."
+            elif choice_id == "punish_interference":
+                relation["affinity"] = clampi(int(relation.get("affinity", 0)) - 12, -100, 100)
+                relation["rivalry"] = mini(100, int(relation.get("rivalry", 0)) + 8)
+                a.morale = maxi(0, a.morale - 5)
+                description = "Castigar la intervención dañó profundamente el vínculo."
+            else: return {}
         "betrayal":
-            match choice_id:
-                "reconcile":
-                    if not GameState.spend_denarii(35): return {}
-                    relation["rivalry"] = maxi(0, int(relation.get("rivalry", 0)) - 20)
-                    relation["jealousy"] = maxi(0, int(relation.get("jealousy", 0)) - 15)
-                    relation["affinity"] = clampi(int(relation.get("affinity", 0)) + 8, -100, 100)
-                    description = "La reconciliación evitó una ruptura definitiva."
-                "sanction":
-                    relation["rivalry"] = mini(100, int(relation.get("rivalry", 0)) + 10)
-                    relation["respect"] = maxi(-100, int(relation.get("respect", 0)) - 12)
-                    b.loyalty = maxi(0, b.loyalty - 6)
-                    description = "La sanción impuso orden, pero consolidó la enemistad."
-                _: return {}
+            if choice_id == "reconcile":
+                if not GameState.spend_denarii(35): return {}
+                relation["rivalry"] = maxi(0, int(relation.get("rivalry", 0)) - 20)
+                relation["jealousy"] = maxi(0, int(relation.get("jealousy", 0)) - 15)
+                relation["affinity"] = clampi(int(relation.get("affinity", 0)) + 8, -100, 100)
+                description = "La reconciliación evitó una ruptura definitiva."
+            elif choice_id == "sanction":
+                relation["rivalry"] = mini(100, int(relation.get("rivalry", 0)) + 10)
+                relation["respect"] = maxi(-100, int(relation.get("respect", 0)) - 12)
+                b.loyalty = maxi(0, b.loyalty - 6)
+                description = "La sanción impuso orden, pero consolidó la enemistad."
+            else: return {}
         _:
             return {}
     relation["state"] = _derive_state(relation)
     relation["last_change"] = "Día %d" % GameState.day
-    var result := pending_incident.duplicate(true)
+    var result: Dictionary = pending_incident.duplicate(true)
     result["choice_id"] = choice_id
     result["description"] = description
     result["resolved_day"] = GameState.day
@@ -239,7 +242,8 @@ func get_relationship(a_id: String, b_id: String) -> Dictionary:
 
 func get_person_relationships(person_id: String) -> Array:
     var result: Array = []
-    for relation in relationships.values():
+    for relation_value: Variant in relationships.values():
+        var relation: Dictionary = relation_value as Dictionary
         if str(relation.get("a_id", "")) == person_id or str(relation.get("b_id", "")) == person_id:
             result.append(relation.duplicate(true))
     return result
@@ -248,11 +252,12 @@ func get_pending_incident() -> Dictionary:
     return pending_incident.duplicate(true)
 
 func get_combat_morale_bonus(person_id: String) -> int:
-    var bonus := 0
-    for relation in get_person_relationships(person_id):
-        if str(relation.get("state", "")) == "amistad": bonus += 1
-        elif str(relation.get("state", "")) == "rivalidad": bonus += 1
-        elif str(relation.get("state", "")) == "enemistad": bonus -= 2
+    var bonus: int = 0
+    for relation_value: Variant in get_person_relationships(person_id):
+        var relation: Dictionary = relation_value as Dictionary
+        var state: String = str(relation.get("state", ""))
+        if state == "amistad" or state == "rivalidad": bonus += 1
+        elif state == "enemistad": bonus -= 2
     return clampi(bonus, -6, 6)
 
 func export_state() -> Dictionary:
@@ -276,27 +281,28 @@ func import_state(data: Dictionary) -> void:
     relationships_changed.emit()
 
 func _on_combat_finished(result: Dictionary) -> void:
-    var fighter_id := str(result.get("fighter_id", ""))
-    if fighter_id.is_empty():
-        return
-    for relation in get_person_relationships(fighter_id):
-        var other_id := str(relation.get("b_id", "")) if str(relation.get("a_id", "")) == fighter_id else str(relation.get("a_id", ""))
-        var stored := ensure_relationship(fighter_id, other_id)
+    var fighter_id: String = str(result.get("fighter_id", ""))
+    if fighter_id.is_empty(): return
+    for relation_value: Variant in get_person_relationships(fighter_id):
+        var relation: Dictionary = relation_value as Dictionary
+        var other_id: String = str(relation.get("b_id", "")) if str(relation.get("a_id", "")) == fighter_id else str(relation.get("a_id", ""))
+        var stored: Dictionary = ensure_relationship(fighter_id, other_id)
         if bool(result.get("victory", false)):
             stored["respect"] = mini(100, int(stored.get("respect", 0)) + 3)
             if int(stored.get("jealousy", 0)) > 20:
                 stored["jealousy"] = mini(100, int(stored.get("jealousy", 0)) + 2)
         else:
-            stored["affinity"] = clampi(int(stored.get("affinity", 0)) + (2 if int(stored.get("affinity", 0)) > 20 else 0), -100, 100)
+            var affinity_gain: int = 2 if int(stored.get("affinity", 0)) > 20 else 0
+            stored["affinity"] = clampi(int(stored.get("affinity", 0)) + affinity_gain, -100, 100)
         stored["state"] = _derive_state(stored)
     relationships_changed.emit()
 
 func _try_generate_social_incident() -> void:
-    if not pending_incident.is_empty() or incident_cooldown > 0:
-        return
+    if not pending_incident.is_empty() or incident_cooldown > 0: return
     var candidates: Array[Dictionary] = []
-    for relation in relationships.values():
-        var state := str(relation.get("state", "neutral"))
+    for relation_value: Variant in relationships.values():
+        var relation: Dictionary = relation_value as Dictionary
+        var state: String = str(relation.get("state", "neutral"))
         if int(relation.get("jealousy", 0)) >= 55:
             candidates.append(_make_incident("jealousy", relation, "Los celos amenazan con dividir el ludus.", ["recognize_both", "choose_favorite", "ignore"]))
         elif state == "mentoría" and int(relation.get("mentorship", 0)) >= 55:
@@ -307,8 +313,7 @@ func _try_generate_social_incident() -> void:
             candidates.append(_make_incident("betrayal", relation, "Una enemistad amenaza con convertirse en traición.", ["reconcile", "sanction"]))
         elif int(relation.get("respect", 0)) >= 60 and int(relation.get("affinity", 0)) >= 25:
             candidates.append(_make_incident("protection", relation, "Uno de ellos protegió al otro durante una crisis.", ["honor_protector", "punish_interference"]))
-    if candidates.is_empty() or randf() > 0.28:
-        return
+    if candidates.is_empty() or randf() > 0.28: return
     pending_incident = candidates[randi_range(0, candidates.size() - 1)]
     social_incident_available.emit(pending_incident.duplicate(true))
     relationships_changed.emit()
@@ -331,36 +336,24 @@ func _make_incident(type_id: String, relation: Dictionary, text: String, choices
     }
 
 func get_choice_label(choice_id: String) -> String:
-    var labels := {
-        "recognize_both":"Reconocer a ambos (30 denarios)",
-        "choose_favorite":"Elegir un favorito",
-        "ignore":"Ignorar la tensión",
-        "formalize":"Formalizar mentoría",
-        "separate":"Separarlos",
-        "celebrate":"Celebrar el vínculo (20 denarios)",
-        "exploit":"Explotar su popularidad",
-        "honor_protector":"Honrar al protector",
-        "punish_interference":"Castigar la intervención",
-        "reconcile":"Financiar reconciliación (35 denarios)",
-        "sanction":"Sancionar la traición"
+    var labels: Dictionary = {
+        "recognize_both":"Reconocer a ambos (30 denarios)", "choose_favorite":"Elegir un favorito", "ignore":"Ignorar la tensión",
+        "formalize":"Formalizar mentoría", "separate":"Separarlos", "celebrate":"Celebrar el vínculo (20 denarios)",
+        "exploit":"Explotar su popularidad", "honor_protector":"Honrar al protector", "punish_interference":"Castigar la intervención",
+        "reconcile":"Financiar reconciliación (35 denarios)", "sanction":"Sancionar la traición"
     }
     return str(labels.get(choice_id, choice_id.capitalize()))
 
 func _derive_state(relation: Dictionary) -> String:
-    if int(relation.get("rivalry", 0)) >= 70 and int(relation.get("affinity", 0)) <= -25:
-        return "enemistad"
-    if int(relation.get("mentorship", 0)) >= 45 and int(relation.get("respect", 0)) >= 25:
-        return "mentoría"
-    if int(relation.get("affinity", 0)) >= 45:
-        return "amistad"
-    if int(relation.get("rivalry", 0)) >= 40 or int(relation.get("jealousy", 0)) >= 50:
-        return "rivalidad"
-    if int(relation.get("respect", 0)) >= 35:
-        return "respeto"
+    if int(relation.get("rivalry", 0)) >= 70 and int(relation.get("affinity", 0)) <= -25: return "enemistad"
+    if int(relation.get("mentorship", 0)) >= 45 and int(relation.get("respect", 0)) >= 25: return "mentoría"
+    if int(relation.get("affinity", 0)) >= 45: return "amistad"
+    if int(relation.get("rivalry", 0)) >= 40 or int(relation.get("jealousy", 0)) >= 50: return "rivalidad"
+    if int(relation.get("respect", 0)) >= 35: return "respeto"
     return "neutral"
 
 func _build_state_event(a, b, relation: Dictionary) -> Dictionary:
-    var state := str(relation.get("state", "neutral"))
+    var state: String = str(relation.get("state", "neutral"))
     return {
         "type": "relationship_state",
         "a_id": a.id,
