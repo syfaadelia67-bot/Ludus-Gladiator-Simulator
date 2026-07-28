@@ -17,11 +17,12 @@ func _ready() -> void:
     person_select.item_selected.connect(func(_index): _refresh_person_details())
     rival_list.item_selected.connect(func(_index): _refresh_rival_details())
     %SellButton.pressed.connect(func(): _request_confirmation("sell", _selected_person_id(), "¿Vender a esta persona?"))
-    %NegotiateButton.pressed.connect(func(): _request_confirmation("negotiate", _selected_person_id(), "¿Intentar negociar la venta usando inteligencia?"))
+    %NegotiateButton.pressed.connect(func(): _request_confirmation("negotiate", _selected_person_id(), "¿Intentar negociar la venta usando 6 puntos de inteligencia?"))
     %ManumitButton.pressed.connect(func(): _request_confirmation("manumit", _selected_person_id(), "¿Conceder la libertad? Esta decisión es irreversible."))
     %RansomButton.pressed.connect(func(): _request_confirmation("ransom", _selected_person_id(), "¿Pagar el rescate para asegurar su permanencia?"))
     %BuyRivalButton.pressed.connect(func(): _request_confirmation("buy", _selected_rival_id(), "¿Comprar este gladiador rival?"))
     %RefreshOffersButton.pressed.connect(_refresh_rival_offers)
+    %RefreshOffersButton.text = "Renovar ofertas (%d denarios)" % TransferManager.OFFER_REFRESH_COST
     confirm_dialog.confirmed.connect(_execute_pending_action)
     TransferManager.transfers_changed.connect(_refresh)
     RosterManager.roster_changed.connect(_refresh)
@@ -63,10 +64,15 @@ func _refresh_person_details() -> void:
         var other = RosterManager.get_person(other_id)
         if other != null and str(relation.get("state", "neutral")) != "neutral":
             relation_notes.append("%s: %s" % [other.display_name, relation.get("state", "neutral")])
-    person_details.text = "[b]%s[/b]\nRol: %s | Origen: %s\nValor estimado: %d\nVenta directa: %d\nVenta negociada potencial: %d\nRescate estimado: %d\nReputación actual: %d\nConsecuencias sociales: %s" % [
-        person.display_name, person.role, person.origin, value, sale_value, negotiated_value, ransom, GameState.reputation,
+    person_details.text = "[b]%s[/b]\nRol: %s | Origen: %s\nValor estimado: %d\nVenta directa: %d\nVenta negociada potencial: %d\nRescate estimado: %d\nInteligencia disponible: %d\nReputación actual: %d\nConsecuencias sociales: %s" % [
+        person.display_name, person.role, person.origin, value, sale_value, negotiated_value, ransom,
+        RosterManager.intelligence_points, GameState.reputation,
         ", ".join(relation_notes) if not relation_notes.is_empty() else "sin vínculos destacados"
     ]
+    %SellButton.disabled = person.role == "freed" or RosterManager.people.size() <= 1
+    %NegotiateButton.disabled = person.role == "freed" or RosterManager.people.size() <= 1 or RosterManager.intelligence_points < 6
+    %RansomButton.disabled = person.role == "freed"
+    %ManumitButton.disabled = person.role == "freed"
 
 func _refresh_rivals() -> void:
     var previous := _selected_rival_id()
@@ -91,6 +97,7 @@ func _refresh_rival_details() -> void:
             break
     if offer.is_empty():
         rival_details.text = "No hay ofertas rivales disponibles."
+        %BuyRivalButton.disabled = true
         return
     var traits: Array[String] = []
     for trait_id in offer.get("traits", []):
@@ -100,6 +107,7 @@ func _refresh_rival_details() -> void:
         int(offer.get("strength", 0)), int(offer.get("agility", 0)), int(offer.get("endurance", 0)), int(offer.get("intelligence", 0)),
         int(offer.get("loyalty", 0)), ", ".join(traits), int(offer.get("price", 0))
     ]
+    %BuyRivalButton.disabled = not RosterManager.has_capacity() or GameState.denarii < int(offer.get("price", 0))
 
 func _refresh_history() -> void:
     var lines: Array[String] = []
@@ -130,8 +138,10 @@ func _execute_pending_action() -> void:
     _refresh()
 
 func _refresh_rival_offers() -> void:
-    TransferManager.generate_rival_offers()
-    status_label.text = "Las ofertas rivales fueron actualizadas."
+    if TransferManager.generate_rival_offers(true):
+        status_label.text = "Las ofertas rivales fueron actualizadas."
+    else:
+        status_label.text = "No hay fondos para renovar las ofertas rivales."
 
 func _selected_person_id() -> String:
     var index := person_select.selected
