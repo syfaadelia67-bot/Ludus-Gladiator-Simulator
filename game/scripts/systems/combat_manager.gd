@@ -80,6 +80,10 @@ func simulate_duel(gladiator_id: String, tactic: String = "balanced") -> Diction
     if not injury.is_empty():
         combat_log.append("Consecuencia: %s." % injury)
 
+    var personality_event := PersonalityManager.register_combat_result(fighter, victory, surrendered, fighter.injury_severity)
+    if not str(personality_event.get("description", "")).is_empty():
+        combat_log.append("Reacción: %s" % personality_event.get("description", ""))
+
     EconomyManager.register_combat_result(victory)
     var tournament_result := TournamentManager.register_combat_result(fighter.id, victory)
     if not tournament_result.is_empty():
@@ -113,6 +117,7 @@ func simulate_duel(gladiator_id: String, tactic: String = "balanced") -> Diction
         "injury": injury,
         "injury_days": fighter.injury_days,
         "tournament": tournament_result,
+        "personality": personality_event,
         "log": combat_log
     }
     GameState.resources_changed.emit()
@@ -126,7 +131,8 @@ func _should_surrender(fighter, player: Dictionary, tactic: String, rng: RandomN
     var health_ratio := float(player.health) / float(maxi(1, player.max_health))
     if health_ratio > 0.28:
         return false
-    var chance := 20 + maxi(0, 45 - fighter.morale) + fighter.fatigue / 5
+    var personality := PersonalityManager.get_combat_modifiers(fighter.id, fighter.traits)
+    var chance := 20 + maxi(0, 45 - fighter.morale) + fighter.fatigue / 5 + int(personality.get("surrender", 0))
     if tactic == "aggressive": chance -= 12
     if tactic == "careful": chance += 8
     if fighter.traits.has("arena_lover"): chance -= 8
@@ -142,7 +148,9 @@ func _resolve_injury(fighter, player: Dictionary, victory: bool, surrendered: bo
     if surrendered: chance -= 18
     if victory: chance -= 5
     chance -= EstateManager.get_level("infirmary") * 2
-    if rng.randi_range(1, 100) > clampi(chance, 2, 85):
+    var personality := PersonalityManager.get_combat_modifiers(fighter.id, fighter.traits)
+    chance = int(round(chance * float(personality.get("injury_risk", 1.0))))
+    if rng.randi_range(1, 100) > clampi(chance, 2, 90):
         return ""
     var severity := 1
     if health_ratio <= 0.0 or rng.randi_range(1, 100) <= 18: severity = 3
@@ -161,11 +169,12 @@ func _resolve_injury(fighter, player: Dictionary, victory: bool, surrendered: bo
 func _build_combatant(person, tactic: String) -> Dictionary:
     var equipment := EquipmentManager.get_equipped_stats(person)
     var progression := GladiatorProgressionManager.get_modifiers(person.id)
-    var attack := int(round((person.get_base_attack() + int(equipment.get("power", 0)) + int(progression.get("attack_bonus", 0))) * float(progression.get("attack", 1.0))))
-    var defense := int(round((person.get_base_defense() + int(equipment.get("defense", 0)) + int(progression.get("defense_bonus", 0))) * float(progression.get("defense", 1.0))))
+    var personality := PersonalityManager.get_combat_modifiers(person.id, person.traits)
+    var attack := int(round((person.get_base_attack() + int(equipment.get("power", 0)) + int(progression.get("attack_bonus", 0))) * float(progression.get("attack", 1.0)) * float(personality.get("attack", 1.0))))
+    var defense := int(round((person.get_base_defense() + int(equipment.get("defense", 0)) + int(progression.get("defense_bonus", 0))) * float(progression.get("defense", 1.0)) * float(personality.get("defense", 1.0))))
     var max_health := int(round(person.get_max_health() * float(progression.get("health", 1.0))))
     var max_energy := int(round((person.get_max_energy() + int(progression.get("energy_bonus", 0))) * float(progression.get("energy", 1.0))))
-    var accuracy := 55 + person.agility * 3 + int(progression.get("accuracy_bonus", 0))
+    var accuracy := 55 + person.agility * 3 + int(progression.get("accuracy_bonus", 0)) + int(personality.get("accuracy", 0))
     var energy_cost := 12
     match tactic:
         "aggressive":
