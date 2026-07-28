@@ -8,6 +8,7 @@ signal load_failed(reason: String)
 const SAVE_VERSION := 9
 const SAVE_PATH := "user://ludus_save.json"
 const BACKUP_PATH := "user://ludus_save.backup.json"
+const TEMP_PATH := "user://ludus_save.tmp.json"
 const PERSON_SCRIPT = preload("res://scripts/entities/person.gd")
 
 var autosave_enabled: bool = true
@@ -31,32 +32,53 @@ func _on_day_advanced(_day: int) -> void:
         call_deferred("save_game")
 
 func has_save() -> bool:
-    return FileAccess.file_exists(SAVE_PATH)
+    return not _read_payload(SAVE_PATH).is_empty() or not _read_payload(BACKUP_PATH).is_empty()
 
 func get_save_metadata() -> Dictionary:
-    var data := _read_payload(SAVE_PATH)
+    var data: Dictionary = _read_payload(SAVE_PATH)
+    if data.is_empty():
+        data = _read_payload(BACKUP_PATH)
     if data.is_empty():
         return {}
-    return {"version":int(data.get("version",0)),"saved_at_unix":int(data.get("saved_at_unix",0)),"day":int(data.get("game_state",{}).get("day",1))}
+    return {
+        "version": int(data.get("version", 0)),
+        "saved_at_unix": int(data.get("saved_at_unix", 0)),
+        "day": int(data.get("game_state", {}).get("day", 1))
+    }
 
 func save_game() -> bool:
-    var payload := _build_payload()
-    var json_text := JSON.stringify(payload, "  ")
+    var payload: Dictionary = _build_payload()
+    if not _validate_payload(payload):
+        save_failed.emit("Los datos actuales no superaron la validación de guardado.")
+        return false
+
+    if not _write_payload(TEMP_PATH, payload):
+        save_failed.emit("No se pudo escribir el archivo temporal de guardado.")
+        return false
+
+    var verification: Dictionary = _read_payload(TEMP_PATH)
+    if verification.is_empty():
+        _remove_file(TEMP_PATH)
+        save_failed.emit("El archivo temporal no pudo verificarse y no se reemplazó la partida anterior.")
+        return false
+
     if FileAccess.file_exists(SAVE_PATH):
         _copy_file(SAVE_PATH, BACKUP_PATH)
-    var file := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
-    if file == null:
-        save_failed.emit("No se pudo abrir el archivo de guardado.")
+    if not _copy_file(TEMP_PATH, SAVE_PATH):
+        _remove_file(TEMP_PATH)
+        save_failed.emit("No se pudo reemplazar el guardado principal.")
         return false
-    file.store_string(json_text)
-    file.close()
+
+    _remove_file(TEMP_PATH)
     save_completed.emit(SAVE_PATH)
     return true
 
 func load_game() -> bool:
-    var data := _read_payload(SAVE_PATH)
-    if data.is_empty() and FileAccess.file_exists(BACKUP_PATH):
+    var data: Dictionary = _read_payload(SAVE_PATH)
+    var loaded_path: String = SAVE_PATH
+    if data.is_empty():
         data = _read_payload(BACKUP_PATH)
+        loaded_path = BACKUP_PATH
     if data.is_empty():
         load_failed.emit("No existe una partida válida para cargar.")
         return false
@@ -66,27 +88,66 @@ func load_game() -> bool:
     if not _apply_payload(data):
         load_failed.emit("No se pudo restaurar la partida.")
         return false
-    load_completed.emit(SAVE_PATH)
+    load_completed.emit(loaded_path)
     return true
 
 func delete_save() -> bool:
     var success := true
-    for path in [SAVE_PATH, BACKUP_PATH]:
+    for path in [SAVE_PATH, BACKUP_PATH, TEMP_PATH]:
         if FileAccess.file_exists(path):
-            success = DirAccess.remove_absolute(ProjectSettings.globalize_path(path)) == OK and success
+            success = _remove_file(path) and success
     return success
 
 func _read_payload(path: String) -> Dictionary:
-    if not FileAccess.file_exists(path): return {}
+    if not FileAccess.file_exists(path):
+        return {}
     var file := FileAccess.open(path, FileAccess.READ)
-    if file == null: return {}
-    var parsed = JSON.parse_string(file.get_as_text())
+    if file == null:
+        return {}
+    var parsed: Variant = JSON.parse_string(file.get_as_text())
     file.close()
-    return parsed if parsed is Dictionary else {}
+    if not parsed is Dictionary:
+        return {}
+    var payload: Dictionary = parsed
+    return payload if _validate_payload(payload) else {}
+
+func _write_payload(path: String, payload: Dictionary) -> bool:
+    var file := FileAccess.open(path, FileAccess.WRITE)
+    if file == null:
+        return false
+    file.store_string(JSON.stringify(payload, "  "))
+    file.flush()
+    file.close()
+    return FileAccess.file_exists(path)
+
+func _validate_payload(payload: Dictionary) -> bool:
+    if int(payload.get("version", 0)) <= 0:
+        return false
+    var game_data: Variant = payload.get("game_state", null)
+    var roster_data: Variant = payload.get("roster", null)
+    if not game_data is Dictionary or not roster_data is Dictionary:
+        return false
+    if int(game_data.get("day", 0)) < 1:
+        return false
+    if int(game_data.get("denarii", -1)) < 0 or int(game_data.get("food", -1)) < 0 or int(game_data.get("ore", -1)) < 0:
+        return false
+    var people_data: Variant = roster_data.get("people", null)
+    if not people_data is Array:
+        return false
+    var known_ids: Dictionary = {}
+    for person_data in people_data:
+        if not person_data is Dictionary:
+            return false
+        var person_id: String = str(person_data.get("id", ""))
+        if person_id.is_empty() or known_ids.has(person_id):
+            return false
+        known_ids[person_id] = true
+    return true
 
 func _build_payload() -> Dictionary:
     var people_data: Array = []
-    for person in RosterManager.get_people(): people_data.append(_serialize_person(person))
+    for person in RosterManager.get_people():
+        people_data.append(_serialize_person(person))
     return {
         "version": SAVE_VERSION,
         "saved_at_unix": int(Time.get_unix_time_from_system()),
@@ -122,13 +183,15 @@ func _apply_payload(data: Dictionary) -> bool:
 
     RosterManager.people.clear()
     for person_data in roster_data.get("people", []):
-        if person_data is Dictionary: RosterManager.people.append(_deserialize_person(person_data))
-    if RosterManager.people.is_empty(): RosterManager._seed_initial_roster()
+        if person_data is Dictionary:
+            RosterManager.people.append(_deserialize_person(person_data))
+    if RosterManager.people.is_empty():
+        RosterManager._seed_initial_roster()
     RosterManager.capacity = maxi(1, int(roster_data.get("capacity", 8)))
     RosterManager.security_score = maxi(0, int(roster_data.get("security_score", 0)))
     RosterManager.intelligence_points = maxi(0, int(roster_data.get("intelligence_points", 0)))
 
-    var loaded_levels = estate_data.get("levels", {})
+    var loaded_levels: Variant = estate_data.get("levels", {})
     if loaded_levels is Dictionary:
         for building_id in EstateManager.BUILDINGS.keys():
             EstateManager.levels[building_id] = clampi(int(loaded_levels.get(building_id, 1)), 1, int(EstateManager.BUILDINGS[building_id].max_level))
@@ -138,10 +201,12 @@ func _apply_payload(data: Dictionary) -> bool:
     EquipmentManager.serial = maxi(0, int(equipment_data.get("serial", 0)))
     MarketManager.offers.assign(market_data.get("offers", []))
     MarketManager._serial = maxi(0, int(market_data.get("serial", 0)))
-    if MarketManager.offers.is_empty(): MarketManager.refresh_market(false)
+    if MarketManager.offers.is_empty():
+        MarketManager.refresh_market(false)
 
     RivalManager.rivals.assign(rival_data.get("entries", []))
-    if RivalManager.rivals.is_empty(): RivalManager._seed_rivals()
+    if RivalManager.rivals.is_empty():
+        RivalManager._seed_rivals()
     RivalManager.hostility_heat = maxi(0, int(rival_data.get("hostility_heat", 0)))
     RivalManager.operations_completed = maxi(0, int(rival_data.get("operations_completed", 0)))
     RivalManager.operations_detected = maxi(0, int(rival_data.get("operations_detected", 0)))
@@ -192,12 +257,21 @@ func _deserialize_person(data: Dictionary):
     person.injury_name = str(data.get("injury_name", ""))
     return person
 
-func _copy_file(source_path: String, target_path: String) -> void:
+func _copy_file(source_path: String, target_path: String) -> bool:
     var source := FileAccess.open(source_path, FileAccess.READ)
-    if source == null: return
+    if source == null:
+        return false
     var contents := source.get_buffer(source.get_length())
     source.close()
     var target := FileAccess.open(target_path, FileAccess.WRITE)
-    if target == null: return
+    if target == null:
+        return false
     target.store_buffer(contents)
+    target.flush()
     target.close()
+    return FileAccess.file_exists(target_path)
+
+func _remove_file(path: String) -> bool:
+    if not FileAccess.file_exists(path):
+        return true
+    return DirAccess.remove_absolute(ProjectSettings.globalize_path(path)) == OK
