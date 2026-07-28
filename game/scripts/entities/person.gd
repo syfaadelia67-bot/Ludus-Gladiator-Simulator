@@ -18,6 +18,9 @@ var traits: Array[String] = []
 var equipped_weapon_id: String = ""
 var equipped_armor_id: String = ""
 var equipped_shield_id: String = ""
+var injury_severity: int = 0
+var injury_days: int = 0
+var injury_name: String = ""
 
 func _init(data: Dictionary = {}) -> void:
     id = str(data.get("id", "person_%s" % Time.get_ticks_usec()))
@@ -34,10 +37,21 @@ func _init(data: Dictionary = {}) -> void:
     traits.assign(data.get("traits", []))
 
 func assign_job(new_job: String) -> void:
+    if injury_days > 0 and new_job != "idle":
+        return
     job = new_job
 
 func process_day() -> Dictionary:
     var result := {"ore": 0, "food": 0, "security": 0, "intel": 0, "training": 0}
+    if injury_days > 0:
+        job = "idle"
+        injury_days = maxi(0, injury_days - 1 - EstateManager.get_recovery_bonus() / 4)
+        fatigue = maxi(0, fatigue - 10 - EstateManager.get_recovery_bonus())
+        morale = mini(100, morale + 3)
+        if injury_days == 0:
+            injury_severity = 0
+            injury_name = ""
+        return result
     match job:
         "mining":
             result.ore = maxi(1, strength + endurance / 2)
@@ -63,19 +77,35 @@ func process_day() -> Dictionary:
     morale = clampi(morale - fatigue / 25, 0, 100)
     return result
 
+func apply_injury(name_value: String, severity: int, days: int) -> void:
+    injury_name = name_value
+    injury_severity = clampi(severity, 1, 3)
+    injury_days = maxi(1, days)
+    job = "idle"
+
+func is_available_for_combat() -> bool:
+    return role == "gladiator" and injury_days <= 0 and fatigue < 90
+
 func get_max_health() -> int:
-    return 70 + endurance * 8 + strength * 2
+    var penalty := injury_severity * 8
+    return maxi(30, 70 + endurance * 8 + strength * 2 - penalty)
 
 func get_max_energy() -> int:
-    return 55 + endurance * 5 + agility * 3
+    var penalty := injury_severity * 6 + fatigue / 5
+    return maxi(20, 55 + endurance * 5 + agility * 3 - penalty)
 
 func get_base_attack() -> int:
-    return strength * 2 + agility
+    return maxi(1, strength * 2 + agility - injury_severity * 3)
 
 func get_base_defense() -> int:
-    return endurance + agility
+    return maxi(1, endurance + agility - injury_severity * 2)
+
+func get_injury_summary() -> String:
+    if injury_days <= 0:
+        return "Sin heridas"
+    return "%s — %d día(s)" % [injury_name, injury_days]
 
 func summary() -> String:
-    return "%s | %s | trabajo: %s | lealtad: %d | moral: %d | fatiga: %d" % [
-        display_name, role, job, loyalty, morale, fatigue
+    return "%s | %s | trabajo: %s | lealtad: %d | moral: %d | fatiga: %d | %s" % [
+        display_name, role, job, loyalty, morale, fatigue, get_injury_summary()
     ]
