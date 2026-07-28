@@ -5,11 +5,18 @@ signal daily_results(results: Dictionary)
 
 const PERSON_SCRIPT = preload("res://scripts/entities/person.gd")
 const JOBS := {
-    "idle": "Descanso",
-    "mining": "Minería",
-    "security": "Seguridad",
-    "espionage": "Espionaje",
-    "training": "Entrenamiento"
+    "idle": "Descanso — recupera fatiga y heridas",
+    "mining": "Minería — produce mineral cada día",
+    "security": "Seguridad — protege la finca",
+    "espionage": "Espionaje — genera información",
+    "training": "Entrenamiento — forma gladiadores"
+}
+const JOB_DESCRIPTIONS := {
+    "idle": "No genera recursos. Reduce fatiga y permite recuperarse con mayor seguridad.",
+    "mining": "Produce mineral al avanzar el día. La Fuerza y la Resistencia mejoran el resultado.",
+    "security": "Aumenta la seguridad diaria del ludus y ayuda a bloquear sabotajes y represalias.",
+    "espionage": "Genera puntos de inteligencia para operaciones contra casas rivales.",
+    "training": "Aumenta el entrenamiento diario. Los esclavos llegan a 100 y se convierten en gladiadores."
 }
 
 var people: Array = []
@@ -76,6 +83,9 @@ func get_job_ids() -> Array[String]:
 
 func get_job_name(job_id: String) -> String:
     return str(JOBS.get(job_id, job_id))
+
+func get_job_description(job_id: String) -> String:
+    return str(JOB_DESCRIPTIONS.get(job_id, "Sin descripción."))
 
 func process_day() -> Dictionary:
     var totals := {"ore":0,"food":0,"security":0,"intel":0,"training":0,"promotions":[],"relationship_events":[]}
