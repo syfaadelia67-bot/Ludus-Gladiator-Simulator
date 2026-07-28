@@ -4,6 +4,13 @@ signal roster_changed
 signal daily_results(results: Dictionary)
 
 const PERSON_SCRIPT = preload("res://scripts/entities/person.gd")
+const JOBS := {
+    "idle": "Descanso",
+    "mining": "Minería",
+    "security": "Seguridad",
+    "espionage": "Espionaje",
+    "training": "Entrenamiento"
+}
 
 var people: Array = []
 var security_score: int = 0
@@ -29,6 +36,8 @@ func _seed_initial_roster() -> void:
     roster_changed.emit()
 
 func assign_job(person_id: String, job_id: String) -> bool:
+    if not JOBS.has(job_id):
+        return false
     var person = get_person(person_id)
     if person == null:
         return false
@@ -41,6 +50,18 @@ func get_person(person_id: String):
         if person.id == person_id:
             return person
     return null
+
+func get_people() -> Array:
+    return people
+
+func get_job_ids() -> Array[String]:
+    var ids: Array[String] = []
+    for job_id in JOBS.keys():
+        ids.append(str(job_id))
+    return ids
+
+func get_job_name(job_id: String) -> String:
+    return str(JOBS.get(job_id, job_id))
 
 func process_day() -> Dictionary:
     var totals := {"ore":0,"food":0,"security":0,"intel":0,"training":0,"promotions":[]}
