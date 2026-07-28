@@ -5,7 +5,7 @@ signal load_completed(path: String)
 signal save_failed(reason: String)
 signal load_failed(reason: String)
 
-const SAVE_VERSION := 8
+const SAVE_VERSION := 9
 const SAVE_PATH := "user://ludus_save.json"
 const BACKUP_PATH := "user://ludus_save.backup.json"
 const PERSON_SCRIPT = preload("res://scripts/entities/person.gd")
@@ -102,7 +102,8 @@ func _build_payload() -> Dictionary:
         "campaign":CampaignManager.export_state(),
         "personality":PersonalityManager.export_state(),
         "relationships":RelationshipManager.export_state(),
-        "gladiator_progression":GladiatorProgressionManager.export_state()
+        "gladiator_progression":GladiatorProgressionManager.export_state(),
+        "transfers":TransferManager.export_state()
     }
 
 func _apply_payload(data: Dictionary) -> bool:
@@ -152,6 +153,7 @@ func _apply_payload(data: Dictionary) -> bool:
     PersonalityManager.import_state(data.get("personality", {}))
     RelationshipManager.import_state(data.get("relationships", {}))
     GladiatorProgressionManager.import_state(data.get("gladiator_progression", {}))
+    TransferManager.import_state(data.get("transfers", {}))
 
     GameState.resources_changed.emit()
     RosterManager.roster_changed.emit()
@@ -166,6 +168,7 @@ func _apply_payload(data: Dictionary) -> bool:
     PersonalityManager.personality_changed.emit("")
     RelationshipManager.relationships_changed.emit()
     GladiatorProgressionManager.progression_changed.emit()
+    TransferManager.transfers_changed.emit()
     return true
 
 func _serialize_person(person) -> Dictionary:
