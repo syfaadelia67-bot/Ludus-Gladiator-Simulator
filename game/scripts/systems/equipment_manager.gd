@@ -121,8 +121,8 @@ func get_available_items(item_type: String, person_id: String = "") -> Array[Dic
     for item in inventory:
         if str(item.get("type", "")) != item_type:
             continue
-        var owner := str(item.get("equipped_by", ""))
-        if owner.is_empty() or owner == person_id:
+        var equipped_person_id := str(item.get("equipped_by", ""))
+        if equipped_person_id.is_empty() or equipped_person_id == person_id:
             result.append(item.duplicate(true))
     return result
 
