@@ -1,0 +1,78 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource path="res://scripts/ui/rivals_panel.gd" type="Script" id="1"]
+
+[node name="Rivales" type="VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 8
+script = ExtResource("1")
+
+[node name="Header" type="HBoxContainer" parent="."]
+layout_mode = 2
+
+[node name="Title" type="Label" parent="Header"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "RIVALES E INTRIGA"
+
+[node name="Tension" type="Label" parent="Header"]
+layout_mode = 2
+size_flags_horizontal = 3
+horizontal_alignment = 2
+text = "Tensión regional: 0"
+
+[node name="Content" type="HSplitContainer" parent="."]
+layout_mode = 2
+size_flags_vertical = 3
+split_offset = 460
+
+[node name="RivalList" type="ItemList" parent="Content"]
+custom_minimum_size = Vector2(390, 380)
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="OperationPanel" type="VBoxContainer" parent="Content"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="RivalDetails" type="RichTextLabel" parent="Content/OperationPanel"]
+custom_minimum_size = Vector2(520, 135)
+layout_mode = 2
+bbcode_enabled = true
+text = "Seleccioná un ludus rival."
+
+[node name="AgentLabel" type="Label" parent="Content/OperationPanel"]
+layout_mode = 2
+text = "Agente asignado a Espionaje"
+
+[node name="AgentSelector" type="OptionButton" parent="Content/OperationPanel"]
+layout_mode = 2
+
+[node name="OperationLabel" type="Label" parent="Content/OperationPanel"]
+layout_mode = 2
+text = "Operación"
+
+[node name="OperationSelector" type="OptionButton" parent="Content/OperationPanel"]
+layout_mode = 2
+
+[node name="OperationDetails" type="RichTextLabel" parent="Content/OperationPanel"]
+custom_minimum_size = Vector2(520, 145)
+layout_mode = 2
+bbcode_enabled = true
+text = "Seleccioná una operación."
+
+[node name="ExecuteOperation" type="Button" parent="Content/OperationPanel"]
+layout_mode = 2
+text = "Ejecutar operación"
+
+[node name="ResultLabel" type="Label" parent="."]
+layout_mode = 2
+text = "INFORMES DE INTELIGENCIA"
+
+[node name="ResultLog" type="RichTextLabel" parent="."]
+custom_minimum_size = Vector2(0, 125)
+layout_mode = 2
+size_flags_vertical = 3
+bbcode_enabled = true
+scroll_following = true
+text = "[b]La red de informantes espera órdenes.[/b]"
