@@ -45,7 +45,8 @@ func process_day() -> Dictionary:
     var result := {"ore": 0, "food": 0, "security": 0, "intel": 0, "training": 0, "personality": {}}
     if injury_days > 0:
         job = "idle"
-        injury_days = maxi(0, injury_days - 1 - EstateManager.get_recovery_bonus() / 4)
+        var recovery_day_bonus := floori(float(EstateManager.get_recovery_bonus()) / 4.0)
+        injury_days = maxi(0, injury_days - 1 - recovery_day_bonus)
         fatigue = maxi(0, fatigue - 10 - EstateManager.get_recovery_bonus())
         morale = mini(100, morale + 3)
         if injury_days == 0:
@@ -55,16 +56,16 @@ func process_day() -> Dictionary:
         return result
     match job:
         "mining":
-            result.ore = maxi(1, strength + endurance / 2)
+            result.ore = maxi(1, strength + floori(float(endurance) / 2.0))
             fatigue += 8
         "security":
-            result.security = maxi(1, strength + loyalty / 20)
+            result.security = maxi(1, strength + floori(float(loyalty) / 20.0))
             fatigue += 4
         "espionage":
-            result.intel = maxi(1, intelligence + agility / 2)
+            result.intel = maxi(1, intelligence + floori(float(agility) / 2.0))
             fatigue += 6
         "training":
-            var base_gain := maxi(1, endurance + strength / 2)
+            var base_gain := maxi(1, endurance + floori(float(strength) / 2.0))
             var multiplier := EstateManager.get_training_multiplier() * EventManager.get_training_multiplier()
             var gained := int(round(base_gain * multiplier))
             training += gained
@@ -77,7 +78,7 @@ func process_day() -> Dictionary:
             fatigue = maxi(0, fatigue - 6 - EstateManager.get_recovery_bonus())
             morale = mini(100, morale + 2)
     result.personality = PersonalityManager.process_person_day(self, result)
-    morale = clampi(morale - fatigue / 25, 0, 100)
+    morale = clampi(morale - floori(float(fatigue) / 25.0), 0, 100)
     loyalty = clampi(loyalty, 0, 100)
     fatigue = clampi(fatigue, 0, 100)
     return result
@@ -96,7 +97,8 @@ func get_max_health() -> int:
     return maxi(30, 70 + endurance * 8 + strength * 2 - penalty)
 
 func get_max_energy() -> int:
-    var penalty := injury_severity * 6 + fatigue / 5
+    var fatigue_penalty := floori(float(fatigue) / 5.0)
+    var penalty := injury_severity * 6 + fatigue_penalty
     return maxi(20, 55 + endurance * 5 + agility * 3 - penalty)
 
 func get_base_attack() -> int:
