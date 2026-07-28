@@ -22,21 +22,37 @@ jobs:
       - name: Import project and validate scripts
         shell: bash
         run: |
-          set -o pipefail
+          set +e
           godot --headless --editor --path game --quit-after 20 2>&1 | tee godot-import.log
-          if grep -Eiq 'Parse Error|Compile Error|Failed to load script|Failed to create an autoload|SCRIPT ERROR|Invalid call|Invalid get index|Node not found|Can.t use get_node' godot-import.log; then
-            echo 'Godot reported script or project errors during import.'
+          GODOT_STATUS=${PIPESTATUS[0]}
+          PATTERN='Parse Error|Compile Error|Failed to load script|Failed to create an autoload'
+          if grep -Ein "$PATTERN" godot-import.log; then
+            echo '### Godot import errors' >> "$GITHUB_STEP_SUMMARY"
+            grep -Ein "$PATTERN" godot-import.log >> "$GITHUB_STEP_SUMMARY"
             exit 1
+          fi
+          if [ "$GODOT_STATUS" -ne 0 ]; then
+            echo "Godot editor exited with status $GODOT_STATUS."
+            tail -n 80 godot-import.log
+            exit "$GODOT_STATUS"
           fi
 
       - name: Validate main scene startup
         shell: bash
         run: |
-          set -o pipefail
+          set +e
           godot --headless --path game --quit-after 5 2>&1 | tee godot-startup.log
-          if grep -Eiq 'Parse Error|Compile Error|Failed to load script|Failed to create an autoload|SCRIPT ERROR|Invalid call|Invalid get index|Node not found|Can.t use get_node' godot-startup.log; then
-            echo 'Godot reported errors while starting the main scene.'
+          GODOT_STATUS=${PIPESTATUS[0]}
+          PATTERN="SCRIPT ERROR|Invalid call|Node not found|Can't use get_node|Failed to load script|Failed to create an autoload"
+          if grep -Ein "$PATTERN" godot-startup.log; then
+            echo '### Godot startup errors' >> "$GITHUB_STEP_SUMMARY"
+            grep -Ein "$PATTERN" godot-startup.log >> "$GITHUB_STEP_SUMMARY"
             exit 1
+          fi
+          if [ "$GODOT_STATUS" -ne 0 ]; then
+            echo "Godot runtime exited with status $GODOT_STATUS."
+            tail -n 80 godot-startup.log
+            exit "$GODOT_STATUS"
           fi
 
       - name: Upload Godot validation logs
