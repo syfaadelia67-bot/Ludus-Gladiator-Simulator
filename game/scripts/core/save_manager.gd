@@ -5,7 +5,7 @@ signal load_completed(path: String)
 signal save_failed(reason: String)
 signal load_failed(reason: String)
 
-const SAVE_VERSION := 2
+const SAVE_VERSION := 3
 const SAVE_PATH := "user://ludus_save.json"
 const BACKUP_PATH := "user://ludus_save.backup.json"
 const PERSON_SCRIPT = preload("res://scripts/entities/person.gd")
@@ -124,7 +124,8 @@ func _build_payload() -> Dictionary:
             "hostility_heat": RivalManager.hostility_heat,
             "operations_completed": RivalManager.operations_completed,
             "operations_detected": RivalManager.operations_detected
-        }
+        },
+        "events": EventManager.export_state()
     }
 
 func _apply_payload(data: Dictionary) -> bool:
@@ -134,6 +135,7 @@ func _apply_payload(data: Dictionary) -> bool:
     var equipment_data: Dictionary = data.get("equipment", {})
     var market_data: Dictionary = data.get("market", {})
     var rival_data: Dictionary = data.get("rivals", {})
+    var event_data: Dictionary = data.get("events", {})
 
     GameState.day = maxi(1, int(game_data.get("day", 1)))
     GameState.denarii = maxi(0, int(game_data.get("denarii", 500)))
@@ -170,6 +172,7 @@ func _apply_payload(data: Dictionary) -> bool:
     RivalManager.hostility_heat = maxi(0, int(rival_data.get("hostility_heat", 0)))
     RivalManager.operations_completed = maxi(0, int(rival_data.get("operations_completed", 0)))
     RivalManager.operations_detected = maxi(0, int(rival_data.get("operations_detected", 0)))
+    EventManager.import_state(event_data)
 
     GameState.resources_changed.emit()
     RosterManager.roster_changed.emit()
@@ -177,6 +180,7 @@ func _apply_payload(data: Dictionary) -> bool:
     EquipmentManager.inventory_changed.emit()
     MarketManager.market_changed.emit()
     RivalManager.rivals_changed.emit()
+    EventManager.events_changed.emit()
     return true
 
 func _serialize_person(person) -> Dictionary:
