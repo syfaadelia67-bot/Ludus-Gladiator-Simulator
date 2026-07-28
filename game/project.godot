@@ -16,6 +16,10 @@ run/main_scene="res://scenes/Main.tscn"
 [debug]
 
 gdscript/warnings/treat_warnings_as_errors=false
+gdscript/warnings/integer_division=0
+gdscript/warnings/unused_signal=0
+gdscript/warnings/shadowed_variable=0
+gdscript/warnings/shadowed_variable_base_class=0
 
 [display]
 
