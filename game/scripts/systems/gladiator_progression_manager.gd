@@ -14,6 +14,31 @@ const SPECIALIZATIONS := {
 
 var records: Dictionary = {}
 
+func _ready() -> void:
+    CombatManager.combat_finished.connect(_on_combat_finished)
+    GameState.day_advanced.connect(_on_day_advanced)
+    RosterManager.roster_changed.connect(_ensure_roster_records)
+    call_deferred("_ensure_roster_records")
+
+func _on_combat_finished(result: Dictionary) -> void:
+    var person_id := str(result.get("fighter_id", ""))
+    if person_id.is_empty():
+        return
+    var difficulty := 1
+    var tournament: Dictionary = result.get("tournament", {})
+    if not tournament.is_empty():
+        difficulty = maxi(1, int(tournament.get("difficulty", 1)))
+    var gains := register_combat_result(person_id, bool(result.get("victory", false)), int(result.get("rounds", 1)), difficulty)
+    result["progression"] = gains
+
+func _on_day_advanced(_day: int) -> void:
+    process_day()
+
+func _ensure_roster_records() -> void:
+    for person in RosterManager.get_people():
+        if person.role == "gladiator":
+            ensure_record(person.id)
+
 func ensure_record(person_id: String) -> Dictionary:
     if not records.has(person_id):
         records[person_id] = {
