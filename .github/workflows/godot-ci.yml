@@ -1,0 +1,26 @@
+name: Godot CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  validate-project:
+    runs-on: ubuntu-latest
+    container:
+      image: barichello/godot-ci:4.3
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Show Godot version
+        run: godot --version
+
+      - name: Import project and validate scripts
+        run: godot --headless --editor --path game --quit-after 20
+
+      - name: Validate main scene startup
+        run: godot --headless --path game --quit-after 5
