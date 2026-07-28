@@ -2,6 +2,7 @@ extends Node
 
 signal personality_changed(person_id: String)
 signal personality_event(event: Dictionary)
+signal incident_changed
 
 const TRAITS := {
     "arena_lover": {"name":"Amante de la arena","description":"Disfruta el combate y resiste mejor la presión del público."},
@@ -18,10 +19,18 @@ const TRAITS := {
 
 var records: Dictionary = {}
 var recent_events: Array[Dictionary] = []
+var pending_incident: Dictionary = {}
+var incident_cooldown: int = 0
 
 func _ready() -> void:
     RosterManager.roster_changed.connect(_ensure_records)
+    GameState.day_advanced.connect(_on_day_advanced)
     call_deferred("_ensure_records")
+
+func _on_day_advanced(_day: int) -> void:
+    incident_cooldown = maxi(0, incident_cooldown - 1)
+    if pending_incident.is_empty() and incident_cooldown <= 0:
+        _generate_internal_incident()
 
 func _ensure_records() -> void:
     for person in RosterManager.get_people():
@@ -150,6 +159,76 @@ func apply_discipline(person_id: String, action: String) -> Dictionary:
     personality_changed.emit(person.id)
     return event
 
+func resolve_pending_incident(choice_id: String) -> Dictionary:
+    if pending_incident.is_empty():
+        return {}
+    var incident := pending_incident.duplicate(true)
+    var person = RosterManager.get_person(str(incident.get("person_id", "")))
+    if person == null:
+        pending_incident.clear()
+        incident_changed.emit()
+        return {}
+    var record := ensure_record(person.id)
+    var outcome := ""
+    match str(incident.get("type", "")):
+        "escape_attempt":
+            if choice_id == "negotiate":
+                if not GameState.spend_denarii(35): return {}
+                person.loyalty = mini(100, person.loyalty + 8)
+                record["freedom_desire"] = maxi(0, int(record.get("freedom_desire", 0)) - 25)
+                outcome = "Se negoció una promesa de mejores condiciones."
+            elif choice_id == "guards":
+                record["discipline"] = mini(100, int(record.get("discipline", 50)) + 12)
+                record["resentment"] = mini(100, int(record.get("resentment", 0)) + 15)
+                record["freedom_desire"] = maxi(0, int(record.get("freedom_desire", 0)) - 8)
+                outcome = "Los guardias frustraron la fuga, pero aumentó el resentimiento."
+            elif choice_id == "release":
+                RosterManager.people.erase(person)
+                records.erase(person.id)
+                outcome = "%s fue liberado y abandonó el ludus." % person.display_name
+            else: return {}
+        "internal_fight":
+            var other = RosterManager.get_person(str(incident.get("other_id", "")))
+            if choice_id == "mediate":
+                record["resentment"] = maxi(0, int(record.get("resentment", 0)) - 12)
+                person.morale = mini(100, person.morale + 3)
+                if other != null: other.morale = mini(100, other.morale + 3)
+                outcome = "La mediación redujo la tensión entre ambos."
+            elif choice_id == "punish_both":
+                person.morale = maxi(0, person.morale - 8)
+                record["discipline"] = mini(100, int(record.get("discipline", 50)) + 8)
+                if other != null: other.morale = maxi(0, other.morale - 8)
+                outcome = "Ambos fueron castigados para restaurar el orden."
+            else: return {}
+        "personal_sabotage":
+            if choice_id == "investigate":
+                if RosterManager.intelligence_points < 8: return {}
+                RosterManager.intelligence_points -= 8
+                record["resentment"] = maxi(0, int(record.get("resentment", 0)) - 10)
+                outcome = "La investigación reveló el origen del conflicto y evitó nuevas pérdidas."
+            elif choice_id == "compensate":
+                if not GameState.spend_denarii(40): return {}
+                record["resentment"] = maxi(0, int(record.get("resentment", 0)) - 20)
+                person.loyalty = mini(100, person.loyalty + 5)
+                outcome = "Una compensación personal calmó el conflicto."
+            elif choice_id == "punish":
+                GameState.food = maxi(0, GameState.food - 5)
+                record["discipline"] = mini(100, int(record.get("discipline", 50)) + 10)
+                record["resentment"] = mini(100, int(record.get("resentment", 0)) + 12)
+                outcome = "El castigo impuso orden, aunque el resentimiento persiste."
+            else: return {}
+        _:
+            return {}
+    incident["outcome"] = outcome
+    incident["resolved_day"] = GameState.day
+    _push_event({"person_id":person.id,"person_name":person.display_name,"type":"incident_resolved","description":outcome})
+    pending_incident.clear()
+    incident_cooldown = 3
+    GameState.resources_changed.emit()
+    RosterManager.roster_changed.emit()
+    incident_changed.emit()
+    return incident
+
 func get_record(person_id: String) -> Dictionary:
     return ensure_record(person_id).duplicate(true)
 
@@ -160,18 +239,50 @@ func get_trait_description(trait_id: String) -> String:
     return str(TRAITS.get(trait_id, {}).get("description", "Rasgo sin descripción."))
 
 func export_state() -> Dictionary:
-    return {"records":records.duplicate(true),"recent_events":recent_events.duplicate(true)}
+    return {"records":records.duplicate(true),"recent_events":recent_events.duplicate(true),"pending_incident":pending_incident.duplicate(true),"incident_cooldown":incident_cooldown}
 
 func import_state(data: Dictionary) -> void:
     records = data.get("records", {}).duplicate(true)
     recent_events.assign(data.get("recent_events", []))
+    pending_incident = data.get("pending_incident", {}).duplicate(true)
+    incident_cooldown = maxi(0, int(data.get("incident_cooldown", 0)))
     _ensure_records()
+    incident_changed.emit()
+
+func _generate_internal_incident() -> void:
+    var candidates: Array = []
+    for person in RosterManager.get_people():
+        var record := ensure_record(person.id)
+        var freedom := int(record.get("freedom_desire", 0))
+        var resentment := int(record.get("resentment", 0))
+        if freedom >= 70 or resentment >= 65:
+            candidates.append({"person":person,"freedom":freedom,"resentment":resentment})
+    if candidates.is_empty():
+        return
+    var selected: Dictionary = candidates[randi_range(0, candidates.size() - 1)]
+    var person = selected.person
+    var event_type := "escape_attempt" if int(selected.freedom) >= int(selected.resentment) else ("personal_sabotage" if randf() < 0.55 else "internal_fight")
+    pending_incident = {"type":event_type,"person_id":person.id,"person_name":person.display_name,"day":GameState.day}
+    if event_type == "internal_fight":
+        for other in RosterManager.get_people():
+            if other.id != person.id:
+                pending_incident["other_id"] = other.id
+                pending_incident["other_name"] = other.display_name
+                break
+    _push_event({"person_id":person.id,"person_name":person.display_name,"type":event_type,"description":_incident_description(pending_incident)})
+    incident_changed.emit()
+
+func _incident_description(incident: Dictionary) -> String:
+    match str(incident.get("type", "")):
+        "escape_attempt": return "%s fue descubierto preparando una fuga." % incident.get("person_name", "Un miembro")
+        "internal_fight": return "%s inició una pelea con %s." % [incident.get("person_name", "Un miembro"), incident.get("other_name", "otro miembro")]
+        "personal_sabotage": return "Se sospecha que %s dañó suministros del ludus." % incident.get("person_name", "un miembro")
+        _: return "Se produjo un conflicto interno."
 
 func _check_personal_crisis(person, record: Dictionary, notes: Array[String]) -> void:
     if int(record.get("freedom_desire", 0)) >= 85 and person.loyalty <= 30:
         notes.append("Considera seriamente escapar del ludus.")
         record["last_reaction"] = "Desea escapar."
-        _push_event({"person_id":person.id,"person_name":person.display_name,"type":"escape_risk","description":"%s muestra señales de preparar una fuga." % person.display_name})
     if int(record.get("resentment", 0)) >= 80:
         notes.append("Su resentimiento puede transformarse en sabotaje o violencia.")
 
