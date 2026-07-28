@@ -1,0 +1,58 @@
+[
+  {
+    "id": "beast_hunter",
+    "name": "Cazador de bestias",
+    "description": "Rinde mejor contra animales, pero se confía demasiado al enfrentarlos.",
+    "modifiers": {"damage_vs_beasts": 0.15, "defense_vs_beasts": -0.05},
+    "behaviors": ["requests_beast_fights"]
+  },
+  {
+    "id": "arena_lover",
+    "name": "Amante de la arena",
+    "description": "Gana moral al combatir y la pierde cuando permanece inactivo.",
+    "modifiers": {"morale_after_fight": 8, "idle_morale_loss": 2},
+    "behaviors": ["requests_fights"]
+  },
+  {
+    "id": "freedom_seeker",
+    "name": "Busca la libertad",
+    "description": "Lucha con intensidad si cree que puede obtener su libertad.",
+    "modifiers": {"motivation_when_promised_freedom": 0.2},
+    "behaviors": ["asks_for_freedom", "may_escape_if_betrayed"]
+  },
+  {
+    "id": "protector",
+    "name": "Protector",
+    "description": "Prioriza defender aliados heridos o vulnerables.",
+    "modifiers": {"guard_effectiveness": 0.15},
+    "behaviors": ["protects_allies"]
+  },
+  {
+    "id": "vengeful",
+    "name": "Rencoroso",
+    "description": "Recuerda derrotas y obtiene concentración contra antiguos rivales.",
+    "modifiers": {"focus_vs_rival": 0.1},
+    "behaviors": ["creates_rivalries"]
+  },
+  {
+    "id": "popular",
+    "name": "Favorito del público",
+    "description": "Aumenta ingresos y reputación, pero exige protagonismo.",
+    "modifiers": {"arena_income": 0.12, "reputation_gain": 0.08},
+    "behaviors": ["demands_high_profile_fights"]
+  },
+  {
+    "id": "superstitious",
+    "name": "Supersticioso",
+    "description": "Su rendimiento cambia según eventos, augurios y rumores.",
+    "modifiers": {},
+    "behaviors": ["reacts_to_omens"]
+  },
+  {
+    "id": "mentor",
+    "name": "Mentor",
+    "description": "Mejora el progreso de entrenamiento de compañeros menos experimentados.",
+    "modifiers": {"trainee_xp_bonus": 0.1},
+    "behaviors": ["trains_recruits"]
+  }
+]
