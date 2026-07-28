@@ -24,6 +24,13 @@ const TECHNIQUES: Dictionary = {
     "execute": {"name":"Ejecución","energy":24,"power":1.85,"accuracy":-12,"cooldown":5,"finisher":true,"description":"Remate contra rivales heridos."}
 }
 
+const BEAST_TECHNIQUES: Dictionary = {
+    "bite": {"name":"Mordida","energy":9,"power":1.0,"accuracy":5,"bleed":1},
+    "pounce": {"name":"Abalanzarse","energy":16,"power":1.25,"accuracy":-4,"stun":1},
+    "maul": {"name":"Desgarrar","energy":20,"power":1.5,"accuracy":-9,"bleed":2},
+    "gore": {"name":"Embestida","energy":18,"power":1.35,"accuracy":-6,"armor_break":3}
+}
+
 var last_result: Dictionary = {}
 var last_combat_day: int = -1
 var next_battle_config: Dictionary = {
@@ -49,7 +56,9 @@ func get_technique_ids() -> Array[String]:
     return result
 
 func get_technique(technique_id: String) -> Dictionary:
-    return TECHNIQUES.get(technique_id, {}).duplicate(true)
+    if TECHNIQUES.has(technique_id):
+        return TECHNIQUES[technique_id].duplicate(true)
+    return BEAST_TECHNIQUES.get(technique_id, {}).duplicate(true)
 
 func configure_next_battle(config: Dictionary) -> void:
     next_battle_config = next_battle_config.merged(config, true)
@@ -57,6 +66,8 @@ func configure_next_battle(config: Dictionary) -> void:
 func get_current_event_type() -> String:
     if GameState.day % 7 == 0:
         return "official"
+    if GameState.day % 5 == 0:
+        return "beast_hunt"
     if GameState.day % 3 == 0:
         return "underground"
     return "none"
@@ -65,6 +76,8 @@ func get_current_event_name() -> String:
     var event_type: String = get_current_event_type()
     if event_type == "official":
         return "Torneo oficial de la arena"
+    if event_type == "beast_hunt":
+        return "Cacería de bestias del anfiteatro"
     if event_type == "underground":
         return "Combate clandestino del bajo mundo"
     return "No hay combates programados hoy"
@@ -72,15 +85,18 @@ func get_current_event_name() -> String:
 func get_current_event_details() -> Dictionary:
     var event_type: String = get_current_event_type()
     if event_type == "official":
-        return {"type":event_type,"name":get_current_event_name(),"rules":"Duelo reglamentado.","risk":"Heridas moderadas","reward":"Denarios + reputación","team_size":1}
+        return {"type":event_type,"name":get_current_event_name(),"rules":"Duelo reglamentado contra otro gladiador.","risk":"Heridas moderadas","reward":"Denarios + reputación","team_size":1,"opponent_class":"gladiator"}
+    if event_type == "beast_hunt":
+        return {"type":event_type,"name":get_current_event_name(),"rules":"Supervivencia contra una bestia. No puede ser desarmada y ataca con instinto.","risk":"Heridas graves y sangrado","reward":"Gran premio + reputación","team_size":1,"opponent_class":"beast"}
     if event_type == "underground":
-        return {"type":event_type,"name":get_current_event_name(),"rules":"Sin árbitros.","risk":"Heridas graves","reward":"Más denarios","team_size":1}
-    return {"type":"none","name":get_current_event_name(),"rules":get_next_event_summary(),"risk":"Sin combate","reward":"—","team_size":0}
+        return {"type":event_type,"name":get_current_event_name(),"rules":"Sin árbitros ni protección oficial.","risk":"Heridas graves","reward":"Más denarios","team_size":1,"opponent_class":"gladiator"}
+    return {"type":"none","name":get_current_event_name(),"rules":get_next_event_summary(),"risk":"Sin combate","reward":"—","team_size":0,"opponent_class":"none"}
 
 func get_next_event_summary() -> String:
     var next_underground: int = GameState.day + (3 - GameState.day % 3)
+    var next_beast: int = GameState.day + (5 - GameState.day % 5)
     var next_official: int = GameState.day + (7 - GameState.day % 7)
-    return "Próximo clandestino: día %d. Próximo oficial: día %d." % [next_underground, next_official]
+    return "Próximo clandestino: día %d. Bestias: día %d. Oficial: día %d." % [next_underground, next_beast, next_official]
 
 func simulate_duel(gladiator_id: String, tactic: String = "balanced") -> Dictionary:
     var event_type: String = get_current_event_type()
@@ -89,6 +105,9 @@ func simulate_duel(gladiator_id: String, tactic: String = "balanced") -> Diction
         return {}
     if last_combat_day == GameState.day:
         combat_failed.emit("El ludus ya combatió hoy.")
+        return {}
+    if not TACTICS.has(tactic):
+        combat_failed.emit("La táctica seleccionada no existe.")
         return {}
     var fighter: Variant = RosterManager.get_person(gladiator_id)
     if fighter == null or fighter.role != "gladiator":
@@ -107,7 +126,7 @@ func simulate_duel(gladiator_id: String, tactic: String = "balanced") -> Diction
     var round_value: int = 0
     var surrendered: bool = false
 
-    actions.append(_snapshot("intro", 0, "%s contra %s" % [player.name, enemy.name], player, enemy, "", "system"))
+    _record_action(actions, _snapshot("intro", 0, "%s contra %s" % [player.name, enemy.name], player, enemy, "", "system"))
     while int(player.health) > 0 and int(enemy.health) > 0 and round_value < 30:
         round_value += 1
         _apply_bleeding(player, enemy, actions, round_value, true)
@@ -120,20 +139,23 @@ func simulate_duel(gladiator_id: String, tactic: String = "balanced") -> Diction
         _attack(enemy, player, rng, actions, combat_log, round_value, false)
         if _should_surrender(fighter, player, tactic, rng):
             surrendered = true
-            actions.append(_snapshot("surrender", round_value, "%s se rinde" % fighter.display_name, player, enemy, "surrender", "player"))
+            _record_action(actions, _snapshot("surrender", round_value, "%s se rinde" % fighter.display_name, player, enemy, "surrender", "player"))
             break
         player.energy = mini(int(player.max_energy), int(player.energy) + _energy_regeneration())
-        enemy.energy = mini(int(enemy.max_energy), int(enemy.energy) + 6)
+        enemy.energy = mini(int(enemy.max_energy), int(enemy.energy) + 7)
 
     var victory: bool = int(enemy.health) <= 0 and int(player.health) > 0 and not surrendered
     var reward: int = 0
     var reputation: int = 0
     if victory:
-        reward = int(round((70 + int(enemy.attack) * 3) * (1.35 if event_type == "underground" else 1.0)))
-        reputation = 0 if event_type == "underground" else 3
+        var reward_multiplier: float = 1.0
+        if event_type == "underground": reward_multiplier = 1.35
+        elif event_type == "beast_hunt": reward_multiplier = 1.55
+        reward = int(round((70 + int(enemy.attack) * 3) * reward_multiplier))
+        reputation = 0 if event_type == "underground" else (5 if event_type == "beast_hunt" else 3)
         GameState.denarii += reward
         GameState.reputation += reputation
-    fighter.fatigue = mini(100, fighter.fatigue + 8 + round_value / 2)
+    fighter.fatigue = mini(100, int(fighter.fatigue) + 8 + floori(float(round_value) / 2.0))
     var injury: String = _resolve_injury(fighter, player, victory, surrendered, rng, event_type)
     PersonalityManager.register_combat_result(fighter, victory, surrendered, fighter.injury_severity)
     EconomyManager.register_combat_result(victory)
@@ -141,11 +163,11 @@ func simulate_duel(gladiator_id: String, tactic: String = "balanced") -> Diction
     if event_type == "official":
         tournament_result = TournamentManager.register_combat_result(fighter.id, victory)
 
-    actions.append(_snapshot("result", round_value, "VICTORIA" if victory else ("RENDICIÓN" if surrendered else "DERROTA"), player, enemy, "", "system"))
+    _record_action(actions, _snapshot("result", round_value, "VICTORIA" if victory else ("RENDICIÓN" if surrendered else "DERROTA"), player, enemy, "", "system"))
     last_combat_day = GameState.day
     last_result = {
-        "event_type":event_type,"event_name":get_current_event_name(),"victory":victory,"surrendered":surrendered,
-        "rounds":round_value,"fighter":fighter.display_name,"fighter_id":fighter.id,"enemy":enemy.name,"tactic":tactic,
+        "event_type":event_type,"event_name":get_current_event_name(),"event_details":get_current_event_details(),"victory":victory,"surrendered":surrendered,
+        "rounds":round_value,"fighter":fighter.display_name,"fighter_id":fighter.id,"enemy":enemy.name,"enemy_kind":enemy.get("kind", "gladiator"),"tactic":tactic,
         "player_health":maxi(0,int(player.health)),"player_max_health":int(player.max_health),"player_energy":maxi(0,int(player.energy)),"player_max_energy":int(player.max_energy),
         "enemy_health":maxi(0,int(enemy.health)),"enemy_max_health":int(enemy.max_health),"enemy_energy":maxi(0,int(enemy.energy)),"enemy_max_energy":int(enemy.max_energy),
         "reward":reward,"reputation":reputation,"injury":injury,"injury_days":fighter.injury_days,"tournament":tournament_result,
@@ -155,6 +177,10 @@ func simulate_duel(gladiator_id: String, tactic: String = "balanced") -> Diction
     RosterManager.roster_changed.emit()
     combat_finished.emit(last_result)
     return last_result
+
+func _record_action(actions: Array[Dictionary], action: Dictionary) -> void:
+    actions.append(action)
+    combat_turn.emit(action)
 
 func _build_combatant(person: Variant, tactic: String) -> Dictionary:
     var equipment: Dictionary = EquipmentManager.get_equipped_stats(person)
@@ -171,11 +197,21 @@ func _build_combatant(person: Variant, tactic: String) -> Dictionary:
     elif tactic == "careful":
         accuracy += 12
     var techniques: Array = next_battle_config.get("techniques", ["basic_attack"])
-    return {"name":person.display_name,"health":person.get_max_health(),"max_health":person.get_max_health(),"energy":person.get_max_energy(),"max_energy":person.get_max_energy(),"attack":attack,"defense":defense,"accuracy":accuracy,"techniques":techniques,"cooldowns":{},"bleeding":0,"blind":0,"armor_break":0,"attack_buff":0}
+    return {"name":person.display_name,"kind":"gladiator","health":person.get_max_health(),"max_health":person.get_max_health(),"energy":person.get_max_energy(),"max_energy":person.get_max_energy(),"attack":attack,"defense":defense,"accuracy":accuracy,"techniques":techniques,"cooldowns":{},"bleeding":0,"blind":0,"armor_break":0,"attack_buff":0}
 
 func _build_enemy(person: Variant, event_type: String) -> Dictionary:
     var tier: int = maxi(1, floori(float(person.strength + person.agility + person.endurance) / 8.0)) + (1 if event_type == "official" else 0)
-    return {"name":("Campeón oficial" if event_type == "official" else "Luchador clandestino") + " nivel %d" % tier,"health":78+tier*20,"max_health":78+tier*20,"energy":72+tier*9,"max_energy":72+tier*9,"attack":15+tier*5,"defense":8+tier*4,"accuracy":58+tier*3,"techniques":["basic_attack","guard","feint","lunge"],"cooldowns":{},"bleeding":0,"blind":0,"armor_break":0,"attack_buff":0}
+    if event_type == "beast_hunt":
+        return _build_beast(tier)
+    return {"name":("Campeón oficial" if event_type == "official" else "Luchador clandestino") + " nivel %d" % tier,"kind":"gladiator","health":78+tier*20,"max_health":78+tier*20,"energy":72+tier*9,"max_energy":72+tier*9,"attack":15+tier*5,"defense":8+tier*4,"accuracy":58+tier*3,"techniques":["basic_attack","guard","feint","lunge"],"cooldowns":{},"bleeding":0,"blind":0,"armor_break":0,"attack_buff":0}
+
+func _build_beast(tier: int) -> Dictionary:
+    var archetype: int = GameState.day % 3
+    if archetype == 0:
+        return {"name":"Lobo de Numidia nivel %d" % tier,"kind":"wolf","health":68+tier*17,"max_health":68+tier*17,"energy":90+tier*8,"max_energy":90+tier*8,"attack":16+tier*5,"defense":5+tier*3,"accuracy":72+tier*2,"techniques":["bite","pounce"],"cooldowns":{},"bleeding":0,"blind":0,"armor_break":0,"attack_buff":0}
+    if archetype == 1:
+        return {"name":"Jabalí de guerra nivel %d" % tier,"kind":"boar","health":96+tier*22,"max_health":96+tier*22,"energy":70+tier*7,"max_energy":70+tier*7,"attack":18+tier*5,"defense":10+tier*4,"accuracy":58+tier*2,"techniques":["bite","gore"],"cooldowns":{},"bleeding":0,"blind":0,"armor_break":0,"attack_buff":0}
+    return {"name":"León del Atlas nivel %d" % tier,"kind":"lion","health":84+tier*20,"max_health":84+tier*20,"energy":82+tier*8,"max_energy":82+tier*8,"attack":20+tier*6,"defense":7+tier*3,"accuracy":66+tier*3,"techniques":["bite","pounce","maul"],"cooldowns":{},"bleeding":0,"blind":0,"armor_break":0,"attack_buff":0}
 
 func _attack(attacker: Dictionary, defender: Dictionary, rng: RandomNumberGenerator, actions: Array[Dictionary], combat_log: Array[String], round_value: int, player_attacks: bool) -> void:
     var technique_id: String = _choose_technique(attacker, defender)
@@ -183,105 +219,90 @@ func _attack(attacker: Dictionary, defender: Dictionary, rng: RandomNumberGenera
     var cost: int = int(technique.get("energy", 10))
     if int(attacker.energy) < cost:
         attacker.energy = mini(int(attacker.max_energy), int(attacker.energy) + 14)
-        actions.append(_oriented_snapshot("recover", round_value, "%s recupera energía." % attacker.name, attacker, defender, "recover", player_attacks))
+        _record_action(actions, _oriented_snapshot("recover", round_value, "%s recupera energía." % attacker.name, attacker, defender, "recover", player_attacks))
         return
     attacker.energy = int(attacker.energy) - cost
     if technique_id == "guard":
         attacker.defense = int(attacker.defense) + 4
-        actions.append(_oriented_snapshot("guard", round_value, "%s adopta guardia." % attacker.name, attacker, defender, technique_id, player_attacks))
+        _record_action(actions, _oriented_snapshot("guard", round_value, "%s adopta guardia." % attacker.name, attacker, defender, technique_id, player_attacks))
         return
     if technique_id == "warcry":
         attacker.attack_buff = int(attacker.get("attack_buff", 0)) + 4
-        actions.append(_oriented_snapshot("buff", round_value, "%s lanza un grito de guerra." % attacker.name, attacker, defender, technique_id, player_attacks))
+        _record_action(actions, _oriented_snapshot("buff", round_value, "%s lanza un grito de guerra." % attacker.name, attacker, defender, technique_id, player_attacks))
         return
     var hit_chance: int = clampi(int(attacker.accuracy) + int(technique.get("accuracy", 0)) - int(attacker.get("blind", 0)), 18, 96)
     if rng.randi_range(1, 100) > hit_chance:
-        actions.append(_oriented_snapshot("miss", round_value, "%s falla %s." % [attacker.name, technique.get("name", technique_id)], attacker, defender, technique_id, player_attacks))
+        _record_action(actions, _oriented_snapshot("miss", round_value, "%s falla %s." % [attacker.name, technique.get("name", technique_id)], attacker, defender, technique_id, player_attacks))
         return
-    var damage: int = maxi(1, int(round((int(attacker.attack) + int(attacker.get("attack_buff", 0))) * float(technique.get("power", 1.0)))) - int(defender.defense) / 2)
+    var damage: int = maxi(1, int(round((int(attacker.attack) + int(attacker.get("attack_buff", 0))) * float(technique.get("power", 1.0)))) - floori(float(int(defender.defense)) / 2.0))
     defender.health = int(defender.health) - damage
-    if int(technique.get("bleed", 0)) > 0:
-        defender.bleeding = maxi(int(defender.get("bleeding", 0)), int(technique.get("bleed", 0)))
-    if int(technique.get("armor_break", 0)) > 0:
-        defender.defense = maxi(0, int(defender.defense) - int(technique.get("armor_break", 0)))
-    if int(technique.get("weaken", 0)) > 0:
-        defender.attack = maxi(1, int(defender.attack) - int(technique.get("weaken", 0)))
-    if int(technique.get("blind", 0)) > 0:
-        defender.blind = int(technique.get("blind", 0))
+    if int(technique.get("bleed", 0)) > 0: defender.bleeding = maxi(int(defender.get("bleeding", 0)), int(technique.get("bleed", 0)))
+    if int(technique.get("armor_break", 0)) > 0: defender.defense = maxi(0, int(defender.defense) - int(technique.get("armor_break", 0)))
+    if int(technique.get("weaken", 0)) > 0 and str(defender.get("kind", "gladiator")) == "gladiator": defender.attack = maxi(1, int(defender.attack) - int(technique.get("weaken", 0)))
+    if int(technique.get("blind", 0)) > 0: defender.blind = int(technique.get("blind", 0))
     var action: Dictionary = _oriented_snapshot("hit", round_value, "%s usa %s y causa %d de daño." % [attacker.name, technique.get("name", technique_id), damage], attacker, defender, technique_id, player_attacks)
     action["damage"] = damage
     action["applied_status"] = _status_from_technique(technique)
-    actions.append(action)
+    _record_action(actions, action)
     combat_log.append(str(action.text))
 
 func _choose_technique(attacker: Dictionary, defender: Dictionary) -> String:
     var available: Array = attacker.get("techniques", ["basic_attack"])
     var enemy_ratio: float = float(maxi(0, int(defender.health))) / float(maxi(1, int(defender.max_health)))
     var self_ratio: float = float(maxi(0, int(attacker.health))) / float(maxi(1, int(attacker.max_health)))
-    if available.has("execute") and enemy_ratio <= 0.25 and bool(next_battle_config.get("allow_finisher", true)):
-        return "execute"
-    if available.has("guard") and self_ratio <= 0.35:
-        return "guard"
-    if available.has("sunder") and int(defender.defense) > int(attacker.attack) / 2:
-        return "sunder"
-    if available.has("lunge") and enemy_ratio <= 0.55:
-        return "lunge"
+    if available.has("execute") and enemy_ratio <= 0.25 and bool(next_battle_config.get("allow_finisher", true)): return "execute"
+    if available.has("maul") and enemy_ratio <= 0.55: return "maul"
+    if available.has("pounce") and int(defender.get("blind", 0)) <= 0 and self_ratio > 0.35: return "pounce"
+    if available.has("guard") and self_ratio <= 0.35: return "guard"
+    if available.has("sunder") and int(defender.defense) > floori(float(int(attacker.attack)) / 2.0): return "sunder"
+    if available.has("lunge") and enemy_ratio <= 0.55: return "lunge"
     return str(available[randi_range(0, available.size() - 1)]) if not available.is_empty() else "basic_attack"
 
 func _apply_bleeding(combatant: Dictionary, opponent: Dictionary, actions: Array[Dictionary], round_value: int, player_side: bool) -> void:
-    if int(combatant.get("bleeding", 0)) <= 0:
-        return
-    var damage: int = maxi(1, int(combatant.max_health) / 30)
+    if int(combatant.get("bleeding", 0)) <= 0: return
+    var damage: int = maxi(1, floori(float(int(combatant.max_health)) / 30.0))
     combatant.health = int(combatant.health) - damage
     combatant.bleeding = maxi(0, int(combatant.bleeding) - 1)
     var action: Dictionary = _oriented_snapshot("status_damage", round_value, "%s pierde %d por sangrado." % [combatant.name, damage], combatant, opponent, "bleeding", player_side)
     action["damage"] = damage
     action["applied_status"] = "sangrado"
-    actions.append(action)
+    _record_action(actions, action)
 
 func _should_surrender(fighter: Variant, player: Dictionary, tactic: String, rng: RandomNumberGenerator) -> bool:
     var threshold: int = int(next_battle_config.get("surrender_threshold", 20))
-    if threshold <= 0 or int(player.health) <= 0:
-        return false
+    if threshold <= 0 or int(player.health) <= 0: return false
     var health_percent: int = floori(100.0 * float(player.health) / float(maxi(1, int(player.max_health))))
-    if health_percent > threshold:
-        return false
+    if health_percent > threshold: return false
     var chance: int = 35 + maxi(0, 45 - int(fighter.morale))
-    if tactic == "aggressive":
-        chance -= 14
-    elif tactic == "careful":
-        chance += 8
+    if get_current_event_type() == "beast_hunt": chance += 8
+    if tactic == "aggressive": chance -= 14
+    elif tactic == "careful": chance += 8
     return rng.randi_range(1, 100) <= clampi(chance, 8, 88)
 
 func _energy_regeneration() -> int:
     var rule: String = str(next_battle_config.get("energy_rule", "balanced"))
-    if rule == "conserve":
-        return 9
-    if rule == "spend":
-        return 4
+    if rule == "conserve": return 9
+    if rule == "spend": return 4
     return 6
 
 func _resolve_injury(fighter: Variant, player: Dictionary, victory: bool, surrendered: bool, rng: RandomNumberGenerator, event_type: String) -> String:
     var health_ratio: float = float(maxi(0, int(player.health))) / float(maxi(1, int(player.max_health)))
-    var chance: int = 10 + (10 if event_type == "underground" else 0)
-    if health_ratio <= 0.0:
-        chance = 80
-    elif health_ratio < 0.25:
-        chance += 42
-    if surrendered:
-        chance -= 15
-    if victory:
-        chance -= 4
-    if rng.randi_range(1, 100) > clampi(chance, 2, 92):
-        return ""
-    var severity: int = 2 if health_ratio < 0.25 else 1
-    var injury_name: String = "Herida profunda" if severity == 2 else "Contusión"
+    var chance: int = 10
+    if event_type == "underground": chance += 10
+    elif event_type == "beast_hunt": chance += 18
+    if health_ratio <= 0.0: chance = 80
+    elif health_ratio < 0.25: chance += 42
+    if surrendered: chance -= 15
+    if victory: chance -= 4
+    if rng.randi_range(1, 100) > clampi(chance, 2, 92): return ""
+    var severity: int = 2 if health_ratio < 0.25 or event_type == "beast_hunt" else 1
+    var injury_name: String = "Desgarro de bestia" if event_type == "beast_hunt" else ("Herida profunda" if severity == 2 else "Contusión")
     var days: int = severity * 2 + rng.randi_range(0, severity * 2)
     fighter.apply_injury(injury_name, severity, days)
     return "%s; recuperación: %d día(s)" % [injury_name, days]
 
 func _snapshot(type_id: String, round_value: int, text: String, player: Dictionary, enemy: Dictionary, technique: String, actor: String) -> Dictionary:
-    return {"type":type_id,"round":round_value,"text":text,"technique":technique,"actor":actor,"player_health":maxi(0,int(player.health)),"player_max_health":int(player.max_health),"player_energy":maxi(0,int(player.energy)),"player_max_energy":int(player.max_energy),"enemy_health":maxi(0,int(enemy.health)),"enemy_max_health":int(enemy.max_health),"enemy_energy":maxi(0,int(enemy.energy)),"enemy_max_energy":int(enemy.max_energy)}
+    return {"type":type_id,"round":round_value,"text":text,"technique":technique,"actor":actor,"player_health":maxi(0,int(player.health)),"player_max_health":int(player.max_health),"player_energy":maxi(0,int(player.energy)),"player_max_energy":int(player.max_energy),"enemy_health":maxi(0,int(enemy.health)),"enemy_max_health":int(enemy.max_health),"enemy_energy":maxi(0,int(enemy.energy)),"enemy_max_energy":int(enemy.max_energy),"enemy_kind":enemy.get("kind", "gladiator")}
 
 func _oriented_snapshot(type_id: String, round_value: int, text: String, attacker: Dictionary, defender: Dictionary, technique: String, player_attacks: bool) -> Dictionary:
     var player: Dictionary = attacker if player_attacks else defender
