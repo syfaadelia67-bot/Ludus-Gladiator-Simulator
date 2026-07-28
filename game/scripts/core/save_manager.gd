@@ -10,8 +10,38 @@ const SAVE_PATH := "user://ludus_save.json"
 const BACKUP_PATH := "user://ludus_save.backup.json"
 const PERSON_SCRIPT = preload("res://scripts/entities/person.gd")
 
+var autosave_enabled: bool = true
+
+func _ready() -> void:
+    process_mode = Node.PROCESS_MODE_ALWAYS
+    GameState.day_advanced.connect(_on_day_advanced)
+
+func _unhandled_key_input(event: InputEvent) -> void:
+    if not event.pressed or event.echo:
+        return
+    if event.keycode == KEY_F5:
+        save_game()
+        get_viewport().set_input_as_handled()
+    elif event.keycode == KEY_F9:
+        load_game()
+        get_viewport().set_input_as_handled()
+
+func _on_day_advanced(_day: int) -> void:
+    if autosave_enabled:
+        call_deferred("save_game")
+
 func has_save() -> bool:
     return FileAccess.file_exists(SAVE_PATH)
+
+func get_save_metadata() -> Dictionary:
+    var data := _read_payload(SAVE_PATH)
+    if data.is_empty():
+        return {}
+    return {
+        "version": int(data.get("version", 0)),
+        "saved_at_unix": int(data.get("saved_at_unix", 0)),
+        "day": int(data.get("game_state", {}).get("day", 1))
+    }
 
 func save_game() -> bool:
     var payload := _build_payload()
@@ -28,19 +58,12 @@ func save_game() -> bool:
     return true
 
 func load_game() -> bool:
-    if not FileAccess.file_exists(SAVE_PATH):
-        load_failed.emit("No existe una partida guardada.")
+    var data := _read_payload(SAVE_PATH)
+    if data.is_empty() and FileAccess.file_exists(BACKUP_PATH):
+        data = _read_payload(BACKUP_PATH)
+    if data.is_empty():
+        load_failed.emit("No existe una partida válida para cargar.")
         return false
-    var file := FileAccess.open(SAVE_PATH, FileAccess.READ)
-    if file == null:
-        load_failed.emit("No se pudo leer la partida guardada.")
-        return false
-    var parsed = JSON.parse_string(file.get_as_text())
-    file.close()
-    if not parsed is Dictionary:
-        load_failed.emit("El archivo de guardado está dañado.")
-        return false
-    var data: Dictionary = parsed
     if int(data.get("version", 0)) > SAVE_VERSION:
         load_failed.emit("La partida fue creada con una versión más nueva del juego.")
         return false
@@ -51,9 +74,21 @@ func load_game() -> bool:
     return true
 
 func delete_save() -> bool:
-    if not FileAccess.file_exists(SAVE_PATH):
-        return true
-    return DirAccess.remove_absolute(ProjectSettings.globalize_path(SAVE_PATH)) == OK
+    var success := true
+    for path in [SAVE_PATH, BACKUP_PATH]:
+        if FileAccess.file_exists(path):
+            success = DirAccess.remove_absolute(ProjectSettings.globalize_path(path)) == OK and success
+    return success
+
+func _read_payload(path: String) -> Dictionary:
+    if not FileAccess.file_exists(path):
+        return {}
+    var file := FileAccess.open(path, FileAccess.READ)
+    if file == null:
+        return {}
+    var parsed = JSON.parse_string(file.get_as_text())
+    file.close()
+    return parsed if parsed is Dictionary else {}
 
 func _build_payload() -> Dictionary:
     var people_data: Array = []
@@ -103,6 +138,8 @@ func _apply_payload(data: Dictionary) -> bool:
     for person_data in roster_data.get("people", []):
         if person_data is Dictionary:
             RosterManager.people.append(_deserialize_person(person_data))
+    if RosterManager.people.is_empty():
+        RosterManager._seed_initial_roster()
     RosterManager.capacity = maxi(1, int(roster_data.get("capacity", 8)))
     RosterManager.security_score = maxi(0, int(roster_data.get("security_score", 0)))
     RosterManager.intelligence_points = maxi(0, int(roster_data.get("intelligence_points", 0)))
@@ -117,6 +154,8 @@ func _apply_payload(data: Dictionary) -> bool:
     EquipmentManager.serial = maxi(0, int(equipment_data.get("serial", 0)))
     MarketManager.offers.assign(market_data.get("offers", []))
     MarketManager._serial = maxi(0, int(market_data.get("serial", 0)))
+    if MarketManager.offers.is_empty():
+        MarketManager.refresh_market(false)
 
     GameState.resources_changed.emit()
     RosterManager.roster_changed.emit()
