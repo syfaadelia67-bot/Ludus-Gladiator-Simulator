@@ -5,7 +5,7 @@ signal load_completed(path: String)
 signal save_failed(reason: String)
 signal load_failed(reason: String)
 
-const SAVE_VERSION := 1
+const SAVE_VERSION := 2
 const SAVE_PATH := "user://ludus_save.json"
 const BACKUP_PATH := "user://ludus_save.backup.json"
 const PERSON_SCRIPT = preload("res://scripts/entities/person.gd")
@@ -118,6 +118,12 @@ func _build_payload() -> Dictionary:
         "market": {
             "offers": MarketManager.offers.duplicate(true),
             "serial": MarketManager._serial
+        },
+        "rivals": {
+            "entries": RivalManager.rivals.duplicate(true),
+            "hostility_heat": RivalManager.hostility_heat,
+            "operations_completed": RivalManager.operations_completed,
+            "operations_detected": RivalManager.operations_detected
         }
     }
 
@@ -127,6 +133,7 @@ func _apply_payload(data: Dictionary) -> bool:
     var estate_data: Dictionary = data.get("estate", {})
     var equipment_data: Dictionary = data.get("equipment", {})
     var market_data: Dictionary = data.get("market", {})
+    var rival_data: Dictionary = data.get("rivals", {})
 
     GameState.day = maxi(1, int(game_data.get("day", 1)))
     GameState.denarii = maxi(0, int(game_data.get("denarii", 500)))
@@ -157,11 +164,19 @@ func _apply_payload(data: Dictionary) -> bool:
     if MarketManager.offers.is_empty():
         MarketManager.refresh_market(false)
 
+    RivalManager.rivals.assign(rival_data.get("entries", []))
+    if RivalManager.rivals.is_empty():
+        RivalManager._seed_rivals()
+    RivalManager.hostility_heat = maxi(0, int(rival_data.get("hostility_heat", 0)))
+    RivalManager.operations_completed = maxi(0, int(rival_data.get("operations_completed", 0)))
+    RivalManager.operations_detected = maxi(0, int(rival_data.get("operations_detected", 0)))
+
     GameState.resources_changed.emit()
     RosterManager.roster_changed.emit()
     EstateManager.estate_changed.emit()
     EquipmentManager.inventory_changed.emit()
     MarketManager.market_changed.emit()
+    RivalManager.rivals_changed.emit()
     return true
 
 func _serialize_person(person) -> Dictionary:
