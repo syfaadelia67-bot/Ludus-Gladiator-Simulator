@@ -5,6 +5,7 @@ signal transfer_completed(result: Dictionary)
 signal transfer_failed(reason: String)
 
 const PERSON_SCRIPT = preload("res://scripts/entities/person.gd")
+const OFFER_REFRESH_COST := 20
 
 var rival_offers: Array[Dictionary] = []
 var history: Array[Dictionary] = []
@@ -12,9 +13,12 @@ var serial: int = 0
 
 func _ready() -> void:
     if rival_offers.is_empty():
-        generate_rival_offers()
+        generate_rival_offers(false)
 
-func generate_rival_offers() -> void:
+func generate_rival_offers(charge: bool = true) -> bool:
+    if charge and not GameState.spend_denarii(OFFER_REFRESH_COST):
+        _fail("No hay suficientes denarios para renovar las ofertas rivales.")
+        return false
     rival_offers.clear()
     for index in range(3):
         serial += 1
@@ -38,6 +42,7 @@ func generate_rival_offers() -> void:
             "seller":"Ludus rival"
         })
     transfers_changed.emit()
+    return true
 
 func manumit(person_id: String) -> Dictionary:
     var person = RosterManager.get_person(person_id)
@@ -46,6 +51,7 @@ func manumit(person_id: String) -> Dictionary:
     if person.role == "freed":
         return _fail("Esta persona ya fue liberada.")
     var value := get_person_value(person_id)
+    _apply_departure_reactions(person_id, true)
     person.role = "freed"
     person.job = "idle"
     person.loyalty = mini(100, person.loyalty + 20)
@@ -61,12 +67,9 @@ func manumit(person_id: String) -> Dictionary:
 
 func sell_person(person_id: String) -> Dictionary:
     var person = RosterManager.get_person(person_id)
-    if person == null:
-        return _fail("La persona seleccionada no existe.")
-    if person.role == "freed":
-        return _fail("Una persona libre no puede venderse.")
-    if RosterManager.people.size() <= 1:
-        return _fail("El ludus no puede quedarse sin personal.")
+    var validation := _validate_sale(person)
+    if not validation.is_empty():
+        return _fail(validation)
     var value := int(round(get_person_value(person_id) * 0.72))
     GameState.denarii += value
     GameState.reputation = maxi(0, GameState.reputation - (2 if person.role == "gladiator" else 1))
@@ -78,23 +81,26 @@ func sell_person(person_id: String) -> Dictionary:
     return result
 
 func negotiate_sale(person_id: String, intelligence_cost: int = 6) -> Dictionary:
+    var person = RosterManager.get_person(person_id)
+    var validation := _validate_sale(person)
+    if not validation.is_empty():
+        return _fail(validation)
     if RosterManager.intelligence_points < intelligence_cost:
         return _fail("Faltan puntos de inteligencia para negociar.")
     RosterManager.intelligence_points -= intelligence_cost
-    var person = RosterManager.get_person(person_id)
-    if person == null:
-        return _fail("La persona seleccionada no existe.")
     var base := get_person_value(person_id)
     var chance := clampi(45 + person.intelligence * 3 + GameState.reputation / 3, 25, 85)
     if randi_range(1, 100) <= chance:
         var value := int(round(base * 0.90))
         GameState.denarii += value
+        GameState.reputation = maxi(0, GameState.reputation - (2 if person.role == "gladiator" else 1))
         _apply_departure_reactions(person_id, false)
         RosterManager.people.erase(person)
         var result := _record("negotiated_sale", person, value, "La negociación elevó el precio de %s a %d denarios." % [person.display_name, value])
         RosterManager.roster_changed.emit()
         GameState.resources_changed.emit()
         return result
+    GameState.resources_changed.emit()
     return _fail("La negociación fracasó; el comprador retiró su oferta.")
 
 func buy_rival_offer(offer_id: String) -> Dictionary:
@@ -120,11 +126,16 @@ func pay_ransom(person_id: String) -> Dictionary:
     var person = RosterManager.get_person(person_id)
     if person == null:
         return _fail("La persona seleccionada no existe.")
+    if person.role == "freed":
+        return _fail("Una persona libre no necesita rescate.")
     var cost := maxi(80, int(round(get_person_value(person_id) * 0.35)))
     if not GameState.spend_denarii(cost):
         return _fail("No hay fondos suficientes para pagar el rescate.")
     person.loyalty = mini(100, person.loyalty + 12)
     person.morale = mini(100, person.morale + 10)
+    var personality := PersonalityManager.ensure_record(person_id)
+    personality["freedom_desire"] = maxi(0, int(personality.get("freedom_desire", 0)) - 15)
+    personality["resentment"] = maxi(0, int(personality.get("resentment", 0)) - 10)
     var result := _record("ransom", person, -cost, "El ludus pagó %d denarios para asegurar la permanencia de %s." % [cost, person.display_name])
     RosterManager.roster_changed.emit()
     return result
@@ -148,8 +159,17 @@ func import_state(data: Dictionary) -> void:
     history.assign(data.get("history", []))
     serial = maxi(0, int(data.get("serial", 0)))
     if rival_offers.is_empty():
-        generate_rival_offers()
+        generate_rival_offers(false)
     transfers_changed.emit()
+
+func _validate_sale(person) -> String:
+    if person == null:
+        return "La persona seleccionada no existe."
+    if person.role == "freed":
+        return "Una persona libre no puede venderse."
+    if RosterManager.people.size() <= 1:
+        return "El ludus no puede quedarse sin personal."
+    return ""
 
 func _apply_departure_reactions(person_id: String, freed: bool) -> void:
     for relation in RelationshipManager.get_person_relationships(person_id):
@@ -158,7 +178,7 @@ func _apply_departure_reactions(person_id: String, freed: bool) -> void:
         if other == null:
             continue
         if str(relation.get("state", "")) == "amistad":
-            other.morale = maxi(0, other.morale + (4 if freed else -8))
+            other.morale = clampi(other.morale + (4 if freed else -8), 0, 100)
         elif str(relation.get("state", "")) == "enemistad":
             other.morale = mini(100, other.morale + 3)
 
