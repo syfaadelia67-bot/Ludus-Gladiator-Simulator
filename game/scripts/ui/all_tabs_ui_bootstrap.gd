@@ -28,6 +28,7 @@ func _attach_when_ready() -> void:
         if tabs is TabContainer:
             _attach_panels(tabs)
             _attach_arena_controller(tabs)
+            _attach_arena_navigation(tabs)
             return
     push_error("No se encontró el TabContainer principal llamado Tabs después de esperar la escena activa.")
 
@@ -56,3 +57,27 @@ func _attach_arena_controller(tabs: TabContainer) -> void:
     controller.set_script(ARENA_CONTROLLER)
     arena.add_child(controller)
     controller.call_deferred("setup", arena)
+
+func _attach_arena_navigation(tabs: TabContainer) -> void:
+    var arena := tabs.get_node_or_null("Arena") as VBoxContainer
+    if arena == null or arena.get_node_or_null("ArenaNavigation") != null:
+        return
+    var navigation := HBoxContainer.new()
+    navigation.name = "ArenaNavigation"
+    var back_button := Button.new()
+    back_button.text = "← Volver a Personal"
+    back_button.tooltip_text = "Salir de la Arena y regresar a la administración del ludus."
+    back_button.pressed.connect(func() -> void:
+        var personal_index := _find_tab_index(tabs, "Personal")
+        tabs.current_tab = personal_index if personal_index >= 0 else 0
+    )
+    navigation.add_child(back_button)
+    arena.add_child(navigation)
+    arena.move_child(navigation, 0)
+
+func _find_tab_index(tabs: TabContainer, tab_name: String) -> int:
+    for index in range(tabs.get_tab_count()):
+        var child := tabs.get_child(index)
+        if child != null and child.name == tab_name:
+            return index
+    return -1
