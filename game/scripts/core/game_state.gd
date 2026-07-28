@@ -14,8 +14,10 @@ func advance_day() -> void:
     var report: Dictionary = RosterManager.process_day()
     var rival_events: Array = RivalManager.process_day()
     var narrative_event: Dictionary = EventManager.process_day()
+    var economy_report: Dictionary = EconomyManager.process_day()
     report["rival_events"] = rival_events
     report["narrative_event"] = narrative_event
+    report["economy"] = economy_report
     day += 1
     var base_consumption := maxi(1, RosterManager.people.size())
     var food_consumed := maxi(1, int(ceil(float(base_consumption) * EventManager.get_food_consumption_multiplier())))
@@ -38,12 +40,14 @@ func add_denarii(amount: int) -> void:
     resources_changed.emit()
 
 func get_resource_summary() -> String:
-    return "Día: %d | Denarios: %d | Comida: %d | Mineral: %d | Reputación: %d | Seguridad: %d | Intel: %d" % [
+    var economy := EconomyManager.get_summary()
+    return "Día: %d | Denarios: %d | Comida: %d | Mineral: %d | Reputación: %d | Seguridad: %d | Intel: %d | Deuda: %d" % [
         day,
         denarii,
         food,
         ore,
         reputation,
         RosterManager.security_score,
-        RosterManager.intelligence_points
+        RosterManager.intelligence_points,
+        int(economy.get("total_debt", 0))
     ]
