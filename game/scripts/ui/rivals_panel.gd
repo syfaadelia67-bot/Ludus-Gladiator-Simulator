@@ -32,7 +32,7 @@ func _populate_operations() -> void:
     operation_selector.clear()
     operation_ids = RivalManager.get_operation_ids()
     for operation_id in operation_ids:
-        var data := RivalManager.get_operation(operation_id)
+        var data: Dictionary = RivalManager.get_operation(operation_id)
         operation_selector.add_item(str(data.get("name", operation_id)))
     if not operation_ids.is_empty():
         operation_selector.select(0)
@@ -44,12 +44,12 @@ func _refresh_all() -> void:
     _refresh_operation_details()
 
 func _refresh_rivals() -> void:
-    var previous_id := selected_rival_id
+    var previous_id: String = selected_rival_id
     rival_list.clear()
     rival_ids.clear()
-    var rivals := RivalManager.get_rivals()
+    var rivals: Array = RivalManager.get_rivals()
     for rival in rivals:
-        var rival_id := str(rival.get("id", ""))
+        var rival_id: String = str(rival.get("id", ""))
         rival_ids.append(rival_id)
         rival_list.add_item("%s — Relación %d — Sospecha %d" % [
             rival.get("name", "Rival"),
@@ -61,7 +61,7 @@ func _refresh_rivals() -> void:
         rival_details.text = "No hay rivales activos."
         execute_button.disabled = true
         return
-    var selected_index := rival_ids.find(previous_id)
+    var selected_index: int = rival_ids.find(previous_id)
     if selected_index < 0:
         selected_index = 0
     selected_rival_id = rival_ids[selected_index]
@@ -69,7 +69,7 @@ func _refresh_rivals() -> void:
     _refresh_rival_details()
 
 func _refresh_agents() -> void:
-    var previous_id := ""
+    var previous_id: String = ""
     if agent_selector.selected >= 0 and agent_selector.selected < agent_ids.size():
         previous_id = agent_ids[agent_selector.selected]
     agent_selector.clear()
@@ -85,7 +85,7 @@ func _refresh_agents() -> void:
         execute_button.disabled = true
     else:
         agent_selector.disabled = false
-        var selected_index := agent_ids.find(previous_id)
+        var selected_index: int = agent_ids.find(previous_id)
         agent_selector.select(selected_index if selected_index >= 0 else 0)
         execute_button.disabled = selected_rival_id.is_empty()
     _refresh_operation_details()
@@ -98,15 +98,15 @@ func _refresh_tension() -> void:
     ]
 
 func _refresh_rival_details() -> void:
-    var rival := RivalManager.get_rival(selected_rival_id)
+    var rival: Dictionary = RivalManager.get_rival(selected_rival_id)
     if rival.is_empty():
         rival_details.text = "Seleccioná un ludus rival."
         return
-    var intel := int(rival.get("intel", 0))
-    var hidden_text := "Desconocido"
-    var security_text := hidden_text
-    var wealth_text := hidden_text
-    var power_text := hidden_text
+    var intel: int = int(rival.get("intel", 0))
+    var hidden_text: String = "Desconocido"
+    var security_text: String = hidden_text
+    var wealth_text: String = hidden_text
+    var power_text: String = hidden_text
     if intel >= 20:
         security_text = str(rival.get("security", 0))
     if intel >= 40:
@@ -132,21 +132,21 @@ func _refresh_operation_details() -> void:
         operation_details.text = "Seleccioná una operación."
         execute_button.disabled = true
         return
-    var operation_id := operation_ids[operation_selector.selected]
-    var data := RivalManager.get_operation(operation_id)
-    var chance_text := "Asigná un agente para calcular probabilidades."
+    var operation_id: String = operation_ids[operation_selector.selected]
+    var data: Dictionary = RivalManager.get_operation(operation_id)
+    var chance_text: String = "Asigná un agente para calcular probabilidades."
     if not agent_ids.is_empty() and agent_selector.selected >= 0 and agent_selector.selected < agent_ids.size():
         var agent = RosterManager.get_person(agent_ids[agent_selector.selected])
-        var rival := RivalManager.get_rival(selected_rival_id)
+        var rival: Dictionary = RivalManager.get_rival(selected_rival_id)
         if agent != null and not rival.is_empty():
-            var skill := agent.intelligence * 6 + agent.agility * 3 + agent.loyalty / 5
+            var skill: int = agent.intelligence * 6 + agent.agility * 3 + floori(float(agent.loyalty) / 5.0)
             if agent.traits.has("mentor"):
                 skill += 6
             if agent.traits.has("freedom_seeker"):
                 skill -= 5
-            var defense := int(rival.get("security", 50)) + int(rival.get("suspicion", 0)) / 2
-            var success_chance := clampi(45 + skill / 3 - defense / 2, 12, 92)
-            var detection_chance := clampi(int(data.get("risk", 20)) + defense / 4 - agent.agility * 2, 5, 85)
+            var defense: int = int(rival.get("security", 50)) + floori(float(int(rival.get("suspicion", 0))) / 2.0)
+            var success_chance: int = clampi(45 + floori(float(skill) / 3.0) - floori(float(defense) / 2.0), 12, 92)
+            var detection_chance: int = clampi(int(data.get("risk", 20)) + floori(float(defense) / 4.0) - agent.agility * 2, 5, 85)
             chance_text = "Éxito estimado: %d%% | Detección estimada: %d%%" % [success_chance, detection_chance]
     operation_details.text = "[b]%s[/b]\nCosto: %d inteligencia y %d denarios\nRiesgo base: %d%%\n%s\n\nRecursos actuales: %d inteligencia y %d denarios" % [
         data.get("name", operation_id),
@@ -175,13 +175,13 @@ func _on_execute_operation() -> void:
     if operation_selector.selected < 0 or operation_selector.selected >= operation_ids.size():
         _on_operation_failed("Seleccioná una operación.")
         return
-    var agent_id := agent_ids[agent_selector.selected]
-    var operation_id := operation_ids[operation_selector.selected]
+    var agent_id: String = agent_ids[agent_selector.selected]
+    var operation_id: String = operation_ids[operation_selector.selected]
     RivalManager.run_operation(selected_rival_id, operation_id, agent_id)
 
 func _on_operation_completed(result: Dictionary) -> void:
-    var outcome := "ÉXITO" if bool(result.get("success", false)) else "FRACASO"
-    var detection := " — DESCUBIERTA" if bool(result.get("detected", false)) else " — NO DETECTADA"
+    var outcome: String = "ÉXITO" if bool(result.get("success", false)) else "FRACASO"
+    var detection: String = " — DESCUBIERTA" if bool(result.get("detected", false)) else " — NO DETECTADA"
     result_log.append_text("\n\n[b]%s%s[/b]\n%s ejecutó %s contra %s.\n%s" % [
         outcome,
         detection,
