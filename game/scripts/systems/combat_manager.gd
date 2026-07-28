@@ -33,14 +33,14 @@ func simulate_duel(gladiator_id: String, tactic: String = "balanced") -> Diction
         combat_failed.emit("La táctica seleccionada no existe.")
         return {}
 
-    var enemy := _generate_enemy(fighter)
-    var player := _build_combatant(fighter, tactic)
+    var enemy: Dictionary = _generate_enemy(fighter)
+    var player: Dictionary = _build_combatant(fighter, tactic)
     var rng := RandomNumberGenerator.new()
     rng.randomize()
     var combat_log: Array[String] = []
-    var round := 0
-    var surrendered := false
-    var relationship_bonus := RelationshipManager.get_combat_morale_bonus(fighter.id)
+    var round: int = 0
+    var surrendered: bool = false
+    var relationship_bonus: int = RelationshipManager.get_combat_morale_bonus(fighter.id)
 
     combat_log.append("%s entra a la arena con táctica %s." % [fighter.display_name, get_tactic_name(tactic)])
     if relationship_bonus > 0:
@@ -61,15 +61,15 @@ func simulate_duel(gladiator_id: String, tactic: String = "balanced") -> Diction
         player.energy = mini(player.max_energy, player.energy + 5)
         enemy.energy = mini(enemy.max_energy, enemy.energy + 5)
 
-    var victory := enemy.health <= 0 and player.health > 0 and not surrendered
-    var reward := 0
-    var reputation := 0
-    var injury := _resolve_injury(fighter, player, victory, surrendered, rng)
-    fighter.fatigue = mini(100, fighter.fatigue + 8 + round / 2)
+    var victory: bool = enemy.health <= 0 and player.health > 0 and not surrendered
+    var reward: int = 0
+    var reputation: int = 0
+    var injury: String = _resolve_injury(fighter, player, victory, surrendered, rng)
+    fighter.fatigue = mini(100, fighter.fatigue + 8 + floori(float(round) / 2.0))
 
     if victory:
-        reward = int(round((70 + enemy.attack * 3) * float(player.get("reward_multiplier", 1.0))))
-        reputation = 2 + enemy.defense / 8
+        reward = int(round((70 + int(enemy.attack) * 3) * float(player.get("reward_multiplier", 1.0))))
+        reputation = 2 + floori(float(int(enemy.defense)) / 8.0)
         GameState.denarii += reward
         GameState.reputation += reputation
         fighter.morale = mini(100, fighter.morale + 8 + maxi(0, relationship_bonus))
@@ -85,12 +85,12 @@ func simulate_duel(gladiator_id: String, tactic: String = "balanced") -> Diction
     if not injury.is_empty():
         combat_log.append("Consecuencia: %s." % injury)
 
-    var personality_event := PersonalityManager.register_combat_result(fighter, victory, surrendered, fighter.injury_severity)
+    var personality_event: Dictionary = PersonalityManager.register_combat_result(fighter, victory, surrendered, fighter.injury_severity)
     if not str(personality_event.get("description", "")).is_empty():
         combat_log.append("Reacción: %s" % personality_event.get("description", ""))
 
     EconomyManager.register_combat_result(victory)
-    var tournament_result := TournamentManager.register_combat_result(fighter.id, victory)
+    var tournament_result: Dictionary = TournamentManager.register_combat_result(fighter.id, victory)
     if not tournament_result.is_empty():
         if victory:
             combat_log.append("Contrato cumplido: +%d denarios adicionales." % int(tournament_result.get("reward_paid", 0)))
@@ -134,12 +134,12 @@ func simulate_duel(gladiator_id: String, tactic: String = "balanced") -> Diction
 func _should_surrender(fighter, player: Dictionary, tactic: String, rng: RandomNumberGenerator) -> bool:
     if player.health <= 0:
         return false
-    var health_ratio := float(player.health) / float(maxi(1, player.max_health))
+    var health_ratio: float = float(player.health) / float(maxi(1, player.max_health))
     if health_ratio > 0.28:
         return false
-    var personality := PersonalityManager.get_combat_modifiers(fighter.id, fighter.traits)
-    var relationship_bonus := RelationshipManager.get_combat_morale_bonus(fighter.id)
-    var chance := 20 + maxi(0, 45 - fighter.morale) + fighter.fatigue / 5 + int(personality.get("surrender", 0)) - relationship_bonus
+    var personality: Dictionary = PersonalityManager.get_combat_modifiers(fighter.id, fighter.traits)
+    var relationship_bonus: int = RelationshipManager.get_combat_morale_bonus(fighter.id)
+    var chance: int = 20 + maxi(0, 45 - fighter.morale) + floori(float(fighter.fatigue) / 5.0) + int(personality.get("surrender", 0)) - relationship_bonus
     if tactic == "aggressive": chance -= 12
     if tactic == "careful": chance += 8
     if fighter.traits.has("arena_lover"): chance -= 8
@@ -147,44 +147,44 @@ func _should_surrender(fighter, player: Dictionary, tactic: String, rng: RandomN
     return rng.randi_range(1, 100) <= clampi(chance, 5, 80)
 
 func _resolve_injury(fighter, player: Dictionary, victory: bool, surrendered: bool, rng: RandomNumberGenerator) -> String:
-    var health_ratio := float(maxi(0, player.health)) / float(maxi(1, player.max_health))
-    var chance := 8
+    var health_ratio: float = float(maxi(0, player.health)) / float(maxi(1, player.max_health))
+    var chance: int = 8
     if health_ratio <= 0.0: chance = 75
     elif health_ratio < 0.25: chance = 48
     elif health_ratio < 0.50: chance = 24
     if surrendered: chance -= 18
     if victory: chance -= 5
     chance -= EstateManager.get_level("infirmary") * 2
-    var personality := PersonalityManager.get_combat_modifiers(fighter.id, fighter.traits)
+    var personality: Dictionary = PersonalityManager.get_combat_modifiers(fighter.id, fighter.traits)
     chance = int(round(chance * float(personality.get("injury_risk", 1.0))))
     if rng.randi_range(1, 100) > clampi(chance, 2, 90):
         return ""
-    var severity := 1
+    var severity: int = 1
     if health_ratio <= 0.0 or rng.randi_range(1, 100) <= 18: severity = 3
     elif health_ratio < 0.25 or rng.randi_range(1, 100) <= 42: severity = 2
-    var names := {
+    var names: Dictionary = {
         1: ["Contusión", "Corte superficial", "Esguince"],
         2: ["Herida profunda", "Costilla fisurada", "Luxación"],
         3: ["Fractura grave", "Trauma severo", "Herida crítica"]
     }
     var pool: Array = names[severity]
-    var injury_name := str(pool[rng.randi_range(0, pool.size() - 1)])
-    var days := severity * 2 + rng.randi_range(0, severity * 2)
+    var injury_name: String = str(pool[rng.randi_range(0, pool.size() - 1)])
+    var days: int = severity * 2 + rng.randi_range(0, severity * 2)
     fighter.apply_injury(injury_name, severity, days)
     return "%s; recuperación estimada: %d día(s)" % [injury_name, days]
 
 func _build_combatant(person, tactic: String) -> Dictionary:
-    var equipment := EquipmentManager.get_equipped_stats(person)
-    var progression := GladiatorProgressionManager.get_modifiers(person.id)
-    var personality := PersonalityManager.get_combat_modifiers(person.id, person.traits)
-    var relationship_bonus := RelationshipManager.get_combat_morale_bonus(person.id)
-    var relationship_multiplier := 1.0 + float(relationship_bonus) * 0.01
-    var attack := int(round((person.get_base_attack() + int(equipment.get("power", 0)) + int(progression.get("attack_bonus", 0))) * float(progression.get("attack", 1.0)) * float(personality.get("attack", 1.0)) * relationship_multiplier))
-    var defense := int(round((person.get_base_defense() + int(equipment.get("defense", 0)) + int(progression.get("defense_bonus", 0))) * float(progression.get("defense", 1.0)) * float(personality.get("defense", 1.0)) * relationship_multiplier))
-    var max_health := int(round(person.get_max_health() * float(progression.get("health", 1.0))))
-    var max_energy := int(round((person.get_max_energy() + int(progression.get("energy_bonus", 0)) + maxi(0, relationship_bonus)) * float(progression.get("energy", 1.0))))
-    var accuracy := 55 + person.agility * 3 + int(progression.get("accuracy_bonus", 0)) + int(personality.get("accuracy", 0)) + relationship_bonus
-    var energy_cost := 12
+    var equipment: Dictionary = EquipmentManager.get_equipped_stats(person)
+    var progression: Dictionary = GladiatorProgressionManager.get_modifiers(person.id)
+    var personality: Dictionary = PersonalityManager.get_combat_modifiers(person.id, person.traits)
+    var relationship_bonus: int = RelationshipManager.get_combat_morale_bonus(person.id)
+    var relationship_multiplier: float = 1.0 + float(relationship_bonus) * 0.01
+    var attack: int = int(round((person.get_base_attack() + int(equipment.get("power", 0)) + int(progression.get("attack_bonus", 0))) * float(progression.get("attack", 1.0)) * float(personality.get("attack", 1.0)) * relationship_multiplier))
+    var defense: int = int(round((person.get_base_defense() + int(equipment.get("defense", 0)) + int(progression.get("defense_bonus", 0))) * float(progression.get("defense", 1.0)) * float(personality.get("defense", 1.0)) * relationship_multiplier))
+    var max_health: int = int(round(person.get_max_health() * float(progression.get("health", 1.0))))
+    var max_energy: int = int(round((person.get_max_energy() + int(progression.get("energy_bonus", 0)) + maxi(0, relationship_bonus)) * float(progression.get("energy", 1.0))))
+    var accuracy: int = 55 + person.agility * 3 + int(progression.get("accuracy_bonus", 0)) + int(personality.get("accuracy", 0)) + relationship_bonus
+    var energy_cost: int = 12
     match tactic:
         "aggressive":
             attack = int(attack * 1.20)
@@ -212,7 +212,7 @@ func _build_combatant(person, tactic: String) -> Dictionary:
     }
 
 func _generate_enemy(person) -> Dictionary:
-    var tier := maxi(1, (person.strength + person.agility + person.endurance) / 8)
+    var tier: int = maxi(1, floori(float(person.strength + person.agility + person.endurance) / 8.0))
     return {
         "name": "Gladiador rival nivel %d" % tier,
         "health": 75 + tier * 20,
@@ -234,7 +234,7 @@ func _perform_attack(attacker: Dictionary, defender: Dictionary, rng: RandomNumb
     if rng.randi_range(1, 100) > int(attacker.accuracy):
         combat_log.append("%s falla el ataque." % attacker.name)
         return
-    var variance := rng.randi_range(-3, 4)
-    var damage := maxi(1, int(attacker.attack) + variance - int(defender.defense) / 2)
+    var variance: int = rng.randi_range(-3, 4)
+    var damage: int = maxi(1, int(attacker.attack) + variance - floori(float(int(defender.defense)) / 2.0))
     defender.health -= damage
     combat_log.append("%s causa %d de daño a %s." % [attacker.name, damage, defender.name])
