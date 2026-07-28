@@ -32,21 +32,21 @@ func _ready() -> void:
     call_deferred("_ensure_roster_records")
 
 func _on_combat_finished(result: Dictionary) -> void:
-    var person_id := str(result.get("fighter_id", ""))
+    var person_id: String = str(result.get("fighter_id", ""))
     if person_id.is_empty():
         return
-    var difficulty := 1
+    var difficulty: int = 1
     var tournament: Dictionary = result.get("tournament", {})
     if not tournament.is_empty():
         difficulty = maxi(1, int(tournament.get("difficulty", 1)))
-    var gains := register_combat_result(person_id, bool(result.get("victory", false)), int(result.get("rounds", 1)), difficulty)
+    var gains: Dictionary = register_combat_result(person_id, bool(result.get("victory", false)), int(result.get("rounds", 1)), difficulty)
     result["progression"] = gains
 
 func _on_day_advanced(_day: int) -> void:
     process_day()
 
 func _ensure_roster_records() -> void:
-    var changed := false
+    var changed: bool = false
     for person in RosterManager.get_people():
         if person.role == "gladiator" and not records.has(person.id):
             records[person.id] = _new_record()
@@ -60,9 +60,9 @@ func ensure_record(person_id: String) -> Dictionary:
     return records[person_id]
 
 func register_combat_result(person_id: String, victory: bool, rounds: int, difficulty: int = 1) -> Dictionary:
-    var record := ensure_record(person_id)
-    var experience_gain := maxi(8, rounds * 2 + difficulty * 8)
-    var fame_gain := difficulty * (5 if victory else 1)
+    var record: Dictionary = ensure_record(person_id)
+    var experience_gain: int = maxi(8, rounds * 2 + difficulty * 8)
+    var fame_gain: int = difficulty * (5 if victory else 1)
     if victory:
         experience_gain += 15
         record["wins"] = int(record.get("wins", 0)) + 1
@@ -70,19 +70,19 @@ func register_combat_result(person_id: String, victory: bool, rounds: int, diffi
         record["losses"] = int(record.get("losses", 0)) + 1
     record["experience"] = int(record.get("experience", 0)) + experience_gain
     record["fame"] = maxi(0, int(record.get("fame", 0)) + fame_gain)
-    var previous_level := int(record.get("level", 1))
+    var previous_level: int = int(record.get("level", 1))
     _resolve_level_ups(person_id, record)
     progression_changed.emit()
     return {"experience":experience_gain,"fame":fame_gain,"level":record.get("level", 1),"levels_gained":int(record.get("level",1))-previous_level}
 
 func process_day() -> void:
-    var changed := false
+    var changed: bool = false
     for person in RosterManager.get_people():
         if person.role != "gladiator":
             continue
-        var record := ensure_record(person.id)
+        var record: Dictionary = ensure_record(person.id)
         record["age_days"] = int(record.get("age_days", 0)) + 1
-        var age_days := int(record.get("age_days", 0))
+        var age_days: int = int(record.get("age_days", 0))
         record["career_state"] = "declive" if age_days >= 540 else ("veterano" if age_days >= 360 else "activo")
         changed = true
     if changed:
@@ -94,7 +94,7 @@ func set_specialization(person_id: String, specialization: String) -> bool:
     var person = RosterManager.get_person(person_id)
     if person == null or person.role != "gladiator":
         return false
-    var record := ensure_record(person_id)
+    var record: Dictionary = ensure_record(person_id)
     if int(record.get("level", 1)) < 3 and specialization != "balanced":
         return false
     record["specialization"] = specialization
@@ -105,12 +105,12 @@ func set_specialization(person_id: String, specialization: String) -> bool:
 func unlock_technique(person_id: String, technique_id: String) -> bool:
     if not TECHNIQUES.has(technique_id):
         return false
-    var record := ensure_record(person_id)
+    var record: Dictionary = ensure_record(person_id)
     var learned: Array = record.get("techniques", [])
     if learned.has(technique_id):
         return false
     var technique: Dictionary = TECHNIQUES[technique_id]
-    var cost := int(technique.get("cost", 1))
+    var cost: int = int(technique.get("cost", 1))
     if int(record.get("level", 1)) < int(technique.get("min_level", 1)) or int(record.get("technique_points", 0)) < cost:
         return false
     record["technique_points"] = int(record.get("technique_points", 0)) - cost
@@ -124,10 +124,10 @@ func retire_gladiator(person_id: String) -> bool:
     var person = RosterManager.get_person(person_id)
     if person == null or person.role != "gladiator":
         return false
-    var record := ensure_record(person_id)
+    var record: Dictionary = ensure_record(person_id)
     if int(record.get("age_days", 0)) < 180:
         return false
-    var summary := record.duplicate(true)
+    var summary: Dictionary = record.duplicate(true)
     summary["id"] = person_id
     summary["name"] = person.display_name
     summary["retired_day"] = GameState.day
@@ -144,10 +144,10 @@ func get_record(person_id: String) -> Dictionary:
     return ensure_record(person_id).duplicate(true)
 
 func get_modifiers(person_id: String) -> Dictionary:
-    var record := ensure_record(person_id)
-    var specialization := str(record.get("specialization", "balanced"))
+    var record: Dictionary = ensure_record(person_id)
+    var specialization: String = str(record.get("specialization", "balanced"))
     var modifiers: Dictionary = SPECIALIZATIONS.get(specialization, SPECIALIZATIONS["balanced"]).duplicate(true)
-    var level_bonus := 1.0 + float(int(record.get("level", 1)) - 1) * 0.025
+    var level_bonus: float = 1.0 + float(int(record.get("level", 1)) - 1) * 0.025
     modifiers["attack"] = float(modifiers.get("attack", 1.0)) * level_bonus
     modifiers["defense"] = float(modifiers.get("defense", 1.0)) * level_bonus
     modifiers["health"] = float(modifiers.get("health", 1.0)) * level_bonus
@@ -173,8 +173,8 @@ func get_market_value(person_id: String) -> int:
     var person = RosterManager.get_person(person_id)
     if person == null:
         return 0
-    var record := ensure_record(person_id)
-    var base := (person.strength + person.agility + person.endurance + person.intelligence) * 12
+    var record: Dictionary = ensure_record(person_id)
+    var base: int = (person.strength + person.agility + person.endurance + person.intelligence) * 12
     base += int(record.get("level", 1)) * 45
     base += int(record.get("fame", 0)) * 4
     base += int(record.get("wins", 0)) * 18
@@ -199,6 +199,12 @@ func get_technique_ids() -> Array[String]:
         ids.append(str(technique_id))
     return ids
 
+func get_technique(technique_id: String) -> Dictionary:
+    return TECHNIQUES.get(technique_id, {}).duplicate(true)
+
+func get_experience_required(level: int) -> int:
+    return _experience_required(level)
+
 func export_state() -> Dictionary:
     return {"records":records.duplicate(true),"retired_gladiators":retired_gladiators.duplicate(true)}
 
@@ -212,7 +218,7 @@ func _new_record() -> Dictionary:
     return {"level":1,"experience":0,"specialization":"balanced","fame":0,"wins":0,"losses":0,"age_days":0,"career_state":"activo","technique_points":0,"techniques":[]}
 
 func _resolve_level_ups(person_id: String, record: Dictionary) -> void:
-    var leveled := false
+    var leveled: bool = false
     while int(record.get("experience", 0)) >= _experience_required(int(record.get("level", 1))):
         record["experience"] = int(record.get("experience", 0)) - _experience_required(int(record.get("level", 1)))
         record["level"] = int(record.get("level", 1)) + 1
