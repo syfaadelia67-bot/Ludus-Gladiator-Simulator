@@ -13,25 +13,39 @@ func _ready() -> void:
 
 func refresh() -> void:
     var summary: Dictionary = CombatHistoryManager.get_summary()
-    summary_label.text = "[b]RESUMEN DE LA ARENA[/b]\nCombates: %d | Victorias: %d | Derrotas: %d | Rendiciones: %d | Efectividad: %.1f%%\nPremios acumulados: %d denarios | Reputación obtenida: %+d" % [
+    var titles: Array = summary.get("titles", [])
+    var title_text: String = "Ninguno todavía" if titles.is_empty() else ", ".join(titles)
+    var milestone_text: String = ""
+    var milestones: Array[String] = CombatHistoryManager.get_next_milestones()
+    if not milestones.is_empty():
+        milestone_text = "\n[b]Próximos hitos[/b] · %s" % " | ".join(milestones)
+    summary_label.text = "[b]RESUMEN DE LA ARENA[/b]\nCombates: %d | Victorias: %d | Derrotas: %d | Rendiciones: %d | Efectividad: %.1f%%\nRacha actual: %d | Mejor racha: %d | Victorias impecables: %d | Bestias vencidas: %d\nPremios: %d denarios | Reputación: %+d\n[b]Títulos[/b] · %s%s" % [
         int(summary.get("total", 0)),
         int(summary.get("wins", 0)),
         int(summary.get("losses", 0)),
         int(summary.get("surrenders", 0)),
         float(summary.get("win_rate", 0.0)),
+        int(summary.get("current_streak", 0)),
+        int(summary.get("best_streak", 0)),
+        int(summary.get("flawless_wins", 0)),
+        int(summary.get("beast_wins", 0)),
         int(summary.get("rewards", 0)),
-        int(summary.get("reputation", 0))
+        int(summary.get("reputation", 0)),
+        title_text,
+        milestone_text
     ]
     visible_entries = CombatHistoryManager.get_entries()
     history_list.clear()
     for entry in visible_entries:
         var result_text: String = "Victoria" if bool(entry.get("victory", false)) else ("Rendición" if bool(entry.get("surrendered", false)) else "Derrota")
-        history_list.add_item("Día %d · %s · %s contra %s · %s" % [
+        var flawless_mark: String = " ★" if bool(entry.get("flawless", false)) else ""
+        history_list.add_item("Día %d · %s · %s contra %s · %s%s" % [
             int(entry.get("day", 0)),
             str(entry.get("event_name", "Combate")),
             str(entry.get("fighter", "Gladiador")),
             str(entry.get("enemy", "Rival")),
-            result_text
+            result_text,
+            flawless_mark
         ])
     if visible_entries.is_empty():
         details_label.text = "Todavía no hay combates registrados."
@@ -50,10 +64,11 @@ func _show_entry(index: int) -> void:
     var max_health: int = maxi(1, int(entry.get("player_max_health", 1)))
     var health_percent: float = float(int(entry.get("player_health", 0))) / float(max_health) * 100.0
     var injury: String = str(entry.get("injury", ""))
+    var performance: String = "Victoria impecable" if bool(entry.get("flawless", false)) else "Combate estándar"
     var lines: Array[String] = [
         "[b]%s — %s[/b]" % [entry.get("event_name", "Combate"), status],
         "Día %d | %s contra %s" % [int(entry.get("day", 0)), entry.get("fighter", "Gladiador"), entry.get("enemy", "Rival")],
-        "Rondas: %d | Vida restante: %.0f%%" % [int(entry.get("rounds", 0)), health_percent],
+        "Rondas: %d | Vida restante: %.0f%% | %s" % [int(entry.get("rounds", 0)), health_percent, performance],
         "Premio: %d denarios | Reputación: %+d" % [int(entry.get("reward", 0)), int(entry.get("reputation", 0))],
         "Herida: %s" % (injury if not injury.is_empty() else "Ninguna")
     ]
@@ -63,4 +78,9 @@ func _show_entry(index: int) -> void:
         for value in technique_stats.values():
             var technique: Dictionary = value
             lines.append("• %s: %d uso(s), %d daño" % [technique.get("name", "Técnica"), int(technique.get("uses", 0)), int(technique.get("damage", 0))])
+    var status_stats: Dictionary = entry.get("status_stats", {})
+    if not status_stats.is_empty():
+        lines.append("[b]Estados provocados[/b]")
+        for status_name in status_stats.keys():
+            lines.append("• %s: %d" % [str(status_name).capitalize(), int(status_stats.get(status_name, 0))])
     details_label.text = "\n".join(lines)
