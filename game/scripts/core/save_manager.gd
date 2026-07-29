@@ -5,7 +5,7 @@ signal load_completed(path: String)
 signal save_failed(reason: String)
 signal load_failed(reason: String)
 
-const SAVE_VERSION := 9
+const SAVE_VERSION := 10
 const SAVE_PATH := "user://ludus_save.json"
 const BACKUP_PATH := "user://ludus_save.backup.json"
 const TEMP_PATH := "user://ludus_save.tmp.json"
@@ -142,6 +142,12 @@ func _validate_payload(payload: Dictionary) -> bool:
         if person_id.is_empty() or known_ids.has(person_id):
             return false
         known_ids[person_id] = true
+    var history_data: Variant = payload.get("combat_history", {})
+    if not history_data is Dictionary:
+        return false
+    var history_entries: Variant = history_data.get("entries", [])
+    if not history_entries is Array:
+        return false
     return true
 
 func _build_payload() -> Dictionary:
@@ -157,6 +163,8 @@ func _build_payload() -> Dictionary:
         "equipment":{"inventory":EquipmentManager.inventory.duplicate(true),"serial":EquipmentManager.serial},
         "market":{"offers":MarketManager.offers.duplicate(true),"serial":MarketManager._serial},
         "rivals":{"entries":RivalManager.rivals.duplicate(true),"hostility_heat":RivalManager.hostility_heat,"operations_completed":RivalManager.operations_completed,"operations_detected":RivalManager.operations_detected},
+        "combat":{"last_combat_day":CombatManager.last_combat_day,"last_result":CombatManager.last_result.duplicate(true),"next_battle_config":CombatManager.next_battle_config.duplicate(true)},
+        "combat_history":CombatHistoryManager.export_state(),
         "events":EventManager.export_state(),
         "economy":EconomyManager.export_state(),
         "tournaments":TournamentManager.export_state(),
@@ -174,6 +182,7 @@ func _apply_payload(data: Dictionary) -> bool:
     var equipment_data: Dictionary = data.get("equipment", {})
     var market_data: Dictionary = data.get("market", {})
     var rival_data: Dictionary = data.get("rivals", {})
+    var combat_data: Dictionary = data.get("combat", {})
 
     GameState.day = maxi(1, int(game_data.get("day", 1)))
     GameState.denarii = maxi(0, int(game_data.get("denarii", 500)))
@@ -211,6 +220,10 @@ func _apply_payload(data: Dictionary) -> bool:
     RivalManager.operations_completed = maxi(0, int(rival_data.get("operations_completed", 0)))
     RivalManager.operations_detected = maxi(0, int(rival_data.get("operations_detected", 0)))
 
+    CombatManager.last_combat_day = int(combat_data.get("last_combat_day", -1))
+    CombatManager.last_result = combat_data.get("last_result", {}).duplicate(true)
+    CombatManager.next_battle_config = combat_data.get("next_battle_config", CombatManager.next_battle_config).duplicate(true)
+    CombatHistoryManager.import_state(data.get("combat_history", {}))
     EventManager.import_state(data.get("events", {}))
     EconomyManager.import_state(data.get("economy", {}))
     TournamentManager.import_state(data.get("tournaments", {}))
