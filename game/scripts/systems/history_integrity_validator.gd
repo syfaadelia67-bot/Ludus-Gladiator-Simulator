@@ -10,7 +10,7 @@ static func validate(entries: Array[Dictionary], current_day: int) -> Dictionary
     for entry: Dictionary in entries:
         if not _is_valid_entry(entry):
             invalid_entries += 1
-        if int(entry.get("day", 0)) > current_day:
+        if current_day >= 1 and int(entry.get("day", 0)) > current_day:
             future_entries += 1
 
         var signature: String = _build_signature(entry)
@@ -28,9 +28,11 @@ static func validate(entries: Array[Dictionary], current_day: int) -> Dictionary
 
 static func sanitize(raw_entries: Array, maximum_entries: int = 60, current_day: int = -1) -> Array[Dictionary]:
     var sanitized: Array[Dictionary] = []
-    var signatures: Dictionary = {}
     var safe_maximum: int = maxi(0, maximum_entries)
+    if safe_maximum == 0:
+        return sanitized
 
+    var signatures: Dictionary = {}
     for raw_entry: Variant in raw_entries:
         if not raw_entry is Dictionary:
             continue
