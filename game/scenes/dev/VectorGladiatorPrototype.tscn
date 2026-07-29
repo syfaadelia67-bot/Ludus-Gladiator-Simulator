@@ -1,0 +1,414 @@
+[gd_scene load_steps=20 format=3]
+
+[ext_resource type="Script" path="res://scripts/dev/vector_gladiator_prototype.gd" id="1_controller"]
+[ext_resource type="Script" path="res://addons/scalable_vector_shapes_2d/scalable_vector_shape_2d.gd" id="2_shape"]
+
+[sub_resource type="Curve2D" id="Curve_leg"]
+_data = {"points": PackedVector2Array(0, 0, 0, 0, -14, 0, 0, 0, 0, 0, 17, 0, 0, 0, 0, 0, 13, 94, 0, 0, 0, 0, -10, 94)}
+point_count = 4
+
+[sub_resource type="Curve2D" id="Curve_cape"]
+_data = {"points": PackedVector2Array(0, 0, 0, 0, -18, 0, 0, 0, 0, 0, 34, 10, 0, 0, 0, 0, 18, 125, 0, 0, 0, 0, -42, 110)}
+point_count = 4
+
+[sub_resource type="Curve2D" id="Curve_torso"]
+_data = {"points": PackedVector2Array(0, 0, 0, 0, -40, -55, 0, 0, 0, 0, 42, -48, 0, 0, 0, 0, 34, 55, 0, 0, 0, 0, -34, 55)}
+point_count = 4
+
+[sub_resource type="Curve2D" id="Curve_head"]
+_data = {"points": PackedVector2Array(0, 0, 0, 0, -25, -28, 0, 0, 0, 0, 25, -28, 0, 0, 0, 0, 30, 20, 0, 0, 0, 0, -24, 28)}
+point_count = 4
+
+[sub_resource type="Curve2D" id="Curve_helmet"]
+_data = {"points": PackedVector2Array(0, 0, 0, 0, -34, -23, 0, 0, 0, 0, -8, -46, 0, 0, 0, 0, 27, -31, 0, 0, 0, 0, 36, 0, 0, 0, 0, 0, 18, -8, 0, 0, 0, 0, -34, 7)}
+point_count = 6
+
+[sub_resource type="Curve2D" id="Curve_arm"]
+_data = {"points": PackedVector2Array(0, 0, 0, 0, -8, -13, 0, 0, 0, 0, 61, -9, 0, 0, 0, 0, 64, 11, 0, 0, 0, 0, -8, 15)}
+point_count = 4
+
+[sub_resource type="Curve2D" id="Curve_sword"]
+_data = {"points": PackedVector2Array(0, 0, 0, 0, -5, 5, 0, 0, 0, 0, 8, -94, 0, 0, 0, 0, 15, -102, 0, 0, 0, 0, 17, -88, 0, 0, 0, 0, 6, 8)}
+point_count = 5
+
+[sub_resource type="Curve2D" id="Curve_shield"]
+_data = {"points": PackedVector2Array(0, 0, 0, 0, -40, -50, 0, 0, 0, 0, 36, -50, 0, 0, 0, 0, 42, 20, 0, 0, 0, 0, 0, 58, 0, 0, 0, 0, -42, 20)}
+point_count = 5
+
+[sub_resource type="Curve2D" id="Curve_skirt"]
+_data = {"points": PackedVector2Array(0, 0, 0, 0, -38, -6, 0, 0, 0, 0, 38, -6, 0, 0, 0, 0, 48, 52, 0, 0, 0, 0, 18, 42, 0, 0, 0, 0, 0, 55, 0, 0, 0, 0, -20, 42, 0, 0, 0, 0, -48, 52)}
+point_count = 7
+
+[sub_resource type="Animation" id="Animation_reset"]
+resource_name = "RESET"
+tracks/0/type = "value"
+tracks/0/path = NodePath("Gladiator:position")
+tracks/0/keys = {"times": PackedFloat32Array(0), "transitions": PackedFloat32Array(1), "update": 0, "values": [Vector2(640, 350)]}
+tracks/1/type = "value"
+tracks/1/path = NodePath("Gladiator:rotation")
+tracks/1/keys = {"times": PackedFloat32Array(0), "transitions": PackedFloat32Array(1), "update": 0, "values": [0.0]}
+tracks/2/type = "value"
+tracks/2/path = NodePath("Gladiator:scale")
+tracks/2/keys = {"times": PackedFloat32Array(0), "transitions": PackedFloat32Array(1), "update": 0, "values": [Vector2(1, 1)]}
+tracks/3/type = "value"
+tracks/3/path = NodePath("Gladiator/Torso:scale")
+tracks/3/keys = {"times": PackedFloat32Array(0), "transitions": PackedFloat32Array(1), "update": 0, "values": [Vector2(1, 1)]}
+tracks/4/type = "value"
+tracks/4/path = NodePath("Gladiator/WeaponArm:rotation")
+tracks/4/keys = {"times": PackedFloat32Array(0), "transitions": PackedFloat32Array(1), "update": 0, "values": [-0.2]}
+tracks/5/type = "value"
+tracks/5/path = NodePath("Gladiator/ShieldArm:rotation")
+tracks/5/keys = {"times": PackedFloat32Array(0), "transitions": PackedFloat32Array(1), "update": 0, "values": [0.22]}
+tracks/6/type = "value"
+tracks/6/path = NodePath("Gladiator/Head:rotation")
+tracks/6/keys = {"times": PackedFloat32Array(0), "transitions": PackedFloat32Array(1), "update": 0, "values": [0.0]}
+
+[sub_resource type="Animation" id="Animation_idle"]
+resource_name = "idle"
+length = 1.6
+loop_mode = 1
+tracks/0/type = "value"
+tracks/0/path = NodePath("Gladiator/Torso:scale")
+tracks/0/interp = 1
+tracks/0/keys = {"times": PackedFloat32Array(0, 0.8, 1.6), "transitions": PackedFloat32Array(1, 1, 1), "update": 0, "values": [Vector2(1, 1), Vector2(1.025, 1.04), Vector2(1, 1)]}
+tracks/1/type = "value"
+tracks/1/path = NodePath("Gladiator/WeaponArm:rotation")
+tracks/1/interp = 1
+tracks/1/keys = {"times": PackedFloat32Array(0, 0.8, 1.6), "transitions": PackedFloat32Array(1, 1, 1), "update": 0, "values": [-0.2, -0.12, -0.2]}
+tracks/2/type = "value"
+tracks/2/path = NodePath("Gladiator/Head:rotation")
+tracks/2/interp = 1
+tracks/2/keys = {"times": PackedFloat32Array(0, 0.8, 1.6), "transitions": PackedFloat32Array(1, 1, 1), "update": 0, "values": [0.0, 0.025, 0.0]}
+
+[sub_resource type="Animation" id="Animation_attack"]
+resource_name = "attack"
+length = 0.8
+tracks/0/type = "value"
+tracks/0/path = NodePath("Gladiator:position")
+tracks/0/interp = 1
+tracks/0/keys = {"times": PackedFloat32Array(0, 0.25, 0.55, 0.8), "transitions": PackedFloat32Array(1, 1, 1, 1), "update": 0, "values": [Vector2(640, 350), Vector2(618, 350), Vector2(700, 350), Vector2(640, 350)]}
+tracks/1/type = "value"
+tracks/1/path = NodePath("Gladiator/WeaponArm:rotation")
+tracks/1/interp = 1
+tracks/1/keys = {"times": PackedFloat32Array(0, 0.25, 0.55, 0.8), "transitions": PackedFloat32Array(1, 1, 1, 1), "update": 0, "values": [-0.2, -1.15, 0.8, -0.2]}
+tracks/2/type = "value"
+tracks/2/path = NodePath("Gladiator/Torso:scale")
+tracks/2/interp = 1
+tracks/2/keys = {"times": PackedFloat32Array(0, 0.55, 0.8), "transitions": PackedFloat32Array(1, 1, 1), "update": 0, "values": [Vector2(1, 1), Vector2(1.08, 0.96), Vector2(1, 1)]}
+
+[sub_resource type="Animation" id="Animation_block"]
+resource_name = "block"
+length = 0.9
+tracks/0/type = "value"
+tracks/0/path = NodePath("Gladiator/ShieldArm:rotation")
+tracks/0/interp = 1
+tracks/0/keys = {"times": PackedFloat32Array(0, 0.3, 0.65, 0.9), "transitions": PackedFloat32Array(1, 1, 1, 1), "update": 0, "values": [0.22, -0.85, -0.85, 0.22]}
+tracks/1/type = "value"
+tracks/1/path = NodePath("Gladiator:position")
+tracks/1/interp = 1
+tracks/1/keys = {"times": PackedFloat32Array(0, 0.3, 0.9), "transitions": PackedFloat32Array(1, 1, 1), "update": 0, "values": [Vector2(640, 350), Vector2(628, 350), Vector2(640, 350)]}
+
+[sub_resource type="Animation" id="Animation_hit"]
+resource_name = "hit"
+length = 0.65
+tracks/0/type = "value"
+tracks/0/path = NodePath("Gladiator:position")
+tracks/0/interp = 1
+tracks/0/keys = {"times": PackedFloat32Array(0, 0.18, 0.4, 0.65), "transitions": PackedFloat32Array(1, 1, 1, 1), "update": 0, "values": [Vector2(640, 350), Vector2(590, 350), Vector2(605, 350), Vector2(640, 350)]}
+tracks/1/type = "value"
+tracks/1/path = NodePath("Gladiator/Torso:scale")
+tracks/1/interp = 1
+tracks/1/keys = {"times": PackedFloat32Array(0, 0.18, 0.4, 0.65), "transitions": PackedFloat32Array(1, 1, 1, 1), "update": 0, "values": [Vector2(1, 1), Vector2(0.82, 1.12), Vector2(1.05, 0.96), Vector2(1, 1)]}
+tracks/2/type = "value"
+tracks/2/path = NodePath("Gladiator/Head:rotation")
+tracks/2/interp = 1
+tracks/2/keys = {"times": PackedFloat32Array(0, 0.18, 0.65), "transitions": PackedFloat32Array(1, 1, 1), "update": 0, "values": [0.0, -0.3, 0.0]}
+
+[sub_resource type="Animation" id="Animation_defeat"]
+resource_name = "defeat"
+length = 1.35
+tracks/0/type = "value"
+tracks/0/path = NodePath("Gladiator:rotation")
+tracks/0/interp = 1
+tracks/0/keys = {"times": PackedFloat32Array(0, 0.4, 1.35), "transitions": PackedFloat32Array(1, 1, 1), "update": 0, "values": [0.0, 0.18, 1.42]}
+tracks/1/type = "value"
+tracks/1/path = NodePath("Gladiator:position")
+tracks/1/interp = 1
+tracks/1/keys = {"times": PackedFloat32Array(0, 0.4, 1.35), "transitions": PackedFloat32Array(1, 1, 1), "update": 0, "values": [Vector2(640, 350), Vector2(625, 365), Vector2(635, 465)]}
+tracks/2/type = "value"
+tracks/2/path = NodePath("Gladiator/WeaponArm:rotation")
+tracks/2/interp = 1
+tracks/2/keys = {"times": PackedFloat32Array(0, 0.45, 1.35), "transitions": PackedFloat32Array(1, 1, 1), "update": 0, "values": [-0.2, 0.4, 1.0]}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_main"]
+_data = {
+&"RESET": SubResource("Animation_reset"),
+&"attack": SubResource("Animation_attack"),
+&"block": SubResource("Animation_block"),
+&"defeat": SubResource("Animation_defeat"),
+&"hit": SubResource("Animation_hit"),
+&"idle": SubResource("Animation_idle")
+}
+
+[node name="VectorGladiatorPrototype" type="Node2D"]
+script = ExtResource("1_controller")
+
+[node name="Background" type="ColorRect" parent="."]
+offset_right = 1280.0
+offset_bottom = 720.0
+color = Color(0.055, 0.047, 0.065, 1)
+mouse_filter = 2
+
+[node name="Ground" type="Polygon2D" parent="."]
+polygon = PackedVector2Array(0, 585, 1280, 585, 1280, 720, 0, 720)
+color = Color(0.13, 0.105, 0.09, 1)
+
+[node name="Gladiator" type="Node2D" parent="."]
+position = Vector2(640, 350)
+
+[node name="RearLeg" type="Node2D" parent="Gladiator" node_paths=PackedStringArray("polygon", "line")]
+position = Vector2(-20, 94)
+rotation = 0.08
+script = ExtResource("2_shape")
+polygon = NodePath("Fill")
+line = NodePath("Stroke")
+curve = SubResource("Curve_leg")
+fill_color = Color(0.38, 0.22, 0.16, 1)
+stroke_color = Color(0.08, 0.055, 0.05, 1)
+stroke_width = 6.0
+
+[node name="Fill" type="Polygon2D" parent="Gladiator/RearLeg"]
+polygon = PackedVector2Array(-14, 0, 17, 0, 13, 94, -10, 94)
+color = Color(0.38, 0.22, 0.16, 1)
+
+[node name="Stroke" type="Line2D" parent="Gladiator/RearLeg"]
+points = PackedVector2Array(-14, 0, 17, 0, 13, 94, -10, 94, -14, 0)
+width = 6.0
+default_color = Color(0.08, 0.055, 0.05, 1)
+
+[node name="Cape" type="Node2D" parent="Gladiator" node_paths=PackedStringArray("polygon", "line")]
+position = Vector2(-18, -92)
+rotation = 0.08
+script = ExtResource("2_shape")
+polygon = NodePath("Fill")
+line = NodePath("Stroke")
+curve = SubResource("Curve_cape")
+fill_color = Color(0.46, 0.08, 0.1, 1)
+stroke_color = Color(0.1, 0.025, 0.03, 1)
+stroke_width = 6.0
+
+[node name="Fill" type="Polygon2D" parent="Gladiator/Cape"]
+polygon = PackedVector2Array(-18, 0, 34, 10, 18, 125, -42, 110)
+color = Color(0.46, 0.08, 0.1, 1)
+
+[node name="Stroke" type="Line2D" parent="Gladiator/Cape"]
+points = PackedVector2Array(-18, 0, 34, 10, 18, 125, -42, 110, -18, 0)
+width = 6.0
+default_color = Color(0.1, 0.025, 0.03, 1)
+
+[node name="FrontLeg" type="Node2D" parent="Gladiator" node_paths=PackedStringArray("polygon", "line")]
+position = Vector2(17, 94)
+rotation = -0.04
+script = ExtResource("2_shape")
+polygon = NodePath("Fill")
+line = NodePath("Stroke")
+curve = SubResource("Curve_leg")
+fill_color = Color(0.58, 0.34, 0.22, 1)
+stroke_color = Color(0.08, 0.055, 0.05, 1)
+stroke_width = 6.0
+
+[node name="Fill" type="Polygon2D" parent="Gladiator/FrontLeg"]
+polygon = PackedVector2Array(-14, 0, 17, 0, 13, 94, -10, 94)
+color = Color(0.58, 0.34, 0.22, 1)
+
+[node name="Stroke" type="Line2D" parent="Gladiator/FrontLeg"]
+points = PackedVector2Array(-14, 0, 17, 0, 13, 94, -10, 94, -14, 0)
+width = 6.0
+default_color = Color(0.08, 0.055, 0.05, 1)
+
+[node name="Torso" type="Node2D" parent="Gladiator" node_paths=PackedStringArray("polygon", "line")]
+position = Vector2(0, -30)
+script = ExtResource("2_shape")
+polygon = NodePath("Fill")
+line = NodePath("Stroke")
+curve = SubResource("Curve_torso")
+fill_color = Color(0.42, 0.18, 0.12, 1)
+stroke_color = Color(0.07, 0.04, 0.035, 1)
+stroke_width = 7.0
+
+[node name="Fill" type="Polygon2D" parent="Gladiator/Torso"]
+polygon = PackedVector2Array(-40, -55, 42, -48, 34, 55, -34, 55)
+color = Color(0.42, 0.18, 0.12, 1)
+
+[node name="Stroke" type="Line2D" parent="Gladiator/Torso"]
+points = PackedVector2Array(-40, -55, 42, -48, 34, 55, -34, 55, -40, -55)
+width = 7.0
+default_color = Color(0.07, 0.04, 0.035, 1)
+
+[node name="Skirt" type="Node2D" parent="Gladiator" node_paths=PackedStringArray("polygon", "line")]
+position = Vector2(0, 36)
+script = ExtResource("2_shape")
+polygon = NodePath("Fill")
+line = NodePath("Stroke")
+curve = SubResource("Curve_skirt")
+fill_color = Color(0.62, 0.38, 0.12, 1)
+stroke_color = Color(0.09, 0.05, 0.02, 1)
+stroke_width = 6.0
+
+[node name="Fill" type="Polygon2D" parent="Gladiator/Skirt"]
+polygon = PackedVector2Array(-38, -6, 38, -6, 48, 52, 18, 42, 0, 55, -20, 42, -48, 52)
+color = Color(0.62, 0.38, 0.12, 1)
+
+[node name="Stroke" type="Line2D" parent="Gladiator/Skirt"]
+points = PackedVector2Array(-38, -6, 38, -6, 48, 52, 18, 42, 0, 55, -20, 42, -48, 52, -38, -6)
+width = 6.0
+default_color = Color(0.09, 0.05, 0.02, 1)
+
+[node name="Head" type="Node2D" parent="Gladiator" node_paths=PackedStringArray("polygon", "line")]
+position = Vector2(5, -123)
+script = ExtResource("2_shape")
+polygon = NodePath("Fill")
+line = NodePath("Stroke")
+curve = SubResource("Curve_head")
+fill_color = Color(0.7, 0.43, 0.27, 1)
+stroke_color = Color(0.08, 0.05, 0.04, 1)
+stroke_width = 6.0
+
+[node name="Fill" type="Polygon2D" parent="Gladiator/Head"]
+polygon = PackedVector2Array(-25, -28, 25, -28, 30, 20, -24, 28)
+color = Color(0.7, 0.43, 0.27, 1)
+
+[node name="Stroke" type="Line2D" parent="Gladiator/Head"]
+points = PackedVector2Array(-25, -28, 25, -28, 30, 20, -24, 28, -25, -28)
+width = 6.0
+default_color = Color(0.08, 0.05, 0.04, 1)
+
+[node name="Helmet" type="Node2D" parent="Gladiator/Head" node_paths=PackedStringArray("polygon", "line")]
+position = Vector2(0, -5)
+script = ExtResource("2_shape")
+polygon = NodePath("Fill")
+line = NodePath("Stroke")
+curve = SubResource("Curve_helmet")
+fill_color = Color(0.32, 0.37, 0.42, 1)
+stroke_color = Color(0.06, 0.07, 0.08, 1)
+stroke_width = 6.0
+
+[node name="Fill" type="Polygon2D" parent="Gladiator/Head/Helmet"]
+polygon = PackedVector2Array(-34, -23, -8, -46, 27, -31, 36, 0, 18, -8, -34, 7)
+color = Color(0.32, 0.37, 0.42, 1)
+
+[node name="Stroke" type="Line2D" parent="Gladiator/Head/Helmet"]
+points = PackedVector2Array(-34, -23, -8, -46, 27, -31, 36, 0, 18, -8, -34, 7, -34, -23)
+width = 6.0
+default_color = Color(0.06, 0.07, 0.08, 1)
+
+[node name="WeaponArm" type="Node2D" parent="Gladiator" node_paths=PackedStringArray("polygon", "line")]
+position = Vector2(30, -72)
+rotation = -0.2
+script = ExtResource("2_shape")
+polygon = NodePath("Fill")
+line = NodePath("Stroke")
+curve = SubResource("Curve_arm")
+fill_color = Color(0.62, 0.34, 0.2, 1)
+stroke_color = Color(0.08, 0.05, 0.04, 1)
+stroke_width = 6.0
+
+[node name="Fill" type="Polygon2D" parent="Gladiator/WeaponArm"]
+polygon = PackedVector2Array(-8, -13, 61, -9, 64, 11, -8, 15)
+color = Color(0.62, 0.34, 0.2, 1)
+
+[node name="Stroke" type="Line2D" parent="Gladiator/WeaponArm"]
+points = PackedVector2Array(-8, -13, 61, -9, 64, 11, -8, 15, -8, -13)
+width = 6.0
+default_color = Color(0.08, 0.05, 0.04, 1)
+
+[node name="Sword" type="Node2D" parent="Gladiator/WeaponArm" node_paths=PackedStringArray("polygon", "line")]
+position = Vector2(59, 0)
+rotation = 0.8
+script = ExtResource("2_shape")
+polygon = NodePath("Fill")
+line = NodePath("Stroke")
+curve = SubResource("Curve_sword")
+fill_color = Color(0.75, 0.8, 0.84, 1)
+stroke_color = Color(0.06, 0.075, 0.09, 1)
+stroke_width = 5.0
+
+[node name="Fill" type="Polygon2D" parent="Gladiator/WeaponArm/Sword"]
+polygon = PackedVector2Array(-5, 5, 8, -94, 15, -102, 17, -88, 6, 8)
+color = Color(0.75, 0.8, 0.84, 1)
+
+[node name="Stroke" type="Line2D" parent="Gladiator/WeaponArm/Sword"]
+points = PackedVector2Array(-5, 5, 8, -94, 15, -102, 17, -88, 6, 8, -5, 5)
+width = 5.0
+default_color = Color(0.06, 0.075, 0.09, 1)
+
+[node name="ShieldArm" type="Node2D" parent="Gladiator" node_paths=PackedStringArray("polygon", "line")]
+position = Vector2(-34, -65)
+rotation = 0.22
+script = ExtResource("2_shape")
+polygon = NodePath("Fill")
+line = NodePath("Stroke")
+curve = SubResource("Curve_arm")
+fill_color = Color(0.58, 0.31, 0.18, 1)
+stroke_color = Color(0.08, 0.05, 0.04, 1)
+stroke_width = 6.0
+
+[node name="Fill" type="Polygon2D" parent="Gladiator/ShieldArm"]
+polygon = PackedVector2Array(-8, -13, 61, -9, 64, 11, -8, 15)
+color = Color(0.58, 0.31, 0.18, 1)
+
+[node name="Stroke" type="Line2D" parent="Gladiator/ShieldArm"]
+points = PackedVector2Array(-8, -13, 61, -9, 64, 11, -8, 15, -8, -13)
+width = 6.0
+default_color = Color(0.08, 0.05, 0.04, 1)
+
+[node name="Shield" type="Node2D" parent="Gladiator/ShieldArm" node_paths=PackedStringArray("polygon", "line")]
+position = Vector2(48, 0)
+rotation = -0.22
+script = ExtResource("2_shape")
+polygon = NodePath("Fill")
+line = NodePath("Stroke")
+curve = SubResource("Curve_shield")
+fill_color = Color(0.15, 0.32, 0.42, 1)
+stroke_color = Color(0.72, 0.53, 0.18, 1)
+stroke_width = 8.0
+
+[node name="Fill" type="Polygon2D" parent="Gladiator/ShieldArm/Shield"]
+polygon = PackedVector2Array(-40, -50, 36, -50, 42, 20, 0, 58, -42, 20)
+color = Color(0.15, 0.32, 0.42, 1)
+
+[node name="Stroke" type="Line2D" parent="Gladiator/ShieldArm/Shield"]
+points = PackedVector2Array(-40, -50, 36, -50, 42, 20, 0, 58, -42, 20, -40, -50)
+width = 8.0
+default_color = Color(0.72, 0.53, 0.18, 1)
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+libraries = {&"": SubResource("AnimationLibrary_main")}
+autoplay = "idle"
+
+[node name="UI" type="CanvasLayer" parent="."]
+
+[node name="Title" type="Label" parent="UI"]
+offset_left = 36.0
+offset_top = 28.0
+offset_right = 520.0
+offset_bottom = 66.0
+theme_override_colors/font_color = Color(0.94, 0.82, 0.52, 1)
+theme_override_font_sizes/font_size = 26
+text = "Scalable Vector Gladiator · Prototype"
+
+[node name="Status" type="Label" parent="UI"]
+offset_left = 38.0
+offset_top = 68.0
+offset_right = 420.0
+offset_bottom = 98.0
+theme_override_font_sizes/font_size = 18
+text = "Animación: idle · teclas 1–5"
+
+[node name="Tabs" type="TabContainer" parent="UI"]
+visible = false
+offset_right = 1.0
+offset_bottom = 1.0
+
+[node name="Arena" type="VBoxContainer" parent="UI/Tabs"]
+metadata/enhanced_combat_ui = true
