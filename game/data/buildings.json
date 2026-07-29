@@ -1,0 +1,42 @@
+[
+  {
+    "id": "quarters",
+    "name": "Barracones",
+    "description": "Aumentan la capacidad máxima de esclavos y gladiadores del ludus.",
+    "max_level": 5,
+    "base_cost": 180,
+    "capacity_per_level": 3
+  },
+  {
+    "id": "training_yard",
+    "name": "Patio de entrenamiento",
+    "description": "Mejora la velocidad de entrenamiento y preparación de los gladiadores.",
+    "max_level": 5,
+    "base_cost": 220,
+    "training_multiplier_per_level": 0.12
+  },
+  {
+    "id": "forge",
+    "name": "Forja",
+    "description": "Desbloquea armas, armaduras y escudos de mayor calidad.",
+    "max_level": 5,
+    "base_cost": 260,
+    "forge_level_per_upgrade": 1
+  },
+  {
+    "id": "infirmary",
+    "name": "Enfermería",
+    "description": "Reduce el tiempo de recuperación y el riesgo de lesiones graves.",
+    "max_level": 5,
+    "base_cost": 240,
+    "recovery_bonus_per_level": 2
+  },
+  {
+    "id": "security",
+    "name": "Puesto de seguridad",
+    "description": "Protege el ludus contra sabotajes, fugas y operaciones rivales.",
+    "max_level": 5,
+    "base_cost": 200,
+    "security_bonus_per_level": 3
+  }
+]
