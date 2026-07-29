@@ -1,0 +1,50 @@
+name: Godot Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: godot-tests-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Validate project and tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Godot
+        uses: chickensoft-games/setup-godot@v2
+        with:
+          version: 4.3.0
+          use-dotnet: false
+          include-templates: false
+
+      - name: Show Godot version
+        run: godot --version
+
+      - name: Import and compile project
+        run: godot --headless --editor --path game --quit
+
+      - name: Run history integrity tests
+        run: godot --headless --path game --script res://tests/history_integrity_validator_test.gd
+
+      - name: Run combat history persistence tests
+        run: godot --headless --path game --script res://tests/combat_history_persistence_test.gd
+
+      - name: Run data repository tests
+        run: godot --headless --path game --script res://tests/data_repository_test.gd
+
+      - name: Smoke test main scene
+        run: godot --headless --path game res://scenes/Main.tscn --quit
