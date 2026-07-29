@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/dev/adult_pixel_gladiator_128_candidate.gd" id="1_128"]
+
+[node name="AdultPixelGladiator128Candidate" type="Node2D"]
+script = ExtResource("1_128")
+metadata/canvas_size = Vector2i(128, 128)
+metadata/iteration = "128x128-candidate"
