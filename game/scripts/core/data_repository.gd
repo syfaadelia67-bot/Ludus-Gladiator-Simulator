@@ -11,13 +11,18 @@ func _ready() -> void:
 
 func _load_json_array(path: String) -> Array:
     if not FileAccess.file_exists(path):
-        push_warning("No se encontró: %s" % path)
+        print_verbose("No se encontró: %s" % path)
         return []
 
     var file := FileAccess.open(path, FileAccess.READ)
-    var parsed = JSON.parse_string(file.get_as_text())
-    if parsed is Array:
-        return parsed
+    if file == null:
+        print_verbose("No se pudo abrir: %s" % path)
+        return []
 
-    push_error("El archivo no contiene un Array válido: %s" % path)
+    var json := JSON.new()
+    var parse_error: Error = json.parse(file.get_as_text())
+    if parse_error == OK and json.data is Array:
+        return json.data
+
+    print_verbose("El archivo no contiene un Array válido: %s" % path)
     return []
