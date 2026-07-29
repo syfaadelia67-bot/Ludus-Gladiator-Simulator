@@ -1,0 +1,11 @@
+# Godot-generated metadata and caches
+.godot/
+game/.godot/
+
+# Temporary and log files
+*.tmp
+*.log
+
+# Operating system metadata
+.DS_Store
+Thumbs.db
