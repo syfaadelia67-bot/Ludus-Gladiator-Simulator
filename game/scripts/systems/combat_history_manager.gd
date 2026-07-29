@@ -3,6 +3,7 @@ extends Node
 signal history_changed
 
 const MAX_ENTRIES: int = 60
+const HistoryIntegrityValidatorScript = preload("res://scripts/systems/history_integrity_validator.gd")
 
 var entries: Array[Dictionary] = []
 var total_wins: int = 0
@@ -181,7 +182,7 @@ func export_state() -> Dictionary:
 
 func import_state(data: Dictionary) -> void:
     var saved_entries: Array = data.get("entries", []) as Array
-    entries = HistoryIntegrityValidator.sanitize(saved_entries, MAX_ENTRIES, GameState.day)
+    entries = HistoryIntegrityValidatorScript.sanitize(saved_entries, MAX_ENTRIES, GameState.day)
     _rebuild_totals_from_entries(data)
     history_changed.emit()
 
