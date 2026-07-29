@@ -1,0 +1,214 @@
+{
+	"animation": "all",
+	"canvas_size": [
+		64,
+		64
+	],
+	"export_name": "gator_adult",
+	"frame_count": 20,
+	"frames": [
+		{
+			"height": 64,
+			"index": 0,
+			"width": 64,
+			"x": 0,
+			"y": 0
+		},
+		{
+			"height": 64,
+			"index": 1,
+			"width": 64,
+			"x": 64,
+			"y": 0
+		},
+		{
+			"height": 64,
+			"index": 2,
+			"width": 64,
+			"x": 128,
+			"y": 0
+		},
+		{
+			"height": 64,
+			"index": 3,
+			"width": 64,
+			"x": 192,
+			"y": 0
+		},
+		{
+			"height": 64,
+			"index": 4,
+			"width": 64,
+			"x": 256,
+			"y": 0
+		},
+		{
+			"height": 64,
+			"index": 5,
+			"width": 64,
+			"x": 0,
+			"y": 64
+		},
+		{
+			"height": 64,
+			"index": 6,
+			"width": 64,
+			"x": 64,
+			"y": 64
+		},
+		{
+			"height": 64,
+			"index": 7,
+			"width": 64,
+			"x": 128,
+			"y": 64
+		},
+		{
+			"height": 64,
+			"index": 8,
+			"width": 64,
+			"x": 192,
+			"y": 64
+		},
+		{
+			"height": 64,
+			"index": 9,
+			"width": 64,
+			"x": 256,
+			"y": 64
+		},
+		{
+			"height": 64,
+			"index": 10,
+			"width": 64,
+			"x": 0,
+			"y": 128
+		},
+		{
+			"height": 64,
+			"index": 11,
+			"width": 64,
+			"x": 64,
+			"y": 128
+		},
+		{
+			"height": 64,
+			"index": 12,
+			"width": 64,
+			"x": 128,
+			"y": 128
+		},
+		{
+			"height": 64,
+			"index": 13,
+			"width": 64,
+			"x": 192,
+			"y": 128
+		},
+		{
+			"height": 64,
+			"index": 14,
+			"width": 64,
+			"x": 256,
+			"y": 128
+		},
+		{
+			"height": 64,
+			"index": 15,
+			"width": 64,
+			"x": 0,
+			"y": 192
+		},
+		{
+			"height": 64,
+			"index": 16,
+			"width": 64,
+			"x": 64,
+			"y": 192
+		},
+		{
+			"height": 64,
+			"index": 17,
+			"width": 64,
+			"x": 128,
+			"y": 192
+		},
+		{
+			"height": 64,
+			"index": 18,
+			"width": 64,
+			"x": 192,
+			"y": 192
+		},
+		{
+			"height": 64,
+			"index": 19,
+			"width": 64,
+			"x": 256,
+			"y": 192
+		}
+	],
+	"frames_per_second": 8.0,
+	"sheet": {
+		"columns": 5,
+		"frame_height": 64,
+		"frame_width": 64,
+		"rows": 4
+	},
+	"slices": [
+		{
+			"height": 64,
+			"name": "Sprite",
+			"pivot": [
+				0.5,
+				0.5
+			],
+			"width": 64,
+			"x": 0,
+			"y": 0
+		},
+		{
+			"height": 64,
+			"name": "FeetPivot",
+			"pivot": [
+				0.5,
+				0.96875
+			],
+			"width": 64,
+			"x": 0,
+			"y": 0
+		}
+	],
+	"tags": [
+		{
+			"color": "40b852ff",
+			"from": 0,
+			"name": "idle",
+			"to": 3
+		},
+		{
+			"color": "40b852ff",
+			"from": 4,
+			"name": "attack",
+			"to": 8
+		},
+		{
+			"color": "40b852ff",
+			"from": 9,
+			"name": "block",
+			"to": 11
+		},
+		{
+			"color": "40b852ff",
+			"from": 12,
+			"name": "hit",
+			"to": 14
+		},
+		{
+			"color": "40b852ff",
+			"from": 15,
+			"name": "defeat",
+			"to": 19
+		}
+	]
+}
