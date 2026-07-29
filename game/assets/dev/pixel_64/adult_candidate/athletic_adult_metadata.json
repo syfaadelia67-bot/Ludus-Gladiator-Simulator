@@ -1,0 +1,78 @@
+{
+	"animation": "idle",
+	"canvas_size": [
+		64,
+		64
+	],
+	"export_name": "athletic_adult",
+	"frame_count": 4,
+	"frames": [
+		{
+			"height": 64,
+			"index": 0,
+			"width": 64,
+			"x": 0,
+			"y": 0
+		},
+		{
+			"height": 64,
+			"index": 1,
+			"width": 64,
+			"x": 64,
+			"y": 0
+		},
+		{
+			"height": 64,
+			"index": 2,
+			"width": 64,
+			"x": 128,
+			"y": 0
+		},
+		{
+			"height": 64,
+			"index": 3,
+			"width": 64,
+			"x": 192,
+			"y": 0
+		}
+	],
+	"frames_per_second": 8.0,
+	"sheet": {
+		"columns": 4,
+		"frame_height": 64,
+		"frame_width": 64,
+		"rows": 1
+	},
+	"slices": [
+		{
+			"height": 64,
+			"name": "Sprite",
+			"pivot": [
+				0.5,
+				0.5
+			],
+			"width": 64,
+			"x": 0,
+			"y": 0
+		},
+		{
+			"height": 64,
+			"name": "FeetPivot",
+			"pivot": [
+				0.5,
+				0.96875
+			],
+			"width": 64,
+			"x": 0,
+			"y": 0
+		}
+	],
+	"tags": [
+		{
+			"color": "40b852ff",
+			"from": 0,
+			"name": "idle",
+			"to": 3
+		}
+	]
+}
