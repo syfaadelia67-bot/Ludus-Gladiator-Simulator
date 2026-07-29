@@ -34,6 +34,8 @@ func _on_combat_finished(result: Dictionary) -> void:
     var player_health: int = int(result.get("player_health", 0))
     var player_max_health: int = maxi(1, int(result.get("player_max_health", 1)))
     var health_ratio: float = float(maxi(0, player_health)) / float(player_max_health)
+    var technique_stats: Dictionary = result.get("technique_stats", {}) as Dictionary
+    var status_stats: Dictionary = result.get("status_stats", {}) as Dictionary
     var entry: Dictionary = {
         "day": GameState.day,
         "event_type": event_type,
@@ -51,8 +53,8 @@ func _on_combat_finished(result: Dictionary) -> void:
         "tactic": str(result.get("tactic", "balanced")),
         "player_health": player_health,
         "player_max_health": player_max_health,
-        "technique_stats": result.get("technique_stats", {}).duplicate(true),
-        "status_stats": result.get("status_stats", {}).duplicate(true),
+        "technique_stats": technique_stats.duplicate(true),
+        "status_stats": status_stats.duplicate(true),
         "flawless": victory and health_ratio >= 0.75 and str(result.get("injury", "")).is_empty()
     }
     entries.push_front(entry)
@@ -78,8 +80,8 @@ func _on_combat_finished(result: Dictionary) -> void:
         total_losses += 1
         current_win_streak = 0
 
-    total_rewards += int(entry.reward)
-    total_reputation += int(entry.reputation)
+    total_rewards += int(entry.get("reward", 0))
+    total_reputation += int(entry.get("reputation", 0))
     history_changed.emit()
 
 func get_entries() -> Array[Dictionary]:
@@ -132,12 +134,15 @@ func get_next_milestones() -> Array[String]:
     if total_wins < 10:
         milestones.append("%d victoria(s) para Veterano de la arena" % (10 - total_wins))
     if best_win_streak < 3:
-        milestones.append("Racha de %d victoria(s) para Imparable" % (3 - current_win_streak))
+        milestones.append("Racha de %d victoria(s) para Imparable" % maxi(0, 3 - current_win_streak))
     if flawless_wins < 3:
         milestones.append("%d victoria(s) impecable(s) para Intocable" % (3 - flawless_wins))
     if beast_wins < 3:
         milestones.append("%d bestia(s) para Cazador de bestias" % (3 - beast_wins))
-    return milestones.slice(0, 3)
+    var limited: Array[String] = []
+    for index: int in range(mini(3, milestones.size())):
+        limited.append(milestones[index])
+    return limited
 
 func get_fighter_summary(fighter_id: String) -> Dictionary:
     var fights: int = 0
@@ -145,7 +150,7 @@ func get_fighter_summary(fighter_id: String) -> Dictionary:
     var rewards: int = 0
     var injuries: int = 0
     var flawless: int = 0
-    for entry in entries:
+    for entry: Dictionary in entries:
         if str(entry.get("fighter_id", "")) != fighter_id:
             continue
         fights += 1
@@ -175,7 +180,11 @@ func export_state() -> Dictionary:
     }
 
 func import_state(data: Dictionary) -> void:
-    entries.assign(data.get("entries", []))
+    entries.clear()
+    var saved_entries: Array = data.get("entries", []) as Array
+    for value: Variant in saved_entries:
+        if value is Dictionary:
+            entries.append((value as Dictionary).duplicate(true))
     if entries.size() > MAX_ENTRIES:
         entries.resize(MAX_ENTRIES)
     total_wins = maxi(0, int(data.get("total_wins", 0)))
