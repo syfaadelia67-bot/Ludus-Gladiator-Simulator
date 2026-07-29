@@ -31,11 +31,25 @@ func _init() -> void:
     assert(sanitized.size() == 1)
     assert(int(sanitized[0].get("day", 0)) == 3)
 
+    var empty_history: Array[Dictionary] = HistoryIntegrityValidator.sanitize(raw_entries, 0, 5)
+    assert(empty_history.is_empty())
+
+    var limited_history: Array[Dictionary] = HistoryIntegrityValidator.sanitize([
+        valid_entry,
+        future_entry
+    ], 1)
+    assert(limited_history.size() == 1)
+    assert(int(limited_history[0].get("day", 0)) == 3)
+
     var report: Dictionary = HistoryIntegrityValidator.validate(sanitized, 5)
     assert(bool(report.get("valid", false)))
     assert(int(report.get("invalid_entries", -1)) == 0)
     assert(int(report.get("future_entries", -1)) == 0)
     assert(int(report.get("duplicate_entries", -1)) == 0)
+
+    var report_without_day_limit: Dictionary = HistoryIntegrityValidator.validate([future_entry], -1)
+    assert(bool(report_without_day_limit.get("valid", false)))
+    assert(int(report_without_day_limit.get("future_entries", -1)) == 0)
 
     var duplicate_report_entries: Array[Dictionary] = [valid_entry, duplicate_entry]
     var duplicate_report: Dictionary = HistoryIntegrityValidator.validate(duplicate_report_entries, 5)
