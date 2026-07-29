@@ -1,7 +1,7 @@
 [gd_scene load_steps=3 format=3 uid="uid://d3j2c8gduqsuu"]
 
-[ext_resource type="Script" uid="uid://xijifdpi2kw" path="res://addons/scalable_vector_shapes_2d/project_settings_tab.gd" id="1_q4g58"]
-[ext_resource type="PackedScene" uid="uid://cmoxkoulpd7so" path="res://addons/scalable_vector_shapes_2d/link_button_with_copy_hint.tscn" id="2_mgx58"]
+[ext_resource type="Script" path="res://addons/scalable_vector_shapes_2d/project_settings_tab.gd" id="1_q4g58"]
+[ext_resource type="PackedScene" path="res://addons/scalable_vector_shapes_2d/link_button_with_copy_hint.tscn" id="2_mgx58"]
 
 [node name="ProjectSettingsTab" type="ScrollContainer"]
 anchors_preset = 15

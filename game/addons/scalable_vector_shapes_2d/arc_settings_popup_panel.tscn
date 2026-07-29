@@ -1,6 +1,6 @@
 [gd_scene load_steps=8 format=3 uid="uid://c2vk4emclmyfd"]
 
-[ext_resource type="Script" uid="uid://mk3r6d801wbn" path="res://addons/scalable_vector_shapes_2d/arc_settings_popup_panel.gd" id="1_3bjn8"]
+[ext_resource type="Script" path="res://addons/scalable_vector_shapes_2d/arc_settings_popup_panel.gd" id="1_3bjn8"]
 
 [sub_resource type="LabelSettings" id="LabelSettings_3bjn8"]
 font_color = Color(0.552956, 0.552956, 0.552956, 1)

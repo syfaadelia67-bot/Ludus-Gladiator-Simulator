@@ -1,10 +1,10 @@
 [gd_scene load_steps=8 format=3 uid="uid://cfeemeccrtef7"]
 
-[ext_resource type="Script" uid="uid://bp5vvj23w57js" path="res://addons/scalable_vector_shapes_2d/svg_import_tab.gd" id="1_dlf5g"]
-[ext_resource type="Texture2D" uid="uid://b8ludy6aqsejg" path="res://addons/scalable_vector_shapes_2d/LockViewport.svg" id="2_v8p2q"]
-[ext_resource type="PackedScene" uid="uid://cjbkvx1pj7gq2" path="res://addons/scalable_vector_shapes_2d/collision_object_type_option_button.tscn" id="3_tqnmm"]
-[ext_resource type="LabelSettings" uid="uid://bspk1rkq1cmhx" path="res://addons/scalable_vector_shapes_2d/info_label_settings.tres" id="4_4seqe"]
-[ext_resource type="PackedScene" uid="uid://cmoxkoulpd7so" path="res://addons/scalable_vector_shapes_2d/link_button_with_copy_hint.tscn" id="5_wpk81"]
+[ext_resource type="Script" path="res://addons/scalable_vector_shapes_2d/svg_import_tab.gd" id="1_dlf5g"]
+[ext_resource type="Texture2D" path="res://addons/scalable_vector_shapes_2d/LockViewport.svg" id="2_v8p2q"]
+[ext_resource type="PackedScene" path="res://addons/scalable_vector_shapes_2d/collision_object_type_option_button.tscn" id="3_tqnmm"]
+[ext_resource type="LabelSettings" path="res://addons/scalable_vector_shapes_2d/info_label_settings.tres" id="4_4seqe"]
+[ext_resource type="PackedScene" path="res://addons/scalable_vector_shapes_2d/link_button_with_copy_hint.tscn" id="5_wpk81"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_rycm0"]
 content_margin_left = 10.0

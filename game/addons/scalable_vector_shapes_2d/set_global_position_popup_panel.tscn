@@ -1,6 +1,6 @@
 [gd_scene load_steps=7 format=3 uid="uid://c4d61or7beyf5"]
 
-[ext_resource type="Script" uid="uid://bq4xfmsr6k2te" path="res://addons/scalable_vector_shapes_2d/set_global_position_popup_panel.gd" id="1_tnog5"]
+[ext_resource type="Script" path="res://addons/scalable_vector_shapes_2d/set_global_position_popup_panel.gd" id="1_tnog5"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_3qpoy"]
 content_margin_left = 4.0

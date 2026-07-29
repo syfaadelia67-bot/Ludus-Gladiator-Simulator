@@ -1,7 +1,7 @@
 [gd_scene load_steps=3 format=3 uid="uid://dar1y7o5qcxic"]
 
-[ext_resource type="Script" uid="uid://ci3o0cnwiet6" path="res://addons/scalable_vector_shapes_2d/assign_collision_object_inspector_form.gd" id="1_csmls"]
-[ext_resource type="PackedScene" uid="uid://cjbkvx1pj7gq2" path="res://addons/scalable_vector_shapes_2d/collision_object_type_option_button.tscn" id="2_ks3po"]
+[ext_resource type="Script" path="res://addons/scalable_vector_shapes_2d/assign_collision_object_inspector_form.gd" id="1_csmls"]
+[ext_resource type="PackedScene" path="res://addons/scalable_vector_shapes_2d/collision_object_type_option_button.tscn" id="2_ks3po"]
 
 [node name="AssignCollisionObjectInspectorForm" type="VBoxContainer"]
 anchors_preset = 15

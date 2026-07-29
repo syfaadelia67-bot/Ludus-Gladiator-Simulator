@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://ir0lsf5ikpdl"]
 
-[ext_resource type="Script" uid="uid://2gwqgaeywun8" path="res://addons/scalable_vector_shapes_2d/draw_settings_tab.gd" id="1_6abb2"]
+[ext_resource type="Script" path="res://addons/scalable_vector_shapes_2d/draw_settings_tab.gd" id="1_6abb2"]
 
 [node name="DrawSettingsTab" type="ScrollContainer"]
 anchors_preset = 15

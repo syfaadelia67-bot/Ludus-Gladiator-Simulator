@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://eo53xo3ylo1a"]
 
-[ext_resource type="Script" uid="uid://dsfcnewvnijjx" path="res://addons/scalable_vector_shapes_2d/assign_navigation_region_inspector_form.gd" id="1_opyos"]
+[ext_resource type="Script" path="res://addons/scalable_vector_shapes_2d/assign_navigation_region_inspector_form.gd" id="1_opyos"]
 
 [node name="AssignNavigationRegionInspectorForm" type="VBoxContainer"]
 anchors_preset = 15

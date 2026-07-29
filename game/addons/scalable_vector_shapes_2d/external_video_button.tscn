@@ -1,9 +1,9 @@
 [gd_scene load_steps=5 format=3 uid="uid://bhpmwhbdlsp1g"]
 
-[ext_resource type="Script" uid="uid://cxvx3xc5wngfl" path="res://addons/scalable_vector_shapes_2d/external_video_button.gd" id="1_1kn8h"]
-[ext_resource type="StyleBox" uid="uid://dufypbh4pb3v8" path="res://addons/scalable_vector_shapes_2d/external_video_button.stylebox" id="1_tia4j"]
-[ext_resource type="Script" uid="uid://c1dbllgwqxjjn" path="res://addons/scalable_vector_shapes_2d/link_button_with_copy_hint.gd" id="3_c8xqg"]
-[ext_resource type="Texture2D" uid="uid://dsn2lxwf0mvoq" path="res://addons/scalable_vector_shapes_2d/video_thumbnails/animating_clip_paths.png" id="3_gf0w2"]
+[ext_resource type="Script" path="res://addons/scalable_vector_shapes_2d/external_video_button.gd" id="1_1kn8h"]
+[ext_resource type="StyleBox" path="res://addons/scalable_vector_shapes_2d/external_video_button.stylebox" id="1_tia4j"]
+[ext_resource type="Script" path="res://addons/scalable_vector_shapes_2d/link_button_with_copy_hint.gd" id="3_c8xqg"]
+[ext_resource type="Texture2D" path="res://addons/scalable_vector_shapes_2d/video_thumbnails/animating_clip_paths.png" id="3_gf0w2"]
 
 [node name="ExternalVideoButton" type="PanelContainer"]
 clip_contents = true

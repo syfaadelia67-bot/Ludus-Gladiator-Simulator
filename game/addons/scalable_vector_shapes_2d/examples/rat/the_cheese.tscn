@@ -1,9 +1,9 @@
 [gd_scene load_steps=30 format=3 uid="uid://c0m21g8gf1lro"]
 
-[ext_resource type="Script" uid="uid://de3jpss66xjfh" path="res://addons/scalable_vector_shapes_2d/scalable_vector_shape_2d.gd" id="1_66gih"]
-[ext_resource type="Script" uid="uid://dlbv4pit17dnu" path="res://addons/scalable_vector_shapes_2d/scalable_arc.gd" id="2_345i0"]
-[ext_resource type="Script" uid="uid://dl1t88tthmwts" path="res://addons/scalable_vector_shapes_2d/scalable_arc_list.gd" id="3_r23nx"]
-[ext_resource type="Texture2D" uid="uid://cl0eabp7mc2k1" path="res://addons/scalable_vector_shapes_2d/examples/rat/checkers.png" id="4_345i0"]
+[ext_resource type="Script" path="res://addons/scalable_vector_shapes_2d/scalable_vector_shape_2d.gd" id="1_66gih"]
+[ext_resource type="Script" path="res://addons/scalable_vector_shapes_2d/scalable_arc.gd" id="2_345i0"]
+[ext_resource type="Script" path="res://addons/scalable_vector_shapes_2d/scalable_arc_list.gd" id="3_r23nx"]
+[ext_resource type="Texture2D" path="res://addons/scalable_vector_shapes_2d/examples/rat/checkers.png" id="4_345i0"]
 
 [sub_resource type="Curve2D" id="Curve2D_w78qb"]
 _data = {

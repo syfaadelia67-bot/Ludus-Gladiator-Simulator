@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://cmoxkoulpd7so"]
 
-[ext_resource type="Script" uid="uid://c1dbllgwqxjjn" path="res://addons/scalable_vector_shapes_2d/link_button_with_copy_hint.gd" id="1_e1f1u"]
+[ext_resource type="Script" path="res://addons/scalable_vector_shapes_2d/link_button_with_copy_hint.gd" id="1_e1f1u"]
 
 [node name="LinkButton" type="LinkButton"]
 tooltip_text = "This link will open a webpage in your browser: https://www.youtube.com/watch?v=q_NaZq1zZdY

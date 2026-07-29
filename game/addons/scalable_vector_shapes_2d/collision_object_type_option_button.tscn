@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://cjbkvx1pj7gq2"]
 
-[ext_resource type="Script" uid="uid://ppu1camg8q83" path="res://addons/scalable_vector_shapes_2d/collision_object_type_option_button.gd" id="1_cky2p"]
+[ext_resource type="Script" path="res://addons/scalable_vector_shapes_2d/collision_object_type_option_button.gd" id="1_cky2p"]
 
 [node name="CollisionObjectTypeOptionButton" type="OptionButton"]
 selected = 0

@@ -1,10 +1,10 @@
 [gd_scene load_steps=32 format=3 uid="uid://buueak60wkgnf"]
 
-[ext_resource type="Script" uid="uid://beqwfvhl5f07k" path="res://addons/scalable_vector_shapes_2d/examples/rat/rats_return.gd" id="1_lur87"]
-[ext_resource type="Script" uid="uid://de3jpss66xjfh" path="res://addons/scalable_vector_shapes_2d/scalable_vector_shape_2d.gd" id="1_qkos6"]
-[ext_resource type="Script" uid="uid://dlbv4pit17dnu" path="res://addons/scalable_vector_shapes_2d/scalable_arc.gd" id="2_lur87"]
-[ext_resource type="Script" uid="uid://dl1t88tthmwts" path="res://addons/scalable_vector_shapes_2d/scalable_arc_list.gd" id="3_5jqi6"]
-[ext_resource type="PackedScene" uid="uid://kbkwi2nx8ith" path="res://addons/scalable_vector_shapes_2d/examples/rat/rat.tscn" id="4_w2l5p"]
+[ext_resource type="Script" path="res://addons/scalable_vector_shapes_2d/examples/rat/rats_return.gd" id="1_lur87"]
+[ext_resource type="Script" path="res://addons/scalable_vector_shapes_2d/scalable_vector_shape_2d.gd" id="1_qkos6"]
+[ext_resource type="Script" path="res://addons/scalable_vector_shapes_2d/scalable_arc.gd" id="2_lur87"]
+[ext_resource type="Script" path="res://addons/scalable_vector_shapes_2d/scalable_arc_list.gd" id="3_5jqi6"]
+[ext_resource type="PackedScene" path="res://addons/scalable_vector_shapes_2d/examples/rat/rat.tscn" id="4_w2l5p"]
 
 [sub_resource type="Gradient" id="Gradient_hj7rf"]
 offsets = PackedFloat32Array(0, 0.748969, 0.879489, 0.897081)

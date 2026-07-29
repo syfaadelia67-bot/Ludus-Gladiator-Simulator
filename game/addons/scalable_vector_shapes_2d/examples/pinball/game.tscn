@@ -1,13 +1,13 @@
 [gd_scene load_steps=22 format=3 uid="uid://bpjhx0g61ptyq"]
 
-[ext_resource type="Script" uid="uid://wyeymr4vku74" path="res://addons/scalable_vector_shapes_2d/examples/pinball/game.gd" id="1_eow3j"]
-[ext_resource type="Script" uid="uid://de3jpss66xjfh" path="res://addons/scalable_vector_shapes_2d/scalable_vector_shape_2d.gd" id="2_j5wjh"]
-[ext_resource type="Script" uid="uid://dlbv4pit17dnu" path="res://addons/scalable_vector_shapes_2d/scalable_arc.gd" id="3_vef74"]
-[ext_resource type="Script" uid="uid://dl1t88tthmwts" path="res://addons/scalable_vector_shapes_2d/scalable_arc_list.gd" id="4_hve3p"]
-[ext_resource type="PackedScene" uid="uid://c4qvvoxq5w28e" path="res://addons/scalable_vector_shapes_2d/examples/pinball/flipper.tscn" id="5_mfdv2"]
-[ext_resource type="PackedScene" uid="uid://bwxjc7a0mapl0" path="res://addons/scalable_vector_shapes_2d/examples/pinball/pinball.tscn" id="6_iotsf"]
-[ext_resource type="PackedScene" uid="uid://cisphek1rg6t6" path="res://addons/scalable_vector_shapes_2d/examples/pinball/butterfly.scn" id="6_j6l5u"]
-[ext_resource type="PackedScene" uid="uid://de7qp86gcbt0j" path="res://addons/scalable_vector_shapes_2d/examples/pinball/chasing_light.tscn" id="7_lc2xo"]
+[ext_resource type="Script" path="res://addons/scalable_vector_shapes_2d/examples/pinball/game.gd" id="1_eow3j"]
+[ext_resource type="Script" path="res://addons/scalable_vector_shapes_2d/scalable_vector_shape_2d.gd" id="2_j5wjh"]
+[ext_resource type="Script" path="res://addons/scalable_vector_shapes_2d/scalable_arc.gd" id="3_vef74"]
+[ext_resource type="Script" path="res://addons/scalable_vector_shapes_2d/scalable_arc_list.gd" id="4_hve3p"]
+[ext_resource type="PackedScene" path="res://addons/scalable_vector_shapes_2d/examples/pinball/flipper.tscn" id="5_mfdv2"]
+[ext_resource type="PackedScene" path="res://addons/scalable_vector_shapes_2d/examples/pinball/pinball.tscn" id="6_iotsf"]
+[ext_resource type="PackedScene" path="res://addons/scalable_vector_shapes_2d/examples/pinball/butterfly.scn" id="6_j6l5u"]
+[ext_resource type="PackedScene" path="res://addons/scalable_vector_shapes_2d/examples/pinball/chasing_light.tscn" id="7_lc2xo"]
 
 [sub_resource type="Curve2D" id="Curve2D_ipynf"]
 _data = {

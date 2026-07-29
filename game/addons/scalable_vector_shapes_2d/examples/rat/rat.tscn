@@ -1,10 +1,10 @@
 [gd_scene load_steps=45 format=3 uid="uid://kbkwi2nx8ith"]
 
-[ext_resource type="Script" uid="uid://xhridu7hgcrc" path="res://addons/scalable_vector_shapes_2d/examples/rat/rat.gd" id="1_7hgga"]
-[ext_resource type="Script" uid="uid://dlbv4pit17dnu" path="res://addons/scalable_vector_shapes_2d/scalable_arc.gd" id="3_4sn87"]
-[ext_resource type="Script" uid="uid://dl1t88tthmwts" path="res://addons/scalable_vector_shapes_2d/scalable_arc_list.gd" id="4_jqihn"]
-[ext_resource type="PackedScene" uid="uid://c0m21g8gf1lro" path="res://addons/scalable_vector_shapes_2d/examples/rat/the_cheese.tscn" id="5_jqihn"]
-[ext_resource type="Script" uid="uid://de3jpss66xjfh" path="res://addons/scalable_vector_shapes_2d/scalable_vector_shape_2d.gd" id="18_xsi10"]
+[ext_resource type="Script" path="res://addons/scalable_vector_shapes_2d/examples/rat/rat.gd" id="1_7hgga"]
+[ext_resource type="Script" path="res://addons/scalable_vector_shapes_2d/scalable_arc.gd" id="3_4sn87"]
+[ext_resource type="Script" path="res://addons/scalable_vector_shapes_2d/scalable_arc_list.gd" id="4_jqihn"]
+[ext_resource type="PackedScene" path="res://addons/scalable_vector_shapes_2d/examples/rat/the_cheese.tscn" id="5_jqihn"]
+[ext_resource type="Script" path="res://addons/scalable_vector_shapes_2d/scalable_vector_shape_2d.gd" id="18_xsi10"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_4sn87"]
 radius = 5.7795

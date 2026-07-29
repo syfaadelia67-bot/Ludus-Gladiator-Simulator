@@ -1,9 +1,9 @@
 [gd_scene load_steps=8 format=3 uid="uid://ff21vjlacmvt"]
 
-[ext_resource type="PackedScene" uid="uid://bonrw0yjqixh0" path="res://addons/scalable_vector_shapes_2d/examples/glue_map/leaf.tscn" id="1_nk0xg"]
-[ext_resource type="Script" uid="uid://de3jpss66xjfh" path="res://addons/scalable_vector_shapes_2d/scalable_vector_shape_2d.gd" id="2_ha3r5"]
-[ext_resource type="Script" uid="uid://dlbv4pit17dnu" path="res://addons/scalable_vector_shapes_2d/scalable_arc.gd" id="3_fvspu"]
-[ext_resource type="Script" uid="uid://dl1t88tthmwts" path="res://addons/scalable_vector_shapes_2d/scalable_arc_list.gd" id="4_g0mo6"]
+[ext_resource type="PackedScene" path="res://addons/scalable_vector_shapes_2d/examples/glue_map/leaf.tscn" id="1_nk0xg"]
+[ext_resource type="Script" path="res://addons/scalable_vector_shapes_2d/scalable_vector_shape_2d.gd" id="2_ha3r5"]
+[ext_resource type="Script" path="res://addons/scalable_vector_shapes_2d/scalable_arc.gd" id="3_fvspu"]
+[ext_resource type="Script" path="res://addons/scalable_vector_shapes_2d/scalable_arc_list.gd" id="4_g0mo6"]
 
 [sub_resource type="Curve2D" id="Curve2D_yv6yr"]
 _data = {

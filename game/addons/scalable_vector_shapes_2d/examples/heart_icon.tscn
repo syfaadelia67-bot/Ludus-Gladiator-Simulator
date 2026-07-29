@@ -1,9 +1,9 @@
 [gd_scene load_steps=17 format=3 uid="uid://c6dfjd23olqhh"]
 
-[ext_resource type="Script" uid="uid://de3jpss66xjfh" path="res://addons/scalable_vector_shapes_2d/scalable_vector_shape_2d.gd" id="1_0qe1d"]
-[ext_resource type="Script" uid="uid://bq71tj10w4224" path="res://addons/scalable_vector_shapes_2d/examples/heart_icon.gd" id="1_7bfrm"]
-[ext_resource type="Script" uid="uid://dlbv4pit17dnu" path="res://addons/scalable_vector_shapes_2d/scalable_arc.gd" id="3_0mo18"]
-[ext_resource type="Script" uid="uid://dl1t88tthmwts" path="res://addons/scalable_vector_shapes_2d/scalable_arc_list.gd" id="4_2kl3k"]
+[ext_resource type="Script" path="res://addons/scalable_vector_shapes_2d/scalable_vector_shape_2d.gd" id="1_0qe1d"]
+[ext_resource type="Script" path="res://addons/scalable_vector_shapes_2d/examples/heart_icon.gd" id="1_7bfrm"]
+[ext_resource type="Script" path="res://addons/scalable_vector_shapes_2d/scalable_arc.gd" id="3_0mo18"]
+[ext_resource type="Script" path="res://addons/scalable_vector_shapes_2d/scalable_arc_list.gd" id="4_2kl3k"]
 
 [sub_resource type="Curve2D" id="Curve2D_jr52a"]
 _data = {

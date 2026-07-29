@@ -1,6 +1,6 @@
 [gd_scene load_steps=7 format=3 uid="uid://bwxjc7a0mapl0"]
 
-[ext_resource type="Script" uid="uid://bsnpei7ltelnx" path="res://addons/scalable_vector_shapes_2d/examples/pinball/pinball.gd" id="1_t6ii5"]
+[ext_resource type="Script" path="res://addons/scalable_vector_shapes_2d/examples/pinball/pinball.gd" id="1_t6ii5"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_ia8el"]
 radius = 24.0

@@ -1,8 +1,8 @@
 [gd_scene load_steps=14 format=3 uid="uid://c8n11sl0fn6u1"]
 
-[ext_resource type="Script" uid="uid://de3jpss66xjfh" path="res://addons/scalable_vector_shapes_2d/scalable_vector_shape_2d.gd" id="1_mjv8w"]
-[ext_resource type="Script" uid="uid://dlbv4pit17dnu" path="res://addons/scalable_vector_shapes_2d/scalable_arc.gd" id="2_avqba"]
-[ext_resource type="Script" uid="uid://dl1t88tthmwts" path="res://addons/scalable_vector_shapes_2d/scalable_arc_list.gd" id="3_n8v1c"]
+[ext_resource type="Script" path="res://addons/scalable_vector_shapes_2d/scalable_vector_shape_2d.gd" id="1_mjv8w"]
+[ext_resource type="Script" path="res://addons/scalable_vector_shapes_2d/scalable_arc.gd" id="2_avqba"]
+[ext_resource type="Script" path="res://addons/scalable_vector_shapes_2d/scalable_arc_list.gd" id="3_n8v1c"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_mjv8w"]
 sky_horizon_color = Color(0.662243, 0.671743, 0.686743, 1)

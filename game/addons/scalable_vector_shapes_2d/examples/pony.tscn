@@ -1,9 +1,9 @@
 [gd_scene load_steps=108 format=3 uid="uid://gmlmhdf0cxl8"]
 
-[ext_resource type="Script" uid="uid://de3jpss66xjfh" path="res://addons/scalable_vector_shapes_2d/scalable_vector_shape_2d.gd" id="1_inuwg"]
-[ext_resource type="Script" uid="uid://dlbv4pit17dnu" path="res://addons/scalable_vector_shapes_2d/scalable_arc.gd" id="2_trrx4"]
-[ext_resource type="Script" uid="uid://dl1t88tthmwts" path="res://addons/scalable_vector_shapes_2d/scalable_arc_list.gd" id="3_gghv2"]
-[ext_resource type="Script" uid="uid://dn747ucen5o8b" path="res://addons/scalable_vector_shapes_2d/svs_vertex_merge_2d.gd" id="4_p8hpb"]
+[ext_resource type="Script" path="res://addons/scalable_vector_shapes_2d/scalable_vector_shape_2d.gd" id="1_inuwg"]
+[ext_resource type="Script" path="res://addons/scalable_vector_shapes_2d/scalable_arc.gd" id="2_trrx4"]
+[ext_resource type="Script" path="res://addons/scalable_vector_shapes_2d/scalable_arc_list.gd" id="3_gghv2"]
+[ext_resource type="Script" path="res://addons/scalable_vector_shapes_2d/svs_vertex_merge_2d.gd" id="4_p8hpb"]
 
 [sub_resource type="GDScript" id="GDScript_6k4l8"]
 script/source = "extends Node2D

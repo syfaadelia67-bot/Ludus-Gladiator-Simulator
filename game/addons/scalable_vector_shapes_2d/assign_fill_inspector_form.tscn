@@ -1,9 +1,9 @@
 [gd_scene load_steps=10 format=3 uid="uid://53oqf8j7uyuu"]
 
-[ext_resource type="Script" uid="uid://b1ii4843yuwkw" path="res://addons/scalable_vector_shapes_2d/assign_fill_inspector_form.gd" id="1_ogtsd"]
-[ext_resource type="StyleBox" uid="uid://v0ueesjbdyrk" path="res://addons/scalable_vector_shapes_2d/snazzy_toggle_button.stylebox" id="3_alhox"]
-[ext_resource type="Texture2D" uid="uid://31qakec1dm6y" path="res://addons/scalable_vector_shapes_2d/Key.svg" id="3_d26vq"]
-[ext_resource type="Texture2D" uid="uid://caqsvv6rdxkm4" path="res://addons/scalable_vector_shapes_2d/Gradients.svg" id="4_d26vq"]
+[ext_resource type="Script" path="res://addons/scalable_vector_shapes_2d/assign_fill_inspector_form.gd" id="1_ogtsd"]
+[ext_resource type="StyleBox" path="res://addons/scalable_vector_shapes_2d/snazzy_toggle_button.stylebox" id="3_alhox"]
+[ext_resource type="Texture2D" path="res://addons/scalable_vector_shapes_2d/Key.svg" id="3_d26vq"]
+[ext_resource type="Texture2D" path="res://addons/scalable_vector_shapes_2d/Gradients.svg" id="4_d26vq"]
 
 [sub_resource type="ButtonGroup" id="ButtonGroup_6uned"]
 

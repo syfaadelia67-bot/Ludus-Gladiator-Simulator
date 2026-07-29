@@ -1,8 +1,8 @@
 [gd_scene load_steps=8 format=3 uid="uid://cx2oiwhsrb3wk"]
 
-[ext_resource type="Script" uid="uid://cfu3r76f6aocm" path="res://addons/scalable_vector_shapes_2d/line_cap_toggle_buttons.gd" id="1_k7j3x"]
-[ext_resource type="StyleBox" uid="uid://v0ueesjbdyrk" path="res://addons/scalable_vector_shapes_2d/snazzy_toggle_button.stylebox" id="2_q65j6"]
-[ext_resource type="Texture2D" uid="uid://cdkf2g8b5e55r" path="res://addons/scalable_vector_shapes_2d/LineCaps.svg" id="3_ymr1k"]
+[ext_resource type="Script" path="res://addons/scalable_vector_shapes_2d/line_cap_toggle_buttons.gd" id="1_k7j3x"]
+[ext_resource type="StyleBox" path="res://addons/scalable_vector_shapes_2d/snazzy_toggle_button.stylebox" id="2_q65j6"]
+[ext_resource type="Texture2D" path="res://addons/scalable_vector_shapes_2d/LineCaps.svg" id="3_ymr1k"]
 
 [sub_resource type="ButtonGroup" id="ButtonGroup_kh00m"]
 

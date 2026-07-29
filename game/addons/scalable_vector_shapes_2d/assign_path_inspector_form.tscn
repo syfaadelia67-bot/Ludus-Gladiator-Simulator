@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://bl1bn3in0n8dw"]
 
-[ext_resource type="Script" uid="uid://bltvcgvd1j437" path="res://addons/scalable_vector_shapes_2d/assign_path_inspector_form.gd" id="1_apd1v"]
+[ext_resource type="Script" path="res://addons/scalable_vector_shapes_2d/assign_path_inspector_form.gd" id="1_apd1v"]
 
 [node name="AssignPathInspectorForm" type="VBoxContainer" unique_id=2143448357]
 anchors_preset = 15

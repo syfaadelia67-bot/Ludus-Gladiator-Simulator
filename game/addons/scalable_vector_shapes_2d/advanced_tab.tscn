@@ -1,6 +1,6 @@
 [gd_scene load_steps=3 format=3 uid="uid://3r7rlhrwfmfe"]
 
-[ext_resource type="Script" uid="uid://duyq57sg3jn7q" path="res://addons/scalable_vector_shapes_2d/advanced_tab.gd" id="1_h55kp"]
+[ext_resource type="Script" path="res://addons/scalable_vector_shapes_2d/advanced_tab.gd" id="1_h55kp"]
 
 [sub_resource type="LabelSettings" id="LabelSettings_h55kp"]
 line_spacing = 0.0

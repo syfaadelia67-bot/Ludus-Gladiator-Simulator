@@ -1,9 +1,9 @@
 [gd_scene load_steps=19 format=3 uid="uid://b7d7mk2ioy617"]
 
-[ext_resource type="Script" uid="uid://de3jpss66xjfh" path="res://addons/scalable_vector_shapes_2d/scalable_vector_shape_2d.gd" id="1_l1n7h"]
-[ext_resource type="Script" uid="uid://bjguk7v0cas38" path="res://addons/scalable_vector_shapes_2d/examples/fan_art_with_clip_paths/eye.gd" id="1_x8diq"]
-[ext_resource type="Script" uid="uid://dlbv4pit17dnu" path="res://addons/scalable_vector_shapes_2d/scalable_arc.gd" id="2_x8diq"]
-[ext_resource type="Script" uid="uid://dl1t88tthmwts" path="res://addons/scalable_vector_shapes_2d/scalable_arc_list.gd" id="3_kjel7"]
+[ext_resource type="Script" path="res://addons/scalable_vector_shapes_2d/scalable_vector_shape_2d.gd" id="1_l1n7h"]
+[ext_resource type="Script" path="res://addons/scalable_vector_shapes_2d/examples/fan_art_with_clip_paths/eye.gd" id="1_x8diq"]
+[ext_resource type="Script" path="res://addons/scalable_vector_shapes_2d/scalable_arc.gd" id="2_x8diq"]
+[ext_resource type="Script" path="res://addons/scalable_vector_shapes_2d/scalable_arc_list.gd" id="3_kjel7"]
 
 [sub_resource type="Curve2D" id="Curve2D_ng2ve"]
 resource_local_to_scene = true
