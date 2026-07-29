@@ -1,0 +1,79 @@
+[gd_scene load_steps=3 format=3 uid="uid://bgnt0osufc5aa"]
+
+[sub_resource type="Animation" id="Animation_jugmd"]
+length = 0.8
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Panel/Margin/Content/ActionButton:scale")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.4, 0.8),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Vector2(1, 1), Vector2(1.04, 1.04), Vector2(1, 1)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_fkb47"]
+_data = {
+&"pulse": SubResource("Animation_jugmd")
+}
+
+[node name="GodotAITest" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="Panel" type="PanelContainer" parent="."]
+custom_minimum_size = Vector2(640, 360)
+layout_mode = 0
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -267.0
+offset_top = -128.5
+offset_right = 267.0
+offset_bottom = 128.5
+
+[node name="Margin" type="MarginContainer" parent="Panel"]
+layout_mode = 2
+theme_override_constants/margin_left = 32
+theme_override_constants/margin_top = 28
+theme_override_constants/margin_right = 32
+theme_override_constants/margin_bottom = 28
+
+[node name="Content" type="VBoxContainer" parent="Panel/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 18
+
+[node name="Title" type="Label" parent="Panel/Margin/Content"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 30
+text = "Godot AI Integration Smoke Test"
+horizontal_alignment = 1
+
+[node name="Description" type="Label" parent="Panel/Margin/Content"]
+layout_mode = 2
+text = "Escena aislada para validar edición, ejecución y captura mediante MCP."
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="ActionButton" type="Button" parent="Panel/Margin/Content"]
+custom_minimum_size = Vector2(0, 56)
+layout_mode = 2
+text = "Probar conexión"
+
+[node name="StatusLabel" type="Label" parent="Panel/Margin/Content"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "Estado: Godot AI conectado"
+horizontal_alignment = 1
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+libraries = {
+&"": SubResource("AnimationLibrary_fkb47")
+}
+autoplay = "pulse"
