@@ -4,3 +4,5 @@
 
 [node name="AdultPixelGladiatorCandidate" type="Node2D"]
 script = ExtResource("1_candidate")
+metadata/iteration = 2
+metadata/body_canvas = Vector2i(64, 64)

@@ -1,22 +1,22 @@
 extends Node2D
 
 const ASSET_ROOT := "res://assets/dev/pixel_64/adult_candidate"
-const PLACEHOLDER_PATH := "res://assets/dev/pixel_64/pipeline_exports/gator/gator_adult_000.png"
+const V2_ROOT := ASSET_ROOT + "/v2"
 const FRAME_SIZE := Vector2i(64, 64)
 const GRID_ORIGIN := Vector2(420, 148)
 const GRID_SCALE := 6
 const GUIDE_PIXELS := {
     "HEAD": 2,
     "SHOULDERS": 14,
-    "WAIST": 29,
-    "KNEES": 46,
+    "PELVIS": 34,
+    "KNEES": 44,
     "FEET": 61,
 }
 
 var equipped_texture: Texture2D
 var body_texture: Texture2D
 var silhouette_texture: Texture2D
-var placeholder_texture: Texture2D
+var previous_texture: Texture2D
 var animated_previews: Array[Sprite2D] = []
 var light_background := false
 var preview_equipped := true
@@ -26,18 +26,18 @@ var elapsed := 0.0
 
 
 func _ready() -> void:
-    equipped_texture = load(ASSET_ROOT + "/athletic_adult_sheet.png") as Texture2D
-    body_texture = load(ASSET_ROOT + "/body_base_idle_sheet.png") as Texture2D
-    silhouette_texture = load(ASSET_ROOT + "/athletic_adult_silhouette.png") as Texture2D
-    placeholder_texture = load(PLACEHOLDER_PATH) as Texture2D
-    _add_region_sprite("GridCandidate", equipped_texture, GRID_ORIGIN, GRID_SCALE, false)
+    equipped_texture = load(V2_ROOT + "/athletic_adult_v2_sheet.png") as Texture2D
+    body_texture = load(V2_ROOT + "/body_base_v2_idle_sheet.png") as Texture2D
+    silhouette_texture = load(V2_ROOT + "/athletic_adult_v2_silhouette.png") as Texture2D
+    previous_texture = load(ASSET_ROOT + "/athletic_adult_sheet.png") as Texture2D
+    _add_region_sprite("GridCandidate", body_texture, GRID_ORIGIN, GRID_SCALE, false)
     _add_region_sprite("OneToOne", equipped_texture, Vector2(58, 145), 1, false)
     var animated := _add_region_sprite(
         "AnimatedPreview", equipped_texture, Vector2(100, 245), preview_scale, true
     )
     animated_previews.append(animated)
     _add_region_sprite("Silhouette", silhouette_texture, Vector2(105, 520), 2, false)
-    _add_static_sprite("OldPlaceholder", placeholder_texture, Vector2(840, 235), 3)
+    _add_region_sprite("PreviousCandidate", previous_texture, Vector2(840, 235), 3, false)
     _add_region_sprite("NewComparison", equipped_texture, Vector2(1040, 235), 3, false)
     var body := _add_region_sprite("BodyOnly", body_texture, Vector2(870, 505), 2, true)
     var equipped := _add_region_sprite(
@@ -49,11 +49,11 @@ func _ready() -> void:
     var arguments := OS.get_cmdline_user_args()
     if arguments.has("--capture-dark"):
         light_background = false
-        _capture_after_draw.call_deferred("adult_candidate_dark.png")
+        _capture_after_draw.call_deferred("adult_candidate_v2_dark.png")
     elif arguments.has("--capture-light"):
         light_background = true
         queue_redraw()
-        _capture_after_draw.call_deferred("adult_candidate_light.png")
+        _capture_after_draw.call_deferred("adult_candidate_v2_light.png")
 
 
 func _process(delta: float) -> void:
@@ -95,15 +95,15 @@ func _draw() -> void:
     draw_rect(Rect2(398, 92, 410, 590), panel)
     draw_rect(Rect2(832, 92, 424, 590), panel)
     var font := ThemeDB.fallback_font
-    draw_string(font, Vector2(28, 48), "ATHLETIC ADULT GLADIATOR - 64x64 CANDIDATE", HORIZONTAL_ALIGNMENT_LEFT, -1, 25, ink)
+    draw_string(font, Vector2(28, 48), "ATHLETIC ADULT GLADIATOR - ANATOMY ITERATION 2", HORIZONTAL_ALIGNMENT_LEFT, -1, 25, ink)
     draw_string(font, Vector2(44, 122), "READABILITY", HORIZONTAL_ALIGNMENT_LEFT, -1, 18, ink)
     draw_string(font, Vector2(56, 210), "1x", HORIZONTAL_ALIGNMENT_LEFT, -1, 16, muted)
     draw_string(font, Vector2(96, 230), "4x animated idle", HORIZONTAL_ALIGNMENT_LEFT, -1, 16, muted)
     draw_string(font, Vector2(74, 502), "BLACK SILHOUETTE", HORIZONTAL_ALIGNMENT_LEFT, -1, 15, muted)
-    draw_string(font, Vector2(418, 122), "PROPORTION GRID - 6x", HORIZONTAL_ALIGNMENT_LEFT, -1, 18, ink)
-    draw_string(font, Vector2(844, 122), "PLACEHOLDER vs CANDIDATE", HORIZONTAL_ALIGNMENT_LEFT, -1, 18, ink)
-    draw_string(font, Vector2(844, 205), "OLD", HORIZONTAL_ALIGNMENT_LEFT, -1, 15, Color("#de7373"))
-    draw_string(font, Vector2(1046, 205), "NEW", HORIZONTAL_ALIGNMENT_LEFT, -1, 15, Color("#72c58a"))
+    draw_string(font, Vector2(418, 122), "BODY ANATOMY GRID - 6x", HORIZONTAL_ALIGNMENT_LEFT, -1, 18, ink)
+    draw_string(font, Vector2(844, 122), "ITERATION 1 vs ITERATION 2", HORIZONTAL_ALIGNMENT_LEFT, -1, 18, ink)
+    draw_string(font, Vector2(844, 205), "ITERATION 1", HORIZONTAL_ALIGNMENT_LEFT, -1, 15, Color("#de7373"))
+    draw_string(font, Vector2(1046, 205), "ITERATION 2", HORIZONTAL_ALIGNMENT_LEFT, -1, 15, Color("#72c58a"))
     draw_string(font, Vector2(870, 488), "BODY BASE", HORIZONTAL_ALIGNMENT_LEFT, -1, 15, muted)
     draw_string(font, Vector2(1080, 488), "EQUIPPED", HORIZONTAL_ALIGNMENT_LEFT, -1, 15, muted)
     draw_string(font, Vector2(870, 665), "61 px | 6.1 heads | 16 colors", HORIZONTAL_ALIGNMENT_LEFT, -1, 16, ink)
@@ -133,7 +133,7 @@ func _draw_grid(ink: Color, muted: Color) -> void:
         )
         draw_string(
             font,
-            Vector2(GRID_ORIGIN.x + grid_size.x - 102, guide_y - 3),
+            Vector2(GRID_ORIGIN.x + 4, guide_y - 3),
             "%s %d" % [guide_name, pixel],
             HORIZONTAL_ALIGNMENT_LEFT,
             -1,
@@ -184,6 +184,6 @@ func _add_static_sprite(
 func _capture_after_draw(file_name: String) -> void:
     await RenderingServer.frame_post_draw
     var image := get_viewport().get_texture().get_image()
-    var error := image.save_png(ASSET_ROOT + "/" + file_name)
+    var error := image.save_png(V2_ROOT + "/" + file_name)
     print("ADULT_CANDIDATE_CAPTURE ", file_name, " ", error_string(error))
     get_tree().quit(0 if error == OK else 1)
