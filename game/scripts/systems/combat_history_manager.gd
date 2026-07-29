@@ -22,10 +22,12 @@ func _ready() -> void:
     call_deferred("_connect_combat_manager")
 
 func _connect_combat_manager() -> void:
-    if CombatManager == null:
+    var combat_manager: Node = get_node_or_null("/root/CombatManager")
+    if combat_manager == null or not combat_manager.has_signal("combat_finished"):
         return
-    if not CombatManager.combat_finished.is_connected(_on_combat_finished):
-        CombatManager.combat_finished.connect(_on_combat_finished)
+    var combat_callback := Callable(self, "_on_combat_finished")
+    if not combat_manager.is_connected("combat_finished", combat_callback):
+        combat_manager.connect("combat_finished", combat_callback)
 
 func _on_combat_finished(result: Dictionary) -> void:
     var victory: bool = bool(result.get("victory", false))
@@ -38,7 +40,7 @@ func _on_combat_finished(result: Dictionary) -> void:
     var technique_stats: Dictionary = result.get("technique_stats", {}) as Dictionary
     var status_stats: Dictionary = result.get("status_stats", {}) as Dictionary
     var entry: Dictionary = {
-        "day": GameState.day,
+        "day": _get_current_day(),
         "event_type": event_type,
         "event_name": str(result.get("event_name", "Combate")),
         "fighter": str(result.get("fighter", "Gladiador")),
@@ -180,11 +182,18 @@ func export_state() -> Dictionary:
         "official_wins": official_wins
     }
 
-func import_state(data: Dictionary) -> void:
+func import_state(data: Dictionary, current_day: int = -1) -> void:
     var saved_entries: Array = data.get("entries", []) as Array
-    entries = HistoryIntegrityValidatorScript.sanitize(saved_entries, MAX_ENTRIES, GameState.day)
+    var effective_current_day: int = current_day if current_day >= 1 else _get_current_day()
+    entries = HistoryIntegrityValidatorScript.sanitize(saved_entries, MAX_ENTRIES, effective_current_day)
     _rebuild_totals_from_entries(data)
     history_changed.emit()
+
+func _get_current_day() -> int:
+    var game_state: Node = get_node_or_null("/root/GameState")
+    if game_state == null:
+        return 1
+    return maxi(1, int(game_state.get("day")))
 
 func _rebuild_totals_from_entries(saved_totals: Dictionary) -> void:
     total_wins = 0
