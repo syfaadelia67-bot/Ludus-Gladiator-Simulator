@@ -3,8 +3,8 @@
 ; since the parameters that go here are not all obvious.
 ;
 ; Format:
-;   [section]
-;   param=value
+;   [section] ; section goes between []
+;   param=value ; assign values to parameters
 
 config_version=5
 
@@ -13,31 +13,6 @@ config_version=5
 config/name="Ludus Gladiator Simulator"
 run/main_scene="res://scenes/Main.tscn"
 config/features=PackedStringArray("4.5")
-
-[debug]
-
-gdscript/warnings/treat_warnings_as_errors=false
-gdscript/warnings/integer_division=0
-gdscript/warnings/unused_signal=0
-gdscript/warnings/shadowed_variable=0
-gdscript/warnings/shadowed_variable_base_class=0
-
-[display]
-
-window/size/viewport_width=1280
-window/size/viewport_height=720
-window/size/window_width_override=1280
-window/size/window_height_override=720
-window/stretch/mode="canvas_items"
-
-[editor_plugins]
-
-enabled=PackedStringArray("res://addons/godot_ai/plugin.cfg")
-
-[rendering]
-
-renderer/rendering_method="gl_compatibility"
-renderer/rendering_method.mobile="gl_compatibility"
 
 [autoload]
 
@@ -61,3 +36,28 @@ GladiatorProgressionManager="*res://scripts/systems/gladiator_progression_manage
 TransferManager="*res://scripts/systems/transfer_manager.gd"
 AllTabsUIBootstrap="*res://scripts/ui/all_tabs_ui_bootstrap.gd"
 _mcp_game_helper="*res://addons/godot_ai/runtime/game_helper.gd"
+
+[debug]
+
+gdscript/warnings/unused_signal=0
+gdscript/warnings/shadowed_variable=0
+gdscript/warnings/shadowed_variable_base_class=0
+gdscript/warnings/integer_division=0
+gdscript/warnings/treat_warnings_as_errors=false
+
+[display]
+
+window/size/viewport_width=1280
+window/size/viewport_height=720
+window/size/window_width_override=1280
+window/size/window_height_override=720
+window/stretch/mode="canvas_items"
+
+[editor_plugins]
+
+enabled=PackedStringArray("res://addons/godot_ai/plugin.cfg", "res://addons/scalable_vector_shapes_2d/plugin.cfg")
+
+[rendering]
+
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"

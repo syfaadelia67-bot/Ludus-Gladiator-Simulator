@@ -1,6 +1,7 @@
 # Godot-generated metadata and caches
 .godot/
 game/.godot/
+/game/addons/scalable_vector_shapes_2d/**/*.import
 
 # Temporary and log files
 *.tmp
