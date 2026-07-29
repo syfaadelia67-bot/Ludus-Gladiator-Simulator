@@ -8,7 +8,7 @@ extends Control
 @onready var details: RichTextLabel = $Margin/VBox/Tabs/Personal/Left/Details
 @onready var job_selector: OptionButton = $Margin/VBox/Tabs/Personal/Left/JobRow/JobSelector
 @onready var assign_button: Button = $Margin/VBox/Tabs/Personal/Left/JobRow/AssignJob
-@onready var log: RichTextLabel = $Margin/VBox/Tabs/Personal/Log
+@onready var activity_log: RichTextLabel = $Margin/VBox/Tabs/Personal/Log
 @onready var market_list: ItemList = $Margin/VBox/Tabs/Mercado/MarketList
 @onready var market_details: RichTextLabel = $Margin/VBox/Tabs/Mercado/MarketDetails
 @onready var buy_button: Button = $Margin/VBox/Tabs/Mercado/BuyOffer
@@ -117,7 +117,7 @@ func _on_assign_job() -> void:
     var job_id := job_ids[job_selector.selected]
     if RosterManager.assign_job(selected_person_id, job_id):
         var person = RosterManager.get_person(selected_person_id)
-        log.append_text("\n%s fue asignado a %s." % [person.display_name, RosterManager.get_job_name(job_id)])
+        activity_log.append_text("\n%s fue asignado a %s." % [person.display_name, RosterManager.get_job_name(job_id)])
 
 func _on_buy_offer() -> void:
     if selected_offer_id.is_empty():
@@ -149,16 +149,16 @@ func _on_start_duel() -> void:
     start_duel_button.disabled = false
 
 func _on_purchase_completed(person_name_value: String, price: int) -> void:
-    log.append_text("\n[color=gold]Compraste a %s por %d denarios.[/color]" % [person_name_value, price])
+    activity_log.append_text("\n[color=gold]Compraste a %s por %d denarios.[/color]" % [person_name_value, price])
     selected_offer_id = ""
 
 func _on_upgrade_completed(building_id: String, new_level: int) -> void:
     var data := EstateManager.get_building_data(building_id)
-    log.append_text("\n[color=gold]%s mejorado a nivel %d.[/color]" % [data.get("name", building_id), new_level])
+    activity_log.append_text("\n[color=gold]%s mejorado a nivel %d.[/color]" % [data.get("name", building_id), new_level])
     _refresh_recipes()
 
 func _on_craft_completed(item_name: String, cost_ore: int, cost_denarii: int) -> void:
-    log.append_text("\n[color=gold]Fabricaste %s por %d mineral y %d denarios.[/color]" % [item_name, cost_ore, cost_denarii])
+    activity_log.append_text("\n[color=gold]Fabricaste %s por %d mineral y %d denarios.[/color]" % [item_name, cost_ore, cost_denarii])
 
 func _on_combat_finished(result: Dictionary) -> void:
     player_name.text = str(result.get("fighter", "Gladiador"))
@@ -176,7 +176,7 @@ func _on_combat_finished(result: Dictionary) -> void:
     combat_log.append_text("[b]Crónica de la arena[/b]\n")
     for entry in result.get("log", []):
         combat_log.append_text("%s\n" % str(entry))
-    log.append_text("\n[color=gold]%s terminó un duelo en %d rondas.[/color]" % [result.get("fighter", "El gladiador"), int(result.get("rounds", 0))])
+    activity_log.append_text("\n[color=gold]%s terminó un duelo en %d rondas.[/color]" % [result.get("fighter", "El gladiador"), int(result.get("rounds", 0))])
 
 func _set_bar(bar: ProgressBar, value: int, maximum: int) -> void:
     bar.max_value = maxi(1, maximum)
@@ -188,18 +188,18 @@ func _on_action_failed(reason: String) -> void:
     arena_result.text = reason
 
 func _append_warning(text: String) -> void:
-    log.append_text("\n[color=orange]%s[/color]" % text)
+    activity_log.append_text("\n[color=orange]%s[/color]" % text)
 
 func _on_day_advanced(day: int) -> void:
-    log.append_text("\n\n[b]Día %d[/b]" % day)
+    activity_log.append_text("\n\n[b]Día %d[/b]" % day)
 
 func _on_daily_report(report: Dictionary) -> void:
-    log.append_text("\nMineral producido: %d" % int(report.get("ore", 0)))
-    log.append_text("\nSeguridad generada: %d" % int(report.get("security", 0)))
-    log.append_text("\nInformación obtenida: %d" % int(report.get("intel", 0)))
-    log.append_text("\nEntrenamiento total: %d" % int(report.get("training", 0)))
+    activity_log.append_text("\nMineral producido: %d" % int(report.get("ore", 0)))
+    activity_log.append_text("\nSeguridad generada: %d" % int(report.get("security", 0)))
+    activity_log.append_text("\nInformación obtenida: %d" % int(report.get("intel", 0)))
+    activity_log.append_text("\nEntrenamiento total: %d" % int(report.get("training", 0)))
     for person_name_value in report.get("promotions", []):
-        log.append_text("\n[color=gold]%s completó su formación y ahora es gladiador.[/color]" % person_name_value)
+        activity_log.append_text("\n[color=gold]%s completó su formación y ahora es gladiador.[/color]" % person_name_value)
 
 func _refresh_resources() -> void:
     resources_label.text = GameState.get_resource_summary()
