@@ -1,0 +1,63 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/dev/animated_portrait_card.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/dev/pixel_64/portrait/gladiator_portrait_512.png" id="2_portrait"]
+
+[sub_resource type="AtlasTexture" id="Atlas_head"]
+atlas = ExtResource("2_portrait")
+region = Rect2(0, 0, 512, 360)
+
+[sub_resource type="AtlasTexture" id="Atlas_torso"]
+atlas = ExtResource("2_portrait")
+region = Rect2(0, 300, 512, 212)
+
+[node name="AnimatedPortraitCard" type="Node2D"]
+script = ExtResource("1_script")
+
+[node name="Background" type="Polygon2D" parent="."]
+polygon = PackedVector2Array(-8, -8, 520, -8, 520, 520, -8, 520)
+color = Color(0.035, 0.043, 0.055, 1)
+
+[node name="BackgroundArch" type="Polygon2D" parent="Background"]
+polygon = PackedVector2Array(42, 500, 42, 220, 80, 108, 170, 38, 256, 18, 342, 38, 432, 108, 470, 220, 470, 500)
+color = Color(0.13, 0.14, 0.16, 1)
+
+[node name="Torso" type="Sprite2D" parent="."]
+texture = SubResource("Atlas_torso")
+centered = false
+position = Vector2(0, 300)
+
+[node name="Head" type="Node2D" parent="."]
+
+[node name="PortraitCrop" type="Sprite2D" parent="Head"]
+texture = SubResource("Atlas_head")
+centered = false
+
+[node name="Eyelids" type="Node2D" parent="Head"]
+modulate = Color(1, 1, 1, 0)
+
+[node name="Left" type="Polygon2D" parent="Head/Eyelids"]
+polygon = PackedVector2Array(190, 185, 229, 182, 232, 190, 193, 193)
+color = Color(0.22, 0.105, 0.065, 0.96)
+
+[node name="Right" type="Polygon2D" parent="Head/Eyelids"]
+polygon = PackedVector2Array(280, 183, 321, 186, 319, 194, 278, 191)
+color = Color(0.22, 0.105, 0.065, 0.96)
+
+[node name="Feather" type="Polygon2D" parent="Head"]
+position = Vector2(253, 12)
+polygon = PackedVector2Array(-118, 80, -92, 24, -30, -4, 46, 2, 114, 39, 102, 56, 38, 22, -22, 18, -84, 48)
+color = Color(0.55, 0.065, 0.075, 0.18)
+
+[node name="FrontLight" type="Polygon2D" parent="."]
+modulate = Color(1, 0.76, 0.48, 0.035)
+polygon = PackedVector2Array(256, 0, 512, 0, 512, 512, 356, 512, 240, 300)
+color = Color(1, 0.78, 0.48, 1)
+
+[node name="Frame" type="Line2D" parent="."]
+points = PackedVector2Array(0, 512, 0, 0, 512, 0, 512, 512, 0, 512)
+width = 6.0
+default_color = Color(0.72, 0.48, 0.19, 1)
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+root_node = NodePath("..")
