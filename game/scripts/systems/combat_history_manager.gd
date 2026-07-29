@@ -180,22 +180,43 @@ func export_state() -> Dictionary:
     }
 
 func import_state(data: Dictionary) -> void:
-    entries.clear()
     var saved_entries: Array = data.get("entries", []) as Array
-    for value: Variant in saved_entries:
-        if value is Dictionary:
-            entries.append((value as Dictionary).duplicate(true))
-    if entries.size() > MAX_ENTRIES:
-        entries.resize(MAX_ENTRIES)
-    total_wins = maxi(0, int(data.get("total_wins", 0)))
-    total_losses = maxi(0, int(data.get("total_losses", 0)))
-    total_surrenders = maxi(0, int(data.get("total_surrenders", 0)))
-    total_rewards = maxi(0, int(data.get("total_rewards", 0)))
-    total_reputation = int(data.get("total_reputation", 0))
-    current_win_streak = maxi(0, int(data.get("current_win_streak", 0)))
-    best_win_streak = maxi(current_win_streak, int(data.get("best_win_streak", 0)))
-    flawless_wins = maxi(0, int(data.get("flawless_wins", 0)))
-    beast_wins = maxi(0, int(data.get("beast_wins", 0)))
-    underground_wins = maxi(0, int(data.get("underground_wins", 0)))
-    official_wins = maxi(0, int(data.get("official_wins", 0)))
+    entries = HistoryIntegrityValidator.sanitize(saved_entries, MAX_ENTRIES, GameState.day)
+    _rebuild_totals_from_entries(data)
     history_changed.emit()
+
+func _rebuild_totals_from_entries(saved_totals: Dictionary) -> void:
+    total_wins = 0
+    total_losses = 0
+    total_surrenders = 0
+    total_rewards = 0
+    total_reputation = 0
+    flawless_wins = 0
+    beast_wins = 0
+    underground_wins = 0
+    official_wins = 0
+
+    for entry: Dictionary in entries:
+        var victory: bool = bool(entry.get("victory", false))
+        var surrendered: bool = bool(entry.get("surrendered", false))
+        if victory:
+            total_wins += 1
+            if bool(entry.get("flawless", false)):
+                flawless_wins += 1
+            var enemy_kind: String = str(entry.get("enemy_kind", "gladiator"))
+            var event_type: String = str(entry.get("event_type", "unknown"))
+            if enemy_kind == "beast" or event_type == "beast_hunt":
+                beast_wins += 1
+            if event_type == "underground":
+                underground_wins += 1
+            if event_type == "official":
+                official_wins += 1
+        elif surrendered:
+            total_surrenders += 1
+        else:
+            total_losses += 1
+        total_rewards += int(entry.get("reward", 0))
+        total_reputation += int(entry.get("reputation", 0))
+
+    current_win_streak = maxi(0, int(saved_totals.get("current_win_streak", 0)))
+    best_win_streak = maxi(current_win_streak, int(saved_totals.get("best_win_streak", 0)))
