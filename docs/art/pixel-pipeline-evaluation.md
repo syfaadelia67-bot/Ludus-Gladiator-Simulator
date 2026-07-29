@@ -2,6 +2,8 @@
 
 Este documento define la evaluación reproducible previa a adoptar una herramienta de producción para los gladiadores de combate de Ludus Gladiator Simulator.
 
+La captura estructurada de resultados se realiza en [`pixel-pipeline-scorecard.md`](pixel-pipeline-scorecard.md). Ningún campo de esa planilla debe completarse por estimación.
+
 ## Objetivo
 
 Comparar tres flujos con el mismo personaje, las mismas capas y las mismas animaciones:
@@ -19,6 +21,7 @@ La prueba debe determinar cuál produce sprites adultos de 64 × 64 con menor re
 - El proyecto debe arrancar sin ninguna herramienta artística instalada.
 - Solo pueden versionarse assets propios exportados, recursos Godot propios y resultados documentados.
 - No se inventan tiempos, puntuaciones ni resultados de estabilidad.
+- Toda puntuación debe enlazar evidencia registrada en la planilla de resultados.
 
 ## Personaje patrón
 
@@ -79,6 +82,7 @@ También se deben ejecutar:
 - cierre completo de la herramienta;
 - reapertura del documento fuente;
 - dos exportaciones consecutivas;
+- comparación SHA-256 de exportaciones consecutivas sin cambios;
 - sustitución de equipo sin mover el cuerpo;
 - reproducción de las cinco animaciones después de sustituir equipo.
 
@@ -97,7 +101,7 @@ También se deben ejecutar:
 | Pivotes consistentes | Sí / No |
 | Undo/redo fiable | Sí / No / Incidencias |
 | Reapertura fiable | Sí / No / Incidencias |
-| Exportación reproducible | Sí / No |
+| Exportación reproducible | Sí / No, con SHA-256 |
 | Integración con Godot | Descripción técnica |
 | Facilidad para automatización | Baja / Media / Alta, con evidencia |
 | Calidad visual resultante | Revisión comparativa, no opinión aislada |
@@ -133,6 +137,8 @@ Una herramienta se descarta como pipeline principal si ocurre cualquiera de esta
 - licencia incompatible con el repositorio o la distribución prevista;
 - resultado visual persistentemente chibi después de aplicar la guía adulta.
 
+Una condición de descarte prevalece sobre cualquier puntuación total.
+
 ## Decisión final permitida
 
 El informe de resultados deberá elegir exactamente una conclusión:
@@ -161,4 +167,4 @@ El pipeline elegido no podrá fusionarse a `main` hasta que el proyecto supere e
 
 ## Estado
 
-La metodología está definida. Las mediciones y el ganador permanecen pendientes de la prueba local controlada; no deben completarse por estimación.
+La metodología y la planilla de captura están definidas. Las mediciones y el ganador permanecen pendientes de la prueba local controlada; no deben completarse por estimación.
