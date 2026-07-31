@@ -29,8 +29,9 @@ func _ready() -> void:
     _check_file_contract(NEW_CAMPAIGN_PATH, [
         "func reset_campaign_state()",
         "SaveManager.autosave_enabled = false",
-        "GameState.day = 1",
-        "RosterManager._seed_initial_roster()",
+        "\"day\": 1",
+        "\"people\": []",
+        "SaveManager._apply_payload(reset_payload)",
         "SaveManager.autosave_enabled = previous_autosave"
     ], failures)
     _check_file_contract(PROJECT_PATH, [
