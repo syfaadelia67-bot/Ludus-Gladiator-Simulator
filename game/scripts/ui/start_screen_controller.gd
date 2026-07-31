@@ -25,7 +25,13 @@ func _attach_when_ready() -> void:
     push_error("No se pudo montar la pantalla de inicio sobre la escena principal.")
 
 func _build_title_screen(scene: Node) -> void:
-    if scene.get_node_or_null("StartScreen") != null:
+    var existing := scene.get_node_or_null("StartScreen") as ColorRect
+    if existing != null:
+        overlay = existing
+        card = existing.find_child("StartMenuCard", true, false) as VBoxContainer
+        if card != null:
+            overlay.visible = true
+            _show_main_menu()
         return
     overlay = ColorRect.new()
     overlay.name = "StartScreen"
@@ -51,9 +57,26 @@ func _build_title_screen(scene: Node) -> void:
     panel.add_child(margin)
 
     card = VBoxContainer.new()
+    card.name = "StartMenuCard"
     card.add_theme_constant_override("separation", 14)
     margin.add_child(card)
     _show_main_menu()
+
+func show_main_menu() -> void:
+    var scene := get_tree().current_scene
+    if scene == null or scene.name != MAIN_SCENE_NAME:
+        return
+    if SaveManager.save_game():
+        pass
+    if overlay == null or not is_instance_valid(overlay):
+        _build_title_screen(scene)
+    else:
+        overlay.visible = true
+        _show_main_menu()
+
+func _enter_campaign() -> void:
+    if overlay != null and is_instance_valid(overlay):
+        overlay.visible = false
 
 func _clear_card() -> void:
     for child in card.get_children():
@@ -103,7 +126,7 @@ func _continue_campaign() -> void:
     continue_button.disabled = true
     status_label.text = "Cargando campaña..."
     if SaveManager.load_game():
-        overlay.queue_free()
+        _enter_campaign()
     else:
         status_label.text = "No se pudo cargar una partida válida."
         continue_button.disabled = false
@@ -192,8 +215,11 @@ func _start_new_campaign() -> void:
         status_label.text = "Ingresá un nombre de al menos dos caracteres."
         return
     SaveManager.delete_save()
+    LudusOwnerManager.reset_profile()
     if not LudusOwnerManager.configure_owner(title_id, display_name, origin_id):
         status_label.text = "No se pudo configurar el propietario del ludus."
         return
-    SaveManager.save_game()
-    overlay.queue_free()
+    if not SaveManager.save_game():
+        status_label.text = "La campaña se creó, pero no pudo guardarse."
+        return
+    _enter_campaign()
