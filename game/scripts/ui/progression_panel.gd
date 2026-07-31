@@ -17,6 +17,7 @@ var ability_ids: Array[String] = []
 func _ready() -> void:
     GladiatorProgressionManager.progression_changed.connect(_refresh)
     RosterManager.roster_changed.connect(_refresh)
+    TraitManager.traits_changed.connect(func(_person_id: String): _refresh())
     gladiator_selector.item_selected.connect(_on_gladiator_selected)
     apply_specialization.pressed.connect(_on_apply_specialization)
     upgrade_ability.pressed.connect(_on_upgrade_ability)
@@ -93,11 +94,15 @@ func _refresh_details() -> void:
         var roman_level := "II" if learned_level >= 2 else "I"
         learned_names.append("%s %s · III 🔒" % [str(data.get("name", ability_id)), roman_level])
 
+    var trait_names: Array[String] = []
+    for trait_id in person.traits:
+        trait_names.append(TraitManager.get_trait_name(str(trait_id)))
+
     var xp_text := "MÁXIMO"
     if level < GladiatorProgressionManager.DEMO_MAX_LEVEL:
         xp_text = "%d/%d" % [int(record.get("experience", 0)), GladiatorProgressionManager.get_experience_required(level)]
 
-    summary.text = "[b]%s[/b]\nNivel %d — XP %s\nEspecialización: %s\nFama: %d | Victorias: %d | Derrotas: %d\nCarrera: %s (%d días)\nPuntos de habilidad: %d\nFUE %d | AGI %d | RES %d | INT %d | TEC %d | VIDA %d\nValor de mercado: %d denarios\nHabilidades: %s\n[color=gray]Nivel III de habilidades: 🔒 PRÓXIMAMENTE[/color]" % [
+    summary.text = "[b]%s[/b]\nNivel %d — XP %s\nEspecialización: %s\nFama: %d | Victorias: %d | Derrotas: %d\nCarrera: %s (%d días)\nPuntos de habilidad: %d\nFUE %d | AGI %d | RES %d | INT %d | TEC %d | VIDA %d\nValor de mercado: %d denarios\nRasgos permanentes: %s\nHabilidades: %s\n[color=gray]Nivel III de habilidades: 🔒 PRÓXIMAMENTE[/color]" % [
         person.display_name,
         level,
         xp_text,
@@ -114,7 +119,8 @@ func _refresh_details() -> void:
         person.intelligence,
         person.technique,
         person.health,
-        GladiatorProgressionManager.get_market_value(person_id),
+        MarketValuation.person_value(person, record),
+        ", ".join(trait_names) if not trait_names.is_empty() else "Ninguno",
         ", ".join(learned_names) if not learned_names.is_empty() else "Ninguna"
     ]
 
