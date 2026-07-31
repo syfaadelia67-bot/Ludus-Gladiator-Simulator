@@ -77,6 +77,7 @@ func _structural_error(payload: Dictionary) -> String:
 func _metadata(payload: Dictionary) -> Dictionary:
     var game_state: Dictionary = payload.get("game_state", {})
     var owner_profile: Dictionary = payload.get("owner", {}).get("profile", {})
+    var campaign: Dictionary = payload.get("campaign", {})
     var week := maxi(1, int(game_state.get("week", game_state.get("day", 1))))
     return {
         "version": int(payload.get("version", 0)),
@@ -84,6 +85,11 @@ func _metadata(payload: Dictionary) -> Dictionary:
         "chapter": 1 if week <= 5 else (2 if week <= 11 else 3),
         "owner_name": str(owner_profile.get("display_name", "")),
         "owner_title": str(owner_profile.get("title", "dominus")),
+        "campaign_over": bool(campaign.get("campaign_over", false)),
+        "victory": bool(campaign.get("victory", false)),
+        "wins": maxi(0, int(campaign.get("wins", 0))),
+        "losses": maxi(0, int(campaign.get("losses", 0))),
+        "defeat_reason": str(campaign.get("defeat_reason", "")),
         "saved_at_unix": int(payload.get("saved_at_unix", 0))
     }
 
