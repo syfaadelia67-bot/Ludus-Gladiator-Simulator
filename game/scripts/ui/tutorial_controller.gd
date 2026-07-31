@@ -2,42 +2,60 @@ extends Node
 
 const STEPS := [
     {
+        "id":"inspect_roster",
         "title":"1. Tu ludus",
-        "text":"Revisá Personal para conocer gladiadores, esclavos, moral, lealtad y trabajos disponibles.",
-        "tab":"Personal"
+        "text":"Revisá la pestaña Personal para conocer gladiadores, esclavos, moral, lealtad y trabajos disponibles.",
+        "tab":"Personal",
+        "objective":"Abrí Personal y confirmá que revisaste la plantilla."
     },
     {
+        "id":"advance_week",
         "title":"2. Preparación semanal",
         "text":"Asigná trabajos y entrenamiento antes de cerrar la semana. La producción y recuperación se calculan durante siete días internos.",
-        "tab":"Personal"
+        "tab":"Personal",
+        "objective":"Cerrá una semana para procesar trabajos, consumo y recuperación."
     },
     {
+        "id":"obtain_equipment",
         "title":"3. Mercado y equipo",
-        "text":"Usá Mercado, Forja y Equipamiento para reforzar al gladiador que representará al ludus.",
-        "tab":"Mercado"
+        "text":"Usá Mercado y Forja para reforzar al gladiador que representará al ludus.",
+        "tab":"Mercado",
+        "objective":"Comprá personal o fabricá una pieza de equipo."
     },
     {
+        "id":"resolve_event",
         "title":"4. Evento de campaña",
         "text":"Cada semana presenta una decisión narrativa. Sus consecuencias pueden modificar recursos, relaciones y reputación.",
-        "tab":"Eventos"
+        "tab":"Eventos",
+        "objective":"Resolvé una decisión narrativa semanal."
     },
     {
+        "id":"weekly_combat",
         "title":"5. Combate semanal",
         "text":"Entrá en Arena, elegí gladiador, táctica y plan de habilidades. Siempre existe al menos una pelea por semana.",
-        "tab":"Arena"
+        "tab":"Arena",
+        "objective":"Disputá la pelea programada de la semana."
     }
 ]
 
 var panel: PanelContainer
 var title_label: Label
 var body_label: Label
+var objective_label: Label
 var progress_label: Label
+var action_button: Button
 var current_step := 0
+var completed_objectives: Dictionary = {}
 
 func _ready() -> void:
     process_mode = Node.PROCESS_MODE_ALWAYS
     LudusOwnerManager.owner_configured.connect(func(_profile: Dictionary): call_deferred("_show_if_needed"))
     SaveManager.load_completed.connect(func(_path: String): call_deferred("_show_if_needed"))
+    GameState.week_advanced.connect(func(_week: int): _mark_objective("advance_week"))
+    MarketManager.purchase_completed.connect(func(_name: String, _price: int): _mark_objective("obtain_equipment"))
+    EquipmentManager.craft_completed.connect(func(_name: String, _ore: int, _denarii: int): _mark_objective("obtain_equipment"))
+    EventManager.events_changed.connect(_check_event_resolution)
+    CombatManager.combat_finished.connect(func(_result: Dictionary): _mark_objective("weekly_combat"))
     call_deferred("_show_if_needed")
 
 func _show_if_needed() -> void:
@@ -57,9 +75,9 @@ func _build_panel(scene: Node) -> void:
     panel = PanelContainer.new()
     panel.name = "CampaignTutorial"
     panel.set_anchors_preset(Control.PRESET_TOP_RIGHT)
-    panel.position = Vector2(-394, 18)
-    panel.size = Vector2(370, 250)
-    panel.custom_minimum_size = Vector2(370, 250)
+    panel.position = Vector2(-414, 18)
+    panel.size = Vector2(390, 300)
+    panel.custom_minimum_size = Vector2(390, 300)
     panel.z_index = 80
     scene.add_child(panel)
 
@@ -87,6 +105,10 @@ func _build_panel(scene: Node) -> void:
     body_label.size_flags_vertical = Control.SIZE_EXPAND_FILL
     content.add_child(body_label)
 
+    objective_label = Label.new()
+    objective_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+    content.add_child(objective_label)
+
     var actions := HBoxContainer.new()
     actions.alignment = BoxContainer.ALIGNMENT_END
     content.add_child(actions)
@@ -96,20 +118,21 @@ func _build_panel(scene: Node) -> void:
     skip_button.pressed.connect(_complete_tutorial)
     actions.add_child(skip_button)
 
-    var next_button := Button.new()
-    next_button.name = "NextStep"
-    next_button.text = "Siguiente"
-    next_button.pressed.connect(_next_step)
-    actions.add_child(next_button)
+    action_button = Button.new()
+    action_button.name = "ObjectiveAction"
+    action_button.pressed.connect(_on_action_pressed)
+    actions.add_child(action_button)
 
 func _render_step() -> void:
     var step: Dictionary = STEPS[current_step]
+    var objective_id := str(step.get("id", ""))
+    var completed := bool(completed_objectives.get(objective_id, false))
     progress_label.text = "%d/%d" % [current_step + 1, STEPS.size()]
     title_label.text = str(step.get("title", "Tutorial"))
     body_label.text = str(step.get("text", ""))
-    var next_button := panel.find_child("NextStep", true, false) as Button
-    if next_button != null:
-        next_button.text = "Finalizar" if current_step == STEPS.size() - 1 else "Siguiente"
+    objective_label.text = ("✓ " if completed else "Objetivo: ") + str(step.get("objective", ""))
+    action_button.text = "Finalizar" if current_step == STEPS.size() - 1 else ("Continuar" if completed else "Confirmar revisión")
+    action_button.disabled = not completed and objective_id != "inspect_roster"
     _focus_tab(str(step.get("tab", "")))
 
 func _focus_tab(tab_name: String) -> void:
@@ -127,12 +150,31 @@ func _focus_tab(tab_name: String) -> void:
             tabs.current_tab = index
             return
 
-func _next_step() -> void:
+func _on_action_pressed() -> void:
+    var objective_id := str(STEPS[current_step].get("id", ""))
+    if objective_id == "inspect_roster" and not bool(completed_objectives.get(objective_id, false)):
+        _mark_objective(objective_id)
+        return
+    if not bool(completed_objectives.get(objective_id, false)):
+        return
     if current_step >= STEPS.size() - 1:
         _complete_tutorial()
         return
     current_step += 1
     _render_step()
+
+func _mark_objective(objective_id: String) -> void:
+    if objective_id.is_empty() or bool(completed_objectives.get(objective_id, false)):
+        return
+    completed_objectives[objective_id] = true
+    if panel != null and is_instance_valid(panel) and current_step < STEPS.size():
+        _render_step()
+
+func _check_event_resolution() -> void:
+    var state: Dictionary = EventManager.export_state()
+    var history: Array = state.get("history", [])
+    if not history.is_empty():
+        _mark_objective("resolve_event")
 
 func _complete_tutorial() -> void:
     LudusOwnerManager.mark_tutorial_completed()
