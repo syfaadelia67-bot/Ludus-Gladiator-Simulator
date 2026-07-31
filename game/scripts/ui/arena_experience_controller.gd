@@ -1,12 +1,25 @@
 extends Node
 
+const TACTICAL_CONDITIONS := {
+    "always":"Siempre",
+    "opening":"Inicio del combate",
+    "target_vulnerable":"Rival vulnerable",
+    "target_defending":"Rival defendiendo",
+    "target_low_energy":"Rival con poca energía",
+    "self_low_health":"Vida propia menor al 35%",
+    "self_low_energy":"Energía propia baja",
+    "after_dodge_or_block":"Después de esquivar o bloquear"
+}
+const MAX_TACTICAL_ORDERS := 4
+
 var arena: VBoxContainer
 var event_card: RichTextLabel
 var energy_selector: OptionButton
 var surrender_selector: OptionButton
 var finisher_toggle: CheckButton
-var technique_selector: OptionButton
-var technique_list: RichTextLabel
+var ability_selector: OptionButton
+var condition_selector: OptionButton
+var tactical_plan_list: RichTextLabel
 var loadout_summary: RichTextLabel
 var report: RichTextLabel
 var speed_selector: OptionButton
@@ -14,8 +27,8 @@ var replay_button: Button
 var pause_button: Button
 var step_button: Button
 var skip_button: Button
+var draft_plan: Array[Dictionary] = []
 var action_queue: Array[Dictionary] = []
-var selected_techniques: Array[String] = ["basic_attack", "guard", "feint"]
 var replay_index: int = 0
 var replay_timer: Timer
 var replay_paused: bool = false
@@ -30,7 +43,7 @@ func setup(target_arena: VBoxContainer) -> void:
     _build_interface()
     _connect_signals()
     _refresh_event()
-    _refresh_available_techniques()
+    _refresh_tactical_editor()
 
 func _build_interface() -> void:
     var navigation_row := HBoxContainer.new()
@@ -45,7 +58,7 @@ func _build_interface() -> void:
     navigation_row.add_child(back_button)
 
     var navigation_hint := Label.new()
-    navigation_hint.text = "Arena · preparación, combate e informe"
+    navigation_hint.text = "Arena · preparación táctica, combate e informe"
     navigation_hint.size_flags_horizontal = Control.SIZE_EXPAND_FILL
     navigation_hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
     navigation_row.add_child(navigation_hint)
@@ -72,7 +85,7 @@ func _build_interface() -> void:
     energy_selector.add_item("Energía equilibrada")
     energy_selector.add_item("Conservar energía")
     energy_selector.add_item("Gastar energía agresivamente")
-    energy_selector.tooltip_text = "Define cuánto arriesga el gladiador con sus técnicas."
+    energy_selector.tooltip_text = "Define cuánto arriesga el gladiador al ejecutar su plan."
     instruction_row.add_child(energy_selector)
 
     surrender_selector = OptionButton.new()
@@ -92,44 +105,61 @@ func _build_interface() -> void:
     loadout_summary = RichTextLabel.new()
     loadout_summary.bbcode_enabled = true
     loadout_summary.fit_content = true
-    loadout_summary.custom_minimum_size = Vector2(0, 54)
+    loadout_summary.custom_minimum_size = Vector2(0, 72)
     arena.add_child(loadout_summary)
     arena.move_child(loadout_summary, 4)
 
-    var technique_row := HBoxContainer.new()
-    technique_row.name = "TechniqueLoadout"
-    arena.add_child(technique_row)
-    arena.move_child(technique_row, 5)
+    var tactical_title := Label.new()
+    tactical_title.text = "PLAN TÁCTICO — PRIORIDAD DE USO"
+    arena.add_child(tactical_title)
+    arena.move_child(tactical_title, 5)
 
-    technique_selector = OptionButton.new()
-    technique_selector.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-    technique_row.add_child(technique_selector)
+    var tactical_row := HBoxContainer.new()
+    tactical_row.name = "TacticalPlanEditor"
+    arena.add_child(tactical_row)
+    arena.move_child(tactical_row, 6)
+
+    ability_selector = OptionButton.new()
+    ability_selector.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+    tactical_row.add_child(ability_selector)
+
+    condition_selector = OptionButton.new()
+    condition_selector.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+    for condition_id in TACTICAL_CONDITIONS.keys():
+        condition_selector.add_item(str(TACTICAL_CONDITIONS[condition_id]))
+        condition_selector.set_item_metadata(condition_selector.item_count - 1, condition_id)
+    tactical_row.add_child(condition_selector)
 
     var add_button := Button.new()
-    add_button.text = "Equipar técnica"
-    add_button.pressed.connect(_add_selected_technique)
-    technique_row.add_child(add_button)
+    add_button.text = "Agregar orden"
+    add_button.pressed.connect(_add_tactical_order)
+    tactical_row.add_child(add_button)
+
+    var remove_button := Button.new()
+    remove_button.text = "Quitar última"
+    remove_button.pressed.connect(_remove_last_order)
+    tactical_row.add_child(remove_button)
 
     var reset_button := Button.new()
     reset_button.text = "Restablecer"
-    reset_button.pressed.connect(_reset_techniques)
-    technique_row.add_child(reset_button)
+    reset_button.pressed.connect(_reset_tactical_plan)
+    tactical_row.add_child(reset_button)
 
-    technique_list = RichTextLabel.new()
-    technique_list.bbcode_enabled = true
-    technique_list.custom_minimum_size = Vector2(0, 70)
-    technique_list.fit_content = true
-    arena.add_child(technique_list)
-    arena.move_child(technique_list, 6)
+    tactical_plan_list = RichTextLabel.new()
+    tactical_plan_list.bbcode_enabled = true
+    tactical_plan_list.custom_minimum_size = Vector2(0, 105)
+    tactical_plan_list.fit_content = true
+    arena.add_child(tactical_plan_list)
+    arena.move_child(tactical_plan_list, 7)
 
     var arena_setup := arena.get_node_or_null("Setup") as HBoxContainer
     if arena_setup != null:
         var gladiator_selector := arena_setup.get_node_or_null("GladiatorSelector") as OptionButton
         if gladiator_selector != null:
-            gladiator_selector.item_selected.connect(func(_index: int): _refresh_available_techniques())
+            gladiator_selector.item_selected.connect(func(_index: int): _refresh_tactical_editor())
         var start_button := arena_setup.get_node_or_null("StartDuel") as Button
         if start_button != null:
-            start_button.text = "Preparar y disputar evento"
+            start_button.text = "Confirmar plan y combatir"
             start_button.button_down.connect(_configure_battle)
 
     var playback_row := HBoxContainer.new()
@@ -188,8 +218,9 @@ func _connect_signals() -> void:
     CombatManager.combat_finished.connect(_on_combat_finished)
     CombatManager.combat_failed.connect(_on_combat_failed)
     GameState.day_advanced.connect(func(_day: int): _refresh_event())
-    EquipmentManager.equipment_changed.connect(func(_person_id: String): _refresh_available_techniques())
-    RosterManager.roster_changed.connect(_refresh_available_techniques)
+    EquipmentManager.equipment_changed.connect(func(_person_id: String): _refresh_tactical_editor())
+    RosterManager.roster_changed.connect(_refresh_tactical_editor)
+    GladiatorProgressionManager.progression_changed.connect(_refresh_tactical_editor)
 
 func _leave_arena() -> void:
     replay_timer.stop()
@@ -210,40 +241,96 @@ func _selected_gladiator():
             return person
     return null
 
-func _refresh_available_techniques() -> void:
-    if technique_selector == null:
+func _refresh_tactical_editor() -> void:
+    if ability_selector == null:
         return
     var fighter = _selected_gladiator()
-    var allowed: Array[String] = EquipmentManager.get_allowed_combat_techniques(fighter)
-    technique_selector.clear()
-    for technique_id in CombatManager.get_technique_ids():
-        var data: Dictionary = CombatManager.get_technique(technique_id)
-        var available: bool = allowed.has(technique_id)
-        var label := "%s — %s" % [data.get("name", technique_id), data.get("description", "")]
-        if not available:
-            label += " [BLOQUEADA: %s]" % EquipmentManager.get_technique_requirement(technique_id)
-        technique_selector.add_item(label)
-        var item_index := technique_selector.item_count - 1
-        technique_selector.set_item_metadata(item_index, technique_id)
-        technique_selector.set_item_disabled(item_index, not available)
-
-    var valid_selection: Array[String] = []
-    for technique_id in selected_techniques:
-        if allowed.has(technique_id):
-            valid_selection.append(technique_id)
-    if not valid_selection.has("basic_attack"):
-        valid_selection.push_front("basic_attack")
-    selected_techniques = valid_selection.slice(0, 5)
-
+    ability_selector.clear()
     if fighter == null:
-        loadout_summary.text = "[b]Equipamiento de combate[/b]\nSeleccioná un gladiador para ver técnicas disponibles."
+        draft_plan.clear()
+        loadout_summary.text = "[b]Preparación[/b]\nSeleccioná un gladiador para configurar el plan táctico."
+        _refresh_tactical_plan_list()
+        return
+
+    var record := GladiatorProgressionManager.get_record(fighter.id)
+    var learned: Dictionary = record.get("abilities", {})
+    for ability_id in GladiatorProgressionManager.get_available_ability_ids(fighter.id):
+        var ability_level := int(learned.get(ability_id, 0))
+        if ability_level <= 0:
+            continue
+        var data: Dictionary = GladiatorProgressionManager.abilities.get(ability_id, {})
+        ability_selector.add_item("%s %s" % [data.get("name", ability_id), _roman_level(ability_level)])
+        ability_selector.set_item_metadata(ability_selector.item_count - 1, ability_id)
+
+    draft_plan.assign(GladiatorProgressionManager.get_tactical_plan(fighter.id))
+    var valid_plan: Array[Dictionary] = []
+    for order in draft_plan:
+        var ability_id := str(order.get("ability_id", ""))
+        if int(learned.get(ability_id, 0)) > 0:
+            valid_plan.append(order.duplicate(true))
+    draft_plan = valid_plan.slice(0, MAX_TACTICAL_ORDERS)
+
+    var loadout := EquipmentManager.get_equipped_loadout(fighter)
+    loadout_summary.text = "[b]%s — Nivel %d — %s[/b]\nArma: %s | Armadura: %s | Escudo: %s\nHabilidades aprendidas: %d | Órdenes preparadas: %d/%d" % [
+        fighter.display_name,
+        int(record.get("level", 1)),
+        GladiatorProgressionManager.get_specialization_name(str(record.get("specialization", GladiatorProgressionManager.DEFAULT_SPECIALIZATION))),
+        loadout.get("weapon_name", "Ninguno"),
+        loadout.get("armor_name", "Ninguna"),
+        loadout.get("shield_name", "Ninguno"),
+        learned.size(),
+        draft_plan.size(),
+        MAX_TACTICAL_ORDERS
+    ]
+    _refresh_tactical_plan_list()
+
+func _add_tactical_order() -> void:
+    if ability_selector.selected < 0 or draft_plan.size() >= MAX_TACTICAL_ORDERS:
+        return
+    var ability_id := str(ability_selector.get_item_metadata(ability_selector.selected))
+    if ability_id.is_empty():
+        return
+    for existing in draft_plan:
+        if str(existing.get("ability_id", "")) == ability_id:
+            return
+    var condition_id := "always"
+    if condition_selector.selected >= 0:
+        condition_id = str(condition_selector.get_item_metadata(condition_selector.selected))
+    draft_plan.append({"ability_id":ability_id, "condition":condition_id})
+    _refresh_tactical_plan_list()
+
+func _remove_last_order() -> void:
+    if not draft_plan.is_empty():
+        draft_plan.pop_back()
+    _refresh_tactical_plan_list()
+
+func _reset_tactical_plan() -> void:
+    draft_plan.clear()
+    _refresh_tactical_plan_list()
+
+func _refresh_tactical_plan_list() -> void:
+    if tactical_plan_list == null:
+        return
+    var lines: Array[String] = ["[b]Prioridades tácticas — máximo %d[/b]" % MAX_TACTICAL_ORDERS]
+    if draft_plan.is_empty():
+        lines.append("Sin órdenes. El gladiador recurrirá al ataque básico de respaldo.")
     else:
-        var loadout: Dictionary = EquipmentManager.get_equipped_loadout(fighter)
-        loadout_summary.text = "[b]Equipamiento de %s[/b]\nArma: %s | Armadura: %s | Escudo: %s" % [fighter.display_name, loadout.get("weapon_name", "Ninguno"), loadout.get("armor_name", "Ninguna"), loadout.get("shield_name", "Ninguno")]
-    _refresh_technique_list()
+        for index in range(draft_plan.size()):
+            var order := draft_plan[index]
+            var ability_id := str(order.get("ability_id", ""))
+            var data: Dictionary = GladiatorProgressionManager.abilities.get(ability_id, {})
+            var condition_id := str(order.get("condition", "always"))
+            lines.append("%d. %s — %s" % [index + 1, data.get("name", ability_id), TACTICAL_CONDITIONS.get(condition_id, condition_id)])
+    lines.append("[i]El orden superior tiene prioridad. Las órdenes imposibles se omiten y se evalúa la siguiente.[/i]")
+    tactical_plan_list.text = "\n".join(lines)
 
 func _configure_battle() -> void:
-    _refresh_available_techniques()
+    var fighter = _selected_gladiator()
+    if fighter == null:
+        return
+    GladiatorProgressionManager.set_tactical_plan(fighter.id, draft_plan)
+    draft_plan.assign(GladiatorProgressionManager.get_tactical_plan(fighter.id))
+
     var energy_rule := "balanced"
     if energy_selector.selected == 1:
         energy_rule = "conserve"
@@ -255,39 +342,26 @@ func _configure_battle() -> void:
         1: surrender_threshold = 20
         2: surrender_threshold = 30
         3: surrender_threshold = 0
+
+    var prepared_abilities: Array[String] = []
+    for order in draft_plan:
+        prepared_abilities.append(str(order.get("ability_id", "")))
     CombatManager.configure_next_battle({
-        "energy_rule": energy_rule,
-        "surrender_threshold": surrender_threshold,
-        "allow_finisher": finisher_toggle.button_pressed,
-        "techniques": selected_techniques
+        "energy_rule":energy_rule,
+        "surrender_threshold":surrender_threshold,
+        "allow_finisher":finisher_toggle.button_pressed,
+        "fighter_id":fighter.id,
+        "tactical_plan":draft_plan.duplicate(true),
+        "abilities":prepared_abilities,
+        "techniques":["basic_attack"]
     })
 
-func _add_selected_technique() -> void:
-    if technique_selector.selected < 0 or technique_selector.is_item_disabled(technique_selector.selected):
-        return
-    var technique_id := str(technique_selector.get_item_metadata(technique_selector.selected))
-    if selected_techniques.has(technique_id):
-        selected_techniques.erase(technique_id)
-    selected_techniques.append(technique_id)
-    while selected_techniques.size() > 5:
-        selected_techniques.pop_front()
-    if not selected_techniques.has("basic_attack"):
-        selected_techniques.push_front("basic_attack")
-    _refresh_technique_list()
-
-func _reset_techniques() -> void:
-    selected_techniques = ["basic_attack", "guard", "feint"]
-    _refresh_available_techniques()
-
-func _refresh_technique_list() -> void:
-    if technique_list == null:
-        return
-    var lines: Array[String] = ["[b]Técnicas equipadas (máximo 5)[/b]"]
-    for technique_id in selected_techniques:
-        var data: Dictionary = CombatManager.get_technique(technique_id)
-        lines.append("• %s — energía %d, recarga %d" % [data.get("name", technique_id), int(data.get("energy", 0)), int(data.get("cooldown", 0))])
-    lines.append("[i]Las técnicas especiales dependen del arma y el escudo equipados.[/i]")
-    technique_list.text = "\n".join(lines)
+func _roman_level(level: int) -> String:
+    if level >= 3:
+        return "III"
+    if level == 2:
+        return "II"
+    return "I"
 
 func _refresh_event() -> void:
     if event_card == null:
@@ -397,14 +471,14 @@ func _render_report(result: Dictionary) -> void:
     ]
     var injury := str(result.get("injury", ""))
     lines.append("Herida: %s" % (injury if not injury.is_empty() else "Ninguna"))
-    lines.append("[b]Uso de técnicas[/b]")
+    lines.append("[b]Uso de acciones[/b]")
     var stats: Dictionary = result.get("technique_stats", {})
     if stats.is_empty():
-        lines.append("Sin datos de técnicas.")
+        lines.append("Sin datos de acciones.")
     else:
         for value in stats.values():
             var item: Dictionary = value
-            lines.append("• %s: %d uso(s), %d daño" % [item.get("name", "Técnica"), int(item.get("uses", 0)), int(item.get("damage", 0))])
+            lines.append("• %s: %d uso(s), %d daño" % [item.get("name", "Acción"), int(item.get("uses", 0)), int(item.get("damage", 0))])
     var status_stats: Dictionary = result.get("status_stats", {})
     if not status_stats.is_empty():
         lines.append("[b]Estados aplicados[/b]")
