@@ -116,7 +116,9 @@ func _show_main_menu() -> void:
     card.add_child(subtitle)
 
     save_inspection = _inspect_save()
-    continue_button = _button("Continuar campaña", _continue_campaign)
+    var metadata: Dictionary = save_inspection.get("metadata", {})
+    var campaign_over := bool(metadata.get("campaign_over", false))
+    continue_button = _button("Ver resultado final" if campaign_over else "Continuar campaña", _continue_campaign)
     continue_button.disabled = not bool(save_inspection.get("loadable", false))
     continue_button.tooltip_text = str(save_inspection.get("message", "No existe una partida guardada."))
     card.add_child(continue_button)
@@ -126,8 +128,7 @@ func _show_main_menu() -> void:
     status_label = Label.new()
     status_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
     status_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-    status_label.custom_minimum_size = Vector2(0, 105)
-    var metadata: Dictionary = save_inspection.get("metadata", {})
+    status_label.custom_minimum_size = Vector2(0, 120)
     var inspection_message := str(save_inspection.get("message", "No hay una campaña guardada."))
     status_label.text = "%s\n%s" % [_format_save_summary(metadata), inspection_message] if not metadata.is_empty() else inspection_message
     card.add_child(status_label)
@@ -137,6 +138,15 @@ func _format_save_summary(metadata: Dictionary) -> String:
     var owner_name := str(metadata.get("owner_name", "")).strip_edges()
     var owner_title := _owner_title_name(str(metadata.get("owner_title", "dominus")))
     var owner_line := "%s %s" % [owner_title, owner_name] if not owner_name.is_empty() else owner_title
+    if bool(metadata.get("campaign_over", false)):
+        var result_label := "VICTORIA" if bool(metadata.get("victory", false)) else "DERROTA"
+        return "%s\nCampaña finalizada — %s\nSemana %d de 16 | Combates: %d victorias, %d derrotas" % [
+            owner_line,
+            result_label,
+            mini(16, week),
+            maxi(0, int(metadata.get("wins", 0))),
+            maxi(0, int(metadata.get("losses", 0)))
+        ]
     return "%s\nSemana %d de 16 — Capítulo %d: %s\nPróximo combate: %s" % [
         owner_line,
         week,
