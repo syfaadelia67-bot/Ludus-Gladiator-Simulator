@@ -163,6 +163,8 @@ func _chapter_name_for_week(week: int) -> String:
     return "Un ludus en ruinas"
 
 func _battle_name_for_week(week: int) -> String:
+    if week == 16:
+        return "Combate final de la demo"
     if week % 4 == 0:
         return "Torneo oficial de la arena"
     if week % 3 == 0:
