@@ -159,7 +159,7 @@ func _build_payload() -> Dictionary:
     return {
         "version": SAVE_VERSION,
         "saved_at_unix": int(Time.get_unix_time_from_system()),
-        "game_state":{"day":GameState.day,"week":GameState.week,"denarii":GameState.denarii,"food":GameState.food,"ore":GameState.ore,"reputation":GameState.reputation},
+        "game_state":{"day":GameState.day,"week":GameState.get_week(),"denarii":GameState.denarii,"food":GameState.food,"ore":GameState.ore,"reputation":GameState.reputation},
         "owner":LudusOwnerManager.export_state(),
         "roster":{"people":people_data,"capacity":RosterManager.capacity,"security_score":RosterManager.security_score,"intelligence_points":RosterManager.intelligence_points},
         "estate":{"levels":EstateManager.export_levels()},
@@ -188,8 +188,7 @@ func _apply_payload(data: Dictionary) -> bool:
     var rival_data: Dictionary = data.get("rivals", {})
     var combat_data: Dictionary = data.get("combat", {})
 
-    GameState.day = maxi(1, int(game_data.get("day", game_data.get("week", 1))))
-    GameState.week = maxi(1, int(game_data.get("week", game_data.get("day", 1))))
+    GameState.day = maxi(1, int(game_data.get("week", game_data.get("day", 1))))
     GameState.denarii = maxi(0, int(game_data.get("denarii", 500)))
     GameState.food = maxi(0, int(game_data.get("food", 100)))
     GameState.ore = maxi(0, int(game_data.get("ore", 20)))
