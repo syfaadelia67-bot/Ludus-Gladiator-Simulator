@@ -61,5 +61,6 @@ GladiatorProgressionManager="*res://scripts/systems/gladiator_progression_manage
 TransferManager="*res://scripts/systems/transfer_manager.gd"
 EquipmentAbilityGuard="*res://scripts/systems/equipment_ability_guard.gd"
 TraitManager="*res://scripts/systems/trait_manager.gd"
+RosterMarketPresentation="*res://scripts/ui/roster_market_presentation.gd"
 AllTabsUIBootstrap="*res://scripts/ui/all_tabs_ui_bootstrap.gd"
 _mcp_game_helper="*res://addons/godot_ai/runtime/game_helper.gd"
