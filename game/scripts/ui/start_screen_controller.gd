@@ -1,6 +1,7 @@
 extends Node
 
 const MAIN_SCENE_NAME := "Main"
+const SAVE_COMPATIBILITY_INSPECTOR = preload("res://scripts/core/save_compatibility_inspector.gd")
 
 var overlay: ColorRect
 var card: VBoxContainer
@@ -10,6 +11,7 @@ var title_selector: OptionButton
 var origin_selector: OptionButton
 var origin_details: RichTextLabel
 var continue_button: Button
+var save_inspection: Dictionary = {}
 
 func _ready() -> void:
     process_mode = Node.PROCESS_MODE_ALWAYS
@@ -96,6 +98,12 @@ func _button(text_value: String, callback: Callable) -> Button:
     button.pressed.connect(callback)
     return button
 
+func _inspect_save() -> Dictionary:
+    var inspector = SAVE_COMPATIBILITY_INSPECTOR.new()
+    var result: Dictionary = inspector.inspect()
+    inspector.free()
+    return result
+
 func _show_main_menu() -> void:
     _clear_card()
     card.add_child(_title("LUDUS", 42))
@@ -107,9 +115,10 @@ func _show_main_menu() -> void:
     subtitle.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
     card.add_child(subtitle)
 
+    save_inspection = _inspect_save()
     continue_button = _button("Continuar campaña", _continue_campaign)
-    continue_button.disabled = not SaveManager.has_save()
-    continue_button.tooltip_text = "No existe una partida guardada." if continue_button.disabled else "Cargar la campaña más reciente."
+    continue_button.disabled = not bool(save_inspection.get("loadable", false))
+    continue_button.tooltip_text = str(save_inspection.get("message", "No existe una partida guardada."))
     card.add_child(continue_button)
     card.add_child(_button("Nueva campaña", _show_owner_creation))
     card.add_child(_button("Salir", func() -> void: get_tree().quit()))
@@ -118,8 +127,9 @@ func _show_main_menu() -> void:
     status_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
     status_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
     status_label.custom_minimum_size = Vector2(0, 105)
-    var metadata := SaveManager.get_save_metadata()
-    status_label.text = _format_save_summary(metadata) if not metadata.is_empty() else "No hay una campaña guardada."
+    var metadata: Dictionary = save_inspection.get("metadata", {})
+    var inspection_message := str(save_inspection.get("message", "No hay una campaña guardada."))
+    status_label.text = "%s\n%s" % [_format_save_summary(metadata), inspection_message] if not metadata.is_empty() else inspection_message
     card.add_child(status_label)
 
 func _format_save_summary(metadata: Dictionary) -> String:
@@ -162,13 +172,19 @@ func _battle_name_for_week(week: int) -> String:
     return "Exhibición semanal del ludus"
 
 func _continue_campaign() -> void:
+    save_inspection = _inspect_save()
+    if not bool(save_inspection.get("loadable", false)):
+        status_label.text = str(save_inspection.get("message", "No se pudo cargar una partida válida."))
+        continue_button.disabled = true
+        return
     continue_button.disabled = true
     status_label.text = "Cargando campaña..."
     if SaveManager.load_game():
         _enter_campaign()
     else:
-        status_label.text = "No se pudo cargar una partida válida."
-        continue_button.disabled = false
+        save_inspection = _inspect_save()
+        status_label.text = str(save_inspection.get("message", "No se pudo cargar una partida válida."))
+        continue_button.disabled = not bool(save_inspection.get("loadable", false))
 
 func _show_owner_creation() -> void:
     _clear_card()
