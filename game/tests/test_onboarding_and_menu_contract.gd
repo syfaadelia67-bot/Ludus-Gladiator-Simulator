@@ -14,8 +14,11 @@ func _ready() -> void:
         "weekly_combat",
         "GameState.week_advanced",
         "CombatManager.combat_finished",
+        "SaveManager.load_completed.connect",
         "func _restore_progress()",
         "LudusOwnerManager.get_tutorial_progress()",
+        "current_step = clampi",
+        "completed_objectives = loaded_objectives.duplicate(true)",
         "func _persist_progress()",
         "LudusOwnerManager.update_tutorial_progress(current_step, completed_objectives)"
     ])
@@ -25,7 +28,10 @@ func _ready() -> void:
         "completed_objectives",
         "func update_tutorial_progress",
         "func get_tutorial_progress",
-        "TUTORIAL_STEP_COUNT := 5"
+        "func import_state",
+        "func _sanitize_profile",
+        "TUTORIAL_STEP_COUNT := 5",
+        "SaveManager.call_deferred(\"save_game\")"
     ])
     _assert_file_contains(START_SCREEN_PATH, [
         "func show_main_menu()",
