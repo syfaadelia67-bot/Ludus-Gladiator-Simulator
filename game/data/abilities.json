@@ -3,48 +3,56 @@
     "id": "precise_strike",
     "name": "Golpe preciso",
     "category": "basic",
-    "max_level": 2,
+    "demo_max_level": 2,
+    "full_max_level": 3,
     "animation_family": "precise_strike",
     "primary_stats": ["technique", "agility"],
     "levels": {
       "1": {"energy_cost": 12, "accuracy_bonus": 15, "damage_multiplier": 1.0, "description": "Ataque controlado con alta precisión."},
-      "2": {"energy_cost": 11, "accuracy_bonus": 25, "damage_multiplier": 1.1, "armor_penetration": 0.1, "description": "Ataque preciso que ignora parte de la defensa."}
+      "2": {"energy_cost": 11, "accuracy_bonus": 25, "damage_multiplier": 1.1, "armor_penetration": 0.1, "description": "Ataque preciso que ignora parte de la defensa."},
+      "3": {"locked": true, "status": "coming_soon", "description": "Nivel III disponible próximamente en el juego completo."}
     }
   },
   {
     "id": "feint",
     "name": "Finta",
     "category": "basic",
-    "max_level": 2,
+    "demo_max_level": 2,
+    "full_max_level": 3,
     "animation_family": "feint",
     "primary_stats": ["intelligence", "technique", "agility"],
     "levels": {
       "1": {"energy_cost": 10, "defense_reduction": 4, "duration": 1, "description": "Engaña al rival y abre su defensa."},
-      "2": {"energy_cost": 9, "defense_reduction": 7, "duration": 2, "waste_enemy_action_chance": 0.15, "description": "Finta avanzada que puede hacer desperdiciar una acción rival."}
+      "2": {"energy_cost": 9, "defense_reduction": 7, "duration": 2, "waste_enemy_action_chance": 0.15, "description": "Finta avanzada que puede hacer desperdiciar una acción rival."},
+      "3": {"locked": true, "status": "coming_soon", "description": "Nivel III disponible próximamente en el juego completo."}
     }
   },
   {
     "id": "opportunity_strike",
     "name": "Golpe de oportunidad",
     "category": "basic",
-    "max_level": 2,
+    "demo_max_level": 2,
+    "full_max_level": 3,
     "animation_family": "opportunity_strike",
     "primary_stats": ["strength", "technique", "intelligence"],
     "levels": {
       "1": {"energy_cost": 16, "damage_multiplier": 1.35, "requires_vulnerable_target": true, "description": "Castiga a un rival vulnerable."},
-      "2": {"energy_cost": 14, "damage_multiplier": 1.55, "requires_vulnerable_target": true, "bleed_chance": 0.2, "description": "Aprovecha la apertura y puede causar sangrado."}
+      "2": {"energy_cost": 14, "damage_multiplier": 1.55, "requires_vulnerable_target": true, "bleed_chance": 0.2, "description": "Aprovecha la apertura y puede causar sangrado."},
+      "3": {"locked": true, "status": "coming_soon", "description": "Nivel III disponible próximamente en el juego completo."}
     }
   },
   {
     "id": "throw_sand",
     "name": "Arrojar arena",
     "category": "basic",
-    "max_level": 2,
+    "demo_max_level": 2,
+    "full_max_level": 3,
     "animation_family": "throw_sand",
     "primary_stats": ["intelligence", "technique", "agility"],
     "levels": {
       "1": {"energy_cost": 8, "blind_chance": 0.7, "blind_duration": 1, "description": "Reduce temporalmente la visión y precisión rival."},
-      "2": {"energy_cost": 7, "blind_chance": 0.9, "blind_duration": 2, "enemy_action_loss_chance": 0.1, "description": "Una nube de arena más efectiva y duradera."}
+      "2": {"energy_cost": 7, "blind_chance": 0.9, "blind_duration": 2, "enemy_action_loss_chance": 0.1, "description": "Una nube de arena más efectiva y duradera."},
+      "3": {"locked": true, "status": "coming_soon", "description": "Nivel III disponible próximamente en el juego completo."}
     }
   },
   {
@@ -52,13 +60,15 @@
     "name": "Embate del escudo",
     "category": "class",
     "specialization": "murmillo",
-    "max_level": 2,
+    "demo_max_level": 2,
+    "full_max_level": 3,
     "animation_family": "shield_charge",
     "required_equipment_tags": ["shield"],
     "primary_stats": ["strength", "endurance", "technique"],
     "levels": {
       "1": {"energy_cost": 18, "damage_multiplier": 0.9, "stun_chance": 0.4, "defense_reduction": 3, "description": "Impacta con el escudo y rompe la postura rival."},
-      "2": {"energy_cost": 17, "damage_multiplier": 1.0, "stun_chance": 0.6, "defense_reduction": 5, "breaks_guard": true, "description": "Embate pesado capaz de romper una defensa firme."}
+      "2": {"energy_cost": 17, "damage_multiplier": 1.0, "stun_chance": 0.6, "defense_reduction": 5, "breaks_guard": true, "description": "Embate pesado capaz de romper una defensa firme."},
+      "3": {"locked": true, "status": "coming_soon", "description": "Nivel III disponible próximamente en el juego completo."}
     }
   },
   {
@@ -66,12 +76,14 @@
     "name": "Persecución implacable",
     "category": "class",
     "specialization": "secutor",
-    "max_level": 2,
+    "demo_max_level": 2,
+    "full_max_level": 3,
     "animation_family": "relentless_pursuit",
     "primary_stats": ["agility", "endurance", "strength"],
     "levels": {
       "1": {"energy_cost": 17, "damage_multiplier": 1.1, "evasion_reduction": 6, "description": "Cierra distancia y reduce la capacidad de evasión rival."},
-      "2": {"energy_cost": 16, "damage_multiplier": 1.2, "evasion_reduction": 9, "retain_initiative_on_hit": true, "description": "Mantiene la presión y conserva la iniciativa al acertar."}
+      "2": {"energy_cost": 16, "damage_multiplier": 1.2, "evasion_reduction": 9, "retain_initiative_on_hit": true, "description": "Mantiene la presión y conserva la iniciativa al acertar."},
+      "3": {"locked": true, "status": "coming_soon", "description": "Nivel III disponible próximamente en el juego completo."}
     }
   },
   {
@@ -79,13 +91,15 @@
     "name": "Red de captura",
     "category": "class",
     "specialization": "retiarius",
-    "max_level": 2,
+    "demo_max_level": 2,
+    "full_max_level": 3,
     "animation_family": "cast_net",
     "required_equipment_tags": ["net"],
     "primary_stats": ["technique", "agility", "intelligence"],
     "levels": {
       "1": {"energy_cost": 15, "entangle_chance": 0.7, "entangle_duration": 1, "description": "Atrapa al rival y reduce su movilidad."},
-      "2": {"energy_cost": 14, "entangle_chance": 0.9, "entangle_duration": 2, "follow_up_accuracy_bonus": 15, "description": "Una captura más segura que prepara la siguiente estocada."}
+      "2": {"energy_cost": 14, "entangle_chance": 0.9, "entangle_duration": 2, "follow_up_accuracy_bonus": 15, "description": "Una captura más segura que prepara la siguiente estocada."},
+      "3": {"locked": true, "status": "coming_soon", "description": "Nivel III disponible próximamente en el juego completo."}
     }
   },
   {
@@ -93,13 +107,15 @@
     "name": "Danza de dos filos",
     "category": "class",
     "specialization": "dimachaerus",
-    "max_level": 2,
+    "demo_max_level": 2,
+    "full_max_level": 3,
     "animation_family": "dance_of_two_blades",
     "required_equipment_tags": ["dual_blades"],
     "primary_stats": ["technique", "agility", "strength"],
     "levels": {
       "1": {"energy_cost": 22, "hits": 2, "damage_multiplier_per_hit": 0.72, "bleed_chance": 0.25, "recovery_defense_penalty": 4, "description": "Dos cortes veloces con una recuperación vulnerable."},
-      "2": {"energy_cost": 21, "hits": 2, "damage_multiplier_per_hit": 0.85, "bleed_chance": 0.4, "recovery_defense_penalty": 2, "description": "Secuencia mejorada con más daño y menor vulnerabilidad."}
+      "2": {"energy_cost": 21, "hits": 2, "damage_multiplier_per_hit": 0.85, "bleed_chance": 0.4, "recovery_defense_penalty": 2, "description": "Secuencia mejorada con más daño y menor vulnerabilidad."},
+      "3": {"locked": true, "status": "coming_soon", "description": "Nivel III disponible próximamente en el juego completo."}
     }
   }
 ]
