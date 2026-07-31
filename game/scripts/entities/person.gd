@@ -17,6 +17,7 @@ var morale: int = 50
 var fatigue: int = 0
 var training: int = 0
 var traits: Array[String] = []
+var applied_trait_effects: Array[String] = []
 var equipped_weapon_id: String = ""
 var equipped_armor_id: String = ""
 var equipped_shield_id: String = ""
@@ -41,6 +42,7 @@ func _init(data: Dictionary = {}) -> void:
     fatigue = clampi(int(data.get("fatigue", 0)), 0, 100)
     training = maxi(0, int(data.get("training", 0)))
     traits.assign(data.get("traits", []))
+    applied_trait_effects.assign(data.get("applied_trait_effects", []))
     equipped_weapon_id = str(data.get("equipped_weapon_id", ""))
     equipped_armor_id = str(data.get("equipped_armor_id", ""))
     equipped_shield_id = str(data.get("equipped_shield_id", ""))
