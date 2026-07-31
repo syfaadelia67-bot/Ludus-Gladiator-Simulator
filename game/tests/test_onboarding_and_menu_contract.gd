@@ -31,6 +31,15 @@ func _ready() -> void:
         "func import_state",
         "func _sanitize_profile",
         "TUTORIAL_STEP_COUNT := 5",
+        "VALID_TUTORIAL_OBJECTIVES",
+        "inspect_roster",
+        "advance_week",
+        "obtain_equipment",
+        "resolve_event",
+        "weekly_combat",
+        "func _sanitize_tutorial_objectives",
+        "for objective_id in VALID_TUTORIAL_OBJECTIVES",
+        "_sanitize_tutorial_objectives(raw_objectives)",
         "SaveManager.call_deferred(\"save_game\")"
     ])
     _assert_file_contains(START_SCREEN_PATH, [
