@@ -4,8 +4,9 @@ func _ready() -> void:
     var save_source := FileAccess.get_file_as_string("res://scripts/core/save_manager.gd")
     var owner_source := FileAccess.get_file_as_string("res://scripts/systems/ludus_owner_manager.gd")
 
-    assert(save_source.contains("\"week\":GameState.week"))
-    assert(save_source.contains("GameState.week = maxi"))
+    assert(save_source.contains("\"week\":GameState.get_week()"))
+    assert(save_source.contains("GameState.day = maxi(1, int(game_data.get(\"week\""))
+    assert(not save_source.contains("GameState.week"))
     assert(save_source.contains("\"owner\":LudusOwnerManager.export_state()"))
     assert(save_source.contains("\"events\":EventManager.export_state()"))
     assert(save_source.contains("EventManager.import_state"))
