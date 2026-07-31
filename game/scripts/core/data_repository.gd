@@ -3,11 +3,15 @@ extends Node
 var traits: Array = []
 var buildings: Array = []
 var weapons: Array = []
+var abilities: Array = []
+var specializations: Array = []
 
 func _ready() -> void:
     traits = _load_json_array("res://data/traits.json")
     buildings = _load_json_array("res://data/buildings.json")
     weapons = _load_json_array("res://data/weapons.json")
+    abilities = _load_json_array("res://data/abilities.json")
+    specializations = _load_json_array("res://data/specializations.json")
 
 func _load_json_array(path: String) -> Array:
     if not FileAccess.file_exists(path):
