@@ -18,6 +18,13 @@ func run() -> void:
     var start_source := FileAccess.get_file_as_string("res://scripts/ui/start_screen_controller.gd")
     assert(calendar_source.contains("week > DEMO_FINAL_WEEK"))
     assert(calendar_source.contains("— FINAL"))
+    assert(calendar_source.contains("PREPARACIÓN PARA EL COMBATE FINAL"))
+    assert(calendar_source.contains("Victorias acumuladas: %d/%d"))
+    assert(calendar_source.contains("REQUIRED_FINALE_WINS := 6"))
+    assert(calendar_source.contains("CampaignManager.get_summary()"))
+    assert(calendar_source.contains("final_combat_resolved"))
+    assert(calendar_source.contains("Entrá en Arena"))
+    assert(calendar_source.contains("faltan %d victorias"))
     assert(start_source.contains("if week == 16"))
     assert(start_source.contains("Combate final de la demo"))
 
