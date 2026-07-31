@@ -16,7 +16,7 @@ text = "PROGRESIÓN DE GLADIADORES"
 layout_mode = 2
 
 [node name="Summary" type="RichTextLabel" parent="."]
-custom_minimum_size = Vector2(0, 210)
+custom_minimum_size = Vector2(0, 250)
 layout_mode = 2
 bbcode_enabled = true
 text = "Seleccioná un gladiador."
@@ -32,16 +32,16 @@ size_flags_horizontal = 3
 layout_mode = 2
 text = "Aplicar especialización"
 
-[node name="TechniqueRow" type="HBoxContainer" parent="."]
+[node name="AbilityRow" type="HBoxContainer" parent="."]
 layout_mode = 2
 
-[node name="TechniqueSelector" type="OptionButton" parent="TechniqueRow"]
+[node name="AbilitySelector" type="OptionButton" parent="AbilityRow"]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="LearnTechnique" type="Button" parent="TechniqueRow"]
+[node name="UpgradeAbility" type="Button" parent="AbilityRow"]
 layout_mode = 2
-text = "Aprender técnica"
+text = "Aprender / mejorar habilidad"
 
 [node name="RetireButton" type="Button" parent="."]
 layout_mode = 2
