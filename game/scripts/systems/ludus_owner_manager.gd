@@ -8,7 +8,7 @@ const ORIGINS_PATH := "res://data/dominus_origins.json"
 const LEGACY_PROFILE_PATH := "user://ludus_owner_profile.json"
 const VALID_TITLES := ["dominus", "domina"]
 const TUTORIAL_STEP_COUNT := 5
-const VALID_TUTORIAL_OBJECTIVES := [
+const TUTORIAL_OBJECTIVE_IDS := [
     "inspect_roster",
     "advance_week",
     "obtain_equipment",
@@ -62,6 +62,7 @@ func configure_owner(title: String, display_name: String, origin_id: String) -> 
     var canonical_title := title.to_lower()
     if not VALID_TITLES.has(canonical_title) or not origins.has(origin_id):
         return false
+    _reset_campaign_for_new_owner()
     profile = _default_profile()
     profile["configured"] = true
     profile["title"] = canonical_title
@@ -70,6 +71,60 @@ func configure_owner(title: String, display_name: String, origin_id: String) -> 
     _apply_origin_bonuses_once()
     owner_configured.emit(get_profile())
     return true
+
+func _reset_campaign_for_new_owner() -> void:
+    GameState.day = 1
+    GameState.denarii = 500
+    GameState.food = 100
+    GameState.ore = 20
+    GameState.reputation = 0
+
+    RosterManager.people.clear()
+    RosterManager.capacity = 8
+    RosterManager.security_score = 0
+    RosterManager.intelligence_points = 0
+    RosterManager._seed_initial_roster()
+
+    EstateManager.import_levels({})
+    EquipmentManager.inventory.clear()
+    EquipmentManager.serial = 0
+    MarketManager.offers.clear()
+    MarketManager._serial = 0
+    MarketManager.refresh_market(false)
+
+    RivalManager.rivals.clear()
+    RivalManager.hostility_heat = 0
+    RivalManager.operations_completed = 0
+    RivalManager.operations_detected = 0
+    RivalManager._seed_rivals()
+
+    CombatManager.last_combat_day = -1
+    CombatManager.last_result = {}
+    CombatManager.next_battle_config = {}
+    CombatHistoryManager.import_state({})
+    EventManager.import_state({})
+    EconomyManager.import_state({})
+    TournamentManager.import_state({})
+    CampaignManager.import_state({})
+    PersonalityManager.import_state({})
+    RelationshipManager.import_state({})
+    GladiatorProgressionManager.import_state({})
+    TraitManager.import_state({})
+    TransferManager.import_state({})
+
+    GameState.resources_changed.emit()
+    RosterManager.roster_changed.emit()
+    EquipmentManager.inventory_changed.emit()
+    MarketManager.market_changed.emit()
+    RivalManager.rivals_changed.emit()
+    EventManager.events_changed.emit()
+    EconomyManager.economy_changed.emit()
+    TournamentManager.calendar_changed.emit()
+    CampaignManager.campaign_changed.emit()
+    PersonalityManager.personality_changed.emit("")
+    RelationshipManager.relationships_changed.emit()
+    GladiatorProgressionManager.progression_changed.emit()
+    TransferManager.transfers_changed.emit()
 
 func reset_profile() -> void:
     profile = _default_profile()
@@ -100,9 +155,10 @@ func get_gladiator_experience_multiplier() -> float:
 func update_tutorial_progress(current_step: int, completed_objectives: Dictionary) -> void:
     if bool(profile.get("tutorial_completed", false)):
         return
+    var sanitized_objectives := _sanitize_tutorial_objectives(completed_objectives)
     var progress := {
         "current_step": clampi(current_step, 0, TUTORIAL_STEP_COUNT - 1),
-        "completed_objectives": _sanitize_tutorial_objectives(completed_objectives)
+        "completed_objectives": sanitized_objectives
     }
     if profile.get("tutorial_progress", {}) == progress:
         return
@@ -185,7 +241,7 @@ func _sanitize_tutorial_objectives(raw_objectives: Variant) -> Dictionary:
     var sanitized: Dictionary = {}
     if not raw_objectives is Dictionary:
         return sanitized
-    for objective_id in VALID_TUTORIAL_OBJECTIVES:
+    for objective_id in TUTORIAL_OBJECTIVE_IDS:
         if bool(raw_objectives.get(objective_id, false)):
             sanitized[objective_id] = true
     return sanitized
