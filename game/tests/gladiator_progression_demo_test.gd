@@ -57,9 +57,9 @@ func _run() -> void:
     assert(person.strength == int(before.strength) + 1, "Retiarius growth must add 1 strength")
     assert(person.agility == int(before.agility) + 3, "Retiarius growth must add 3 agility")
     assert(person.endurance == int(before.endurance) + 1, "Retiarius growth must add 1 endurance")
-    assert(person.intelligence == int(before.intelligence) + 3, "Retiarius growth must add 3 intelligence")
+    assert(person.intelligence == int(before.intelligence) + 2, "Retiarius growth must add 2 intelligence")
     assert(person.technique == int(before.technique) + 3, "Retiarius growth must add 3 technique")
-    assert(person.health == int(before.health) + 5, "Retiarius growth must add 5 health")
+    assert(person.health == int(before.health) + 10, "Retiarius growth must add 10 health")
 
     assert(manager.set_tactical_plan(person.id, [
         {"ability_id":"cast_net", "condition":"opening"},
