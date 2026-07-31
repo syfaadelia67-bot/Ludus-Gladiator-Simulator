@@ -92,8 +92,8 @@ func _assert_equipment_contracts() -> void:
     assert(shield_charge.get("required_equipment_tags", []).has("shield"), "Embate del escudo must require a shield")
     assert(cast_net.get("required_equipment_tags", []).has("net"), "Red de captura must require a net")
     assert(two_blades.get("required_equipment_tags", []).has("dual_blades"), "Danza de dos filos must require dual blades")
-    assert(EquipmentManager.RECIPES.has("net_and_trident"), "The forge must define the net and trident recipe")
-    assert(EquipmentManager.RECIPES.has("short_sword_pair"), "The forge must define the dual blades recipe")
+    assert(EquipmentManager.RECIPES.has("retiarius_kit"), "The forge must define the net and trident recipe")
+    assert(EquipmentManager.RECIPES.has("dual_blades"), "The forge must define the dual blades recipe")
 
 func _assert_migration_contracts() -> void:
     assert(GladiatorProgressionManager.canonical_tactical_condition("target_defending") == "target_guarding", "Legacy defending condition must migrate")
