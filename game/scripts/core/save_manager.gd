@@ -5,7 +5,7 @@ signal load_completed(path: String)
 signal save_failed(reason: String)
 signal load_failed(reason: String)
 
-const SAVE_VERSION := 11
+const SAVE_VERSION := 12
 const SAVE_PATH := "user://ludus_save.json"
 const BACKUP_PATH := "user://ludus_save.backup.json"
 const TEMP_PATH := "user://ludus_save.tmp.json"
@@ -252,21 +252,25 @@ func _serialize_person(person) -> Dictionary:
     return {
         "id":person.id,"name":person.display_name,"role":person.role,"job":person.job,"origin":person.origin,
         "strength":person.strength,"agility":person.agility,"endurance":person.endurance,"intelligence":person.intelligence,
+        "technique":person.technique,"health":person.health,
         "loyalty":person.loyalty,"morale":person.morale,"fatigue":person.fatigue,"training":person.training,
         "traits":person.traits.duplicate(),"equipped_weapon_id":person.equipped_weapon_id,"equipped_armor_id":person.equipped_armor_id,
         "equipped_shield_id":person.equipped_shield_id,"injury_severity":person.injury_severity,"injury_days":person.injury_days,"injury_name":person.injury_name
     }
 
 func _deserialize_person(data: Dictionary):
-    var person = PERSON_SCRIPT.new(data)
-    person.fatigue = clampi(int(data.get("fatigue", 0)), 0, 100)
-    person.training = maxi(0, int(data.get("training", 0)))
-    person.equipped_weapon_id = str(data.get("equipped_weapon_id", ""))
-    person.equipped_armor_id = str(data.get("equipped_armor_id", ""))
-    person.equipped_shield_id = str(data.get("equipped_shield_id", ""))
-    person.injury_severity = clampi(int(data.get("injury_severity", 0)), 0, 3)
-    person.injury_days = maxi(0, int(data.get("injury_days", 0)))
-    person.injury_name = str(data.get("injury_name", ""))
+    var migrated_data := data.duplicate(true)
+    migrated_data["technique"] = int(migrated_data.get("technique", 5))
+    migrated_data["health"] = maxi(1, int(migrated_data.get("health", 50)))
+    var person = PERSON_SCRIPT.new(migrated_data)
+    person.fatigue = clampi(int(migrated_data.get("fatigue", 0)), 0, 100)
+    person.training = maxi(0, int(migrated_data.get("training", 0)))
+    person.equipped_weapon_id = str(migrated_data.get("equipped_weapon_id", ""))
+    person.equipped_armor_id = str(migrated_data.get("equipped_armor_id", ""))
+    person.equipped_shield_id = str(migrated_data.get("equipped_shield_id", ""))
+    person.injury_severity = clampi(int(migrated_data.get("injury_severity", 0)), 0, 3)
+    person.injury_days = maxi(0, int(migrated_data.get("injury_days", 0)))
+    person.injury_name = str(migrated_data.get("injury_name", ""))
     return person
 
 func _copy_file(source_path: String, target_path: String) -> bool:
