@@ -27,10 +27,17 @@ func _bind() -> void:
     _refresh_roster_card()
     _refresh_market_card()
 
+func _selected_index(list: ItemList) -> int:
+    if list == null:
+        return -1
+    var selected_items: PackedInt32Array = list.get_selected_items()
+    return selected_items[0] if not selected_items.is_empty() else -1
+
 func _refresh_roster_card() -> void:
-    if roster_list == null or roster_details == null or roster_list.selected < 0:
+    var selected_index := _selected_index(roster_list)
+    if roster_details == null or selected_index < 0:
         return
-    var person_id := str(roster_list.get_item_metadata(roster_list.selected))
+    var person_id := str(roster_list.get_item_metadata(selected_index))
     var person = RosterManager.get_person(person_id)
     if person == null:
         return
@@ -70,9 +77,10 @@ func _refresh_roster_card() -> void:
     ]
 
 func _refresh_market_card() -> void:
-    if market_list == null or market_details == null or market_list.selected < 0:
+    var selected_index := _selected_index(market_list)
+    if market_details == null or selected_index < 0:
         return
-    var offer_id := str(market_list.get_item_metadata(market_list.selected))
+    var offer_id := str(market_list.get_item_metadata(selected_index))
     var offer := MarketManager.get_offer(offer_id)
     if offer.is_empty():
         return
