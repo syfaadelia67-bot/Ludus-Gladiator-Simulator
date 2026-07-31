@@ -3,12 +3,20 @@ extends Node
 signal campaign_reset_completed
 signal campaign_reset_failed(reason: String)
 
+var reset_in_progress: bool = false
+
 func reset_campaign_state() -> bool:
+    if reset_in_progress:
+        campaign_reset_failed.emit("Ya se está preparando una nueva campaña.")
+        return false
+
+    reset_in_progress = true
     var previous_autosave := SaveManager.autosave_enabled
     SaveManager.autosave_enabled = false
 
     if not SaveManager.delete_save():
         SaveManager.autosave_enabled = previous_autosave
+        reset_in_progress = false
         campaign_reset_failed.emit("No se pudieron limpiar los archivos de la campaña anterior.")
         return false
 
@@ -58,6 +66,7 @@ func reset_campaign_state() -> bool:
 
     var applied := SaveManager._apply_payload(reset_payload)
     SaveManager.autosave_enabled = previous_autosave
+    reset_in_progress = false
     if not applied:
         campaign_reset_failed.emit("No se pudo restaurar el estado inicial de la nueva campaña.")
         return false
