@@ -34,31 +34,34 @@ func _generate_offer(index: int) -> Dictionary:
     var rng := RandomNumberGenerator.new()
     rng.seed = int(Time.get_unix_time_from_system()) + _serial * 7919 + index * 131
     var role := "gladiator" if rng.randf() < 0.28 else "slave"
-    var strength := rng.randi_range(3, 9)
-    var agility := rng.randi_range(3, 9)
-    var endurance := rng.randi_range(3, 9)
-    var intelligence := rng.randi_range(3, 9)
-    var loyalty := rng.randi_range(35, 75)
     var first_trait: String = trait_pool[rng.randi_range(0, trait_pool.size() - 1)]
     var second_trait := first_trait
     while second_trait == first_trait:
         second_trait = trait_pool[rng.randi_range(0, trait_pool.size() - 1)]
-    var base_price := 90 + strength * 10 + agility * 9 + endurance * 8 + intelligence * 6
-    if role == "gladiator":
-        base_price += 180
-    return {
+    var offer := {
         "id": "offer_%d" % _serial,
         "name": names[rng.randi_range(0, names.size() - 1)],
         "origin": origins[rng.randi_range(0, origins.size() - 1)],
         "role": role,
-        "strength": strength,
-        "agility": agility,
-        "endurance": endurance,
-        "intelligence": intelligence,
-        "loyalty": loyalty,
-        "traits": [first_trait, second_trait],
-        "price": base_price
+        "strength": rng.randi_range(3, 9),
+        "agility": rng.randi_range(3, 9),
+        "endurance": rng.randi_range(3, 9),
+        "intelligence": rng.randi_range(3, 9),
+        "technique": rng.randi_range(3, 9),
+        "health": rng.randi_range(45, 65) if role == "gladiator" else rng.randi_range(40, 58),
+        "loyalty": rng.randi_range(35, 75),
+        "traits": [first_trait, second_trait]
     }
+    offer["price"] = MarketValuation.offer_value(offer)
+    return offer
+
+func recalculate_offer_price(offer_id: String) -> int:
+    var offer := get_offer(offer_id)
+    if offer.is_empty():
+        return 0
+    offer["price"] = MarketValuation.offer_value(offer)
+    market_changed.emit()
+    return int(offer["price"])
 
 func buy_offer(offer_id: String) -> bool:
     var offer := get_offer(offer_id)
@@ -68,7 +71,7 @@ func buy_offer(offer_id: String) -> bool:
     if not RosterManager.has_capacity():
         purchase_failed.emit("Los barracones están completos.")
         return false
-    var price := int(offer.get("price", 0))
+    var price := int(offer.get("price", MarketValuation.offer_value(offer)))
     if not GameState.spend_denarii(price):
         purchase_failed.emit("No hay suficientes denarios.")
         return false
