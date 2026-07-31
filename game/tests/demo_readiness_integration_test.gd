@@ -11,14 +11,14 @@ func run() -> void:
     _assert(DataRepository.specializations.size() == 5, "Deben existir gladiador y cuatro especializaciones.")
     _assert(TraitManager.get_origin_trait_ids().size() == 8, "Deben existir ocho rasgos de origen.")
     _assert(TraitManager.get_obtainable_trait_ids().size() == 14, "Deben existir catorce rasgos obtenibles.")
-    _assert(SaveManager.SAVE_VERSION == 12, "El guardado activo debe ser versión 12.")
+    _assert(SaveManager.SAVE_VERSION == 13, "El guardado activo debe ser versión 13.")
 
-    var previous_people := RosterManager.people.duplicate()
-    var previous_records := GladiatorProgressionManager.records.duplicate(true)
+    var previous_people: Array = RosterManager.people.duplicate()
+    var previous_records: Dictionary = GladiatorProgressionManager.records.duplicate(true)
     RosterManager.people.clear()
     GladiatorProgressionManager.records.clear()
 
-    var fighter = PERSON_SCRIPT.new({
+    var fighter: LudusPerson = PERSON_SCRIPT.new({
         "id":"demo_readiness_fighter",
         "name":"Prueba final",
         "role":"gladiator",
@@ -32,7 +32,7 @@ func run() -> void:
     })
     RosterManager.people.append(fighter)
 
-    var fresh := GladiatorProgressionManager.ensure_record(fighter.id)
+    var fresh: Dictionary = GladiatorProgressionManager.ensure_record(fighter.id)
     var fresh_abilities: Dictionary = fresh.get("abilities", {})
     var fresh_plan: Array = fresh.get("tactical_plan", [])
     _assert(int(fresh.get("level", 0)) == 1, "Un gladiador nuevo debe comenzar en nivel 1.")
@@ -54,7 +54,7 @@ func run() -> void:
         },
         "retired_gladiators":[]
     })
-    var migrated := GladiatorProgressionManager.get_record(fighter.id)
+    var migrated: Dictionary = GladiatorProgressionManager.get_record(fighter.id)
     var migrated_abilities: Dictionary = migrated.get("abilities", {})
     _assert(str(migrated.get("specialization", "")) == "dimachaerus", "thraex debe migrar a dimachaerus.")
     _assert(not migrated.has("technique_points"), "La migración debe eliminar technique_points.")
@@ -63,7 +63,7 @@ func run() -> void:
     _assert(int(migrated_abilities.get("feint", 0)) == 1, "Guardia férrea debe migrar a Finta.")
     _assert(int(migrated_abilities.get("throw_sand", 0)) == 1, "Reservas profundas debe migrar a Arrojar arena.")
 
-    var valid_plan := [
+    var valid_plan: Array = [
         {"ability_id":"precise_strike", "condition":"always"},
         {"ability_id":"feint", "condition":"opening"},
         {"ability_id":"throw_sand", "condition":"target_low_energy"}
@@ -71,13 +71,13 @@ func run() -> void:
     _assert(GladiatorProgressionManager.set_tactical_plan(fighter.id, valid_plan), "El plan táctico válido debe guardarse.")
     _assert(GladiatorProgressionManager.get_tactical_plan(fighter.id).size() == 3, "El plan táctico debe conservar sus órdenes.")
 
-    var serialized := SaveManager._serialize_person(fighter)
+    var serialized: Dictionary = SaveManager._serialize_person(fighter)
     _assert(serialized.has("technique"), "La ficha guardada debe incluir Técnica.")
     _assert(serialized.has("health"), "La ficha guardada debe incluir Vida.")
     _assert(serialized.has("traits"), "La ficha guardada debe incluir rasgos permanentes.")
     _assert(serialized.has("applied_trait_effects"), "La ficha guardada debe registrar efectos permanentes aplicados.")
 
-    var old_person := SaveManager._deserialize_person({
+    var old_person: LudusPerson = SaveManager._deserialize_person({
         "id":"legacy_person",
         "name":"Legado",
         "role":"gladiator",
@@ -90,7 +90,7 @@ func run() -> void:
     _assert(old_person.technique == 5, "Una partida antigua debe recibir Técnica 5.")
     _assert(old_person.health == 50, "Una partida antigua debe recibir Vida 50.")
 
-    var offer := MarketManager._generate_offer(0)
+    var offer: Dictionary = MarketManager._generate_offer(0)
     var offer_traits: Array = offer.get("traits", [])
     _assert(offer.has("technique"), "Las ofertas deben incluir Técnica.")
     _assert(offer.has("health"), "Las ofertas deben incluir Vida.")
