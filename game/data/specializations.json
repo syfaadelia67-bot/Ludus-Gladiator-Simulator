@@ -13,7 +13,7 @@
     "description": "Especialista pesado de escudo grande, presión y resistencia.",
     "aliases": [],
     "class_ability": "shield_charge",
-    "growth_per_level": {"strength": 3, "agility": 1, "endurance": 3, "intelligence": 1, "technique": 1, "health": 15}
+    "growth_per_level": {"strength": 3, "agility": 1, "endurance": 3, "intelligence": 1, "technique": 2, "health": 10}
   },
   {
     "id": "secutor",
@@ -21,7 +21,7 @@
     "description": "Perseguidor resistente diseñado para cerrar distancia.",
     "aliases": [],
     "class_ability": "relentless_pursuit",
-    "growth_per_level": {"strength": 2, "agility": 3, "endurance": 3, "intelligence": 1, "technique": 2, "health": 5}
+    "growth_per_level": {"strength": 3, "agility": 2, "endurance": 3, "intelligence": 1, "technique": 2, "health": 5}
   },
   {
     "id": "retiarius",
@@ -29,7 +29,7 @@
     "description": "Combatiente móvil y táctico que controla distancia con red y tridente.",
     "aliases": [],
     "class_ability": "cast_net",
-    "growth_per_level": {"strength": 1, "agility": 3, "endurance": 1, "intelligence": 3, "technique": 3, "health": 5}
+    "growth_per_level": {"strength": 1, "agility": 3, "endurance": 1, "intelligence": 2, "technique": 3, "health": 10}
   },
   {
     "id": "dimachaerus",
@@ -37,6 +37,6 @@
     "description": "Especialista ofensivo que combate con dos espadas.",
     "aliases": ["thraex"],
     "class_ability": "dance_of_two_blades",
-    "growth_per_level": {"strength": 2, "agility": 3, "endurance": 1, "intelligence": 1, "technique": 4, "health": 5}
+    "growth_per_level": {"strength": 2, "agility": 3, "endurance": 1, "intelligence": 1, "technique": 3, "health": 10}
   }
 ]
