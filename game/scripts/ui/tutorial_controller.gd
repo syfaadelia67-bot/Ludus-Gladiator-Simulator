@@ -65,11 +65,20 @@ func _show_if_needed() -> void:
     var scene := get_tree().current_scene
     if scene == null or scene.name != "Main":
         return
+    _restore_progress()
     if panel == null or not is_instance_valid(panel):
         _build_panel(scene)
-    current_step = clampi(current_step, 0, STEPS.size() - 1)
     panel.visible = true
     _render_step()
+
+func _restore_progress() -> void:
+    var progress: Dictionary = LudusOwnerManager.get_tutorial_progress()
+    current_step = clampi(int(progress.get("current_step", 0)), 0, STEPS.size() - 1)
+    var loaded_objectives: Variant = progress.get("completed_objectives", {})
+    completed_objectives = loaded_objectives.duplicate(true) if loaded_objectives is Dictionary else {}
+
+func _persist_progress() -> void:
+    LudusOwnerManager.update_tutorial_progress(current_step, completed_objectives)
 
 func _build_panel(scene: Node) -> void:
     panel = PanelContainer.new()
@@ -161,12 +170,14 @@ func _on_action_pressed() -> void:
         _complete_tutorial()
         return
     current_step += 1
+    _persist_progress()
     _render_step()
 
 func _mark_objective(objective_id: String) -> void:
     if objective_id.is_empty() or bool(completed_objectives.get(objective_id, false)):
         return
     completed_objectives[objective_id] = true
+    _persist_progress()
     if panel != null and is_instance_valid(panel) and current_step < STEPS.size():
         _render_step()
 
