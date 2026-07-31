@@ -35,6 +35,9 @@ func get_recipe(recipe_id: String) -> Dictionary:
     return data
 
 func craft(recipe_id: String) -> bool:
+    if CampaignManager.campaign_over:
+        craft_failed.emit("La campaña terminó. La forja está disponible solo para consulta.")
+        return false
     if not RECIPES.has(recipe_id):
         craft_failed.emit("Receta desconocida.")
         return false
