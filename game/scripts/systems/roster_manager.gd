@@ -30,10 +30,10 @@ func _ready() -> void:
 
 func _seed_initial_roster() -> void:
     var starters := [
-        {"id":"darian","name":"Darian","origin":"Tracia","strength":8,"agility":5,"endurance":7,"intelligence":3,"loyalty":48,"traits":["freedom_seeker"]},
-        {"id":"cassia","name":"Cassia","origin":"Numidia","strength":4,"agility":8,"endurance":5,"intelligence":8,"loyalty":61,"traits":["superstitious"]},
-        {"id":"marcus","name":"Marcus","origin":"Italia","role":"gladiator","strength":7,"agility":7,"endurance":6,"intelligence":5,"loyalty":72,"traits":["arena_lover"]},
-        {"id":"brenna","name":"Brenna","origin":"Britania","strength":6,"agility":6,"endurance":8,"intelligence":4,"loyalty":55,"traits":["protector"]}
+        {"id":"darian","name":"Darian","origin":"Tracia","strength":8,"agility":5,"endurance":7,"intelligence":3,"loyalty":48,"traits":["freedom_seeker","vengeful"]},
+        {"id":"cassia","name":"Cassia","origin":"Numidia","strength":4,"agility":8,"endurance":5,"intelligence":8,"loyalty":61,"traits":["superstitious","mentor"]},
+        {"id":"marcus","name":"Marcus","origin":"Italia","role":"gladiator","strength":7,"agility":7,"endurance":6,"intelligence":5,"loyalty":72,"traits":["arena_lover","popular"]},
+        {"id":"brenna","name":"Brenna","origin":"Britania","strength":6,"agility":6,"endurance":8,"intelligence":4,"loyalty":55,"traits":["protector","beast_hunter"]}
     ]
     for data in starters:
         people.append(PERSON_SCRIPT.new(data))
