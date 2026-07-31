@@ -45,5 +45,22 @@ jobs:
       - name: Run data repository tests
         run: godot --headless --path game --script res://tests/data_repository_test.gd
 
+      - name: Validate start screen and campaign creation contracts
+        run: godot --headless --path game --script res://tests/test_start_screen_campaign_flow.gd
+
+      - name: Validate complete new campaign reset contract
+        run: godot --headless --path game --script res://tests/test_new_campaign_reset_contract.gd
+
+      - name: Validate save compatibility and recovery contracts
+        run: |
+          godot --headless --path game --script res://tests/test_save_compatibility_inspector.gd
+          godot --headless --path game --script res://tests/test_save_recovery_coordinator.gd
+
+      - name: Validate weekly campaign contracts
+        run: |
+          godot --headless --path game --script res://tests/weekly_campaign_calendar_test.gd
+          godot --headless --path game --script res://tests/weekly_campaign_chapters_test.gd
+          godot --headless --path game --script res://tests/weekly_event_catalog_test.gd
+
       - name: Smoke test main scene
         run: godot --headless --path game res://scenes/Main.tscn --quit
