@@ -7,20 +7,17 @@ signal equipment_changed(person_id: String)
 signal equipment_failed(reason: String)
 
 const RECIPES := {
-    "gladius": {"name":"Gladius","type":"weapon","forge_level":1,"ore":8,"denarii":45,"power":12},
-    "spear": {"name":"Lanza de arena","type":"weapon","forge_level":1,"ore":10,"denarii":50,"power":10},
-    "mace": {"name":"Maza pesada","type":"weapon","forge_level":2,"ore":14,"denarii":75,"power":15},
-    "leather_armor": {"name":"Armadura de cuero","type":"armor","forge_level":1,"ore":5,"denarii":40,"defense":6},
-    "mail_armor": {"name":"Cota de malla","type":"armor","forge_level":2,"ore":16,"denarii":90,"defense":11},
-    "tower_shield": {"name":"Escudo de torre","type":"shield","forge_level":3,"ore":20,"denarii":120,"defense":15}
+    "gladius": {"name":"Gladius","type":"weapon","forge_level":1,"ore":8,"denarii":45,"power":12,"tags":["weapon","blade","single_weapon"]},
+    "spear": {"name":"Lanza de arena","type":"weapon","forge_level":1,"ore":10,"denarii":50,"power":10,"tags":["weapon","spear","single_weapon"]},
+    "mace": {"name":"Maza pesada","type":"weapon","forge_level":2,"ore":14,"denarii":75,"power":15,"tags":["weapon","blunt","single_weapon"]},
+    "retiarius_kit": {"name":"Red y tridente","type":"weapon","forge_level":1,"ore":12,"denarii":65,"power":10,"tags":["weapon","spear","net","retiarius_kit"]},
+    "dual_blades": {"name":"Par de espadas cortas","type":"weapon","forge_level":2,"ore":16,"denarii":85,"power":14,"tags":["weapon","blade","dual_blades"]},
+    "leather_armor": {"name":"Armadura de cuero","type":"armor","forge_level":1,"ore":5,"denarii":40,"defense":6,"tags":["armor","light_armor"]},
+    "mail_armor": {"name":"Cota de malla","type":"armor","forge_level":2,"ore":16,"denarii":90,"defense":11,"tags":["armor","heavy_armor"]},
+    "tower_shield": {"name":"Escudo de torre","type":"shield","forge_level":3,"ore":20,"denarii":120,"defense":15,"tags":["shield","large_shield"]}
 }
 
-const UNIVERSAL_TECHNIQUES: Array[String] = ["basic_attack", "guard", "feint", "warcry", "throw_sand"]
-const WEAPON_TECHNIQUES := {
-    "gladius": ["lunge", "disarm", "execute"],
-    "spear": ["lunge", "disarm", "execute"],
-    "mace": ["sunder", "disarm", "execute"]
-}
+const UNIVERSAL_TECHNIQUES: Array[String] = ["basic_attack", "precise_strike", "feint", "opportunity_strike", "throw_sand"]
 
 var inventory: Array[Dictionary] = []
 var serial: int = 0
@@ -90,7 +87,8 @@ func equip_item(person_id: String, item_id: String) -> bool:
             return false
     if not previous_id.is_empty() and previous_id != item_id:
         var previous := get_item(previous_id)
-        if not previous.is_empty(): previous["equipped_by"] = ""
+        if not previous.is_empty():
+            previous["equipped_by"] = ""
     item["equipped_by"] = person_id
     inventory_changed.emit()
     equipment_changed.emit(person_id)
@@ -111,7 +109,8 @@ func unequip_slot(person_id: String, slot: String) -> bool:
             return false
     if not item_id.is_empty():
         var item := get_item(item_id)
-        if not item.is_empty(): item["equipped_by"] = ""
+        if not item.is_empty():
+            item["equipped_by"] = ""
     inventory_changed.emit()
     equipment_changed.emit(person_id)
     return true
@@ -141,9 +140,10 @@ func get_item_name(item_id: String) -> String:
     return "%s (%s)" % [item.get("name", "Objeto"), item.get("quality", "Común")]
 
 func get_equipped_stats(person) -> Dictionary:
-    var stats := {"power": 0, "defense": 0}
+    var stats := {"power":0, "defense":0}
     for item_id in [person.equipped_weapon_id, person.equipped_armor_id, person.equipped_shield_id]:
-        if item_id.is_empty(): continue
+        if item_id.is_empty():
+            continue
         var item := get_item(item_id)
         var multiplier := _quality_multiplier(str(item.get("quality", "Común")))
         stats.power += int(round(int(item.get("power", 0)) * multiplier))
@@ -152,39 +152,77 @@ func get_equipped_stats(person) -> Dictionary:
 
 func get_equipped_loadout(person) -> Dictionary:
     if person == null:
-        return {"weapon":"", "armor":"", "shield":"", "weapon_name":"Ninguno", "armor_name":"Ninguna", "shield_name":"Ninguno"}
+        return {"weapon":"", "armor":"", "shield":"", "weapon_name":"Ninguno", "armor_name":"Ninguna", "shield_name":"Ninguno", "tags":[]}
     var weapon := get_item(person.equipped_weapon_id)
     var armor := get_item(person.equipped_armor_id)
     var shield := get_item(person.equipped_shield_id)
     return {
-        "weapon": str(weapon.get("recipe_id", "")),
-        "armor": str(armor.get("recipe_id", "")),
-        "shield": str(shield.get("recipe_id", "")),
-        "weapon_name": get_item_name(person.equipped_weapon_id),
-        "armor_name": get_item_name(person.equipped_armor_id),
-        "shield_name": get_item_name(person.equipped_shield_id)
+        "weapon":str(weapon.get("recipe_id", "")),
+        "armor":str(armor.get("recipe_id", "")),
+        "shield":str(shield.get("recipe_id", "")),
+        "weapon_name":get_item_name(person.equipped_weapon_id),
+        "armor_name":get_item_name(person.equipped_armor_id),
+        "shield_name":get_item_name(person.equipped_shield_id),
+        "tags":get_equipped_tags(person)
     }
 
+func get_equipped_tags(person) -> Array[String]:
+    var tags: Array[String] = []
+    if person == null:
+        return tags
+    for item_id in [person.equipped_weapon_id, person.equipped_armor_id, person.equipped_shield_id]:
+        if item_id.is_empty():
+            continue
+        var item := get_item(item_id)
+        for raw_tag in item.get("tags", []):
+            var tag := str(raw_tag)
+            if not tag.is_empty() and not tags.has(tag):
+                tags.append(tag)
+    return tags
+
+func can_use_ability(person, ability: Dictionary) -> bool:
+    if person == null or ability.is_empty():
+        return false
+    var required_tags: Array = ability.get("required_equipment_tags", [])
+    if required_tags.is_empty():
+        return true
+    var equipped_tags := get_equipped_tags(person)
+    for raw_tag in required_tags:
+        if not equipped_tags.has(str(raw_tag)):
+            return false
+    return true
+
+func can_use_ability_id(person, ability_id: String) -> bool:
+    var ability: Dictionary = GladiatorProgressionManager.abilities.get(ability_id, {})
+    return can_use_ability(person, ability)
+
+func get_ability_requirement(ability: Dictionary) -> String:
+    var required_tags: Array = ability.get("required_equipment_tags", [])
+    if required_tags.is_empty():
+        return "Sin requisito especial de equipo."
+    var labels: Array[String] = []
+    for raw_tag in required_tags:
+        match str(raw_tag):
+            "shield": labels.append("un escudo")
+            "net": labels.append("una red y tridente")
+            "dual_blades": labels.append("un par de espadas cortas")
+            _: labels.append(str(raw_tag).replace("_", " "))
+    return "Requiere %s equipado." % " y ".join(labels)
+
 func get_allowed_combat_techniques(person) -> Array[String]:
-    var allowed: Array[String] = UNIVERSAL_TECHNIQUES.duplicate()
+    var allowed: Array[String] = ["basic_attack"]
     if person == null:
         return allowed
-    var loadout := get_equipped_loadout(person)
-    var weapon_id := str(loadout.get("weapon", ""))
-    for technique in WEAPON_TECHNIQUES.get(weapon_id, []):
-        if not allowed.has(str(technique)):
-            allowed.append(str(technique))
-    if not str(loadout.get("shield", "")).is_empty() and not allowed.has("shield_bash"):
-        allowed.append("shield_bash")
+    for ability_id in GladiatorProgressionManager.get_available_ability_ids(person.id):
+        var ability: Dictionary = GladiatorProgressionManager.abilities.get(ability_id, {})
+        if can_use_ability(person, ability):
+            allowed.append(ability_id)
     return allowed
 
 func get_technique_requirement(technique_id: String) -> String:
-    match technique_id:
-        "shield_bash": return "Requiere un escudo equipado."
-        "lunge": return "Requiere gladius o lanza."
-        "sunder": return "Requiere una maza pesada."
-        "disarm", "execute": return "Requiere un arma equipada."
-        _: return "Disponible sin requisito de equipo."
+    if technique_id == "basic_attack":
+        return "Disponible sin requisito de equipo."
+    return get_ability_requirement(GladiatorProgressionManager.abilities.get(technique_id, {}))
 
 func _quality_multiplier(quality: String) -> float:
     match quality:
@@ -195,8 +233,10 @@ func _quality_multiplier(quality: String) -> float:
 func _roll_quality() -> String:
     var roll := randf()
     var forge_level := EstateManager.get_forge_level()
-    if roll < 0.04 * forge_level: return "Magistral"
-    if roll < 0.15 + 0.05 * forge_level: return "Superior"
+    if roll < 0.04 * forge_level:
+        return "Magistral"
+    if roll < 0.15 + 0.05 * forge_level:
+        return "Superior"
     return "Común"
 
 func get_inventory() -> Array:
