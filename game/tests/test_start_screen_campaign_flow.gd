@@ -2,6 +2,7 @@ extends Node
 
 const START_SCREEN_PATH := "res://scripts/ui/start_screen_controller.gd"
 const OWNER_MANAGER_PATH := "res://scripts/systems/ludus_owner_manager.gd"
+const NEW_CAMPAIGN_PATH := "res://scripts/core/new_campaign_coordinator.gd"
 const PROJECT_PATH := "res://project.godot"
 
 func _ready() -> void:
@@ -11,18 +12,29 @@ func _ready() -> void:
         "func _continue_campaign()",
         "func _show_owner_creation()",
         "func _start_new_campaign()",
-        "SaveManager.has_save()",
+        "func _inspect_save()",
+        "save_inspection.get(\"loadable\"",
         "SaveManager.load_game()",
+        "NewCampaignCoordinator.reset_campaign_state()",
         "LudusOwnerManager.configure_owner"
     ], failures)
     _check_file_contract(OWNER_MANAGER_PATH, [
-        "const PROFILE_PATH",
+        "const LEGACY_PROFILE_PATH",
         "func reset_profile()",
-        "func _save_local_profile()",
-        "func _load_local_profile()",
-        "func get_origin_ids()"
+        "func export_state()",
+        "func import_state(data: Dictionary)",
+        "func get_origin_ids()",
+        "tutorial_progress"
+    ], failures)
+    _check_file_contract(NEW_CAMPAIGN_PATH, [
+        "func reset_campaign_state()",
+        "SaveManager.autosave_enabled = false",
+        "GameState.day = 1",
+        "RosterManager._seed_initial_roster()",
+        "SaveManager.autosave_enabled = previous_autosave"
     ], failures)
     _check_file_contract(PROJECT_PATH, [
+        "NewCampaignCoordinator=\"*res://scripts/core/new_campaign_coordinator.gd\"",
         "StartScreenController=\"*res://scripts/ui/start_screen_controller.gd\""
     ], failures)
 
@@ -39,7 +51,7 @@ func _ready() -> void:
             failures.append("El origen %s no tiene un diccionario de bonificaciones." % origin_id)
 
     if failures.is_empty():
-        print("PASS: pantalla de inicio, creación de campaña y perfil persistente cumplen el contrato.")
+        print("PASS: pantalla de inicio, creación de campaña y perfil unificado cumplen el contrato.")
         get_tree().quit(0)
         return
     for failure in failures:
