@@ -4,7 +4,7 @@ signal owner_configured(profile: Dictionary)
 signal tutorial_state_changed(completed: bool)
 
 const ORIGINS_PATH := "res://data/dominus_origins.json"
-const PROFILE_PATH := "user://ludus_owner_profile.json"
+const LEGACY_PROFILE_PATH := "user://ludus_owner_profile.json"
 const VALID_TITLES := ["dominus", "domina"]
 
 var profile: Dictionary = _default_profile()
@@ -12,7 +12,7 @@ var origins: Dictionary = {}
 
 func _ready() -> void:
     _load_origins()
-    _load_local_profile()
+    _import_legacy_profile_once()
 
 func _default_profile() -> Dictionary:
     return {
@@ -55,14 +55,12 @@ func configure_owner(title: String, display_name: String, origin_id: String) -> 
     profile["display_name"] = display_name.strip_edges() if not display_name.strip_edges().is_empty() else canonical_title.capitalize()
     profile["origin_id"] = origin_id
     _apply_origin_bonuses_once()
-    _save_local_profile()
     owner_configured.emit(get_profile())
     return true
 
 func reset_profile() -> void:
     profile = _default_profile()
-    if FileAccess.file_exists(PROFILE_PATH):
-        DirAccess.remove_absolute(ProjectSettings.globalize_path(PROFILE_PATH))
+    _remove_legacy_profile()
 
 func _apply_origin_bonuses_once() -> void:
     if bool(profile.get("bonuses_applied", false)):
@@ -90,8 +88,9 @@ func mark_tutorial_completed() -> void:
     if bool(profile.get("tutorial_completed", false)):
         return
     profile["tutorial_completed"] = true
-    _save_local_profile()
     tutorial_state_changed.emit(true)
+    if SaveManager.has_save():
+        SaveManager.call_deferred("save_game")
 
 func should_show_onboarding() -> bool:
     return not bool(profile.get("configured", false))
@@ -123,7 +122,7 @@ func import_state(data: Dictionary) -> void:
     if loaded is Dictionary:
         profile = loaded.duplicate(true)
     _sanitize_profile()
-    _save_local_profile()
+    _remove_legacy_profile()
 
 func _sanitize_profile() -> void:
     profile["configured"] = bool(profile.get("configured", false))
@@ -132,25 +131,27 @@ func _sanitize_profile() -> void:
         profile["title"] = "dominus"
     profile["display_name"] = str(profile.get("display_name", ""))
     profile["origin_id"] = str(profile.get("origin_id", ""))
+    if not profile["origin_id"].is_empty() and not origins.has(profile["origin_id"]):
+        profile["origin_id"] = ""
+        profile["configured"] = false
     profile["tutorial_completed"] = bool(profile.get("tutorial_completed", false))
     profile["bonuses_applied"] = bool(profile.get("bonuses_applied", false))
 
-func _save_local_profile() -> void:
-    var file := FileAccess.open(PROFILE_PATH, FileAccess.WRITE)
-    if file == null:
-        push_warning("No se pudo guardar el perfil del Dominus o Domina.")
+func _import_legacy_profile_once() -> void:
+    if not FileAccess.file_exists(LEGACY_PROFILE_PATH):
         return
-    file.store_string(JSON.stringify(export_state(), "  "))
-    file.flush()
-    file.close()
-
-func _load_local_profile() -> void:
-    if not FileAccess.file_exists(PROFILE_PATH):
-        return
-    var file := FileAccess.open(PROFILE_PATH, FileAccess.READ)
+    var file := FileAccess.open(LEGACY_PROFILE_PATH, FileAccess.READ)
     if file == null:
         return
     var parsed: Variant = JSON.parse_string(file.get_as_text())
     file.close()
     if parsed is Dictionary:
-        import_state(parsed)
+        var loaded: Variant = parsed.get("profile", {})
+        if loaded is Dictionary:
+            profile = loaded.duplicate(true)
+            _sanitize_profile()
+    _remove_legacy_profile()
+
+func _remove_legacy_profile() -> void:
+    if FileAccess.file_exists(LEGACY_PROFILE_PATH):
+        DirAccess.remove_absolute(ProjectSettings.globalize_path(LEGACY_PROFILE_PATH))
