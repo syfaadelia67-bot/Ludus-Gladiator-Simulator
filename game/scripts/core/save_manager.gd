@@ -5,7 +5,7 @@ signal load_completed(path: String)
 signal save_failed(reason: String)
 signal load_failed(reason: String)
 
-const SAVE_VERSION := 13
+const SAVE_VERSION := 14
 const SAVE_PATH := "user://ludus_save.json"
 const BACKUP_PATH := "user://ludus_save.backup.json"
 const TEMP_PATH := "user://ludus_save.tmp.json"
@@ -40,10 +40,14 @@ func get_save_metadata() -> Dictionary:
         data = _read_payload(BACKUP_PATH)
     if data.is_empty():
         return {}
+    var owner_profile: Dictionary = data.get("owner", {}).get("profile", {})
     return {
         "version": int(data.get("version", 0)),
         "saved_at_unix": int(data.get("saved_at_unix", 0)),
-        "day": int(data.get("game_state", {}).get("day", 1))
+        "day": int(data.get("game_state", {}).get("day", 1)),
+        "week": int(data.get("game_state", {}).get("week", data.get("game_state", {}).get("day", 1))),
+        "owner_name": str(owner_profile.get("display_name", "")),
+        "owner_title": str(owner_profile.get("title", "dominus"))
     }
 
 func save_game() -> bool:
@@ -92,6 +96,7 @@ func delete_save() -> bool:
     for path in [SAVE_PATH, BACKUP_PATH, TEMP_PATH]:
         if FileAccess.file_exists(path):
             success = _remove_file(path) and success
+    LudusOwnerManager.reset_profile()
     return success
 
 func _read_payload(path: String) -> Dictionary:
@@ -123,7 +128,7 @@ func _validate_payload(payload: Dictionary) -> bool:
     var roster_data: Variant = payload.get("roster", null)
     if not game_data is Dictionary or not roster_data is Dictionary:
         return false
-    if int(game_data.get("day", 0)) < 1:
+    if int(game_data.get("day", game_data.get("week", 0))) < 1:
         return false
     if int(game_data.get("denarii", -1)) < 0 or int(game_data.get("food", -1)) < 0 or int(game_data.get("ore", -1)) < 0:
         return false
@@ -139,9 +144,13 @@ func _validate_payload(payload: Dictionary) -> bool:
             return false
         known_ids[person_id] = true
     var history_data: Variant = payload.get("combat_history", {})
-    if not history_data is Dictionary:
+    if not history_data is Dictionary or not history_data.get("entries", []) is Array:
         return false
-    return history_data.get("entries", []) is Array
+    var owner_data: Variant = payload.get("owner", {})
+    if not owner_data is Dictionary:
+        return false
+    var owner_profile: Variant = owner_data.get("profile", {})
+    return owner_profile is Dictionary
 
 func _build_payload() -> Dictionary:
     var people_data: Array = []
@@ -150,7 +159,8 @@ func _build_payload() -> Dictionary:
     return {
         "version": SAVE_VERSION,
         "saved_at_unix": int(Time.get_unix_time_from_system()),
-        "game_state":{"day":GameState.day,"denarii":GameState.denarii,"food":GameState.food,"ore":GameState.ore,"reputation":GameState.reputation},
+        "game_state":{"day":GameState.day,"week":GameState.week,"denarii":GameState.denarii,"food":GameState.food,"ore":GameState.ore,"reputation":GameState.reputation},
+        "owner":LudusOwnerManager.export_state(),
         "roster":{"people":people_data,"capacity":RosterManager.capacity,"security_score":RosterManager.security_score,"intelligence_points":RosterManager.intelligence_points},
         "estate":{"levels":EstateManager.export_levels()},
         "equipment":{"inventory":EquipmentManager.inventory.duplicate(true),"serial":EquipmentManager.serial},
@@ -178,7 +188,8 @@ func _apply_payload(data: Dictionary) -> bool:
     var rival_data: Dictionary = data.get("rivals", {})
     var combat_data: Dictionary = data.get("combat", {})
 
-    GameState.day = maxi(1, int(game_data.get("day", 1)))
+    GameState.day = maxi(1, int(game_data.get("day", game_data.get("week", 1))))
+    GameState.week = maxi(1, int(game_data.get("week", game_data.get("day", 1))))
     GameState.denarii = maxi(0, int(game_data.get("denarii", 500)))
     GameState.food = maxi(0, int(game_data.get("food", 100)))
     GameState.ore = maxi(0, int(game_data.get("ore", 20)))
@@ -228,6 +239,7 @@ func _apply_payload(data: Dictionary) -> bool:
     GladiatorProgressionManager.import_state(data.get("gladiator_progression", {}))
     TraitManager.import_state(data.get("traits", {}))
     TransferManager.import_state(data.get("transfers", {}))
+    LudusOwnerManager.import_state(data.get("owner", LudusOwnerManager.export_state()))
 
     GameState.resources_changed.emit()
     RosterManager.roster_changed.emit()
