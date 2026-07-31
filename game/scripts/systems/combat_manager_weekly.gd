@@ -54,3 +54,9 @@ func get_current_event_details() -> Dictionary:
 
 func get_next_event_summary() -> String:
     return "Semana %d: %s. Cada semana incluye al menos un combate." % [GameState.get_week(), get_current_event_name()]
+
+func simulate_duel(gladiator_id: String, tactic: String = "balanced") -> Dictionary:
+    if CampaignManager.campaign_over:
+        combat_failed.emit("La campaña terminó. La Arena está disponible solo para consultar resultados e historial.")
+        return {}
+    return super.simulate_duel(gladiator_id, tactic)
