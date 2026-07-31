@@ -1,0 +1,44 @@
+[
+  {
+    "id": "patrician_heir",
+    "name": "Heredero patricio",
+    "description": "Una familia influyente financia el nacimiento del ludus.",
+    "bonuses": {
+      "starting_denarii": 300,
+      "starting_reputation": 5
+    },
+    "summary": "+300 denarios y +5 reputación inicial."
+  },
+  {
+    "id": "arena_veteran",
+    "name": "Veterano de la arena",
+    "description": "Conoce el entrenamiento, las heridas y la mentalidad de los combatientes.",
+    "bonuses": {
+      "gladiator_experience_multiplier": 1.15,
+      "starting_morale": 5
+    },
+    "summary": "+15% experiencia de gladiadores y +5 moral inicial."
+  },
+  {
+    "id": "mercantile_house",
+    "name": "Casa mercantil",
+    "description": "Sus contactos comerciales aportan suministros y capital de trabajo.",
+    "bonuses": {
+      "starting_denarii": 150,
+      "starting_food": 30,
+      "starting_ore": 15
+    },
+    "summary": "+150 denarios, +30 comida y +15 mineral."
+  },
+  {
+    "id": "patron_of_freedmen",
+    "name": "Patrón de libertos",
+    "description": "Su reputación de cumplir promesas inspira una lealtad poco habitual.",
+    "bonuses": {
+      "starting_loyalty": 10,
+      "starting_morale": 5,
+      "starting_reputation": 3
+    },
+    "summary": "+10 lealtad, +5 moral y +3 reputación inicial."
+  }
+]
