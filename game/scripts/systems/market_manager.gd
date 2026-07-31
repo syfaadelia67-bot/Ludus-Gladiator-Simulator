@@ -20,6 +20,9 @@ func _ready() -> void:
         refresh_market(false)
 
 func refresh_market(charge: bool = true) -> bool:
+    if CampaignManager.campaign_over:
+        purchase_failed.emit("La campaña terminó. El mercado está disponible solo para consulta.")
+        return false
     if charge and not GameState.spend_denarii(refresh_cost):
         purchase_failed.emit("No hay suficientes denarios para renovar el mercado.")
         return false
@@ -64,6 +67,9 @@ func recalculate_offer_price(offer_id: String) -> int:
     return int(offer["price"])
 
 func buy_offer(offer_id: String) -> bool:
+    if CampaignManager.campaign_over:
+        purchase_failed.emit("La campaña terminó. No se pueden realizar nuevas compras.")
+        return false
     var offer := get_offer(offer_id)
     if offer.is_empty():
         purchase_failed.emit("La oferta ya no está disponible.")
