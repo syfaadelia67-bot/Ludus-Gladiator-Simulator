@@ -35,14 +35,14 @@ func get_trait_name(trait_id: String) -> String:
 func ensure_gladiator_origin_traits(person) -> void:
     if person == null or person.role != "gladiator":
         return
-    var origin_ids := get_origin_trait_ids()
+    var origin_ids: Array[String] = get_origin_trait_ids()
     var current_origin: Array[String] = []
     for trait_id in person.traits:
         if str(catalog.get(trait_id, {}).get("category", "")) == "origin":
             current_origin.append(trait_id)
-    var cursor := abs(hash(person.id)) % maxi(1, origin_ids.size())
+    var cursor: int = absi(hash(person.id)) % maxi(1, origin_ids.size())
     while current_origin.size() < ORIGIN_TRAITS_PER_GLADIATOR and not origin_ids.is_empty():
-        var candidate := origin_ids[cursor % origin_ids.size()]
+        var candidate: String = origin_ids[cursor % origin_ids.size()]
         cursor += 1
         if person.traits.has(candidate):
             continue
