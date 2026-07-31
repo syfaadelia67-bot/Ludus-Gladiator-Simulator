@@ -33,10 +33,12 @@ func run() -> void:
     RosterManager.people.append(fighter)
 
     var fresh := GladiatorProgressionManager.ensure_record(fighter.id)
+    var fresh_abilities: Dictionary = fresh.get("abilities", {})
+    var fresh_plan: Array = fresh.get("tactical_plan", [])
     _assert(int(fresh.get("level", 0)) == 1, "Un gladiador nuevo debe comenzar en nivel 1.")
     _assert(int(fresh.get("skill_points", 0)) == 1, "Un gladiador nuevo debe comenzar con un punto de habilidad.")
-    _assert(Dictionary(fresh.get("abilities", {})).is_empty(), "Un gladiador nuevo no debe comenzar con habilidades aprendidas.")
-    _assert(Array(fresh.get("tactical_plan", [])).is_empty(), "Un gladiador nuevo debe comenzar sin órdenes tácticas.")
+    _assert(fresh_abilities.is_empty(), "Un gladiador nuevo no debe comenzar con habilidades aprendidas.")
+    _assert(fresh_plan.is_empty(), "Un gladiador nuevo debe comenzar sin órdenes tácticas.")
 
     GladiatorProgressionManager.import_state({
         "records": {
@@ -53,12 +55,13 @@ func run() -> void:
         "retired_gladiators":[]
     })
     var migrated := GladiatorProgressionManager.get_record(fighter.id)
+    var migrated_abilities: Dictionary = migrated.get("abilities", {})
     _assert(str(migrated.get("specialization", "")) == "dimachaerus", "thraex debe migrar a dimachaerus.")
     _assert(not migrated.has("technique_points"), "La migración debe eliminar technique_points.")
     _assert(not migrated.has("techniques"), "La migración debe eliminar techniques.")
-    _assert(int(migrated.get("abilities", {}).get("precise_strike", 0)) == 1, "Golpe preciso debe migrarse.")
-    _assert(int(migrated.get("abilities", {}).get("feint", 0)) == 1, "Guardia férrea debe migrar a Finta.")
-    _assert(int(migrated.get("abilities", {}).get("throw_sand", 0)) == 1, "Reservas profundas debe migrar a Arrojar arena.")
+    _assert(int(migrated_abilities.get("precise_strike", 0)) == 1, "Golpe preciso debe migrarse.")
+    _assert(int(migrated_abilities.get("feint", 0)) == 1, "Guardia férrea debe migrar a Finta.")
+    _assert(int(migrated_abilities.get("throw_sand", 0)) == 1, "Reservas profundas debe migrar a Arrojar arena.")
 
     var valid_plan := [
         {"ability_id":"precise_strike", "condition":"always"},
@@ -88,9 +91,10 @@ func run() -> void:
     _assert(old_person.health == 50, "Una partida antigua debe recibir Vida 50.")
 
     var offer := MarketManager._generate_offer(0)
+    var offer_traits: Array = offer.get("traits", [])
     _assert(offer.has("technique"), "Las ofertas deben incluir Técnica.")
     _assert(offer.has("health"), "Las ofertas deben incluir Vida.")
-    _assert(Array(offer.get("traits", [])).size() == 2, "Las ofertas deben incluir dos rasgos de origen.")
+    _assert(offer_traits.size() == 2, "Las ofertas deben incluir dos rasgos de origen.")
 
     RosterManager.people = previous_people
     GladiatorProgressionManager.records = previous_records
