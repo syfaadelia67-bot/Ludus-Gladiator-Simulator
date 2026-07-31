@@ -8,6 +8,13 @@ const ORIGINS_PATH := "res://data/dominus_origins.json"
 const LEGACY_PROFILE_PATH := "user://ludus_owner_profile.json"
 const VALID_TITLES := ["dominus", "domina"]
 const TUTORIAL_STEP_COUNT := 5
+const VALID_TUTORIAL_OBJECTIVES := [
+    "inspect_roster",
+    "advance_week",
+    "obtain_equipment",
+    "resolve_event",
+    "weekly_combat"
+]
 
 var profile: Dictionary = _default_profile()
 var origins: Dictionary = {}
@@ -93,13 +100,9 @@ func get_gladiator_experience_multiplier() -> float:
 func update_tutorial_progress(current_step: int, completed_objectives: Dictionary) -> void:
     if bool(profile.get("tutorial_completed", false)):
         return
-    var sanitized_objectives: Dictionary = {}
-    for objective_id in completed_objectives.keys():
-        if bool(completed_objectives.get(objective_id, false)):
-            sanitized_objectives[str(objective_id)] = true
     var progress := {
         "current_step": clampi(current_step, 0, TUTORIAL_STEP_COUNT - 1),
-        "completed_objectives": sanitized_objectives
+        "completed_objectives": _sanitize_tutorial_objectives(completed_objectives)
     }
     if profile.get("tutorial_progress", {}) == progress:
         return
@@ -121,7 +124,7 @@ func mark_tutorial_completed() -> void:
     profile["tutorial_completed"] = true
     profile["tutorial_progress"] = {
         "current_step": TUTORIAL_STEP_COUNT - 1,
-        "completed_objectives": get_tutorial_progress().get("completed_objectives", {}).duplicate(true)
+        "completed_objectives": _sanitize_tutorial_objectives(get_tutorial_progress().get("completed_objectives", {}))
     }
     tutorial_state_changed.emit(true)
     if SaveManager.has_save():
@@ -171,18 +174,21 @@ func _sanitize_profile() -> void:
         profile["configured"] = false
     profile["tutorial_completed"] = bool(profile.get("tutorial_completed", false))
     var raw_progress: Variant = profile.get("tutorial_progress", {})
-    var sanitized_objectives: Dictionary = {}
-    if raw_progress is Dictionary:
-        var raw_objectives: Variant = raw_progress.get("completed_objectives", {})
-        if raw_objectives is Dictionary:
-            for objective_id in raw_objectives.keys():
-                if bool(raw_objectives.get(objective_id, false)):
-                    sanitized_objectives[str(objective_id)] = true
+    var raw_objectives: Variant = raw_progress.get("completed_objectives", {}) if raw_progress is Dictionary else {}
     profile["tutorial_progress"] = {
         "current_step": clampi(int(raw_progress.get("current_step", 0)) if raw_progress is Dictionary else 0, 0, TUTORIAL_STEP_COUNT - 1),
-        "completed_objectives": sanitized_objectives
+        "completed_objectives": _sanitize_tutorial_objectives(raw_objectives)
     }
     profile["bonuses_applied"] = bool(profile.get("bonuses_applied", false))
+
+func _sanitize_tutorial_objectives(raw_objectives: Variant) -> Dictionary:
+    var sanitized: Dictionary = {}
+    if not raw_objectives is Dictionary:
+        return sanitized
+    for objective_id in VALID_TUTORIAL_OBJECTIVES:
+        if bool(raw_objectives.get(objective_id, false)):
+            sanitized[objective_id] = true
+    return sanitized
 
 func _import_legacy_profile_once() -> void:
     if not FileAccess.file_exists(LEGACY_PROFILE_PATH):
