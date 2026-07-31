@@ -1,42 +1,158 @@
 [
   {
-    "id": "quarters",
+    "id": "dominus_house",
+    "legacy_ids": [],
+    "name": "Casa del Dominus",
+    "description": "Centro administrativo del ludus y residencia del Dominus.",
+    "max_level": 3,
+    "demo_available": true,
+    "demo_max_level": 1,
+    "base_cost": 240,
+    "effect_type": "administration",
+    "effect_per_level": 1
+  },
+  {
+    "id": "barracks",
+    "legacy_ids": ["quarters"],
     "name": "Barracones",
-    "description": "Aumentan la capacidad máxima de esclavos y gladiadores del ludus.",
-    "max_level": 5,
-    "base_cost": 180,
-    "capacity_per_level": 3
+    "description": "Aumentan la capacidad máxima de gladiadores y trabajadores del ludus.",
+    "max_level": 3,
+    "demo_available": true,
+    "demo_max_level": 1,
+    "base_cost": 220,
+    "effect_type": "capacity",
+    "effect_per_level": 4
   },
   {
     "id": "training_yard",
+    "legacy_ids": [],
     "name": "Patio de entrenamiento",
     "description": "Mejora la velocidad de entrenamiento y preparación de los gladiadores.",
-    "max_level": 5,
-    "base_cost": 220,
-    "training_multiplier_per_level": 0.12
+    "max_level": 3,
+    "demo_available": true,
+    "demo_max_level": 1,
+    "base_cost": 260,
+    "effect_type": "training_multiplier",
+    "effect_per_level": 0.2
   },
   {
     "id": "forge",
+    "legacy_ids": [],
     "name": "Forja",
     "description": "Desbloquea armas, armaduras y escudos de mayor calidad.",
-    "max_level": 5,
-    "base_cost": 260,
-    "forge_level_per_upgrade": 1
+    "max_level": 3,
+    "demo_available": true,
+    "demo_max_level": 1,
+    "base_cost": 320,
+    "effect_type": "forge_level",
+    "effect_per_level": 1
   },
   {
     "id": "infirmary",
+    "legacy_ids": [],
     "name": "Enfermería",
     "description": "Reduce el tiempo de recuperación y el riesgo de lesiones graves.",
-    "max_level": 5,
-    "base_cost": 240,
-    "recovery_bonus_per_level": 2
+    "max_level": 3,
+    "demo_available": true,
+    "demo_max_level": 1,
+    "base_cost": 280,
+    "effect_type": "recovery_bonus",
+    "effect_per_level": 3
   },
   {
-    "id": "security",
-    "name": "Puesto de seguridad",
+    "id": "kitchen",
+    "legacy_ids": [],
+    "name": "Cocina y comedor",
+    "description": "Mejora la alimentación, la moral y la eficiencia diaria del ludus.",
+    "max_level": 3,
+    "demo_available": true,
+    "demo_max_level": 1,
+    "base_cost": 230,
+    "effect_type": "food_efficiency",
+    "effect_per_level": 0.1
+  },
+  {
+    "id": "warehouse",
+    "legacy_ids": [],
+    "name": "Almacén",
+    "description": "Aumenta la capacidad de almacenamiento de comida, mineral y equipo.",
+    "max_level": 3,
+    "demo_available": false,
+    "demo_max_level": 0,
+    "base_cost": 260,
+    "effect_type": "storage",
+    "effect_per_level": 1
+  },
+  {
+    "id": "worker_quarters",
+    "legacy_ids": [],
+    "name": "Dependencias de trabajadores",
+    "description": "Aloja esclavos y trabajadores destinados al mantenimiento del ludus.",
+    "max_level": 3,
+    "demo_available": false,
+    "demo_max_level": 0,
+    "base_cost": 250,
+    "effect_type": "worker_capacity",
+    "effect_per_level": 3
+  },
+  {
+    "id": "wall_and_gate",
+    "legacy_ids": ["guard_post", "security"],
+    "name": "Muralla y puerta",
     "description": "Protege el ludus contra sabotajes, fugas y operaciones rivales.",
-    "max_level": 5,
-    "base_cost": 200,
-    "security_bonus_per_level": 3
+    "max_level": 3,
+    "demo_available": false,
+    "demo_max_level": 0,
+    "base_cost": 300,
+    "effect_type": "security_bonus",
+    "effect_per_level": 3
+  },
+  {
+    "id": "beast_area",
+    "legacy_ids": [],
+    "name": "Área de bestias",
+    "description": "Permite alojar y entrenar animales destinados a espectáculos y combates.",
+    "max_level": 3,
+    "demo_available": false,
+    "demo_max_level": 0,
+    "base_cost": 360,
+    "effect_type": "beast_capacity",
+    "effect_per_level": 1
+  },
+  {
+    "id": "sanctuary",
+    "legacy_ids": [],
+    "name": "Santuario",
+    "description": "Permite realizar ofrendas, rituales y acciones vinculadas con la fe y los augurios.",
+    "max_level": 3,
+    "demo_available": false,
+    "demo_max_level": 0,
+    "base_cost": 280,
+    "effect_type": "omen_bonus",
+    "effect_per_level": 1
+  },
+  {
+    "id": "private_arena",
+    "legacy_ids": [],
+    "name": "Arena privada",
+    "description": "Habilita entrenamientos avanzados, exhibiciones y combates internos.",
+    "max_level": 3,
+    "demo_available": false,
+    "demo_max_level": 0,
+    "base_cost": 420,
+    "effect_type": "combat_training",
+    "effect_per_level": 1
+  },
+  {
+    "id": "stable",
+    "legacy_ids": [],
+    "name": "Establo",
+    "description": "Aloja monturas, animales de carga y recursos para viajes y transporte.",
+    "max_level": 3,
+    "demo_available": false,
+    "demo_max_level": 0,
+    "base_cost": 300,
+    "effect_type": "travel_support",
+    "effect_per_level": 1
   }
 ]
