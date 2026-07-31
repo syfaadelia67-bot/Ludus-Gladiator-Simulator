@@ -39,7 +39,10 @@ func _generate_offer(index: int) -> Dictionary:
     var endurance := rng.randi_range(3, 9)
     var intelligence := rng.randi_range(3, 9)
     var loyalty := rng.randi_range(35, 75)
-    var trait_id: String = trait_pool[rng.randi_range(0, trait_pool.size() - 1)]
+    var first_trait: String = trait_pool[rng.randi_range(0, trait_pool.size() - 1)]
+    var second_trait := first_trait
+    while second_trait == first_trait:
+        second_trait = trait_pool[rng.randi_range(0, trait_pool.size() - 1)]
     var base_price := 90 + strength * 10 + agility * 9 + endurance * 8 + intelligence * 6
     if role == "gladiator":
         base_price += 180
@@ -53,7 +56,7 @@ func _generate_offer(index: int) -> Dictionary:
         "endurance": endurance,
         "intelligence": intelligence,
         "loyalty": loyalty,
-        "traits": [trait_id],
+        "traits": [first_trait, second_trait],
         "price": base_price
     }
 
