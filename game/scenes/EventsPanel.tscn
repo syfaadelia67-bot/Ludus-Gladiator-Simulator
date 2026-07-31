@@ -14,31 +14,31 @@ layout_mode = 2
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 22
-text = "EVENTOS Y CONSECUENCIAS"
+text = "EVENTO PRINCIPAL DE LA SEMANA"
 
 [node name="Summary" type="Label" parent="Header"]
 layout_mode = 2
-text = "Sin efectos activos"
+text = "Semana 1 · Sin efectos activos"
 
 [node name="EventTitle" type="Label" parent="."]
 layout_mode = 2
 theme_override_font_sizes/font_size = 20
-text = "No hay decisiones pendientes"
+text = "Semana 1 · Sin decisiones pendientes"
 
 [node name="EventText" type="RichTextLabel" parent="."]
 custom_minimum_size = Vector2(0, 110)
 layout_mode = 2
 bbcode_enabled = true
 fit_content = true
-text = "Los acontecimientos aparecerán al avanzar los días."
+text = "El próximo acontecimiento principal aparecerá al cerrar la semana."
 
 [node name="Choices" type="VBoxContainer" parent="."]
 layout_mode = 2
-theme_override_constants/separation = 6
+theme_override_constants/separation = 8
 
 [node name="EffectsTitle" type="Label" parent="."]
 layout_mode = 2
-text = "EFECTOS ACTIVOS"
+text = "EFECTOS SEMANALES ACTIVOS"
 
 [node name="Effects" type="RichTextLabel" parent="."]
 custom_minimum_size = Vector2(0, 110)
@@ -48,7 +48,7 @@ text = "Ninguno"
 
 [node name="HistoryTitle" type="Label" parent="."]
 layout_mode = 2
-text = "DECISIONES RECIENTES"
+text = "DECISIONES DE CAMPAÑA RECIENTES"
 
 [node name="History" type="RichTextLabel" parent="."]
 custom_minimum_size = Vector2(0, 150)
