@@ -1,5 +1,7 @@
 extends Node
 
+const DEMO_FINAL_WEEK := 16
+
 func _ready() -> void:
     call_deferred("_attach")
     GameState.week_advanced.connect(func(_week: int): call_deferred("_refresh"))
@@ -48,9 +50,15 @@ func _refresh() -> void:
         lines.append("%s %s — %d/%d" % [marker, objective.get("title", "Objetivo"), int(objective.get("progress", 0)), int(objective.get("target", 1))])
 
     lines.append("[b]PRÓXIMOS COMBATES[/b]")
+    var current_week := GameState.get_week()
     for offset in range(4):
-        var week := GameState.get_week() + offset
+        var week := current_week + offset
+        if week > DEMO_FINAL_WEEK:
+            break
         var details: Dictionary = CombatManager.get_event_details_for_week(week)
         var current_marker := "→ " if offset == 0 else ""
-        lines.append("%sSemana %d — %s" % [current_marker, week, details.get("name", "Evento semanal")])
+        var finale_marker := " [b]— FINAL[/b]" if bool(details.get("finale", false)) else ""
+        lines.append("%sSemana %d — %s%s" % [current_marker, week, details.get("name", "Evento semanal"), finale_marker])
+    if current_week > DEMO_FINAL_WEEK:
+        lines.append("Campaña finalizada.")
     calendar.text = "\n".join(lines)
