@@ -26,6 +26,7 @@ func _ready() -> void:
     unequip_armor.pressed.connect(func(): _unequip("armor"))
     unequip_shield.pressed.connect(func(): _unequip("shield"))
     RosterManager.roster_changed.connect(_refresh)
+    GladiatorProgressionManager.progression_changed.connect(_refresh)
     EquipmentManager.inventory_changed.connect(_refresh)
     EquipmentManager.equipment_changed.connect(func(_person_id): _refresh())
     EquipmentManager.equipment_failed.connect(_show_error)
@@ -38,8 +39,11 @@ func _refresh() -> void:
     for person in RosterManager.get_people():
         if person.role == "gladiator":
             gladiator_ids.append(person.id)
+            var record: Dictionary = GladiatorProgressionManager.get_record(person.id)
+            var level: int = int(record.get("level", 1))
+            var specialization: String = GladiatorProgressionManager.get_specialization_name(str(record.get("specialization", GladiatorProgressionManager.DEFAULT_SPECIALIZATION)))
             var state: String = "Disponible" if person.is_available_for_combat() else person.get_injury_summary()
-            gladiator_selector.add_item("%s — %s" % [person.display_name, state])
+            gladiator_selector.add_item("%s — Nv. %d %s — %s" % [person.display_name, level, specialization, state])
     if gladiator_ids.is_empty():
         status.text = "No hay gladiadores disponibles."
         _set_controls_enabled(false)
@@ -70,12 +74,32 @@ func _populate_item_selector(selector: OptionButton, ids: Array[String], item_ty
     selector.disabled = ids.is_empty()
 
 func _refresh_status() -> void:
-    var person = RosterManager.get_person(_selected_gladiator_id())
+    var person_id: String = _selected_gladiator_id()
+    var person = RosterManager.get_person(person_id)
     if person == null:
         return
+    var record: Dictionary = GladiatorProgressionManager.get_record(person_id)
     var bonuses: Dictionary = EquipmentManager.get_equipped_stats(person)
-    status.text = "[b]%s[/b]\nArma: %s\nArmadura: %s\nEscudo: %s\n\nAtaque final: %d | Defensa final: %d\nEstado: %s | Fatiga: %d | Moral: %d" % [
+    var level: int = int(record.get("level", 1))
+    var specialization: String = GladiatorProgressionManager.get_specialization_name(str(record.get("specialization", GladiatorProgressionManager.DEFAULT_SPECIALIZATION)))
+    var learned: Dictionary = record.get("abilities", {})
+    var ability_lines: Array[String] = []
+    for ability_id in learned.keys():
+        var ability: Dictionary = GladiatorProgressionManager.abilities.get(str(ability_id), {})
+        ability_lines.append("%s %s" % [str(ability.get("name", ability_id)), _roman_level(int(learned[ability_id]))])
+    var abilities_text: String = ", ".join(ability_lines) if not ability_lines.is_empty() else "Ninguna"
+    status.text = "[b]%s[/b] — Nivel %d — %s\nPuntos de habilidad: %d\nFUE %d | AGI %d | RES %d | INT %d | TEC %d | VIDA %d\nHabilidades: %s\nNivel III: [color=gray]🔒 PRÓXIMAMENTE[/color]\n\nArma: %s\nArmadura: %s\nEscudo: %s\n\nAtaque final: %d | Defensa final: %d\nEstado: %s | Fatiga: %d | Moral: %d" % [
         person.display_name,
+        level,
+        specialization,
+        int(record.get("skill_points", 0)),
+        person.strength,
+        person.agility,
+        person.endurance,
+        person.intelligence,
+        person.technique,
+        person.health,
+        abilities_text,
         EquipmentManager.get_item_name(person.equipped_weapon_id),
         EquipmentManager.get_item_name(person.equipped_armor_id),
         EquipmentManager.get_item_name(person.equipped_shield_id),
@@ -85,6 +109,13 @@ func _refresh_status() -> void:
         person.fatigue,
         person.morale
     ]
+
+func _roman_level(level: int) -> String:
+    match level:
+        1: return "I"
+        2: return "II"
+        3: return "III"
+        _: return str(level)
 
 func _equip_selected(slot: String) -> void:
     var person_id: String = _selected_gladiator_id()
