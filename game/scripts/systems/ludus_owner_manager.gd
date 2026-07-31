@@ -2,10 +2,12 @@ extends Node
 
 signal owner_configured(profile: Dictionary)
 signal tutorial_state_changed(completed: bool)
+signal tutorial_progress_changed(progress: Dictionary)
 
 const ORIGINS_PATH := "res://data/dominus_origins.json"
 const LEGACY_PROFILE_PATH := "user://ludus_owner_profile.json"
 const VALID_TITLES := ["dominus", "domina"]
+const TUTORIAL_STEP_COUNT := 5
 
 var profile: Dictionary = _default_profile()
 var origins: Dictionary = {}
@@ -21,6 +23,10 @@ func _default_profile() -> Dictionary:
         "display_name": "",
         "origin_id": "",
         "tutorial_completed": false,
+        "tutorial_progress": {
+            "current_step": 0,
+            "completed_objectives": {}
+        },
         "bonuses_applied": false
     }
 
@@ -84,10 +90,39 @@ func get_gladiator_experience_multiplier() -> float:
     var origin: Dictionary = get_origin(str(profile.get("origin_id", "")))
     return maxf(1.0, float(origin.get("bonuses", {}).get("gladiator_experience_multiplier", 1.0)))
 
+func update_tutorial_progress(current_step: int, completed_objectives: Dictionary) -> void:
+    if bool(profile.get("tutorial_completed", false)):
+        return
+    var sanitized_objectives: Dictionary = {}
+    for objective_id in completed_objectives.keys():
+        if bool(completed_objectives.get(objective_id, false)):
+            sanitized_objectives[str(objective_id)] = true
+    var progress := {
+        "current_step": clampi(current_step, 0, TUTORIAL_STEP_COUNT - 1),
+        "completed_objectives": sanitized_objectives
+    }
+    if profile.get("tutorial_progress", {}) == progress:
+        return
+    profile["tutorial_progress"] = progress
+    tutorial_progress_changed.emit(get_tutorial_progress())
+    if SaveManager.has_save():
+        SaveManager.call_deferred("save_game")
+
+func get_tutorial_progress() -> Dictionary:
+    var progress: Variant = profile.get("tutorial_progress", {})
+    return progress.duplicate(true) if progress is Dictionary else {
+        "current_step": 0,
+        "completed_objectives": {}
+    }
+
 func mark_tutorial_completed() -> void:
     if bool(profile.get("tutorial_completed", false)):
         return
     profile["tutorial_completed"] = true
+    profile["tutorial_progress"] = {
+        "current_step": TUTORIAL_STEP_COUNT - 1,
+        "completed_objectives": get_tutorial_progress().get("completed_objectives", {}).duplicate(true)
+    }
     tutorial_state_changed.emit(true)
     if SaveManager.has_save():
         SaveManager.call_deferred("save_game")
@@ -135,6 +170,18 @@ func _sanitize_profile() -> void:
         profile["origin_id"] = ""
         profile["configured"] = false
     profile["tutorial_completed"] = bool(profile.get("tutorial_completed", false))
+    var raw_progress: Variant = profile.get("tutorial_progress", {})
+    var sanitized_objectives: Dictionary = {}
+    if raw_progress is Dictionary:
+        var raw_objectives: Variant = raw_progress.get("completed_objectives", {})
+        if raw_objectives is Dictionary:
+            for objective_id in raw_objectives.keys():
+                if bool(raw_objectives.get(objective_id, false)):
+                    sanitized_objectives[str(objective_id)] = true
+    profile["tutorial_progress"] = {
+        "current_step": clampi(int(raw_progress.get("current_step", 0)) if raw_progress is Dictionary else 0, 0, TUTORIAL_STEP_COUNT - 1),
+        "completed_objectives": sanitized_objectives
+    }
     profile["bonuses_applied"] = bool(profile.get("bonuses_applied", false))
 
 func _import_legacy_profile_once() -> void:
