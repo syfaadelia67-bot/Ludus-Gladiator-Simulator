@@ -269,8 +269,9 @@ func _start_new_campaign() -> void:
     if display_name.length() < 2:
         status_label.text = "Ingresá un nombre de al menos dos caracteres."
         return
-    SaveManager.delete_save()
-    LudusOwnerManager.reset_profile()
+    if not NewCampaignCoordinator.reset_campaign_state():
+        status_label.text = "No se pudo reiniciar el estado de la campaña anterior."
+        return
     if not LudusOwnerManager.configure_owner(title_id, display_name, origin_id):
         status_label.text = "No se pudo configurar el propietario del ludus."
         return
