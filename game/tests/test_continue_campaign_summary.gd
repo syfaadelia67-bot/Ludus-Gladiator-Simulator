@@ -16,6 +16,11 @@ func _ready() -> void:
     assert(source.contains("Cacería de bestias del anfiteatro"))
     assert(source.contains("Combate clandestino del bajo mundo"))
     assert(source.contains("Exhibición semanal del ludus"))
+    assert(source.contains("SAVE_COMPATIBILITY_INSPECTOR"))
+    assert(source.contains("func _inspect_save"))
+    assert(source.contains("save_inspection.get(\"loadable\""))
+    assert(source.contains("save_inspection.get(\"message\""))
+    assert(source.contains("save_inspection.get(\"metadata\""))
 
     print("Continue campaign summary contract: OK")
     get_tree().quit()
