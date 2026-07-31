@@ -117,10 +117,49 @@ func _show_main_menu() -> void:
     status_label = Label.new()
     status_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
     status_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+    status_label.custom_minimum_size = Vector2(0, 105)
     var metadata := SaveManager.get_save_metadata()
-    if not metadata.is_empty():
-        status_label.text = "Guardado disponible — Semana %d" % int(metadata.get("week", metadata.get("day", 1)))
+    status_label.text = _format_save_summary(metadata) if not metadata.is_empty() else "No hay una campaña guardada."
     card.add_child(status_label)
+
+func _format_save_summary(metadata: Dictionary) -> String:
+    var week := maxi(1, int(metadata.get("week", metadata.get("day", 1))))
+    var owner_name := str(metadata.get("owner_name", "")).strip_edges()
+    var owner_title := _owner_title_name(str(metadata.get("owner_title", "dominus")))
+    var owner_line := "%s %s" % [owner_title, owner_name] if not owner_name.is_empty() else owner_title
+    return "%s\nSemana %d de 16 — Capítulo %d: %s\nPróximo combate: %s" % [
+        owner_line,
+        week,
+        _chapter_number_for_week(week),
+        _chapter_name_for_week(week),
+        _battle_name_for_week(week)
+    ]
+
+func _owner_title_name(title_id: String) -> String:
+    return "Domina" if title_id.to_lower() == "domina" else "Dominus"
+
+func _chapter_number_for_week(week: int) -> int:
+    if week >= 12:
+        return 3
+    if week >= 6:
+        return 2
+    return 1
+
+func _chapter_name_for_week(week: int) -> String:
+    if week >= 12:
+        return "El nombre del ludus"
+    if week >= 6:
+        return "Sangre y reputación"
+    return "Un ludus en ruinas"
+
+func _battle_name_for_week(week: int) -> String:
+    if week % 4 == 0:
+        return "Torneo oficial de la arena"
+    if week % 3 == 0:
+        return "Cacería de bestias del anfiteatro"
+    if week % 2 == 0:
+        return "Combate clandestino del bajo mundo"
+    return "Exhibición semanal del ludus"
 
 func _continue_campaign() -> void:
     continue_button.disabled = true
