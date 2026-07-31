@@ -10,6 +10,8 @@ var strength: int = 5
 var agility: int = 5
 var endurance: int = 5
 var intelligence: int = 5
+var technique: int = 5
+var health: int = 50
 var loyalty: int = 50
 var morale: int = 50
 var fatigue: int = 0
@@ -32,9 +34,19 @@ func _init(data: Dictionary = {}) -> void:
     agility = int(data.get("agility", 5))
     endurance = int(data.get("endurance", 5))
     intelligence = int(data.get("intelligence", 5))
+    technique = int(data.get("technique", 5))
+    health = maxi(1, int(data.get("health", 50)))
     loyalty = int(data.get("loyalty", 50))
     morale = int(data.get("morale", 50))
+    fatigue = clampi(int(data.get("fatigue", 0)), 0, 100)
+    training = maxi(0, int(data.get("training", 0)))
     traits.assign(data.get("traits", []))
+    equipped_weapon_id = str(data.get("equipped_weapon_id", ""))
+    equipped_armor_id = str(data.get("equipped_armor_id", ""))
+    equipped_shield_id = str(data.get("equipped_shield_id", ""))
+    injury_severity = clampi(int(data.get("injury_severity", 0)), 0, 3)
+    injury_days = maxi(0, int(data.get("injury_days", 0)))
+    injury_name = str(data.get("injury_name", ""))
 
 func assign_job(new_job: String) -> void:
     if injury_days > 0 and new_job != "idle":
@@ -83,6 +95,14 @@ func process_day() -> Dictionary:
     fatigue = clampi(fatigue, 0, 100)
     return result
 
+func apply_growth(growth: Dictionary) -> void:
+    strength += int(growth.get("strength", 0))
+    agility += int(growth.get("agility", 0))
+    endurance += int(growth.get("endurance", 0))
+    intelligence += int(growth.get("intelligence", 0))
+    technique += int(growth.get("technique", 0))
+    health = maxi(1, health + int(growth.get("health", 0)))
+
 func apply_injury(name_value: String, severity: int, days: int) -> void:
     injury_name = name_value
     injury_severity = clampi(severity, 1, 3)
@@ -94,7 +114,7 @@ func is_available_for_combat() -> bool:
 
 func get_max_health() -> int:
     var penalty := injury_severity * 8
-    return maxi(30, 70 + endurance * 8 + strength * 2 - penalty)
+    return maxi(20, health + endurance * 2 - penalty)
 
 func get_max_energy() -> int:
     var fatigue_penalty := floori(float(fatigue) / 5.0)
@@ -102,10 +122,10 @@ func get_max_energy() -> int:
     return maxi(20, 55 + endurance * 5 + agility * 3 - penalty)
 
 func get_base_attack() -> int:
-    return maxi(1, strength * 2 + agility - injury_severity * 3)
+    return maxi(1, strength * 2 + agility + floori(float(technique) / 2.0) - injury_severity * 3)
 
 func get_base_defense() -> int:
-    return maxi(1, endurance + agility - injury_severity * 2)
+    return maxi(1, endurance + agility + floori(float(technique) / 2.0) - injury_severity * 2)
 
 func get_injury_summary() -> String:
     if injury_days <= 0:
