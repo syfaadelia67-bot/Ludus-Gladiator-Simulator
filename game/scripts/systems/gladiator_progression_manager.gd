@@ -16,6 +16,20 @@ const LEGACY_TECHNIQUE_ALIASES := {
     "deep_reserves":"throw_sand",
     "brutal_finish":"opportunity_strike"
 }
+const TACTICAL_CONDITION_ALIASES := {
+    "target_defending":"target_guarding",
+    "after_dodge_or_block":"after_defense"
+}
+const VALID_TACTICAL_CONDITIONS := [
+    "always",
+    "opening",
+    "target_vulnerable",
+    "target_guarding",
+    "target_low_energy",
+    "self_low_health",
+    "self_low_energy",
+    "after_defense"
+]
 
 var records: Dictionary = {}
 var retired_gladiators: Array[Dictionary] = []
@@ -99,6 +113,10 @@ func canonical_specialization_id(value: String) -> String:
     var canonical := str(SPECIALIZATION_ALIASES.get(value, value))
     return canonical if specializations.has(canonical) else DEFAULT_SPECIALIZATION
 
+func canonical_tactical_condition(value: String) -> String:
+    var canonical := str(TACTICAL_CONDITION_ALIASES.get(value, value))
+    return canonical if VALID_TACTICAL_CONDITIONS.has(canonical) else "always"
+
 func set_specialization(person_id: String, specialization: String) -> bool:
     var canonical := canonical_specialization_id(specialization)
     var person = RosterManager.get_person(person_id)
@@ -126,7 +144,7 @@ func upgrade_ability(person_id: String, ability_id: String) -> bool:
             return false
     var learned: Dictionary = record.get("abilities", {})
     var current_level := int(learned.get(ability_id, 0))
-    var max_level := int(ability.get("max_level", 2))
+    var max_level := int(ability.get("demo_max_level", ability.get("max_level", 2)))
     if current_level >= max_level:
         return false
     learned[ability_id] = current_level + 1
@@ -150,18 +168,14 @@ func get_available_ability_ids(person_id: String) -> Array[String]:
         var ability: Dictionary = abilities[ability_id]
         if str(ability.get("category", "basic")) == "basic" or str(ability.get("specialization", "")) == specialization:
             result.append(str(ability_id))
+    result.sort()
     return result
 
 func set_tactical_plan(person_id: String, plan: Array) -> bool:
     var record := ensure_record(person_id)
-    var sanitized: Array = []
-    for raw_order in plan:
-        if not raw_order is Dictionary or sanitized.size() >= 4:
-            continue
-        var ability_id := str(raw_order.get("ability_id", ""))
-        if get_ability_level(person_id, ability_id) <= 0:
-            continue
-        sanitized.append({"ability_id":ability_id, "condition":str(raw_order.get("condition", "always"))})
+    var sanitized := _sanitize_tactical_plan(person_id, plan)
+    if sanitized.size() != mini(plan.size(), 4):
+        return false
     record["tactical_plan"] = sanitized
     progression_changed.emit()
     return true
@@ -211,14 +225,7 @@ func get_market_value(person_id: String) -> int:
     var person = RosterManager.get_person(person_id)
     if person == null:
         return 0
-    var record := ensure_record(person_id)
-    var base := (person.strength + person.agility + person.endurance + person.intelligence + person.technique) * 12
-    base += int(record.get("level", 1)) * 45 + int(record.get("fame", 0)) * 4 + int(record.get("wins", 0)) * 18
-    if person.injury_days > 0:
-        base = int(base * 0.75)
-    if str(record.get("career_state", "activo")) == "declive":
-        base = int(base * 0.80)
-    return maxi(50, base)
+    return MarketValuation.value_person(person, get_record(person_id))
 
 func get_specialization_name(specialization: String) -> String:
     var canonical := canonical_specialization_id(specialization)
@@ -228,6 +235,7 @@ func get_specialization_ids() -> Array[String]:
     var ids: Array[String] = []
     for specialization in specializations.keys():
         ids.append(str(specialization))
+    ids.sort()
     return ids
 
 func get_technique_ids() -> Array[String]:
@@ -249,31 +257,70 @@ func import_state(data: Dictionary) -> void:
     records = data.get("records", {}).duplicate(true)
     retired_gladiators.assign(data.get("retired_gladiators", []))
     for person_id in records.keys():
-        records[person_id] = _migrate_record(records[person_id])
+        records[person_id] = _migrate_record(records[person_id], str(person_id))
     _ensure_roster_records()
     progression_changed.emit()
 
 func _new_record() -> Dictionary:
     return {"level":1, "experience":0, "specialization":DEFAULT_SPECIALIZATION, "fame":0, "wins":0, "losses":0, "age_days":0, "career_state":"activo", "skill_points":1, "abilities":{}, "tactical_plan":[]}
 
-func _migrate_record(raw_record: Dictionary) -> Dictionary:
+func _migrate_record(raw_record: Dictionary, person_id: String = "") -> Dictionary:
     var record := raw_record.duplicate(true)
     record["level"] = clampi(int(record.get("level", 1)), 1, DEMO_MAX_LEVEL)
+    record["experience"] = maxi(0, int(record.get("experience", 0)))
     record["specialization"] = canonical_specialization_id(str(record.get("specialization", DEFAULT_SPECIALIZATION)))
-    if not record.has("skill_points"):
-        record["skill_points"] = maxi(0, int(record.get("technique_points", 0)))
-    if not record.has("abilities"):
-        var migrated: Dictionary = {}
+
+    var migrated: Dictionary = {}
+    var existing_abilities: Variant = record.get("abilities", null)
+    if existing_abilities is Dictionary:
+        for ability_id in existing_abilities.keys():
+            var canonical_id := str(LEGACY_TECHNIQUE_ALIASES.get(str(ability_id), str(ability_id)))
+            if not abilities.has(canonical_id):
+                continue
+            var max_level := int(abilities[canonical_id].get("demo_max_level", 2))
+            migrated[canonical_id] = clampi(int(existing_abilities[ability_id]), 1, max_level)
+    else:
         for legacy_id in record.get("techniques", []):
             var ability_id := str(LEGACY_TECHNIQUE_ALIASES.get(str(legacy_id), str(legacy_id)))
             if abilities.has(ability_id):
                 migrated[ability_id] = 1
-        record["abilities"] = migrated
-    if not record.has("tactical_plan"):
-        record["tactical_plan"] = []
+    record["abilities"] = migrated
+
+    var spent_points := 0
+    for rank in migrated.values():
+        spent_points += int(rank)
+    var earned_points := int(record.get("level", 1))
+    if record.has("skill_points"):
+        record["skill_points"] = clampi(int(record.get("skill_points", 0)), 0, maxi(0, earned_points - spent_points))
+    else:
+        record["skill_points"] = maxi(0, earned_points - spent_points)
+
+    var plan_source: Array = record.get("tactical_plan", []) if record.get("tactical_plan", []) is Array else []
+    record["tactical_plan"] = _sanitize_tactical_plan_from_abilities(migrated, plan_source)
+    record["fame"] = maxi(0, int(record.get("fame", 0)))
+    record["wins"] = maxi(0, int(record.get("wins", 0)))
+    record["losses"] = maxi(0, int(record.get("losses", 0)))
+    record["age_days"] = maxi(0, int(record.get("age_days", 0)))
+    record["career_state"] = str(record.get("career_state", "activo"))
     record.erase("technique_points")
     record.erase("techniques")
     return record
+
+func _sanitize_tactical_plan(person_id: String, plan: Array) -> Array:
+    return _sanitize_tactical_plan_from_abilities(ensure_record(person_id).get("abilities", {}), plan)
+
+func _sanitize_tactical_plan_from_abilities(learned: Dictionary, plan: Array) -> Array:
+    var sanitized: Array = []
+    var seen: Dictionary = {}
+    for raw_order in plan:
+        if not raw_order is Dictionary or sanitized.size() >= 4:
+            continue
+        var ability_id := str(raw_order.get("ability_id", ""))
+        if int(learned.get(ability_id, 0)) <= 0 or seen.has(ability_id):
+            continue
+        seen[ability_id] = true
+        sanitized.append({"ability_id":ability_id, "condition":canonical_tactical_condition(str(raw_order.get("condition", "always")))})
+    return sanitized
 
 func _resolve_level_ups(person_id: String, record: Dictionary) -> void:
     var leveled := false
