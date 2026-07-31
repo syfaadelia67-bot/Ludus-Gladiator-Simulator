@@ -1,6 +1,7 @@
 extends Node
 
 const TUTORIAL_PATH := "res://scripts/ui/tutorial_controller.gd"
+const OWNER_PATH := "res://scripts/systems/ludus_owner_manager.gd"
 const START_SCREEN_PATH := "res://scripts/ui/start_screen_controller.gd"
 const RETURN_MENU_PATH := "res://scripts/ui/main_menu_return_controller.gd"
 const PROJECT_PATH := "res://project.godot"
@@ -12,7 +13,19 @@ func _ready() -> void:
         "resolve_event",
         "weekly_combat",
         "GameState.week_advanced",
-        "CombatManager.combat_finished"
+        "CombatManager.combat_finished",
+        "func _restore_progress()",
+        "LudusOwnerManager.get_tutorial_progress()",
+        "func _persist_progress()",
+        "LudusOwnerManager.update_tutorial_progress(current_step, completed_objectives)"
+    ])
+    _assert_file_contains(OWNER_PATH, [
+        "tutorial_progress",
+        "current_step",
+        "completed_objectives",
+        "func update_tutorial_progress",
+        "func get_tutorial_progress",
+        "TUTORIAL_STEP_COUNT := 5"
     ])
     _assert_file_contains(START_SCREEN_PATH, [
         "func show_main_menu()",
