@@ -5,7 +5,7 @@ signal load_completed(path: String)
 signal save_failed(reason: String)
 signal load_failed(reason: String)
 
-const SAVE_VERSION := 10
+const SAVE_VERSION := 11
 const SAVE_PATH := "user://ludus_save.json"
 const BACKUP_PATH := "user://ludus_save.backup.json"
 const TEMP_PATH := "user://ludus_save.tmp.json"
@@ -159,7 +159,7 @@ func _build_payload() -> Dictionary:
         "saved_at_unix": int(Time.get_unix_time_from_system()),
         "game_state":{"day":GameState.day,"denarii":GameState.denarii,"food":GameState.food,"ore":GameState.ore,"reputation":GameState.reputation},
         "roster":{"people":people_data,"capacity":RosterManager.capacity,"security_score":RosterManager.security_score,"intelligence_points":RosterManager.intelligence_points},
-        "estate":{"levels":EstateManager.levels.duplicate(true)},
+        "estate":{"levels":EstateManager.export_levels()},
         "equipment":{"inventory":EquipmentManager.inventory.duplicate(true),"serial":EquipmentManager.serial},
         "market":{"offers":MarketManager.offers.duplicate(true),"serial":MarketManager._serial},
         "rivals":{"entries":RivalManager.rivals.duplicate(true),"hostility_heat":RivalManager.hostility_heat,"operations_completed":RivalManager.operations_completed,"operations_detected":RivalManager.operations_detected},
@@ -202,9 +202,9 @@ func _apply_payload(data: Dictionary) -> bool:
 
     var loaded_levels: Variant = estate_data.get("levels", {})
     if loaded_levels is Dictionary:
-        for building_id in EstateManager.BUILDINGS.keys():
-            EstateManager.levels[building_id] = clampi(int(loaded_levels.get(building_id, 1)), 1, int(EstateManager.BUILDINGS[building_id].max_level))
-    EstateManager._apply_global_effects()
+        EstateManager.import_levels(loaded_levels)
+    else:
+        EstateManager.import_levels({})
 
     EquipmentManager.inventory.assign(equipment_data.get("inventory", []))
     EquipmentManager.serial = maxi(0, int(equipment_data.get("serial", 0)))
@@ -235,7 +235,6 @@ func _apply_payload(data: Dictionary) -> bool:
 
     GameState.resources_changed.emit()
     RosterManager.roster_changed.emit()
-    EstateManager.estate_changed.emit()
     EquipmentManager.inventory_changed.emit()
     MarketManager.market_changed.emit()
     RivalManager.rivals_changed.emit()
