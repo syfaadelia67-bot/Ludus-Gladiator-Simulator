@@ -5,6 +5,7 @@ signal daily_report(report: Dictionary)
 signal week_advanced(week: int)
 signal weekly_report(report: Dictionary)
 signal resources_changed
+signal campaign_action_blocked(reason: String)
 
 const DAYS_PER_WEEK := 7
 
@@ -20,6 +21,9 @@ func get_week() -> int:
     return maxi(1, day)
 
 func advance_week() -> void:
+    if CampaignManager.campaign_over:
+        campaign_action_blocked.emit("La campaña terminó. La partida permanece disponible en modo de consulta.")
+        return
     var report := {
         "ore":0,
         "food":0,
