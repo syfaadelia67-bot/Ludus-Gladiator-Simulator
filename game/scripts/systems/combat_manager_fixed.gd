@@ -189,12 +189,12 @@ func simulate_duel(gladiator_id: String, tactic: String = "balanced") -> Diction
     return last_result
 
 func _build_combatant(person, tactic: String) -> Dictionary:
-    var equipment := EquipmentManager.get_equipped_stats(person)
-    var progression := GladiatorProgressionManager.get_modifiers(person.id)
-    var record := GladiatorProgressionManager.get_record(person.id)
-    var attack := person.get_base_attack() + int(equipment.get("power", 0)) + int(progression.get("attack_bonus", 0))
-    var defense := person.get_base_defense() + int(equipment.get("defense", 0)) + int(progression.get("defense_bonus", 0))
-    var accuracy := 55 + person.agility * 3 + person.technique + int(progression.get("accuracy_bonus", 0))
+    var equipment: Dictionary = EquipmentManager.get_equipped_stats(person)
+    var progression: Dictionary = GladiatorProgressionManager.get_modifiers(person.id)
+    var record: Dictionary = GladiatorProgressionManager.get_record(person.id)
+    var attack: int = int(person.get_base_attack()) + int(equipment.get("power", 0)) + int(progression.get("attack_bonus", 0))
+    var defense: int = int(person.get_base_defense()) + int(equipment.get("defense", 0)) + int(progression.get("defense_bonus", 0))
+    var accuracy: int = 55 + int(person.agility) * 3 + int(person.technique) + int(progression.get("accuracy_bonus", 0))
     if tactic == "aggressive":
         attack = int(attack * 1.18)
         defense = int(defense * 0.86)
