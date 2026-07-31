@@ -55,7 +55,7 @@ const OBJECTIVES := [
     {"id":"trained_roster","chapter":"blood_reputation","title":"Escuela de gladiadores","description":"Tené 3 gladiadores formados.","type":"gladiators","target":3,"reward_denarii":220,"reward_reputation":4},
     {"id":"six_victories","chapter":"name_of_ludus","title":"Nombre en la arena","description":"Ganá 6 combates durante la demo.","type":"wins","target":6,"reward_denarii":300,"reward_reputation":5},
     {"id":"provincial_house","chapter":"name_of_ludus","title":"Prestigio provincial","description":"Alcanzá 25 de reputación.","type":"reputation","target":25,"reward_denarii":350,"reward_reputation":5},
-    {"id":"demo_finale","chapter":"name_of_ludus","title":"Final de campaña","description":"Llegá a la semana 16 con al menos 6 victorias.","type":"demo_finale","target":1,"reward_denarii":500,"reward_reputation":8}
+    {"id":"demo_finale","chapter":"name_of_ludus","title":"Final de campaña","description":"Resolvé el combate de la semana 16 con al menos 6 victorias acumuladas.","type":"demo_finale","target":1,"reward_denarii":500,"reward_reputation":8}
 ]
 
 var current_rank_index: int = 0
@@ -66,6 +66,7 @@ var completed_objectives: Array[String] = []
 var campaign_over: bool = false
 var victory_achieved: bool = false
 var defeat_reason: String = ""
+var final_combat_resolved: bool = false
 
 func _ready() -> void:
     CombatManager.combat_finished.connect(_on_combat_finished)
@@ -77,7 +78,10 @@ func _on_combat_finished(result: Dictionary) -> void:
         total_wins += 1
     else:
         total_losses += 1
+    if GameState.get_week() >= DEMO_FINAL_WEEK:
+        final_combat_resolved = true
     evaluate_progress()
+    _evaluate_campaign_finale()
 
 func _on_week_advanced(_week: int) -> void:
     evaluate_progress()
@@ -89,11 +93,19 @@ func evaluate_progress() -> void:
     _evaluate_chapter()
     _evaluate_rank()
     _evaluate_objectives()
-    if GameState.get_week() >= DEMO_FINAL_WEEK and total_wins >= 6:
+    campaign_changed.emit()
+
+func _evaluate_campaign_finale() -> void:
+    if campaign_over or not final_combat_resolved or GameState.get_week() < DEMO_FINAL_WEEK:
+        return
+    if total_wins >= 6:
         campaign_over = true
         victory_achieved = true
-        campaign_finished.emit(true, "El ludus completó la campaña de la demo y aseguró un lugar entre las casas provinciales.")
-    campaign_changed.emit()
+        defeat_reason = ""
+        campaign_finished.emit(true, "El ludus completó el combate final de la demo y aseguró un lugar entre las casas provinciales.")
+        campaign_changed.emit()
+        return
+    _set_defeat("La casa perdió su última oportunidad de alcanzar las seis victorias necesarias durante el combate final.")
 
 func _evaluate_chapter() -> void:
     var resolved_index := 0
@@ -151,7 +163,7 @@ func _objective_progress(objective: Dictionary) -> int:
                 total += EstateManager.get_level(building_id)
             return total
         "demo_finale":
-            return 1 if GameState.get_week() >= DEMO_FINAL_WEEK and total_wins >= 6 else 0
+            return 1 if final_combat_resolved and GameState.get_week() >= DEMO_FINAL_WEEK and total_wins >= 6 else 0
         _: return 0
 
 func _evaluate_defeat() -> void:
@@ -161,8 +173,6 @@ func _evaluate_defeat() -> void:
         _set_defeat("Los acreedores liquidaron el ludus tras una insolvencia prolongada.")
     elif RosterManager.get_people().is_empty():
         _set_defeat("El ludus se quedó sin personal.")
-    elif GameState.get_week() > DEMO_FINAL_WEEK and total_wins < 6:
-        _set_defeat("La casa llegó al final de la campaña sin las victorias necesarias para consolidarse.")
 
 func _set_defeat(reason: String) -> void:
     campaign_over = true
@@ -213,7 +223,8 @@ func get_summary() -> Dictionary:
         "campaign_over":campaign_over,
         "victory":victory_achieved,
         "defeat_reason":defeat_reason,
-        "final_week":DEMO_FINAL_WEEK
+        "final_week":DEMO_FINAL_WEEK,
+        "final_combat_resolved":final_combat_resolved
     }
 
 func export_state() -> Dictionary:
@@ -225,7 +236,8 @@ func export_state() -> Dictionary:
         "completed_objectives":completed_objectives.duplicate(),
         "campaign_over":campaign_over,
         "victory":victory_achieved,
-        "defeat_reason":defeat_reason
+        "defeat_reason":defeat_reason,
+        "final_combat_resolved":final_combat_resolved
     }
 
 func import_state(data: Dictionary) -> void:
@@ -237,5 +249,6 @@ func import_state(data: Dictionary) -> void:
     campaign_over = bool(data.get("campaign_over", false))
     victory_achieved = bool(data.get("victory", false))
     defeat_reason = str(data.get("defeat_reason", ""))
+    final_combat_resolved = bool(data.get("final_combat_resolved", false))
     _evaluate_chapter()
     campaign_changed.emit()
