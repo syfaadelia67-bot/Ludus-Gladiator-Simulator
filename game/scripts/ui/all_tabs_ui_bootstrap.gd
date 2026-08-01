@@ -28,7 +28,6 @@ func _attach_when_ready() -> void:
         var tabs := root.find_child("Tabs", true, false)
         if tabs is TabContainer:
             _attach_panels(tabs)
-            _attach_arena_navigation(tabs)
             _attach_arena_controller(tabs)
             call_deferred("_repair_arena_navigation", tabs)
             return
@@ -60,41 +59,21 @@ func _attach_arena_controller(tabs: TabContainer) -> void:
     arena.add_child(controller)
     controller.call_deferred("setup", arena)
 
-func _attach_arena_navigation(tabs: TabContainer) -> void:
-    var arena := tabs.get_node_or_null("Arena") as VBoxContainer
-    if arena == null or arena.get_node_or_null("ArenaNavigation") != null:
-        return
-    var navigation := HBoxContainer.new()
-    navigation.name = "ArenaNavigation"
-    var back_button := Button.new()
-    back_button.name = "BackToPersonal"
-    back_button.text = "← Volver a Personal"
-    back_button.tooltip_text = "Salir de la Arena y regresar a la administración del ludus."
-    back_button.pressed.connect(_go_to_personal.bind(tabs))
-    navigation.add_child(back_button)
-    arena.add_child(navigation)
-    arena.move_child(navigation, 0)
-
 func _repair_arena_navigation(tabs: TabContainer) -> void:
     await get_tree().process_frame
     var arena := tabs.get_node_or_null("Arena") as VBoxContainer
     if arena == null:
         return
-    for child in arena.get_children():
-        if child is HBoxContainer and child.name == "ArenaNavigation":
-            for control in child.get_children():
-                if control is Button and str(control.text).contains("Volver a Personal"):
-                    var callback := _go_to_personal.bind(tabs)
-                    if not control.pressed.is_connected(callback):
-                        control.pressed.connect(callback)
+    var navigation := arena.get_node_or_null("ArenaNavigation") as HBoxContainer
+    if navigation == null:
+        return
+    for control in navigation.get_children():
+        if control is Button and str(control.text).contains("Volver"):
+            control.text = "← Volver a la finca"
+            control.tooltip_text = "Salir de la Arena y regresar a la finca."
+            var callback := _go_to_finca
+            if not control.pressed.is_connected(callback):
+                control.pressed.connect(callback)
 
-func _go_to_personal(tabs: TabContainer) -> void:
-    var personal_index := _find_tab_index(tabs, "Personal")
-    tabs.current_tab = personal_index if personal_index >= 0 else 0
-
-func _find_tab_index(tabs: TabContainer, tab_name: String) -> int:
-    for index in range(tabs.get_tab_count()):
-        var child := tabs.get_child(index)
-        if child != null and child.name == tab_name:
-            return index
-    return -1
+func _go_to_finca() -> void:
+    FincaHubController.show_finca()
