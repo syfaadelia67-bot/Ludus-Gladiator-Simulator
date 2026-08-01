@@ -19,6 +19,11 @@ const MAX_ATTACH_ATTEMPTS := 30
 func _ready() -> void:
     _attach_when_ready()
 
+func _unhandled_key_input(event: InputEvent) -> void:
+    if event.is_action_pressed("ui_cancel") and FincaHubController.get_current_system_id() == "arena":
+        _go_to_finca()
+        get_viewport().set_input_as_handled()
+
 func _attach_when_ready() -> void:
     for _attempt in range(MAX_ATTACH_ATTEMPTS):
         await get_tree().process_frame
@@ -66,14 +71,40 @@ func _repair_arena_navigation(tabs: TabContainer) -> void:
         return
     var navigation := arena.get_node_or_null("ArenaNavigation") as HBoxContainer
     if navigation == null:
-        return
-    for control in navigation.get_children():
-        if control is Button and str(control.text).contains("Volver"):
-            control.text = "← Volver a la finca"
-            control.tooltip_text = "Salir de la Arena y regresar a la finca."
-            var callback := _go_to_finca
-            if not control.pressed.is_connected(callback):
-                control.pressed.connect(callback)
+        navigation = HBoxContainer.new()
+        navigation.name = "ArenaNavigation"
+        arena.add_child(navigation)
+        arena.move_child(navigation, 0)
+
+    var finca_button := navigation.get_node_or_null("BackToFinca") as Button
+    if finca_button == null:
+        finca_button = Button.new()
+        finca_button.name = "BackToFinca"
+        navigation.add_child(finca_button)
+        navigation.move_child(finca_button, 0)
+    finca_button.text = "← Volver a la finca"
+    finca_button.tooltip_text = "Salir de la Arena y regresar al centro del ludus. También podés usar Esc."
+    if not finca_button.pressed.is_connected(_go_to_finca):
+        finca_button.pressed.connect(_go_to_finca)
+
+    var personal_button := navigation.get_node_or_null("BackToPersonal") as Button
+    if personal_button == null:
+        for control in navigation.get_children():
+            if control is Button and control != finca_button and str(control.text).contains("Volver"):
+                personal_button = control
+                personal_button.name = "BackToPersonal"
+                break
+    if personal_button == null:
+        personal_button = Button.new()
+        personal_button.name = "BackToPersonal"
+        navigation.add_child(personal_button)
+    personal_button.text = "Volver a Personal"
+    personal_button.tooltip_text = "Salir de la Arena y revisar el gladiador seleccionado."
+    if not personal_button.pressed.is_connected(_go_to_personal):
+        personal_button.pressed.connect(_go_to_personal)
 
 func _go_to_finca() -> void:
     FincaHubController.show_finca()
+
+func _go_to_personal() -> void:
+    FincaHubController.open_system("personal")
