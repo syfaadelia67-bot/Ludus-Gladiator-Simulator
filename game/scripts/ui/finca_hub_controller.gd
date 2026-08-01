@@ -11,6 +11,7 @@ const SYSTEM_TABS := {
     "mercado": "Mercado",
     "forja": "Forja",
     "equipamiento": "Equipamiento",
+    "eventos": "Eventos",
     "arena": "Arena",
     "campana": "Campaña"
 }
