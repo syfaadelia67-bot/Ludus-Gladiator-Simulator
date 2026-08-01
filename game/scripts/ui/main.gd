@@ -40,7 +40,7 @@ var gladiator_ids: Array[String] = []
 var tactic_ids: Array[String] = []
 
 func _ready() -> void:
-    advance_button.pressed.connect(_on_advance_day)
+    advance_button.pressed.connect(_on_advance_week)
     refresh_market_button.pressed.connect(_on_refresh_market)
     roster_list.item_selected.connect(_on_person_selected)
     market_list.item_selected.connect(_on_offer_selected)
@@ -52,8 +52,8 @@ func _ready() -> void:
     craft_button.pressed.connect(_on_craft_item)
     start_duel_button.pressed.connect(_on_start_duel)
     GameState.resources_changed.connect(_refresh_resources)
-    GameState.day_advanced.connect(_on_day_advanced)
-    GameState.daily_report.connect(_on_daily_report)
+    GameState.week_advanced.connect(_on_week_advanced)
+    GameState.weekly_report.connect(_on_weekly_report)
     RosterManager.roster_changed.connect(_refresh_roster)
     MarketManager.market_changed.connect(_refresh_market)
     MarketManager.purchase_completed.connect(_on_purchase_completed)
@@ -88,8 +88,8 @@ func _populate_tactics() -> void:
     for tactic_id in tactic_ids:
         tactic_selector.add_item(CombatManager.get_tactic_name(tactic_id))
 
-func _on_advance_day() -> void:
-    GameState.advance_day()
+func _on_advance_week() -> void:
+    GameState.advance_week()
 
 func _on_refresh_market() -> void:
     MarketManager.refresh_market(true)
@@ -144,7 +144,7 @@ func _on_start_duel() -> void:
     var fighter_id := gladiator_ids[gladiator_selector.selected]
     var tactic_id := tactic_ids[tactic_selector.selected] if tactic_selector.selected >= 0 else "balanced"
     start_duel_button.disabled = true
-    arena_result.text = "El combate está comenzando..."
+    arena_result.text = "El combate semanal está comenzando..."
     CombatManager.simulate_duel(fighter_id, tactic_id)
     start_duel_button.disabled = false
 
@@ -176,7 +176,7 @@ func _on_combat_finished(result: Dictionary) -> void:
     combat_log.append_text("[b]Crónica de la arena[/b]\n")
     for entry in result.get("log", []):
         combat_log.append_text("%s\n" % str(entry))
-    activity_log.append_text("\n[color=gold]%s terminó un duelo en %d rondas.[/color]" % [result.get("fighter", "El gladiador"), int(result.get("rounds", 0))])
+    activity_log.append_text("\n[color=gold]%s terminó el combate semanal en %d rondas.[/color]" % [result.get("fighter", "El gladiador"), int(result.get("rounds", 0))])
 
 func _set_bar(bar: ProgressBar, value: int, maximum: int) -> void:
     bar.max_value = maxi(1, maximum)
@@ -190,14 +190,15 @@ func _on_action_failed(reason: String) -> void:
 func _append_warning(text: String) -> void:
     activity_log.append_text("\n[color=orange]%s[/color]" % text)
 
-func _on_day_advanced(day: int) -> void:
-    activity_log.append_text("\n\n[b]Día %d[/b]" % day)
+func _on_week_advanced(week: int) -> void:
+    activity_log.append_text("\n\n[b]Semana %d[/b]" % week)
 
-func _on_daily_report(report: Dictionary) -> void:
-    activity_log.append_text("\nMineral producido: %d" % int(report.get("ore", 0)))
+func _on_weekly_report(report: Dictionary) -> void:
+    activity_log.append_text("\nMineral producido durante la semana: %d" % int(report.get("ore", 0)))
     activity_log.append_text("\nSeguridad generada: %d" % int(report.get("security", 0)))
     activity_log.append_text("\nInformación obtenida: %d" % int(report.get("intel", 0)))
     activity_log.append_text("\nEntrenamiento total: %d" % int(report.get("training", 0)))
+    activity_log.append_text("\nComida consumida: %d" % int(report.get("food_consumed", 0)))
     for person_name_value in report.get("promotions", []):
         activity_log.append_text("\n[color=gold]%s completó su formación y ahora es gladiador.[/color]" % person_name_value)
 
