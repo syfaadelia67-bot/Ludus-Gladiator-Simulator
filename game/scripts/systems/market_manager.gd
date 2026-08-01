@@ -10,14 +10,12 @@ var offers: Array = []
 var refresh_cost: int = 25
 var offer_count: int = 4
 var _serial: int = 0
-
 var names := ["Aelia", "Brutus", "Caio", "Drusa", "Eira", "Felix", "Galla", "Hanno", "Iunia", "Kaeso", "Livia", "Nero"]
 var origins := ["Tracia", "Numidia", "Galia", "Hispania", "Britania", "Germania", "Siria", "Grecia", "Italia"]
 var trait_pool := ["beast_hunter", "arena_lover", "freedom_seeker", "protector", "vengeful", "popular", "superstitious", "mentor"]
 
 func _ready() -> void:
-    if offers.is_empty():
-        refresh_market(false)
+    if offers.is_empty(): refresh_market(false)
 
 func refresh_market(charge: bool = true) -> bool:
     if CampaignManager.campaign_over:
@@ -31,10 +29,23 @@ func refresh_market(charge: bool = true) -> bool:
         purchase_failed.emit("No hay suficientes denarios para renovar el mercado.")
         return false
     offers.clear()
-    for index in range(offer_count):
-        offers.append(_generate_offer(index))
+    offers.append_array(UniqueGladiatorManager.get_available_market_offers())
+    for index in range(offer_count): offers.append(_generate_offer(index))
     market_changed.emit()
     return true
+
+func sync_unique_offers() -> void:
+    if not UniqueGladiatorManager.first_purchase_completed:
+        offers = UniqueGladiatorManager.get_initial_candidate_offers()
+        market_changed.emit()
+        return
+    var random_offers: Array = []
+    for offer in offers:
+        if offer is Dictionary and not bool(offer.get("unique", false)): random_offers.append(offer)
+    offers.clear()
+    offers.append_array(UniqueGladiatorManager.get_available_market_offers())
+    offers.append_array(random_offers)
+    market_changed.emit()
 
 func _generate_offer(index: int) -> Dictionary:
     _serial += 1
@@ -43,31 +54,15 @@ func _generate_offer(index: int) -> Dictionary:
     var role := "gladiator" if rng.randf() < 0.28 else "slave"
     var first_trait: String = trait_pool[rng.randi_range(0, trait_pool.size() - 1)]
     var second_trait := first_trait
-    while second_trait == first_trait:
-        second_trait = trait_pool[rng.randi_range(0, trait_pool.size() - 1)]
-    var offer := {
-        "id": "offer_%d" % _serial,
-        "name": names[rng.randi_range(0, names.size() - 1)],
-        "origin": origins[rng.randi_range(0, origins.size() - 1)],
-        "role": role,
-        "strength": rng.randi_range(3, 9),
-        "agility": rng.randi_range(3, 9),
-        "endurance": rng.randi_range(3, 9),
-        "intelligence": rng.randi_range(3, 9),
-        "technique": rng.randi_range(3, 9),
-        "health": rng.randi_range(45, 65) if role == "gladiator" else rng.randi_range(40, 58),
-        "loyalty": rng.randi_range(35, 75),
-        "traits": [first_trait, second_trait]
-    }
+    while second_trait == first_trait: second_trait = trait_pool[rng.randi_range(0, trait_pool.size() - 1)]
+    var offer := {"id":"offer_%d" % _serial,"name":names[rng.randi_range(0,names.size()-1)],"origin":origins[rng.randi_range(0,origins.size()-1)],"role":role,"strength":rng.randi_range(3,9),"agility":rng.randi_range(3,9),"endurance":rng.randi_range(3,9),"intelligence":rng.randi_range(3,9),"technique":rng.randi_range(3,9),"health":rng.randi_range(45,65) if role=="gladiator" else rng.randi_range(40,58),"loyalty":rng.randi_range(35,75),"traits":[first_trait,second_trait]}
     offer["price"] = MarketValuation.offer_value(offer)
     return offer
 
 func recalculate_offer_price(offer_id: String) -> int:
     var offer := get_offer(offer_id)
-    if offer.is_empty():
-        return 0
-    if bool(offer.get("unique", false)):
-        return int(offer.get("price", 0))
+    if offer.is_empty(): return 0
+    if bool(offer.get("unique", false)): return int(offer.get("price", 0))
     offer["price"] = MarketValuation.offer_value(offer)
     market_changed.emit()
     return int(offer["price"])
@@ -83,49 +78,43 @@ func buy_offer(offer_id: String) -> bool:
     if not RosterManager.has_capacity():
         purchase_failed.emit("Los barracones están completos.")
         return false
-
     var unique_id := str(offer.get("unique_gladiator_id", ""))
-    if not unique_id.is_empty() and not UniqueGladiatorManager.first_purchase_completed:
-        if str(UniqueGladiatorManager.get_state(unique_id).get("status", "")) != "initial_market":
-            purchase_failed.emit("Este gladiador único ya no está disponible.")
-            return false
-
+    var unique_status := str(UniqueGladiatorManager.get_state(unique_id).get("status", "")) if not unique_id.is_empty() else ""
+    if not unique_id.is_empty() and unique_status not in ["initial_market", "market"]:
+        purchase_failed.emit("Este gladiador único ya no está disponible.")
+        sync_unique_offers()
+        return false
     var price := int(offer.get("price", MarketValuation.offer_value(offer)))
     if not GameState.spend_denarii(price):
         purchase_failed.emit("No hay suficientes denarios.")
         return false
-
     var person_data := offer.duplicate(true)
     person_data.erase("price")
-    if not unique_id.is_empty():
-        person_data["id"] = unique_id
+    if not unique_id.is_empty(): person_data["id"] = unique_id
     var person = PERSON_SCRIPT.new(person_data)
     if not RosterManager.add_person(person):
         GameState.denarii += price
         GameState.resources_changed.emit()
         purchase_failed.emit("No se pudo incorporar al candidato.")
         return false
-
-    if not unique_id.is_empty() and not UniqueGladiatorManager.first_purchase_completed:
-        if not UniqueGladiatorManager.acquire_initial_gladiator(unique_id):
-            RosterManager.people.erase(person)
-            GameState.denarii += price
-            GameState.resources_changed.emit()
-            RosterManager.roster_changed.emit()
-            purchase_failed.emit("No se pudo confirmar la elección del primer gladiador.")
-            return false
-        refresh_market(false)
-    else:
-        offers.erase(offer)
-
+    var confirmed := true
+    if not unique_id.is_empty(): confirmed = UniqueGladiatorManager.acquire_initial_gladiator(unique_id) if unique_status == "initial_market" else UniqueGladiatorManager.acquire_market_gladiator(unique_id)
+    if not confirmed:
+        RosterManager.people.erase(person)
+        GameState.denarii += price
+        GameState.resources_changed.emit()
+        RosterManager.roster_changed.emit()
+        purchase_failed.emit("No se pudo confirmar la compra del gladiador único.")
+        return false
+    if unique_id.is_empty(): offers.erase(offer)
+    else: sync_unique_offers()
     purchase_completed.emit(person.display_name, price)
     market_changed.emit()
     return true
 
 func get_offer(offer_id: String) -> Dictionary:
     for offer in offers:
-        if str(offer.get("id", "")) == offer_id:
-            return offer
+        if str(offer.get("id", "")) == offer_id: return offer
     return {}
 
 func get_offers() -> Array:
