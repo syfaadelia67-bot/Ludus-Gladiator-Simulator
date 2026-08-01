@@ -34,6 +34,21 @@ func _run() -> void:
     await _wait_frames(1)
     assert(FincaHubController.get_current_system_id() == "finca", "Volver a la finca debe restaurar el hub.")
 
+    var building_list := FincaBuildingNavigationController.building_list
+    assert(building_list != null, "La Finca debe montar la lista de instalaciones.")
+    var forge_index := -1
+    for index in building_list.item_count:
+        if str(building_list.get_item_metadata(index)) == "forge":
+            forge_index = index
+            break
+    assert(forge_index >= 0, "La Finca debe exponer la Forja como instalación navegable.")
+    building_list.item_activated.emit(forge_index)
+    await _wait_frames(1)
+    assert(FincaHubController.get_current_system_id() == "forja", "Activar la Forja en Finca debe abrir su sistema.")
+    FincaReturnNavigationController._on_return_pressed()
+    await _wait_frames(1)
+    assert(FincaHubController.get_current_system_id() == "finca", "El retorno desde una instalación debe volver a Finca.")
+
     var main_scene := get_tree().current_scene
     var close_week := main_scene.get_node_or_null("Margin/VBox/TopButtons/AdvanceDay") as Button
     assert(close_week != null, "Main debe exponer el botón Cerrar semana.")
