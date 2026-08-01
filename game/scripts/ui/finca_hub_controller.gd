@@ -17,6 +17,17 @@ const SYSTEM_TABS := {
 
 func _ready() -> void:
     process_mode = Node.PROCESS_MODE_ALWAYS
+    SaveManager.load_completed.connect(_on_campaign_entered)
+    NewCampaignCoordinator.campaign_reset_completed.connect(_on_campaign_entered)
+
+func _on_campaign_entered(_unused = null) -> void:
+    call_deferred("_open_finca_when_ready")
+
+func _open_finca_when_ready() -> void:
+    for _attempt in range(30):
+        if show_finca():
+            return
+        await get_tree().process_frame
 
 func show_finca() -> bool:
     var opened := open_system("finca")
