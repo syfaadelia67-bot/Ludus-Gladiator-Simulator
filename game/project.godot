@@ -83,6 +83,7 @@ FincaBuildingNavigationController="*res://scripts/ui/finca_building_navigation_c
 FincaReturnNavigationController="*res://scripts/ui/finca_return_navigation_controller.gd"
 GladiatorDossierPresenter="*res://scripts/ui/gladiator_dossier_presenter.gd"
 GladiatorCareerJournalPresenter="*res://scripts/ui/gladiator_career_journal_presenter.gd"
+GladiatorMedicalCarePresenter="*res://scripts/ui/gladiator_medical_care_presenter.gd"
 StartScreenController="*res://scripts/ui/start_screen_controller.gd"
 TutorialController="*res://scripts/ui/tutorial_controller.gd"
 MainMenuReturnController="*res://scripts/ui/main_menu_return_controller.gd"
