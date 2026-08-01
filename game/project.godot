@@ -78,6 +78,7 @@ CompletedCampaignReadOnlyPresenter="*res://scripts/ui/completed_campaign_read_on
 FincaHubController="*res://scripts/ui/finca_hub_controller.gd"
 FincaBuildingNavigationController="*res://scripts/ui/finca_building_navigation_controller.gd"
 FincaReturnNavigationController="*res://scripts/ui/finca_return_navigation_controller.gd"
+GladiatorDossierPresenter="*res://scripts/ui/gladiator_dossier_presenter.gd"
 StartScreenController="*res://scripts/ui/start_screen_controller.gd"
 TutorialController="*res://scripts/ui/tutorial_controller.gd"
 MainMenuReturnController="*res://scripts/ui/main_menu_return_controller.gd"
