@@ -59,4 +59,7 @@ func simulate_duel(gladiator_id: String, tactic: String = "balanced") -> Diction
     if CampaignManager.campaign_over:
         combat_failed.emit("La campaña terminó. La Arena está disponible solo para consultar resultados e historial.")
         return {}
+    if last_combat_day == GameState.day:
+        combat_failed.emit("El ludus ya disputó el combate de esta semana.")
+        return {}
     return super.simulate_duel(gladiator_id, tactic)
