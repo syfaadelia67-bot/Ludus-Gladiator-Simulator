@@ -4,7 +4,7 @@
 ;
 ; Format:
 ;   [section]
-;   param=value
+; param=value
 
 config_version=5
 
@@ -92,6 +92,7 @@ GladiatorCareerJournalPresenter="*res://scripts/ui/gladiator_career_journal_pres
 GladiatorMedicalCarePresenter="*res://scripts/ui/gladiator_medical_care_presenter.gd"
 GladiatorRivalryPresenter="*res://scripts/ui/gladiator_rivalry_presenter.gd"
 GladiatorTrainingPresenter="*res://scripts/ui/gladiator_training_presenter.gd"
+GladiatorTacticalPlanPresenter="*res://scripts/ui/gladiator_tactical_plan_presenter.gd"
 StartScreenController="*res://scripts/ui/start_screen_controller.gd"
 TutorialController="*res://scripts/ui/tutorial_controller.gd"
 MainMenuReturnController="*res://scripts/ui/main_menu_return_controller.gd"
