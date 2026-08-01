@@ -4,36 +4,36 @@ const STEPS := [
     {
         "id":"inspect_roster",
         "title":"1. Tu ludus",
-        "text":"Revisá la pestaña Personal para conocer gladiadores, esclavos, moral, lealtad y trabajos disponibles.",
-        "tab":"Personal",
-        "objective":"Abrí Personal y confirmá que revisaste la plantilla."
+        "text":"La finca es el centro del ludus. Desde aquí se abren el personal, el mercado, la forja, los eventos y la arena.",
+        "system":"finca",
+        "objective":"Desde la finca, abrí Personal para revisar gladiadores, esclavos, moral, lealtad y trabajos."
     },
     {
         "id":"advance_week",
         "title":"2. Preparación semanal",
         "text":"Asigná trabajos y entrenamiento antes de cerrar la semana. La producción y recuperación se calculan durante siete días internos.",
-        "tab":"Personal",
+        "system":"personal",
         "objective":"Cerrá una semana para procesar trabajos, consumo y recuperación."
     },
     {
         "id":"obtain_equipment",
         "title":"3. Mercado y equipo",
         "text":"Usá Mercado y Forja para reforzar al gladiador que representará al ludus.",
-        "tab":"Mercado",
+        "system":"mercado",
         "objective":"Comprá personal o fabricá una pieza de equipo."
     },
     {
         "id":"resolve_event",
         "title":"4. Evento de campaña",
         "text":"Cada semana presenta una decisión narrativa. Sus consecuencias pueden modificar recursos, relaciones y reputación.",
-        "tab":"Eventos",
+        "system":"eventos",
         "objective":"Resolvé una decisión narrativa semanal."
     },
     {
         "id":"weekly_combat",
         "title":"5. Combate semanal",
         "text":"Entrá en Arena, elegí gladiador, táctica y plan de habilidades. Siempre existe al menos una pelea por semana.",
-        "tab":"Arena",
+        "system":"arena",
         "objective":"Disputá la pelea programada de la semana."
     }
 ]
@@ -56,6 +56,7 @@ func _ready() -> void:
     EquipmentManager.craft_completed.connect(func(_name: String, _ore: int, _denarii: int): _mark_objective("obtain_equipment"))
     EventManager.events_changed.connect(_check_event_resolution)
     CombatManager.combat_finished.connect(func(_result: Dictionary): _mark_objective("weekly_combat"))
+    FincaHubController.system_opened.connect(_on_system_opened)
     call_deferred("_show_if_needed")
 
 func _show_if_needed() -> void:
@@ -140,29 +141,27 @@ func _render_step() -> void:
     title_label.text = str(step.get("title", "Tutorial"))
     body_label.text = str(step.get("text", ""))
     objective_label.text = ("✓ " if completed else "Objetivo: ") + str(step.get("objective", ""))
-    action_button.text = "Finalizar" if current_step == STEPS.size() - 1 else ("Continuar" if completed else "Confirmar revisión")
-    action_button.disabled = not completed and objective_id != "inspect_roster"
-    _focus_tab(str(step.get("tab", "")))
+    if objective_id == "inspect_roster" and not completed:
+        action_button.text = "Abrir Personal"
+        action_button.disabled = false
+    else:
+        action_button.text = "Finalizar" if current_step == STEPS.size() - 1 else "Continuar"
+        action_button.disabled = not completed
+    _focus_system(str(step.get("system", "")))
 
-func _focus_tab(tab_name: String) -> void:
-    if tab_name.is_empty():
+func _focus_system(system_id: String) -> void:
+    if system_id.is_empty():
         return
-    var scene := get_tree().current_scene
-    if scene == null:
-        return
-    var tabs := scene.find_child("Tabs", true, false) as TabContainer
-    if tabs == null:
-        return
-    for index in range(tabs.get_tab_count()):
-        var tab := tabs.get_child(index)
-        if tab != null and tab.name == tab_name:
-            tabs.current_tab = index
-            return
+    FincaHubController.open_system(system_id)
+
+func _on_system_opened(system_id: String) -> void:
+    if current_step < STEPS.size() and str(STEPS[current_step].get("id", "")) == "inspect_roster" and system_id == "personal":
+        _mark_objective("inspect_roster")
 
 func _on_action_pressed() -> void:
     var objective_id := str(STEPS[current_step].get("id", ""))
     if objective_id == "inspect_roster" and not bool(completed_objectives.get(objective_id, false)):
-        _mark_objective(objective_id)
+        FincaHubController.open_system("personal")
         return
     if not bool(completed_objectives.get(objective_id, false)):
         return
