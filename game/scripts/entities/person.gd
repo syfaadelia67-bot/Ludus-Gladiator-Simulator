@@ -21,6 +21,7 @@ var applied_trait_effects: Array[String] = []
 var equipped_weapon_id: String = ""
 var equipped_armor_id: String = ""
 var equipped_shield_id: String = ""
+# Kept as injury_days for save compatibility. In the weekly campaign it represents recovery weeks.
 var injury_severity: int = 0
 var injury_days: int = 0
 var injury_name: String = ""
@@ -59,8 +60,8 @@ func process_day() -> Dictionary:
     var result := {"ore": 0, "food": 0, "security": 0, "intel": 0, "training": 0, "personality": {}}
     if injury_days > 0:
         job = "idle"
-        var recovery_day_bonus := floori(float(EstateManager.get_recovery_bonus()) / 4.0)
-        injury_days = maxi(0, injury_days - 1 - recovery_day_bonus)
+        var recovery_week_bonus := floori(float(EstateManager.get_recovery_bonus()) / 4.0)
+        injury_days = maxi(0, injury_days - 1 - recovery_week_bonus)
         fatigue = maxi(0, fatigue - 10 - EstateManager.get_recovery_bonus())
         morale = mini(100, morale + 3)
         if injury_days == 0:
@@ -105,10 +106,10 @@ func apply_growth(growth: Dictionary) -> void:
     technique += int(growth.get("technique", 0))
     health = maxi(1, health + int(growth.get("health", 0)))
 
-func apply_injury(name_value: String, severity: int, days: int) -> void:
+func apply_injury(name_value: String, severity: int, recovery_weeks: int) -> void:
     injury_name = name_value
     injury_severity = clampi(severity, 1, 3)
-    injury_days = maxi(1, days)
+    injury_days = maxi(1, recovery_weeks)
     job = "idle"
 
 func is_available_for_combat() -> bool:
@@ -132,7 +133,7 @@ func get_base_defense() -> int:
 func get_injury_summary() -> String:
     if injury_days <= 0:
         return "Sin heridas"
-    return "%s — %d día(s)" % [injury_name, injury_days]
+    return "%s · gravedad %d · %d semana(s)" % [injury_name, injury_severity, injury_days]
 
 func summary() -> String:
     return "%s | %s | trabajo: %s | lealtad: %d | moral: %d | fatiga: %d | %s" % [
