@@ -13,15 +13,12 @@ func _ready() -> void:
     MarketManager.market_changed.connect(func(): economy_balance_changed.emit())
 
 func get_audit() -> Dictionary:
-    var fixed_cost := EconomyManager.get_daily_fixed_costs()
-    var sponsor_income := 0
-    for contract in EconomyManager.active_contracts:
-        sponsor_income += int(contract.get("daily_income", 0))
-    var loan_payments := 0
-    for loan in EconomyManager.active_loans:
-        loan_payments += mini(int(loan.get("installment", 0)), int(loan.get("remaining", 0)))
+    var projection := EconomyManager.get_weekly_projection()
+    var fixed_cost := int(projection.get("fixed_costs", 0))
+    var sponsor_income := int(projection.get("sponsor_income", 0))
+    var loan_payments := int(projection.get("loan_payments", 0))
     var food_consumption := maxi(1, int(ceil(float(RosterManager.get_people().size() * GameState.DAYS_PER_WEEK) * EventManager.get_food_consumption_multiplier())))
-    var weekly_net := sponsor_income - fixed_cost - loan_payments
+    var weekly_net := int(projection.get("net", 0))
     var runway := 99 if weekly_net >= 0 else int(floor(float(GameState.denarii) / float(maxi(1, abs(weekly_net)))))
     var warnings: Array[String] = []
     var blockers: Array[String] = []
