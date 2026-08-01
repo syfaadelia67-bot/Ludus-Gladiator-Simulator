@@ -49,7 +49,8 @@ layout_mode = 2
 
 [node name="AdvanceDay" type="Button" parent="Margin/VBox/TopButtons"]
 layout_mode = 2
-text = "Avanzar un día"
+text = "Cerrar semana"
+tooltip_text = "Procesa trabajos, economía, eventos y recuperación; luego avanza a la semana siguiente."
 
 [node name="RefreshMarket" type="Button" parent="Margin/VBox/TopButtons"]
 layout_mode = 2
@@ -99,7 +100,7 @@ custom_minimum_size = Vector2(480, 420)
 layout_mode = 2
 bbcode_enabled = true
 scroll_following = true
-text = "[b]Registro[/b]\nLa finca está lista para comenzar."
+text = "[b]Registro semanal[/b]\nLa finca está lista para comenzar."
 
 [node name="Mercado" type="VBoxContainer" parent="Margin/VBox/Tabs"]
 layout_mode = 2
@@ -265,7 +266,7 @@ size_flags_horizontal = 3
 
 [node name="StartDuel" type="Button" parent="Margin/VBox/Tabs/Arena/Setup"]
 layout_mode = 2
-text = "Iniciar duelo"
+text = "Iniciar combate semanal"
 
 [node name="Stage" type="HBoxContainer" parent="Margin/VBox/Tabs/Arena"]
 custom_minimum_size = Vector2(0, 190)
