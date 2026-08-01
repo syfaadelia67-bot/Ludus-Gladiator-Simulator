@@ -48,33 +48,9 @@ func _refresh_roster_card() -> void:
     var progression_line := ""
     var value_line := ""
     if person.role == "gladiator":
-        progression_line = "\nNivel: %d | Especialización: %s | Puntos: %d" % [
-            int(record.get("level", 1)),
-            GladiatorProgressionManager.get_specialization_name(str(record.get("specialization", GladiatorProgressionManager.DEFAULT_SPECIALIZATION))),
-            int(record.get("skill_points", 0))
-        ]
+        progression_line = "\nNivel: %d | Especialización: %s | Puntos: %d" % [int(record.get("level", 1)), GladiatorProgressionManager.get_specialization_name(str(record.get("specialization", GladiatorProgressionManager.DEFAULT_SPECIALIZATION))), int(record.get("skill_points", 0))]
         value_line = "\nValor estimado: %d denarios" % MarketValuation.person_value(person, record)
-    roster_details.text = "[b]%s[/b]\nOrigen: %s | Rol: %s%s\nFUE %d | AGI %d | RES %d | INT %d | TEC %d\nVida base: %d | Vida de combate: %d | Energía: %d\nLealtad: %d | Moral: %d | Fatiga: %d\nAtaque: %d | Defensa: %d%s\nRasgos permanentes: %s" % [
-        person.display_name,
-        person.origin,
-        _role_name(person.role),
-        progression_line,
-        person.strength,
-        person.agility,
-        person.endurance,
-        person.intelligence,
-        person.technique,
-        person.health,
-        person.get_max_health(),
-        person.get_max_energy(),
-        person.loyalty,
-        person.morale,
-        person.fatigue,
-        person.get_base_attack(),
-        person.get_base_defense(),
-        value_line,
-        ", ".join(trait_names) if not trait_names.is_empty() else "Ninguno"
-    ]
+    roster_details.text = "[b]%s[/b]\nOrigen: %s | Rol: %s%s\nFUE %d | AGI %d | RES %d | INT %d | TEC %d\nVida base: %d | Vida de combate: %d | Energía: %d\nLealtad: %d | Moral: %d | Fatiga: %d\nAtaque: %d | Defensa: %d%s\nRasgos permanentes: %s" % [person.display_name, person.origin, _role_name(person.role), progression_line, person.strength, person.agility, person.endurance, person.intelligence, person.technique, person.health, person.get_max_health(), person.get_max_energy(), person.loyalty, person.morale, person.fatigue, person.get_base_attack(), person.get_base_defense(), value_line, ", ".join(trait_names) if not trait_names.is_empty() else "Ninguno"]
 
 func _refresh_market_card() -> void:
     var selected_index := _selected_index(market_list)
@@ -87,20 +63,17 @@ func _refresh_market_card() -> void:
     var trait_names: Array[String] = []
     for trait_id in offer.get("traits", []):
         trait_names.append(TraitManager.get_trait_name(str(trait_id)))
-    market_details.text = "[b]%s[/b] — %s de %s\nFUE %d | AGI %d | RES %d | INT %d | TEC %d\nVida base: %d | Lealtad: %d\nRasgos de origen: %s\nValor calculado: %d denarios" % [
-        offer.get("name", "?"),
-        _role_name(str(offer.get("role", "slave"))),
-        offer.get("origin", "?"),
-        int(offer.get("strength", 5)),
-        int(offer.get("agility", 5)),
-        int(offer.get("endurance", 5)),
-        int(offer.get("intelligence", 5)),
-        int(offer.get("technique", 5)),
-        int(offer.get("health", 50)),
-        int(offer.get("loyalty", 50)),
-        ", ".join(trait_names) if not trait_names.is_empty() else "Ninguno",
-        int(offer.get("price", MarketValuation.offer_value(offer)))
-    ]
+    var unique_header := ""
+    var unique_footer := ""
+    if bool(offer.get("unique", false)):
+        unique_header = "[color=gold][b]GLADIADOR ÚNICO[/b][/color]\n"
+        var remaining := int(offer.get("weeks_remaining", 0))
+        if remaining > 0:
+            unique_footer = "\n[color=orange]Disponible durante %d semana(s). Si no lo contratás, una casa rival puede comprarlo.[/color]" % remaining
+        var history := str(offer.get("history", ""))
+        if not history.is_empty():
+            unique_footer += "\n\n%s" % history
+    market_details.text = "%s[b]%s[/b] — %s de %s\nFUE %d | AGI %d | RES %d | INT %d | TEC %d\nVida base: %d | Lealtad: %d\nRasgos de origen: %s\nValor: %d denarios%s" % [unique_header, offer.get("name", "?"), _role_name(str(offer.get("role", "slave"))), offer.get("origin", "?"), int(offer.get("strength", 5)), int(offer.get("agility", 5)), int(offer.get("endurance", 5)), int(offer.get("intelligence", 5)), int(offer.get("technique", 5)), int(offer.get("health", 50)), int(offer.get("loyalty", 50)), ", ".join(trait_names) if not trait_names.is_empty() else "Ninguno", int(offer.get("price", MarketValuation.offer_value(offer))), unique_footer]
 
 func _role_name(role_id: String) -> String:
     match role_id:
