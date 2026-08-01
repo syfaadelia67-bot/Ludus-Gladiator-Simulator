@@ -23,6 +23,10 @@ func refresh_market(charge: bool = true) -> bool:
     if CampaignManager.campaign_over:
         purchase_failed.emit("La campaña terminó. El mercado está disponible solo para consulta.")
         return false
+    if not UniqueGladiatorManager.first_purchase_completed:
+        offers = UniqueGladiatorManager.get_initial_candidate_offers()
+        market_changed.emit()
+        return true
     if charge and not GameState.spend_denarii(refresh_cost):
         purchase_failed.emit("No hay suficientes denarios para renovar el mercado.")
         return false
@@ -62,6 +66,8 @@ func recalculate_offer_price(offer_id: String) -> int:
     var offer := get_offer(offer_id)
     if offer.is_empty():
         return 0
+    if bool(offer.get("unique", false)):
+        return int(offer.get("price", 0))
     offer["price"] = MarketValuation.offer_value(offer)
     market_changed.emit()
     return int(offer["price"])
@@ -77,15 +83,41 @@ func buy_offer(offer_id: String) -> bool:
     if not RosterManager.has_capacity():
         purchase_failed.emit("Los barracones están completos.")
         return false
+
+    var unique_id := str(offer.get("unique_gladiator_id", ""))
+    if not unique_id.is_empty() and not UniqueGladiatorManager.first_purchase_completed:
+        if str(UniqueGladiatorManager.get_state(unique_id).get("status", "")) != "initial_market":
+            purchase_failed.emit("Este gladiador único ya no está disponible.")
+            return false
+
     var price := int(offer.get("price", MarketValuation.offer_value(offer)))
     if not GameState.spend_denarii(price):
         purchase_failed.emit("No hay suficientes denarios.")
         return false
+
     var person_data := offer.duplicate(true)
     person_data.erase("price")
+    if not unique_id.is_empty():
+        person_data["id"] = unique_id
     var person = PERSON_SCRIPT.new(person_data)
-    RosterManager.add_person(person)
-    offers.erase(offer)
+    if not RosterManager.add_person(person):
+        GameState.denarii += price
+        GameState.resources_changed.emit()
+        purchase_failed.emit("No se pudo incorporar al candidato.")
+        return false
+
+    if not unique_id.is_empty() and not UniqueGladiatorManager.first_purchase_completed:
+        if not UniqueGladiatorManager.acquire_initial_gladiator(unique_id):
+            RosterManager.people.erase(person)
+            GameState.denarii += price
+            GameState.resources_changed.emit()
+            RosterManager.roster_changed.emit()
+            purchase_failed.emit("No se pudo confirmar la elección del primer gladiador.")
+            return false
+        refresh_market(false)
+    else:
+        offers.erase(offer)
+
     purchase_completed.emit(person.display_name, price)
     market_changed.emit()
     return true
