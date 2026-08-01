@@ -2,6 +2,17 @@ extends "res://scripts/systems/economy_manager.gd"
 
 signal weekly_economy_processed(report: Dictionary)
 
+func get_sponsor(sponsor_id: String) -> Dictionary:
+    var data := super.get_sponsor(sponsor_id)
+    data["duration_weeks"] = maxi(0, int(data.get("duration_weeks", data.get("duration", 0))))
+    data["weekly_income"] = maxi(0, int(data.get("weekly_income", data.get("daily_income", 0))))
+    return data
+
+func get_loan_product(loan_id: String) -> Dictionary:
+    var data := super.get_loan_product(loan_id)
+    data["term_weeks"] = maxi(0, int(data.get("term_weeks", data.get("term", 0))))
+    return data
+
 func sign_contract(sponsor_id: String) -> bool:
     var signed := super.sign_contract(sponsor_id)
     if signed:
