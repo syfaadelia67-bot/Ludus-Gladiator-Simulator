@@ -19,7 +19,7 @@ func _bind() -> void:
         activity_log = root.get_node_or_null("Margin/VBox/Tabs/Personal/Log") as RichTextLabel
         if advance_button != null:
             advance_button.text = "Cerrar semana"
-            advance_button.tooltip_text = "Procesa siete días internos, aplica gastos y abre la siguiente semana de campaña."
+            advance_button.tooltip_text = "Procesa trabajos, economía, recuperación y consecuencias; luego abre la siguiente semana de campaña."
             return
 
 func _on_week_advanced(week: int) -> void:
@@ -28,6 +28,7 @@ func _on_week_advanced(week: int) -> void:
 func _normalize_week_log(week: int) -> void:
     if activity_log == null:
         return
+    # Compatibility cleanup for logs produced by older scenes or saves.
     activity_log.text = activity_log.text.replace("[b]Día %d[/b]" % week, "[b]Semana %d[/b]" % week)
     var fight: Dictionary = CombatManager.get_current_event_details()
     activity_log.append_text("\n[color=gold]Combate programado: %s.[/color]" % str(fight.get("name", "Arena semanal")))
