@@ -24,24 +24,29 @@ func advance_week() -> void:
     if CampaignManager.campaign_over:
         campaign_action_blocked.emit("La campaña terminó. La partida permanece disponible en modo de consulta.")
         return
+    var work_results: Array[Dictionary] = []
     var report := {
+        "period":"week",
+        "internal_work_ticks":DAYS_PER_WEEK,
         "ore":0,
         "food":0,
         "security":0,
         "intel":0,
         "training":0,
         "promotions":[],
-        "daily_results":[]
+        "work_results":work_results,
+        # Legacy alias retained for v14 consumers and older tests.
+        "daily_results":work_results
     }
 
-    # The player advances one week, while roster recovery, fatigue and jobs
-    # retain seven internal daily simulation ticks.
-    for _internal_day in range(DAYS_PER_WEEK):
-        var daily: Dictionary = RosterManager.process_day()
-        report["daily_results"].append(daily)
+    # Jobs, recovery and fatigue retain seven internal simulation ticks while
+    # every player-facing system advances exactly one campaign week.
+    for _internal_tick in range(DAYS_PER_WEEK):
+        var work_result: Dictionary = RosterManager.process_day()
+        work_results.append(work_result)
         for key in ["ore", "food", "security", "intel", "training"]:
-            report[key] = int(report.get(key, 0)) + int(daily.get(key, 0))
-        for promoted_name in daily.get("promotions", []):
+            report[key] = int(report.get(key, 0)) + int(work_result.get(key, 0))
+        for promoted_name in work_result.get("promotions", []):
             if not report["promotions"].has(promoted_name):
                 report["promotions"].append(promoted_name)
 
