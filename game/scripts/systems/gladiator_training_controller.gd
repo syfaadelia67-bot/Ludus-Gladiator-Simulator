@@ -62,7 +62,9 @@ func get_preview(person_id: String) -> Dictionary:
         "injury_risk": risk,
         "assigned": person.job == "training",
         "available": person.injury_days <= 0,
-        "progress": _focus_progress(GladiatorProgressionManager.ensure_record(person_id), focus_id)
+        "progress": _focus_progress(GladiatorProgressionManager.ensure_record(person_id), focus_id),
+        "trainer_multiplier": GladiatorCareerStateController.get_trainer_multiplier(),
+        "mentor_morale_bonus": GladiatorCareerStateController.get_mentor_morale_bonus()
     }
 
 func process_week(week: int) -> void:
@@ -77,6 +79,11 @@ func process_week(week: int) -> void:
         var result := _apply_training(person, record, week)
         record["last_individual_training_week"] = week
         record["training_sessions"] = int(record.get("training_sessions", 0)) + 1
+        var morale_bonus := GladiatorCareerStateController.get_mentor_morale_bonus()
+        if morale_bonus > 0:
+            person.morale = mini(100, person.morale + morale_bonus)
+            result["mentor_morale_bonus"] = morale_bonus
+            result["summary"] = "%s, +%d moral por mentoría" % [str(result.get("summary", "")), morale_bonus]
         training_completed.emit(person.id, result)
         GladiatorCareerJournalController.add_event(person.id, "training", "Entrenamiento individual", str(result.get("summary", "")), result)
         changed = true
@@ -143,7 +150,8 @@ func _apply_training(person, record: Dictionary, week: int) -> Dictionary:
 
 func _calculate_gain(person) -> int:
     var base := 6 + floori(float(person.endurance + person.intelligence) / 4.0)
-    return maxi(1, int(round(float(base) * EstateManager.get_training_multiplier() * EventManager.get_training_multiplier())))
+    var multiplier := EstateManager.get_training_multiplier() * EventManager.get_training_multiplier() * GladiatorCareerStateController.get_trainer_multiplier()
+    return maxi(1, int(round(float(base) * multiplier)))
 
 func _injury_risk(person) -> int:
     if person.fatigue < 60:
