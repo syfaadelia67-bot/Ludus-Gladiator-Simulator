@@ -5,6 +5,7 @@ var buildings: Array = []
 var weapons: Array = []
 var abilities: Array = []
 var specializations: Array = []
+var unique_gladiators: Array = []
 
 func _ready() -> void:
     load_all()
@@ -15,6 +16,20 @@ func load_all() -> void:
     weapons = _load_json_array("res://data/weapons.json")
     abilities = _load_json_array("res://data/abilities.json")
     specializations = _load_json_array("res://data/specializations.json")
+    unique_gladiators = _load_json_array("res://data/unique_gladiators.json")
+
+func get_unique_gladiator(gladiator_id: String) -> Dictionary:
+    for entry in unique_gladiators:
+        if entry is Dictionary and str(entry.get("id", "")) == gladiator_id:
+            return entry.duplicate(true)
+    return {}
+
+func get_unique_gladiators_for_stage(stage: String) -> Array[Dictionary]:
+    var result: Array[Dictionary] = []
+    for entry in unique_gladiators:
+        if entry is Dictionary and str(entry.get("release_stage", "")) == stage:
+            result.append(entry.duplicate(true))
+    return result
 
 func _load_json_array(path: String) -> Array:
     if not FileAccess.file_exists(path):
