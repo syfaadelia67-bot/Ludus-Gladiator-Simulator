@@ -18,32 +18,39 @@ func _ready() -> void:
     call_deferred("_ensure_records")
 
 func select_specialization(person_id: String, specialization_id: String) -> bool:
-    if not GladiatorProgressionManager.set_specialization(person_id, specialization_id):
+    var canonical_id := GladiatorProgressionManager.canonical_specialization_id(specialization_id)
+    if canonical_id == GladiatorProgressionManager.DEFAULT_SPECIALIZATION:
+        return false
+    if not GladiatorProgressionManager.set_specialization(person_id, canonical_id):
         return false
     var record := GladiatorProgressionManager.ensure_record(person_id)
-    record["specialization_progress"] = clampi(int(record.get("specialization_progress", 0)), 0, MAX_PROGRESS)
-    record["specialization_mastered"] = int(record.get("specialization_progress", 0)) >= MAX_PROGRESS
-    mastery_changed.emit(person_id, int(record.get("specialization_progress", 0)))
+    record["specialization_progress"] = 0
+    record["specialization_mastered"] = false
+    mastery_changed.emit(person_id, 0)
     return true
+
+func has_selected_specialization(person_id: String) -> bool:
+    var record := GladiatorProgressionManager.ensure_record(person_id)
+    return str(record.get("specialization", GladiatorProgressionManager.DEFAULT_SPECIALIZATION)) != GladiatorProgressionManager.DEFAULT_SPECIALIZATION
 
 func get_progress(person_id: String) -> int:
     var record := GladiatorProgressionManager.ensure_record(person_id)
     _sanitize_record(record)
-    return int(record.get("specialization_progress", 0))
+    return int(record.get("specialization_progress", 0)) if has_selected_specialization(person_id) else 0
 
 func is_mastered(person_id: String) -> bool:
-    return get_progress(person_id) >= MAX_PROGRESS
+    return has_selected_specialization(person_id) and get_progress(person_id) >= MAX_PROGRESS
 
 func register_training_use(person_id: String) -> int:
     var person = RosterManager.get_person(person_id)
-    if person == null or person.role != "gladiator":
+    if person == null or person.role != "gladiator" or not has_selected_specialization(person_id):
         return 0
     return _add_progress(person_id, TRAINING_BASE_PROGRESS + _equipped_piece_count(person))
 
 func _on_combat_finished(result: Dictionary) -> void:
     var person_id := str(result.get("fighter_id", ""))
     var person = RosterManager.get_person(person_id)
-    if person == null or person.role != "gladiator":
+    if person == null or person.role != "gladiator" or not has_selected_specialization(person_id):
         return
     var gain := COMBAT_BASE_PROGRESS + _equipped_piece_count(person) * EQUIPMENT_USE_BONUS
     if bool(result.get("victory", false)):
@@ -55,9 +62,13 @@ func _on_week_advanced(_week: int) -> void:
         if person.role == "gladiator" and person.job == "training":
             register_training_use(person.id)
 
-func _on_specialization_changed(person_id: String, _specialization_id: String) -> void:
+func _on_specialization_changed(person_id: String, specialization_id: String) -> void:
     var record := GladiatorProgressionManager.ensure_record(person_id)
-    _sanitize_record(record)
+    if specialization_id == GladiatorProgressionManager.DEFAULT_SPECIALIZATION:
+        record["specialization_progress"] = 0
+        record["specialization_mastered"] = false
+    else:
+        _sanitize_record(record)
     mastery_changed.emit(person_id, int(record.get("specialization_progress", 0)))
 
 func _ensure_records() -> void:
@@ -68,10 +79,17 @@ func _ensure_records() -> void:
         _sanitize_record(record)
 
 func _sanitize_record(record: Dictionary) -> void:
+    var specialization_id := str(record.get("specialization", GladiatorProgressionManager.DEFAULT_SPECIALIZATION))
+    if specialization_id == GladiatorProgressionManager.DEFAULT_SPECIALIZATION:
+        record["specialization_progress"] = 0
+        record["specialization_mastered"] = false
+        return
     record["specialization_progress"] = clampi(int(record.get("specialization_progress", 0)), 0, MAX_PROGRESS)
     record["specialization_mastered"] = int(record.get("specialization_progress", 0)) >= MAX_PROGRESS
 
 func _add_progress(person_id: String, amount: int) -> int:
+    if not has_selected_specialization(person_id):
+        return 0
     var record := GladiatorProgressionManager.ensure_record(person_id)
     _sanitize_record(record)
     var previous := int(record.get("specialization_progress", 0))
