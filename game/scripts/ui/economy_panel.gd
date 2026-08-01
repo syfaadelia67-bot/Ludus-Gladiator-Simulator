@@ -70,7 +70,7 @@ func _refresh() -> void:
     if sponsor_selector.selected >= 0 and sponsor_selector.selected < sponsor_ids.size():
         var sponsor := EconomyManager.get_sponsor(sponsor_ids[sponsor_selector.selected])
         sign_button.disabled = not bool(sponsor.get("eligible", false))
-        sign_button.tooltip_text = "Anticipo %d | Ingreso semanal %d | Duración %d semanas" % [int(sponsor.get("upfront", 0)), int(sponsor.get("daily_income", 0)), int(sponsor.get("duration", 0))]
+        sign_button.tooltip_text = "Anticipo %d | Ingreso semanal %d | Duración %d semanas" % [int(sponsor.get("upfront", 0)), int(sponsor.get("weekly_income", sponsor.get("daily_income", 0))), int(sponsor.get("duration_weeks", sponsor.get("duration", 0)))]
 
 func _refresh_contracts() -> void:
     if EconomyManager.active_contracts.is_empty():
@@ -78,7 +78,7 @@ func _refresh_contracts() -> void:
         return
     var lines: Array[String] = ["[b]CONTRATOS ACTIVOS[/b]"]
     for contract in EconomyManager.active_contracts:
-        lines.append("• %s — %d semanas — +%d/semana — V:%d D:%d" % [contract.get("name", "Contrato"), int(contract.get("days_remaining", 0)), int(contract.get("daily_income", 0)), int(contract.get("victories", 0)), int(contract.get("defeats", 0))])
+        lines.append("• %s — %d semanas — +%d/semana — V:%d D:%d" % [contract.get("name", "Contrato"), int(contract.get("weeks_remaining", contract.get("days_remaining", 0))), int(contract.get("weekly_income", contract.get("daily_income", 0))), int(contract.get("victories", 0)), int(contract.get("defeats", 0))])
     contracts.text = "\n".join(lines)
 
 func _refresh_loans() -> void:
@@ -87,7 +87,7 @@ func _refresh_loans() -> void:
         return
     var lines: Array[String] = ["[b]DEUDAS ACTIVAS[/b]"]
     for loan in EconomyManager.active_loans:
-        lines.append("• %s — Debe %d — Cuota semanal %d — Impagos %d" % [loan.get("name", "Préstamo"), int(loan.get("remaining", 0)), int(loan.get("installment", 0)), int(loan.get("missed", 0))])
+        lines.append("• %s — Debe %d — %d semanas — Cuota semanal %d — Impagos %d" % [loan.get("name", "Préstamo"), int(loan.get("remaining", 0)), int(loan.get("weeks_remaining", loan.get("days_remaining", 0))), int(loan.get("installment", 0)), int(loan.get("missed", 0))])
     loans.text = "\n".join(lines)
 
 func _refresh_ledger() -> void:
@@ -95,5 +95,5 @@ func _refresh_ledger() -> void:
     for index in range(mini(12, EconomyManager.ledger.size())):
         var entry: Dictionary = EconomyManager.ledger[index]
         var amount := int(entry.get("amount", 0))
-        lines.append("Semana %d | %s%d | %s" % [int(entry.get("day", 0)), "+" if amount >= 0 else "", amount, entry.get("reason", "Movimiento")])
+        lines.append("Semana %d | %s%d | %s" % [int(entry.get("week", entry.get("day", 0))), "+" if amount >= 0 else "", amount, entry.get("reason", "Movimiento")])
     ledger.text = "\n".join(lines)
