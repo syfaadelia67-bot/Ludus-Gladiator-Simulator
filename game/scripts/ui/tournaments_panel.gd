@@ -32,6 +32,9 @@ func _refresh_all() -> void:
     _refresh_contracts()
     _refresh_details()
 
+func _scheduled_week(entry: Dictionary) -> int:
+    return int(entry.get("scheduled_week", entry.get("scheduled_day", 0)))
+
 func _refresh_events() -> void:
     event_list.clear()
     event_ids.clear()
@@ -39,7 +42,7 @@ func _refresh_events() -> void:
         if bool(event.get("accepted", false)):
             continue
         event_ids.append(str(event.get("id", "")))
-        event_list.add_item("Día %d — %s — %d denarios" % [int(event.get("scheduled_day", 0)), event.get("name", "Evento"), int(event.get("entry_fee", 0))])
+        event_list.add_item("Semana %d — %s — %d denarios" % [_scheduled_week(event), event.get("name", "Evento"), int(event.get("entry_fee", 0))])
     if not event_ids.is_empty():
         var index := event_ids.find(selected_event_id)
         if index < 0:
@@ -61,7 +64,7 @@ func _refresh_contracts() -> void:
     contract_ids.clear()
     for contract in TournamentManager.get_active_contracts():
         contract_ids.append(str(contract.get("id", "")))
-        contracts.add_item("Día %d — %s — %s" % [int(contract.get("scheduled_day", 0)), contract.get("name", "Combate"), contract.get("fighter_name", "Gladiador")])
+        contracts.add_item("Semana %d — %s — %s" % [_scheduled_week(contract), contract.get("name", "Combate"), contract.get("fighter_name", "Gladiador")])
     cancel_button.disabled = contract_ids.is_empty()
 
 func _refresh_details() -> void:
@@ -74,7 +77,7 @@ func _refresh_details() -> void:
         details.text = "No hay evento seleccionado."
         accept_button.disabled = true
         return
-    details.text = "[b]%s[/b]\nDía programado: %d\nDificultad: %d\nReputación requerida: %d\nInscripción: %d denarios\nPremio base: %d denarios\n\nCancelar cerca de la fecha duplica la penalización." % [selected.get("name", "Evento"), int(selected.get("scheduled_day", 0)), int(selected.get("difficulty", 1)), int(selected.get("min_reputation", 0)), int(selected.get("entry_fee", 0)), int(selected.get("base_reward", 0))]
+    details.text = "[b]%s[/b]\nSemana programada: %d\nDificultad: %d\nReputación requerida: %d\nInscripción: %d denarios\nPremio base: %d denarios\n\nCancelar durante la última semana duplica la penalización." % [selected.get("name", "Evento"), _scheduled_week(selected), int(selected.get("difficulty", 1)), int(selected.get("min_reputation", 0)), int(selected.get("entry_fee", 0)), int(selected.get("base_reward", 0))]
     accept_button.disabled = fighter_ids.is_empty()
 
 func _on_event_selected(index: int) -> void:
@@ -97,7 +100,7 @@ func _on_cancel() -> void:
     TournamentManager.cancel_contract(selected_contract_id)
 
 func _on_accepted(contract: Dictionary) -> void:
-    status.text = "%s quedó inscripto en %s." % [contract.get("fighter_name", "El gladiador"), contract.get("name", "el evento")]
+    status.text = "%s quedó inscripto en %s para la semana %d." % [contract.get("fighter_name", "El gladiador"), contract.get("name", "el evento"), _scheduled_week(contract)]
 
 func _on_cancelled(contract: Dictionary) -> void:
     status.text = "Contrato cancelado. Penalización: %d denarios." % int(contract.get("cancel_penalty", 0))
