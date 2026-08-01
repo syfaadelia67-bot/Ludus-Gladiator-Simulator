@@ -1,5 +1,14 @@
 extends "res://scripts/systems/economy_manager.gd"
 
+signal weekly_economy_processed(report: Dictionary)
+
+func process_week() -> Dictionary:
+    var report := super.process_day()
+    report["period"] = "week"
+    report["week"] = GameState.get_week()
+    weekly_economy_processed.emit(report.duplicate(true))
+    return report
+
 func get_weekly_fixed_costs() -> int:
     return get_daily_fixed_costs()
 
