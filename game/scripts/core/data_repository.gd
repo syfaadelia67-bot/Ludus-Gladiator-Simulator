@@ -7,6 +7,9 @@ var abilities: Array = []
 var specializations: Array = []
 
 func _ready() -> void:
+    load_all()
+
+func load_all() -> void:
     traits = _load_json_array("res://data/traits.json")
     buildings = _load_json_array("res://data/buildings.json")
     weapons = _load_json_array("res://data/weapons.json")
