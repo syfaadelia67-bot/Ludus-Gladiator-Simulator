@@ -29,18 +29,17 @@ func _ready() -> void:
         _seed_initial_roster()
 
 func _seed_initial_roster() -> void:
+    people.clear()
     var starters := [
-        {"id":"darian","name":"Darian","origin":"Tracia","strength":8,"agility":5,"endurance":7,"intelligence":3,"loyalty":48,"traits":["freedom_seeker","vengeful"]},
-        {"id":"cassia","name":"Cassia","origin":"Numidia","strength":4,"agility":8,"endurance":5,"intelligence":8,"loyalty":61,"traits":["superstitious","mentor"]},
-        {"id":"marcus","name":"Marcus","origin":"Italia","role":"gladiator","strength":7,"agility":7,"endurance":6,"intelligence":5,"loyalty":72,"traits":["arena_lover","popular"]},
-        {"id":"brenna","name":"Brenna","origin":"Britania","strength":6,"agility":6,"endurance":8,"intelligence":4,"loyalty":55,"traits":["protector","beast_hunter"]}
+        {"id":"darian","name":"Darian","origin":"Tracia","role":"slave","strength":8,"agility":5,"endurance":7,"intelligence":3,"technique":4,"health":52,"loyalty":48,"morale":58,"traits":["freedom_seeker","vengeful"]},
+        {"id":"cassia","name":"Cassia","origin":"Numidia","role":"slave","strength":4,"agility":8,"endurance":5,"intelligence":8,"technique":6,"health":46,"loyalty":61,"morale":64,"traits":["superstitious","mentor"]},
+        {"id":"brenna","name":"Brenna","origin":"Britania","role":"slave","strength":6,"agility":6,"endurance":8,"intelligence":4,"technique":5,"health":55,"loyalty":55,"morale":62,"traits":["protector","beast_hunter"]}
     ]
     for data in starters:
         people.append(PERSON_SCRIPT.new(data))
     people[0].assign_job("mining")
     people[1].assign_job("espionage")
-    people[2].assign_job("idle")
-    people[3].assign_job("training")
+    people[2].assign_job("training")
     roster_changed.emit()
 
 func add_person(person) -> bool:
@@ -52,6 +51,19 @@ func add_person(person) -> bool:
 
 func has_capacity() -> bool:
     return people.size() < capacity
+
+func has_gladiator() -> bool:
+    for person in people:
+        if person.role == "gladiator":
+            return true
+    return false
+
+func get_gladiators() -> Array:
+    var result: Array = []
+    for person in people:
+        if person.role == "gladiator":
+            result.append(person)
+    return result
 
 func get_capacity_summary() -> String:
     return "%d/%d" % [people.size(), capacity]
