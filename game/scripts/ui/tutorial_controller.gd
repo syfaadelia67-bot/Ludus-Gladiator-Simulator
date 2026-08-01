@@ -149,7 +149,8 @@ func _render_step() -> void:
     else:
         action_button.text = "Finalizar" if current_step == STEPS.size() - 1 else "Continuar"
         action_button.disabled = not completed
-    _focus_system(str(step.get("system", "")))
+    if not completed:
+        _focus_system(str(step.get("system", "")))
 
 func _focus_system(system_id: String) -> void:
     if system_id.is_empty():
