@@ -65,7 +65,7 @@ func acquire_initial_gladiator(gladiator_id: String) -> bool:
         other_state["rival_id"] = rival_id
         other_state["acquired_week"] = GameState.get_week()
         states[other_id] = other_state
-        RivalManager.assign_unique_gladiator(rival_id, str(other_id))
+        _assign_to_rival(rival_id, str(other_id))
         rival_index += 1
 
     first_gladiator_acquired.emit(gladiator_id)
@@ -101,6 +101,7 @@ func import_state(data: Dictionary) -> void:
         reset_for_new_campaign()
         return
     _sanitize_states()
+    _rebuild_rival_assignments()
     unique_gladiators_changed.emit()
 
 func _sanitize_states() -> void:
@@ -122,6 +123,25 @@ func _sanitize_states() -> void:
             "rival_id": str(state.get("rival_id", "")),
             "acquired_week": maxi(0, int(state.get("acquired_week", 0)))
         }
+
+func _rebuild_rival_assignments() -> void:
+    for rival in RivalManager.rivals:
+        rival["unique_gladiators"] = []
+    for gladiator_id in states.keys():
+        var state: Dictionary = states[gladiator_id]
+        if str(state.get("status", "")) == "rival":
+            _assign_to_rival(str(state.get("rival_id", "")), str(gladiator_id))
+
+func _assign_to_rival(rival_id: String, gladiator_id: String) -> void:
+    for rival in RivalManager.rivals:
+        if str(rival.get("id", "")) != rival_id:
+            continue
+        var assigned: Array = rival.get("unique_gladiators", [])
+        if not assigned.has(gladiator_id):
+            assigned.append(gladiator_id)
+        rival["unique_gladiators"] = assigned
+        RivalManager.rivals_changed.emit()
+        return
 
 func _to_market_offer(entry: Dictionary) -> Dictionary:
     return {
