@@ -2,6 +2,12 @@ extends "res://scripts/systems/combat_manager_fixed.gd"
 
 const DEMO_FINAL_WEEK := 16
 
+const WEEKLY_INJURIES := {
+    1: ["Contusión", "Corte superficial", "Esguince leve"],
+    2: ["Herida profunda", "Luxación", "Fractura menor", "Desgarro muscular"],
+    3: ["Fractura grave", "Herida crítica", "Desgarro de bestia", "Trauma severo"]
+}
+
 func get_event_type_for_week(week: int) -> String:
     var resolved_week := maxi(1, week)
     if resolved_week == DEMO_FINAL_WEEK:
@@ -63,3 +69,38 @@ func simulate_duel(gladiator_id: String, tactic: String = "balanced") -> Diction
         combat_failed.emit("El ludus ya disputó el combate de esta semana.")
         return {}
     return super.simulate_duel(gladiator_id, tactic)
+
+func _resolve_injury(fighter, player: Dictionary, victory: bool, surrendered: bool, rng: RandomNumberGenerator, event_type: String) -> String:
+    var health_ratio := float(maxi(0, int(player.health))) / float(maxi(1, int(player.max_health)))
+    var chance := 8
+    match event_type:
+        "demo_finale": chance += 22
+        "beast_hunt": chance += 18
+        "underground": chance += 12
+        "official": chance += 5
+    if health_ratio <= 0.0:
+        chance = 88
+    elif health_ratio < 0.20:
+        chance += 45
+    elif health_ratio < 0.40:
+        chance += 22
+    if surrendered:
+        chance -= 14
+    if victory:
+        chance -= 4
+    if rng.randi_range(1, 100) > clampi(chance, 2, 94):
+        return ""
+
+    var severity := 1
+    if health_ratio <= 0.0 or (health_ratio < 0.15 and event_type in ["beast_hunt", "underground", "demo_finale"]):
+        severity = 3
+    elif health_ratio < 0.40 or event_type in ["beast_hunt", "underground", "demo_finale"]:
+        severity = 2
+
+    var candidates: Array = WEEKLY_INJURIES.get(severity, WEEKLY_INJURIES[1])
+    var injury_name := str(candidates[rng.randi_range(0, candidates.size() - 1)])
+    if event_type == "beast_hunt" and severity >= 2:
+        injury_name = "Desgarro de bestia"
+    var recovery_weeks := severity + rng.randi_range(0, severity)
+    fighter.apply_injury(injury_name, severity, recovery_weeks)
+    return "%s · gravedad %d · recuperación: %d semana(s)" % [injury_name, severity, recovery_weeks]
