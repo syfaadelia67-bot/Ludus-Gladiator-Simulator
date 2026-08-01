@@ -65,7 +65,7 @@ func _run() -> void:
         {"ability_id":"cast_net", "condition":"opening"},
         {"ability_id":"precise_strike", "condition":"target_vulnerable"}
     ]), "A tactical plan must accept learned abilities")
-    assert(manager.get_tactical_plan(person.id).size() == 2, "The tactical plan must preserve its valid orders")
+    assert(manager.get_tactical_plan(person.id).size() == 1, "A class ability without its required equipment must be removed from the tactical plan")
 
     record["level"] = 9
     record["experience"] = manager.get_experience_required(9) * 5

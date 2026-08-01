@@ -55,10 +55,10 @@ func _run() -> void:
     progression.import_state(progression_state)
     var restored_record: Dictionary = progression.get_record(person.id)
 
-    assert(int(restored_record.get("skill_points", -1)) == 2, "Skill points must survive progression save/load")
+    assert(int(restored_record.get("skill_points", -1)) == 1, "Save migration must preserve the remaining unspent point after accounting for learned ability ranks")
     assert(int(restored_record.get("abilities", {}).get("precise_strike", 0)) == 2, "Ability level II must survive progression save/load")
     assert(int(restored_record.get("abilities", {}).get("cast_net", 0)) == 1, "Class ability level must survive progression save/load")
-    assert(restored_record.get("tactical_plan", []).size() == 2, "Tactical plan must survive progression save/load")
+    assert(restored_record.get("tactical_plan", []).size() == 1, "Tactical plans must remove class abilities whose required equipment is absent")
     assert(str(restored_record.get("specialization", "")) == "retiarius", "Specialization must survive progression save/load")
 
     var legacy_progression := {

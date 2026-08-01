@@ -36,7 +36,6 @@ func _ready() -> void:
     assert(person.get_max_health() == 74)
 
     _validate_growth_budgets()
-    person.free()
     print("Person progression stats tests passed")
     get_tree().quit(0)
 

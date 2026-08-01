@@ -19,7 +19,7 @@ func _ready() -> void:
     assert(owner_source.contains("CampaignManager.import_state({})"))
     assert(owner_source.contains("TransferManager.import_state({})"))
     assert(owner_source.find("_reset_campaign_for_new_owner()") < owner_source.find("_apply_origin_bonuses_once()"))
-    assert(start_source.contains("SaveManager.delete_save()"))
+    assert(start_source.contains("NewCampaignCoordinator.reset_campaign_state()"))
     assert(start_source.contains("LudusOwnerManager.configure_owner"))
 
     print("New campaign full reset contract: OK")

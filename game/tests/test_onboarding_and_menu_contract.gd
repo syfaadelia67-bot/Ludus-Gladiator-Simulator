@@ -31,14 +31,14 @@ func _ready() -> void:
         "func import_state",
         "func _sanitize_profile",
         "TUTORIAL_STEP_COUNT := 5",
-        "VALID_TUTORIAL_OBJECTIVES",
+        "TUTORIAL_OBJECTIVE_IDS",
         "inspect_roster",
         "advance_week",
         "obtain_equipment",
         "resolve_event",
         "weekly_combat",
         "func _sanitize_tutorial_objectives",
-        "for objective_id in VALID_TUTORIAL_OBJECTIVES",
+        "for objective_id in TUTORIAL_OBJECTIVE_IDS",
         "_sanitize_tutorial_objectives(raw_objectives)",
         "SaveManager.call_deferred(\"save_game\")"
     ])
@@ -46,7 +46,7 @@ func _ready() -> void:
         "func show_main_menu()",
         "func _enter_campaign()",
         "overlay.visible = false",
-        "LudusOwnerManager.reset_profile()"
+        "NewCampaignCoordinator.reset_campaign_state()"
     ])
     _assert_file_contains(RETURN_MENU_PATH, [
         "Guardar y menú",

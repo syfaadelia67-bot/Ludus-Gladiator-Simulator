@@ -15,7 +15,7 @@ func _ready() -> void:
     assert(owner_source.contains("LEGACY_PROFILE_PATH"))
     assert(owner_source.contains("_import_legacy_profile_once"))
     assert(not owner_source.contains("func _save_local_profile"))
-    assert(not owner_source.contains("PROFILE_PATH :="))
+    assert(not owner_source.contains("\nconst PROFILE_PATH :="))
     assert(owner_source.contains("SaveManager.call_deferred(\"save_game\")"))
 
     assert(start_source.contains("func _inspect_save()"))

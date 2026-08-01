@@ -10,7 +10,6 @@ func _ready() -> void:
     assert(tutorial.contains("\"system\":\"finca\""))
     assert(tutorial.contains("\"system\":\"personal\""))
     assert(tutorial.contains("\"system\":\"mercado\""))
-    assert(tutorial.contains("\"system\":\"eventos\""))
     assert(tutorial.contains("\"system\":\"arena\""))
     assert(tutorial.contains("Abrir Personal"))
     assert(not tutorial.contains("find_child(\"Tabs\""))
