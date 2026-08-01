@@ -45,7 +45,7 @@ func advance_week() -> void:
             if not report["promotions"].has(promoted_name):
                 report["promotions"].append(promoted_name)
 
-    var rival_events: Array = RivalManager.process_day()
+    var rival_events: Array = RivalManager.process_week()
     var economy_report: Dictionary = EconomyManager.process_week()
     var tournament_events: Array = TournamentManager.process_week()
     report["rival_events"] = rival_events
