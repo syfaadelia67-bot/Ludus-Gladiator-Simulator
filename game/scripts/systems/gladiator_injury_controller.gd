@@ -2,6 +2,7 @@ extends Node
 
 signal injury_state_changed(person_id: String)
 signal scar_added(person_id: String, scar: Dictionary)
+signal recovery_reduced(person_id: String, weeks: int, source: String)
 
 const MAX_SCARS := 8
 
@@ -31,6 +32,38 @@ func get_summary(person_id: String) -> Dictionary:
         "scars": get_scars(person_id),
         "available_for_combat": person != null and person.is_available_for_combat()
     }
+
+func reduce_recovery(person_id: String, weeks: int, source: String = "tratamiento") -> int:
+    var person = RosterManager.get_person(person_id)
+    if person == null or person.role != "gladiator" or person.injury_days <= 0:
+        return 0
+    var reduction := mini(person.injury_days, maxi(0, weeks))
+    if reduction <= 0:
+        return 0
+    var record := GladiatorProgressionManager.ensure_record(person_id)
+    _sanitize_record(record)
+    var active: Dictionary = record.get("active_injury", {})
+    if active.is_empty():
+        active = {
+            "name": person.injury_name,
+            "severity": clampi(person.injury_severity, 1, 3),
+            "started_week": GameState.get_week(),
+            "recovery_weeks": person.injury_days,
+            "event_name": "Tratamiento médico"
+        }
+    person.injury_days = maxi(0, person.injury_days - reduction)
+    active["recovery_weeks"] = person.injury_days
+    record["active_injury"] = active
+    recovery_reduced.emit(person_id, reduction, source)
+    if person.injury_days <= 0:
+        person.injury_severity = 0
+        person.injury_name = ""
+        _complete_recovery(person, record, active)
+    else:
+        injury_state_changed.emit(person_id)
+        GladiatorProgressionManager.progression_changed.emit()
+    RosterManager.roster_changed.emit()
+    return reduction
 
 func _on_combat_finished(result: Dictionary) -> void:
     var person_id := str(result.get("fighter_id", ""))
