@@ -1,9 +1,9 @@
 ; Engine configuration file.
 ; It's best edited using the editor UI and not directly,
-; since the parameters in this file are not all obvious.
+; since the parameters are not all obvious.
 ;
 ; Format:
-;   [section]
+; [section]
 ; param=value
 
 config_version=5
@@ -58,7 +58,7 @@ SaveRecoveryCoordinator="*res://scripts/core/save_recovery_coordinator.gd"
 SaveRecoveryNoticePresenter="*res://scripts/ui/save_recovery_notice_presenter.gd"
 RivalManager="*res://scripts/systems/rival_manager.gd"
 RivalUniqueGladiatorController="*res://scripts/systems/rival_unique_gladiator_controller.gd"
-EventManager="*res://scripts/systems/event_manager.gd"
+EventManager="*res://scripts/systems/event_manager_demo.gd"
 EconomyManager="*res://scripts/systems/economy_manager.gd"
 TournamentManager="*res://scripts/systems/tournament_manager.gd"
 CampaignManager="*res://scripts/systems/campaign_manager.gd"
@@ -70,12 +70,15 @@ GladiatorCareerStateController="*res://scripts/systems/gladiator_career_state_co
 GladiatorTrainingController="*res://scripts/systems/gladiator_training_controller.gd"
 WeeklyPlanningController="*res://scripts/systems/weekly_planning_controller.gd"
 GladiatorRivalryController="*res://scripts/systems/gladiator_rivalry_controller.gd"
+RivalGladiatorActionController="*res://scripts/systems/rival_gladiator_action_controller.gd"
+ChapterObjectiveController="*res://scripts/systems/chapter_objective_controller.gd"
 TransferManager="*res://scripts/systems/transfer_manager.gd"
 EquipmentAbilityGuard="*res://scripts/systems/equipment_ability_guard.gd"
 TraitManager="*res://scripts/systems/trait_manager.gd"
 GladiatorCareerJournalController="*res://scripts/systems/gladiator_career_journal_controller.gd"
 GladiatorInjuryController="*res://scripts/systems/gladiator_injury_controller.gd"
 GladiatorMedicalCareController="*res://scripts/systems/gladiator_medical_care_controller.gd"
+DemoEconomyBalanceController="*res://scripts/systems/demo_economy_balance_controller.gd"
 RosterMarketPresentation="*res://scripts/ui/roster_market_presentation.gd"
 InitialGladiatorSelectionPresenter="*res://scripts/ui/initial_gladiator_selection_presenter.gd"
 AllTabsUIBootstrap="*res://scripts/ui/all_tabs_ui_bootstrap.gd"
@@ -97,6 +100,9 @@ GladiatorRivalryPresenter="*res://scripts/ui/gladiator_rivalry_presenter.gd"
 GladiatorTrainingPresenter="*res://scripts/ui/gladiator_training_presenter.gd"
 GladiatorTacticalPlanPresenter="*res://scripts/ui/gladiator_tactical_plan_presenter.gd"
 GladiatorCareerStatePresenter="*res://scripts/ui/gladiator_career_state_presenter.gd"
+ChapterObjectivePresenter="*res://scripts/ui/chapter_objective_presenter.gd"
+RivalGladiatorActionPresenter="*res://scripts/ui/rival_gladiator_action_presenter.gd"
+DemoEconomyBalancePresenter="*res://scripts/ui/demo_economy_balance_presenter.gd"
 StartScreenController="*res://scripts/ui/start_screen_controller.gd"
 TutorialController="*res://scripts/ui/tutorial_controller.gd"
 MainMenuReturnController="*res://scripts/ui/main_menu_return_controller.gd"
