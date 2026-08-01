@@ -47,7 +47,7 @@ func advance_week() -> void:
 
     var rival_events: Array = RivalManager.process_day()
     var economy_report: Dictionary = EconomyManager.process_week()
-    var tournament_events: Array = TournamentManager.process_day()
+    var tournament_events: Array = TournamentManager.process_week()
     report["rival_events"] = rival_events
     report["economy"] = economy_report
     report["tournament_events"] = tournament_events
