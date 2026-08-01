@@ -64,7 +64,7 @@ func open_dossier(person_id: String) -> bool:
     if person == null or person.role != "gladiator":
         return false
     selected_person_id = person_id
-    _render(person)
+    _render(person, "Información")
     overlay.visible = true
     return true
 
@@ -111,15 +111,32 @@ func _build_overlay(scene: Node) -> void:
     tab_container.size_flags_vertical = Control.SIZE_EXPAND_FILL
     content.add_child(tab_container)
 
-func _render(person) -> void:
+func _render(person, requested_tab: String = "") -> void:
+    var active_tab_name := requested_tab
+    if active_tab_name.is_empty() and tab_container != null and tab_container.current_tab >= 0:
+        var active_control := tab_container.get_tab_control(tab_container.current_tab)
+        if active_control != null:
+            active_tab_name = active_control.name
+    if active_tab_name.is_empty():
+        active_tab_name = "Información"
+
     title_label.text = "%s · Ficha del gladiador" % person.display_name
     for child in tab_container.get_children():
-        child.queue_free()
+        child.free()
     _build_information_tab(person)
     _build_equipment_tab(person)
     _build_abilities_tab(person)
     _build_traits_tab(person)
     _build_specialization_tab(person)
+    _restore_tab(active_tab_name)
+
+func _restore_tab(tab_name: String) -> void:
+    for index in range(tab_container.get_tab_count()):
+        var control := tab_container.get_tab_control(index)
+        if control != null and control.name == tab_name:
+            tab_container.current_tab = index
+            return
+    tab_container.current_tab = 0
 
 func _build_information_tab(person) -> void:
     var scroll := ScrollContainer.new()
@@ -164,7 +181,7 @@ func _build_equipment_tab(person) -> void:
     var text := RichTextLabel.new()
     text.bbcode_enabled = true
     text.fit_content = true
-    text.text = "[b]Equipo actual[/b]\nArma: %s\nArmadura: %s\nEscudo: %s\n\nEl equipo utilizado en entrenamientos y combates contribuye al dominio de la especialización." % [
+    text.text = "[b]Equipo actual[/b]\nArma: %s\nArmadura: %s\nEscudo: %s\n\nEl equipo compatible utilizado en entrenamientos y combates aporta dominio adicional a la especialización." % [
         loadout.get("weapon_name", "Ninguno"),
         loadout.get("armor_name", "Ninguna"),
         loadout.get("shield_name", "Ninguno")
@@ -235,26 +252,41 @@ func _build_specialization_tab(person) -> void:
     tab_container.add_child(box)
     var record := GladiatorProgressionManager.get_record(person.id)
     var current_id := str(record.get("specialization", GladiatorProgressionManager.DEFAULT_SPECIALIZATION))
+    var selected := SpecializationMasteryController.has_selected_specialization(person.id)
 
     var explanation := Label.new()
-    explanation.text = "Elegí una especialización al alcanzar nivel 3. El dominio aumenta al ganar combates, combatir con equipo y entrenar con ese equipo."
+    explanation.text = "Elegí una especialización al alcanzar nivel 3. El dominio aumenta al combatir, ganar y entrenar. El equipo compatible aporta progreso adicional."
     explanation.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
     box.add_child(explanation)
 
     specialization_selector = OptionButton.new()
     for specialization_id in GladiatorProgressionManager.get_specialization_ids():
+        if specialization_id == GladiatorProgressionManager.DEFAULT_SPECIALIZATION:
+            continue
         specialization_selector.add_item(GladiatorProgressionManager.get_specialization_name(specialization_id))
         specialization_selector.set_item_metadata(specialization_selector.item_count - 1, specialization_id)
         if specialization_id == current_id:
             specialization_selector.select(specialization_selector.item_count - 1)
-    specialization_selector.disabled = current_id != GladiatorProgressionManager.DEFAULT_SPECIALIZATION or int(record.get("level", 1)) < 3
+    specialization_selector.disabled = selected or int(record.get("level", 1)) < 3
     box.add_child(specialization_selector)
 
     var select_button := Button.new()
     select_button.text = "Confirmar especialización"
-    select_button.disabled = specialization_selector.disabled
+    select_button.disabled = specialization_selector.disabled or specialization_selector.item_count == 0
     select_button.pressed.connect(_select_specialization.bind(person.id))
     box.add_child(select_button)
+
+    var current_data: Dictionary = GladiatorProgressionManager.specializations.get(current_id, {})
+    var description := Label.new()
+    description.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+    description.text = str(current_data.get("description", "Elegí una especialización para comenzar su dominio.")) if selected else "Sin especialización elegida. El progreso comenzará después de confirmar una opción."
+    box.add_child(description)
+
+    var compatible_tags := SpecializationMasteryController.get_compatible_equipment_tags(person.id)
+    var equipment_hint := Label.new()
+    equipment_hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+    equipment_hint.text = "Equipo compatible: %s" % (", ".join(compatible_tags).replace("_", " ") if not compatible_tags.is_empty() else "se definirá al elegir una especialización")
+    box.add_child(equipment_hint)
 
     specialization_progress = ProgressBar.new()
     specialization_progress.max_value = 100
@@ -263,8 +295,9 @@ func _build_specialization_tab(person) -> void:
     box.add_child(specialization_progress)
 
     specialization_status = Label.new()
+    var specialization_name := GladiatorProgressionManager.get_specialization_name(current_id) if selected else "Sin especialización"
     specialization_status.text = "%s · %d%% de dominio%s" % [
-        GladiatorProgressionManager.get_specialization_name(current_id),
+        specialization_name,
         int(specialization_progress.value),
         " · COMPLETADA" if SpecializationMasteryController.is_mastered(person.id) else ""
     ]
