@@ -1,8 +1,8 @@
-extends SceneTree
+extends Node
 
 const EstateManagerScript = preload("res://scripts/systems/estate_manager.gd")
 
-func _init() -> void:
+func _ready() -> void:
     var estate = EstateManagerScript.new()
     estate._ensure_catalog_loaded()
 
@@ -35,4 +35,4 @@ func _init() -> void:
 
     estate.free()
     print("Estate catalog tests passed")
-    quit(0)
+    get_tree().quit(0)

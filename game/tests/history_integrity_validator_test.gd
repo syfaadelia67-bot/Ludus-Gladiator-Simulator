@@ -1,8 +1,8 @@
-extends SceneTree
+extends Node
 
 const HistoryIntegrityValidatorScript = preload("res://scripts/systems/history_integrity_validator.gd")
 
-func _init() -> void:
+func _ready() -> void:
     var valid_entry: Dictionary = {
         "day": 3,
         "fighter": "Marcus",
@@ -64,4 +64,4 @@ func _init() -> void:
     assert(int(future_report.get("future_entries", 0)) == 1)
 
     print("HistoryIntegrityValidator tests passed")
-    quit(0)
+    get_tree().quit(0)

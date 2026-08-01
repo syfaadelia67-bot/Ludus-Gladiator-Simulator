@@ -1,6 +1,6 @@
-extends SceneTree
+extends Node
 
-func _init() -> void:
+func _ready() -> void:
     call_deferred("_run")
 
 func _run() -> void:
@@ -22,4 +22,4 @@ func _run() -> void:
     GameState.day = previous_week
     CombatManager.last_combat_day = previous_combat_week
     print("Weekly cycle tests passed")
-    quit(0)
+    get_tree().quit(0)

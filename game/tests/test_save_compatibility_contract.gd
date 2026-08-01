@@ -1,9 +1,9 @@
-extends SceneTree
+extends Node
 
 const INSPECTOR_PATH := "res://scripts/core/save_compatibility_inspector.gd"
 const PROJECT_PATH := "res://project.godot"
 
-func _init() -> void:
+func _ready() -> void:
     var inspector_source := FileAccess.get_file_as_string(INSPECTOR_PATH)
     var project_source := FileAccess.get_file_as_string(PROJECT_PATH)
     var required_statuses := [
@@ -25,4 +25,4 @@ func _init() -> void:
     assert(inspector_source.contains("_structural_error"), "Debe diferenciar estructura dañada de incompatibilidad de versión.")
     assert(project_source.contains("SaveCompatibilityInspector=\"*res://scripts/core/save_compatibility_inspector.gd\""), "El inspector debe estar registrado como autoload.")
     print("Save compatibility contract: OK")
-    quit(0)
+    get_tree().quit(0)

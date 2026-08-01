@@ -1,8 +1,8 @@
-extends SceneTree
+extends Node
 
 const PersonScript = preload("res://scripts/entities/person.gd")
 
-func _init() -> void:
+func _ready() -> void:
     call_deferred("_run")
 
 func _run() -> void:
@@ -92,4 +92,4 @@ func _run() -> void:
     assert(str(migrated_config.get("tactical_plan", [])[0].condition) == "target_guarding", "Battle config conditions must migrate")
 
     print("Save v13 and progression migration tests passed")
-    quit(0)
+    get_tree().quit(0)

@@ -1,8 +1,8 @@
-extends SceneTree
+extends Node
 
 const CombatHistoryManagerScript = preload("res://scripts/systems/combat_history_manager.gd")
 
-func _init() -> void:
+func _ready() -> void:
     var manager = CombatHistoryManagerScript.new()
     var signal_state: Dictionary = {"count": 0}
     manager.history_changed.connect(func() -> void:
@@ -80,7 +80,7 @@ func _init() -> void:
 
     manager.free()
     print("CombatHistoryManager persistence tests passed")
-    quit(0)
+    get_tree().quit(0)
 
 func _make_entry(
     day: int,

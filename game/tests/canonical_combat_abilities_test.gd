@@ -1,6 +1,6 @@
-extends SceneTree
+extends Node
 
-func _init() -> void:
+func _ready() -> void:
     call_deferred("_run")
 
 func _run() -> void:
@@ -45,4 +45,4 @@ func _run() -> void:
     assert(float(dance.get("damage_multiplier_per_hit", 0.0)) > 0.0, "Class ability must expose level scaling")
 
     print("Canonical combat abilities and tactical plan tests passed")
-    quit(0)
+    get_tree().quit(0)

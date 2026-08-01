@@ -11,7 +11,7 @@ func run() -> void:
     _assert(DataRepository.specializations.size() == 5, "Deben existir gladiador y cuatro especializaciones.")
     _assert(TraitManager.get_origin_trait_ids().size() == 8, "Deben existir ocho rasgos de origen.")
     _assert(TraitManager.get_obtainable_trait_ids().size() == 14, "Deben existir catorce rasgos obtenibles.")
-    _assert(SaveManager.SAVE_VERSION == 13, "El guardado activo debe ser versión 13.")
+    _assert(SaveManager.SAVE_VERSION == 14, "El guardado activo debe ser versión 14.")
 
     var previous_people: Array = RosterManager.people.duplicate()
     var previous_records: Dictionary = GladiatorProgressionManager.records.duplicate(true)

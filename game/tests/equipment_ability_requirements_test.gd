@@ -1,8 +1,8 @@
-extends SceneTree
+extends Node
 
 const PersonScript = preload("res://scripts/entities/person.gd")
 
-func _init() -> void:
+func _ready() -> void:
     call_deferred("_run")
 
 func _run() -> void:
@@ -63,4 +63,4 @@ func _run() -> void:
     assert(EquipmentManager.get_ability_requirement(dance).contains("espadas"), "Danza de dos filos must explain its equipment requirement")
 
     print("Equipment ability requirement tests passed")
-    quit(0)
+    get_tree().quit(0)

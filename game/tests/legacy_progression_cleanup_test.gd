@@ -1,6 +1,6 @@
-extends SceneTree
+extends Node
 
-func _init() -> void:
+func _ready() -> void:
     call_deferred("_run")
 
 func _run() -> void:
@@ -32,7 +32,7 @@ func _run() -> void:
     assert(panel_scene.contains("AbilityRow"), "The scene must contain the canonical ability controls")
 
     print("Legacy progression cleanup tests passed")
-    quit(0)
+    get_tree().quit(0)
 
 func _read_text(path: String) -> String:
     var file := FileAccess.open(path, FileAccess.READ)

@@ -1,4 +1,4 @@
-extends SceneTree
+extends Node
 
 const EXPECTED_ABILITIES := [
     "precise_strike",
@@ -18,7 +18,7 @@ const EXPECTED_CLASS_ABILITIES := {
     "dimachaerus":"dance_of_two_blades"
 }
 
-func _init() -> void:
+func _ready() -> void:
     call_deferred("_run")
 
 func _run() -> void:
@@ -33,7 +33,7 @@ func _run() -> void:
     _assert_save_contract()
 
     print("Demo preflight consistency tests passed")
-    quit(0)
+    get_tree().quit(0)
 
 func _assert_ability_catalog() -> void:
     assert(DataRepository.abilities.size() == 8, "The demo must expose exactly eight canonical abilities")
@@ -101,7 +101,7 @@ func _assert_migration_contracts() -> void:
     assert(GladiatorProgressionManager.canonical_tactical_condition("unknown") == "always", "Unknown conditions must fall back safely")
 
 func _assert_save_contract() -> void:
-    assert(SaveManager.SAVE_VERSION == 13, "The current save format must be version 13")
+    assert(SaveManager.SAVE_VERSION == 14, "The current save format must be version 14")
     var person = preload("res://scripts/entities/person.gd").new({
         "id":"preflight_person",
         "name":"Preflight",

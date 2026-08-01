@@ -1,8 +1,8 @@
-extends SceneTree
+extends Node
 
 const PersonScript = preload("res://scripts/entities/person.gd")
 
-func _init() -> void:
+func _ready() -> void:
     call_deferred("_run")
 
 func _run() -> void:
@@ -74,4 +74,4 @@ func _run() -> void:
     assert(int(record.get("experience", -1)) == 0, "Experience must stop accumulating at the demo cap")
 
     print("Gladiator progression demo tests passed")
-    quit(0)
+    get_tree().quit(0)

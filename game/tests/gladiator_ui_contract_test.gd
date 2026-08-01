@@ -1,6 +1,6 @@
-extends SceneTree
+extends Node
 
-func _init() -> void:
+func _ready() -> void:
     call_deferred("_run")
 
 func _run() -> void:
@@ -23,4 +23,4 @@ func _run() -> void:
     assert(equipment_source.contains("PRÓXIMAMENTE"), "Equipment UI must preview locked level III")
 
     print("Canonical gladiator UI contract tests passed")
-    quit(0)
+    get_tree().quit(0)

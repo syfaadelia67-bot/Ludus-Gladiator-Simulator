@@ -1,8 +1,8 @@
-extends SceneTree
+extends Node
 
 const PersonScript = preload("res://scripts/entities/person.gd")
 
-func _init() -> void:
+func _ready() -> void:
     var person = PersonScript.new({
         "id":"test_gladiator",
         "name":"Test",
@@ -38,7 +38,7 @@ func _init() -> void:
     _validate_growth_budgets()
     person.free()
     print("Person progression stats tests passed")
-    quit(0)
+    get_tree().quit(0)
 
 func _validate_growth_budgets() -> void:
     var file := FileAccess.open("res://data/specializations.json", FileAccess.READ)

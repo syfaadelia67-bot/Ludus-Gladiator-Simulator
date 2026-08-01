@@ -79,4 +79,5 @@ FincaReturnNavigationController="*res://scripts/ui/finca_return_navigation_contr
 StartScreenController="*res://scripts/ui/start_screen_controller.gd"
 TutorialController="*res://scripts/ui/tutorial_controller.gd"
 MainMenuReturnController="*res://scripts/ui/main_menu_return_controller.gd"
+TestRunner="*res://tests/test_runner.gd"
 _mcp_game_helper="*res://addons/godot_ai/runtime/game_helper.gd"

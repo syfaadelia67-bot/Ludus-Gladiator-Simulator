@@ -1,8 +1,8 @@
-extends SceneTree
+extends Node
 
 const PersonScript = preload("res://scripts/entities/person.gd")
 
-func _init() -> void:
+func _ready() -> void:
     call_deferred("_run")
 
 func _run() -> void:
@@ -79,4 +79,4 @@ func _run() -> void:
     assert(int(migrated_record.get("abilities", {}).get("precise_strike", 0)) == 1, "Legacy techniques must migrate to abilities")
 
     print("Save v12 progression tests passed")
-    quit(0)
+    get_tree().quit(0)

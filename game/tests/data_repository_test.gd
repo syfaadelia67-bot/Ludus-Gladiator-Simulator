@@ -1,4 +1,4 @@
-extends SceneTree
+extends Node
 
 const DataRepositoryScript = preload("res://scripts/core/data_repository.gd")
 
@@ -10,7 +10,7 @@ const COLLECTION_PATHS: Dictionary = {
 const MISSING_PATH: String = "user://data_repository_missing_test.json"
 const INVALID_PATH: String = "user://data_repository_invalid_test.json"
 
-func _init() -> void:
+func _ready() -> void:
     var repository = DataRepositoryScript.new()
 
     for collection_name: String in COLLECTION_PATHS:
@@ -29,7 +29,7 @@ func _init() -> void:
 
     repository.free()
     print("DataRepository tests passed")
-    quit(0)
+    get_tree().quit(0)
 
 func _assert_valid_collection(collection_name: String, collection: Array) -> void:
     assert(not collection.is_empty(), "%s must be a non-empty array" % collection_name)
