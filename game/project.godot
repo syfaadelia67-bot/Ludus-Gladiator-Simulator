@@ -1,6 +1,6 @@
 ; Engine configuration file.
 ; It's best edited using the editor UI and not directly,
-; since the parameters that go here are not all obvious.
+; since the parameters in this file are not all obvious.
 ;
 ; Format:
 ;   [section]
@@ -44,6 +44,7 @@ renderer/rendering_method.mobile="gl_compatibility"
 GameState="*res://scripts/core/game_state.gd"
 DataRepository="*res://scripts/core/data_repository.gd"
 RosterManager="*res://scripts/systems/roster_manager.gd"
+UniqueGladiatorManager="*res://scripts/systems/unique_gladiator_manager.gd"
 LudusOwnerManager="*res://scripts/systems/ludus_owner_manager.gd"
 MarketManager="*res://scripts/systems/market_manager.gd"
 EstateManager="*res://scripts/systems/estate_manager.gd"
