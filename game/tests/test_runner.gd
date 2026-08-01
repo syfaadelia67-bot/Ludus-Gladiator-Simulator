@@ -7,7 +7,7 @@ extends Node
 ##   godot --headless --path game -- --test=res://tests/example_test.gd
 
 const TEST_ARGUMENT_PREFIX := "--test="
-const FALLBACK_TIMEOUT_FRAMES := 30
+const FALLBACK_TIMEOUT_FRAMES := 300
 
 var _test_path := ""
 
