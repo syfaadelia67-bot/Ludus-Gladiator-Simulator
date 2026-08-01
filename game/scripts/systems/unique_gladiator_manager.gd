@@ -2,6 +2,9 @@ extends Node
 
 signal unique_gladiators_changed
 signal first_gladiator_acquired(gladiator_id: String)
+signal unique_gladiator_unlocked(gladiator_id: String)
+signal unique_gladiator_acquired(gladiator_id: String)
+signal unique_gladiator_claimed_by_rival(gladiator_id: String, rival_id: String)
 
 const INITIAL_RIVAL_IDS := ["house_varro", "house_sabina", "house_cassian"]
 
@@ -14,15 +17,21 @@ func _ready() -> void:
     call_deferred("_connect_runtime_signals")
 
 func _connect_runtime_signals() -> void:
-    if not GameState.week_advanced.is_connected(unlock_available_gladiators):
-        GameState.week_advanced.connect(unlock_available_gladiators)
+    if not GameState.week_advanced.is_connected(_on_week_advanced):
+        GameState.week_advanced.connect(_on_week_advanced)
     if not SaveManager.load_completed.is_connected(_on_save_loaded):
         SaveManager.load_completed.connect(_on_save_loaded)
     if not NewCampaignCoordinator.campaign_reset_completed.is_connected(_on_campaign_reset_completed):
         NewCampaignCoordinator.campaign_reset_completed.connect(_on_campaign_reset_completed)
 
+func _on_week_advanced(week: int) -> void:
+    process_market_cycle(week)
+
 func _on_save_loaded(_path: String) -> void:
-    reconcile_from_world()
+    if states.is_empty():
+        reconcile_from_world()
+    else:
+        process_market_cycle(GameState.get_week())
 
 func _on_campaign_reset_completed() -> void:
     reset_for_new_campaign()
@@ -40,7 +49,9 @@ func reset_for_new_campaign() -> void:
         states[gladiator_id] = {
             "status": "initial_market" if bool(entry.get("initial_candidate", false)) else "locked",
             "rival_id": "",
-            "acquired_week": 0
+            "acquired_week": 0,
+            "available_week": 1 if bool(entry.get("initial_candidate", false)) else 0,
+            "expires_week": 0
         }
     unique_gladiators_changed.emit()
 
@@ -73,7 +84,7 @@ func reconcile_from_world() -> void:
             if str(state.get("status", "")) == "initial_market":
                 state["status"] = "locked"
                 states[gladiator_id] = state
-    unlock_available_gladiators(GameState.get_week())
+    process_market_cycle(GameState.get_week())
     unique_gladiators_changed.emit()
 
 func get_state(gladiator_id: String) -> Dictionary:
@@ -88,6 +99,22 @@ func get_initial_candidate_offers() -> Array[Dictionary]:
         if str(states.get(gladiator_id, {}).get("status", "")) != "initial_market":
             continue
         result.append(_to_market_offer(entry))
+    return result
+
+func get_available_market_offers() -> Array[Dictionary]:
+    var result: Array[Dictionary] = []
+    for entry in DataRepository.unique_gladiators:
+        if not entry is Dictionary:
+            continue
+        var gladiator_id := str(entry.get("id", ""))
+        var state: Dictionary = states.get(gladiator_id, {})
+        if str(state.get("status", "")) != "market":
+            continue
+        var offer := _to_market_offer(entry)
+        offer["available_week"] = int(state.get("available_week", 0))
+        offer["expires_week"] = int(state.get("expires_week", 0))
+        offer["weeks_remaining"] = maxi(0, int(state.get("expires_week", 0)) - GameState.get_week() + 1)
+        result.append(offer)
     return result
 
 func acquire_initial_gladiator(gladiator_id: String) -> bool:
@@ -109,18 +136,27 @@ func acquire_initial_gladiator(gladiator_id: String) -> bool:
         if str(other_state.get("status", "")) != "initial_market":
             continue
         var rival_id := INITIAL_RIVAL_IDS[rival_index % INITIAL_RIVAL_IDS.size()]
-        other_state["status"] = "rival"
-        other_state["rival_id"] = rival_id
-        other_state["acquired_week"] = GameState.get_week()
-        states[other_id] = other_state
-        _assign_to_rival(rival_id, str(other_id))
+        _move_to_rival(str(other_id), rival_id, GameState.get_week())
         rival_index += 1
 
     first_gladiator_acquired.emit(gladiator_id)
+    unique_gladiator_acquired.emit(gladiator_id)
     unique_gladiators_changed.emit()
     return true
 
-func unlock_available_gladiators(week: int) -> void:
+func acquire_market_gladiator(gladiator_id: String) -> bool:
+    var state: Dictionary = states.get(gladiator_id, {})
+    if str(state.get("status", "")) != "market":
+        return false
+    state["status"] = "player"
+    state["rival_id"] = ""
+    state["acquired_week"] = GameState.get_week()
+    states[gladiator_id] = state
+    unique_gladiator_acquired.emit(gladiator_id)
+    unique_gladiators_changed.emit()
+    return true
+
+func process_market_cycle(week: int) -> void:
     if not first_purchase_completed:
         return
     var changed := false
@@ -129,13 +165,21 @@ func unlock_available_gladiators(week: int) -> void:
             continue
         var gladiator_id := str(entry.get("id", ""))
         var state: Dictionary = states.get(gladiator_id, {})
-        if str(state.get("status", "")) != "locked":
-            continue
-        if week >= int(entry.get("minimum_week", 99)):
+        var status := str(state.get("status", "locked"))
+        if status == "locked" and week >= int(entry.get("minimum_week", 99)):
+            var duration := maxi(1, int(entry.get("offer_duration_weeks", 3)))
             state["status"] = "market"
+            state["available_week"] = week
+            state["expires_week"] = week + duration - 1
             states[gladiator_id] = state
+            unique_gladiator_unlocked.emit(gladiator_id)
+            changed = true
+        elif status == "market" and week > int(state.get("expires_week", week)):
+            var rival_id := _select_rival_for(gladiator_id)
+            _move_to_rival(gladiator_id, rival_id, week)
             changed = true
     if changed:
+        MarketManager.sync_unique_offers()
         unique_gladiators_changed.emit()
 
 func export_state() -> Dictionary:
@@ -148,10 +192,11 @@ func import_state(data: Dictionary) -> void:
     states = data.get("states", {}).duplicate(true)
     first_purchase_completed = bool(data.get("first_purchase_completed", false))
     if states.is_empty():
-        reset_for_new_campaign()
+        reconcile_from_world()
         return
     _sanitize_states()
     _rebuild_rival_assignments()
+    process_market_cycle(GameState.get_week())
     unique_gladiators_changed.emit()
 
 func _sanitize_states() -> void:
@@ -171,7 +216,9 @@ func _sanitize_states() -> void:
         states[gladiator_id] = {
             "status": status,
             "rival_id": str(state.get("rival_id", "")),
-            "acquired_week": maxi(0, int(state.get("acquired_week", 0)))
+            "acquired_week": maxi(0, int(state.get("acquired_week", 0))),
+            "available_week": maxi(0, int(state.get("available_week", 0))),
+            "expires_week": maxi(0, int(state.get("expires_week", 0)))
         }
 
 func _rebuild_rival_assignments() -> void:
@@ -181,6 +228,19 @@ func _rebuild_rival_assignments() -> void:
         var state: Dictionary = states[gladiator_id]
         if str(state.get("status", "")) == "rival":
             _assign_to_rival(str(state.get("rival_id", "")), str(gladiator_id))
+
+func _select_rival_for(gladiator_id: String) -> String:
+    var seed := absi(hash("%s|%d" % [gladiator_id, GameState.get_week()]))
+    return INITIAL_RIVAL_IDS[seed % INITIAL_RIVAL_IDS.size()]
+
+func _move_to_rival(gladiator_id: String, rival_id: String, week: int) -> void:
+    var state: Dictionary = states.get(gladiator_id, {})
+    state["status"] = "rival"
+    state["rival_id"] = rival_id
+    state["acquired_week"] = week
+    states[gladiator_id] = state
+    _assign_to_rival(rival_id, gladiator_id)
+    unique_gladiator_claimed_by_rival.emit(gladiator_id, rival_id)
 
 func _assign_to_rival(rival_id: String, gladiator_id: String) -> void:
     for rival in RivalManager.rivals:
