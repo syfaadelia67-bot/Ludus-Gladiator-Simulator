@@ -10,6 +10,8 @@ const PRIMARY_BY_CHAPTER := {
 
 func _ready() -> void:
     CampaignManager.campaign_changed.connect(func(): chapter_objectives_changed.emit())
+    if CampaignManager.has_signal("objective_failed"):
+        CampaignManager.objective_failed.connect(func(_objective: Dictionary): chapter_objectives_changed.emit())
     GameState.week_advanced.connect(func(_week: int): chapter_objectives_changed.emit())
     EstateManager.estate_changed.connect(func(): chapter_objectives_changed.emit())
     RosterManager.roster_changed.connect(func(): chapter_objectives_changed.emit())
@@ -23,9 +25,9 @@ func get_current_overview() -> Dictionary:
         var objective: Dictionary = raw.duplicate(true)
         var objective_id := str(objective.get("id", ""))
         objective["primary"] = objective_id == str(PRIMARY_BY_CHAPTER.get(chapter_id, ""))
-        objective["deadline_week"] = end_week
-        objective["weeks_remaining"] = maxi(0, end_week - GameState.get_week() + 1)
-        objective["failed"] = GameState.get_week() > end_week and not bool(objective.get("completed", false))
+        objective["deadline_week"] = int(objective.get("deadline_week", end_week))
+        objective["weeks_remaining"] = int(objective.get("weeks_remaining", maxi(0, end_week - GameState.get_week() + 1)))
+        objective["failed"] = bool(objective.get("failed", false))
         objective["status"] = _status_for(objective)
         objectives.append(objective)
     return {
