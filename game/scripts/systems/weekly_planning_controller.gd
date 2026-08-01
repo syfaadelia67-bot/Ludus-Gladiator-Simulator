@@ -47,7 +47,7 @@ func get_summary() -> Dictionary:
         elif person.role == "retired":
             retired_staff += 1
 
-    var economy := _get_economy_projection()
+    var economy := EconomyManager.get_weekly_projection()
     var food_consumption := maxi(1, int(ceil(float(RosterManager.get_people().size() * GameState.DAYS_PER_WEEK) * EventManager.get_food_consumption_multiplier())))
     var event_pending := not EventManager.get_pending_event().is_empty()
     var fight_pending := UniqueGladiatorManager.first_purchase_completed and RosterManager.has_gladiator() and CombatManager.last_combat_day != GameState.day
@@ -79,28 +79,11 @@ func get_summary() -> Dictionary:
         "food_consumption": food_consumption,
         "food_after": maxi(0, GameState.food - food_consumption),
         "economy": economy,
-        "denarii_after": GameState.denarii + int(economy.get("income", 0)) - int(economy.get("expenses", 0)),
+        "denarii_after": GameState.denarii + int(economy.get("net", 0)),
         "fight": CombatManager.get_current_event_details(),
         "fight_pending": fight_pending,
         "event_pending": event_pending,
         "blockers": blockers,
         "warnings": warnings,
         "can_close": blockers.is_empty() and not CampaignManager.campaign_over
-    }
-
-func _get_economy_projection() -> Dictionary:
-    var maintenance_and_wages := EconomyManager.get_daily_fixed_costs()
-    var sponsor_income := 0
-    for contract in EconomyManager.active_contracts:
-        sponsor_income += int(contract.get("daily_income", 0))
-    var loan_payments := 0
-    for loan in EconomyManager.active_loans:
-        loan_payments += mini(int(loan.get("installment", 0)), int(loan.get("remaining", 0)))
-    return {
-        "income": sponsor_income,
-        "expenses": maintenance_and_wages + loan_payments,
-        "maintenance_and_wages": maintenance_and_wages,
-        "loan_payments": loan_payments,
-        "sponsor_income": sponsor_income,
-        "debt": EconomyManager.get_total_debt()
     }
