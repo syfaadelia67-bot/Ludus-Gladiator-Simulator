@@ -67,7 +67,12 @@ func _on_week_advanced(week: int) -> void:
         var profiles: Dictionary = rival.get(PROFILE_KEY, {})
         for gladiator_id in profiles.keys():
             var profile: Dictionary = profiles[gladiator_id]
+            _sanitize_profile(profile, DataRepository.get_unique_gladiator(str(gladiator_id)))
             if int(profile.get("last_progress_week", 0)) >= week:
+                continue
+            if int(profile.get("training_disrupted_until", 0)) >= week:
+                profile["last_progress_week"] = week
+                profiles[gladiator_id] = profile
                 continue
             profile["experience"] = int(profile.get("experience", 0)) + 12 + int(rival.get("wealth", 50)) / 12
             while int(profile.get("experience", 0)) >= _experience_for_next_level(int(profile.get("level", 1))):
@@ -103,11 +108,28 @@ func _ensure_profile(rival_id: String, gladiator_id: String) -> void:
                 "losses": 0,
                 "arena_appearances": 0,
                 "last_progress_week": GameState.get_week(),
+                "training_disrupted_until": 0,
+                "loyalty": clampi(int(entry.get("loyalty", 55)), 0, 100),
                 "active": true
             }
+        else:
+            var profile: Dictionary = profiles[gladiator_id]
+            _sanitize_profile(profile, entry)
+            profiles[gladiator_id] = profile
         rival[PROFILE_KEY] = profiles
         RivalManager.rivals_changed.emit()
         return
+
+func _sanitize_profile(profile: Dictionary, entry: Dictionary) -> void:
+    profile["level"] = clampi(int(profile.get("level", 1)), 1, 10)
+    profile["experience"] = maxi(0, int(profile.get("experience", 0)))
+    profile["wins"] = maxi(0, int(profile.get("wins", 0)))
+    profile["losses"] = maxi(0, int(profile.get("losses", 0)))
+    profile["arena_appearances"] = maxi(0, int(profile.get("arena_appearances", 0)))
+    profile["last_progress_week"] = maxi(0, int(profile.get("last_progress_week", 0)))
+    profile["training_disrupted_until"] = maxi(0, int(profile.get("training_disrupted_until", 0)))
+    profile["loyalty"] = clampi(int(profile.get("loyalty", entry.get("loyalty", 55))), 0, 100)
+    profile["active"] = bool(profile.get("active", true))
 
 func _experience_for_next_level(level: int) -> int:
     return 40 + maxi(1, level) * 15
