@@ -11,6 +11,9 @@ func _ready() -> void:
     CombatHistoryManager.history_changed.connect(refresh)
     refresh()
 
+func _entry_week(entry: Dictionary) -> int:
+    return int(entry.get("week", entry.get("day", 0)))
+
 func refresh() -> void:
     var summary: Dictionary = CombatHistoryManager.get_summary()
     var title_values: Array = summary.get("titles", []) as Array
@@ -48,8 +51,8 @@ func refresh() -> void:
     for entry: Dictionary in visible_entries:
         var result_text: String = "Victoria" if bool(entry.get("victory", false)) else ("Rendición" if bool(entry.get("surrendered", false)) else "Derrota")
         var flawless_mark: String = " ★" if bool(entry.get("flawless", false)) else ""
-        history_list.add_item("Día %d · %s · %s contra %s · %s%s" % [
-            int(entry.get("day", 0)),
+        history_list.add_item("Semana %d · %s · %s contra %s · %s%s" % [
+            _entry_week(entry),
             str(entry.get("event_name", "Combate")),
             str(entry.get("fighter", "Gladiador")),
             str(entry.get("enemy", "Rival")),
@@ -76,7 +79,7 @@ func _show_entry(index: int) -> void:
     var performance: String = "Victoria impecable" if bool(entry.get("flawless", false)) else "Combate estándar"
     var lines: Array[String] = [
         "[b]%s — %s[/b]" % [str(entry.get("event_name", "Combate")), status],
-        "Día %d | %s contra %s" % [int(entry.get("day", 0)), str(entry.get("fighter", "Gladiador")), str(entry.get("enemy", "Rival"))],
+        "Semana %d | %s contra %s" % [_entry_week(entry), str(entry.get("fighter", "Gladiador")), str(entry.get("enemy", "Rival"))],
         "Rondas: %d | Vida restante: %.0f%% | %s" % [int(entry.get("rounds", 0)), health_percent, performance],
         "Premio: %d denarios | Reputación: %+d" % [int(entry.get("reward", 0)), int(entry.get("reputation", 0))],
         "Herida: %s" % (injury if not injury.is_empty() else "Ninguna")
