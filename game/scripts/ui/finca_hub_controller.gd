@@ -2,6 +2,7 @@ extends Node
 
 signal hub_opened
 signal system_opened(system_id: String)
+signal building_system_unavailable(building_id: String)
 
 const MAIN_SCENE_NAME := "Main"
 const TAB_PATH := "Margin/VBox/Tabs"
@@ -14,6 +15,13 @@ const SYSTEM_TABS := {
     "eventos": "Eventos",
     "arena": "Arena",
     "campana": "Campaña"
+}
+const BUILDING_SYSTEMS := {
+    "dominus_house": "campana",
+    "barracks": "personal",
+    "training_yard": "personal",
+    "forge": "forja",
+    "private_arena": "arena"
 }
 
 func _ready() -> void:
@@ -53,6 +61,18 @@ func open_system(system_id: String) -> bool:
     tabs.current_tab = tab_index
     system_opened.emit(normalized_id)
     return true
+
+func open_building_system(building_id: String) -> bool:
+    var canonical_id := EstateManager.canonicalize_building_id(building_id)
+    var system_id := str(BUILDING_SYSTEMS.get(canonical_id, ""))
+    if system_id.is_empty():
+        building_system_unavailable.emit(canonical_id)
+        return false
+    return open_system(system_id)
+
+func get_building_system_id(building_id: String) -> String:
+    var canonical_id := EstateManager.canonicalize_building_id(building_id)
+    return str(BUILDING_SYSTEMS.get(canonical_id, ""))
 
 func get_current_system_id() -> String:
     var tabs := _get_tabs()
