@@ -26,7 +26,7 @@ const STEPS := [
         "id":"resolve_event",
         "title":"4. Evento de campaña",
         "text":"Cada semana presenta una decisión narrativa. Sus consecuencias pueden modificar recursos, relaciones y reputación.",
-        "system":"eventos",
+        "system":"campana",
         "objective":"Resolvé una decisión narrativa semanal."
     },
     {
@@ -67,6 +67,8 @@ func _show_if_needed() -> void:
     if scene == null or scene.name != "Main":
         return
     _restore_progress()
+    if current_step == 0:
+        FincaHubController.show_finca()
     if panel == null or not is_instance_valid(panel):
         _build_panel(scene)
     panel.visible = true
