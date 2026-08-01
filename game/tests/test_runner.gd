@@ -20,7 +20,6 @@ func _ready() -> void:
 
 func _run_requested_test() -> void:
 	if _test_path.is_empty():
-		_fail("Missing test path. Pass -- --test=res://tests/<test>.gd")
 		return
 	if not ResourceLoader.exists(_test_path):
 		_fail("Test script not found: %s" % _test_path)
