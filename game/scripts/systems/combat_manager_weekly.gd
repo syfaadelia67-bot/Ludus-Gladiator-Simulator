@@ -34,16 +34,7 @@ func get_event_name_for_week(week: int) -> String:
 func get_event_details_for_week(week: int) -> Dictionary:
     var event_type := get_event_type_for_week(week)
     if event_type == "demo_finale":
-        return {
-            "type":event_type,
-            "name":get_event_name_for_week(week),
-            "rules":"Duelo decisivo que cierra la campaña de dieciséis semanas.",
-            "risk":"Heridas graves",
-            "reward":"Victoria o derrota final de campaña",
-            "team_size":1,
-            "opponent_class":"gladiator",
-            "finale":true
-        }
+        return {"type":event_type,"name":get_event_name_for_week(week),"rules":"Duelo decisivo que cierra la campaña de dieciséis semanas.","risk":"Heridas graves","reward":"Victoria o derrota final de campaña","team_size":1,"opponent_class":"gladiator","finale":true}
     if event_type == "official":
         return {"type":event_type,"name":get_event_name_for_week(week),"rules":"Duelo reglamentado contra otro gladiador.","risk":"Heridas moderadas","reward":"Denarios + reputación","team_size":1,"opponent_class":"gladiator","finale":false}
     if event_type == "beast_hunt":
@@ -63,6 +54,41 @@ func get_current_event_details() -> Dictionary:
 
 func get_next_event_summary() -> String:
     return "Semana %d: %s. Cada semana incluye al menos un combate." % [GameState.get_week(), get_current_event_name()]
+
+func get_current_opponent_preview(fighter_id: String = "") -> Dictionary:
+    var week := GameState.get_week()
+    var event_type := get_event_type_for_week(week)
+    if event_type == "beast_hunt":
+        return {"known":false,"kind":"beast","title":"Bestia no revelada","description":"La especie y el tamaño se confirmarán al comenzar la cacería."}
+    var profile := RivalUniqueGladiatorController.get_opponent_for_week(week, event_type)
+    if profile.is_empty():
+        return {"known":false,"kind":"generic","title":"Oponente por confirmar","description":"La organización de la Arena todavía no anunció al rival."}
+    var gladiator_id := str(profile.get("gladiator_id", ""))
+    var entry := DataRepository.get_unique_gladiator(gladiator_id)
+    if entry.is_empty():
+        return {"known":false,"kind":"generic","title":"Oponente por confirmar","description":"No hay información fiable sobre el combatiente."}
+    var level := maxi(1, int(profile.get("level", 1)))
+    var rivalry: Dictionary = {}
+    if not fighter_id.is_empty():
+        rivalry = GladiatorRivalryController.get_rivalry(fighter_id, gladiator_id)
+    return {
+        "known":true,
+        "kind":"unique_gladiator",
+        "gladiator_id":gladiator_id,
+        "rival_id":str(profile.get("rival_id", "")),
+        "name":str(entry.get("name", gladiator_id)),
+        "rival_name":str(profile.get("rival_name", "Casa rival")),
+        "level":level,
+        "origin":str(entry.get("origin", "Desconocido")),
+        "strength":int(entry.get("strength", 5)),
+        "agility":int(entry.get("agility", 5)),
+        "endurance":int(entry.get("endurance", 5)),
+        "technique":int(entry.get("technique", 5)),
+        "health":int(entry.get("health", 50)) + level * 8,
+        "wins":int(profile.get("wins", 0)),
+        "losses":int(profile.get("losses", 0)),
+        "rivalry":rivalry
+    }
 
 func simulate_duel(gladiator_id: String, tactic: String = "balanced") -> Dictionary:
     if not UniqueGladiatorManager.first_purchase_completed or not RosterManager.has_gladiator():
@@ -99,17 +125,11 @@ func _build_enemy(person, event_type: String) -> Dictionary:
     var health := int(entry.get("health", 50)) + level * 8
     var energy := 65 + int(entry.get("endurance", 5)) * 4 + level * 3
     var accuracy := 48 + int(entry.get("agility", 5)) * 3 + int(entry.get("technique", 5)) + level
-    var abilities := {"precise_strike":1, "feint":1, "opportunity_strike":1, "throw_sand":1}
-    var plan := [
-        {"ability_id":"opportunity_strike","condition":"target_vulnerable"},
-        {"ability_id":"throw_sand","condition":"opening"},
-        {"ability_id":"feint","condition":"always"},
-        {"ability_id":"precise_strike","condition":"always"}
-    ]
+    var abilities := {"precise_strike":1,"feint":1,"opportunity_strike":1,"throw_sand":1}
+    var plan := [{"ability_id":"opportunity_strike","condition":"target_vulnerable"},{"ability_id":"throw_sand","condition":"opening"},{"ability_id":"feint","condition":"always"},{"ability_id":"precise_strike","condition":"always"}]
     _last_unique_enemy_id = gladiator_id
     _last_unique_enemy_rival_id = str(profile.get("rival_id", ""))
-    var rival_name := str(profile.get("rival_name", "Casa rival"))
-    return _combatant_base("%s · %s · nivel %d" % [entry.get("name", gladiator_id), rival_name, level], "unique_gladiator", health, energy, attack, defense, accuracy, abilities, plan)
+    return _combatant_base("%s · %s · nivel %d" % [entry.get("name", gladiator_id), profile.get("rival_name", "Casa rival"), level], "unique_gladiator", health, energy, attack, defense, accuracy, abilities, plan)
 
 func _resolve_injury(fighter, player: Dictionary, victory: bool, surrendered: bool, rng: RandomNumberGenerator, event_type: String) -> String:
     var health_ratio := float(maxi(0, int(player.health))) / float(maxi(1, int(player.max_health)))
@@ -131,13 +151,11 @@ func _resolve_injury(fighter, player: Dictionary, victory: bool, surrendered: bo
         chance -= 4
     if rng.randi_range(1, 100) > clampi(chance, 2, 94):
         return ""
-
     var severity := 1
     if health_ratio <= 0.0 or (health_ratio < 0.15 and event_type in ["beast_hunt", "underground", "demo_finale"]):
         severity = 3
     elif health_ratio < 0.40 or event_type in ["beast_hunt", "underground", "demo_finale"]:
         severity = 2
-
     var candidates: Array = WEEKLY_INJURIES.get(severity, WEEKLY_INJURIES[1])
     var injury_name := str(candidates[rng.randi_range(0, candidates.size() - 1)])
     if event_type == "beast_hunt" and severity >= 2:
