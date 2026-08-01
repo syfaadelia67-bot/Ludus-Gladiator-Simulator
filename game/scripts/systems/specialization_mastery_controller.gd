@@ -41,18 +41,29 @@ func get_progress(person_id: String) -> int:
 func is_mastered(person_id: String) -> bool:
     return has_selected_specialization(person_id) and get_progress(person_id) >= MAX_PROGRESS
 
+func get_compatible_equipment_tags(person_id: String) -> Array[String]:
+    var record := GladiatorProgressionManager.ensure_record(person_id)
+    var specialization_id := str(record.get("specialization", GladiatorProgressionManager.DEFAULT_SPECIALIZATION))
+    var data: Dictionary = GladiatorProgressionManager.specializations.get(specialization_id, {})
+    var result: Array[String] = []
+    for raw_tag in data.get("mastery_equipment_tags", []):
+        var tag := str(raw_tag)
+        if not tag.is_empty() and not result.has(tag):
+            result.append(tag)
+    return result
+
 func register_training_use(person_id: String) -> int:
     var person = RosterManager.get_person(person_id)
     if person == null or person.role != "gladiator" or not has_selected_specialization(person_id):
         return 0
-    return _add_progress(person_id, TRAINING_BASE_PROGRESS + _equipped_piece_count(person))
+    return _add_progress(person_id, TRAINING_BASE_PROGRESS + _compatible_equipment_bonus(person))
 
 func _on_combat_finished(result: Dictionary) -> void:
     var person_id := str(result.get("fighter_id", ""))
     var person = RosterManager.get_person(person_id)
     if person == null or person.role != "gladiator" or not has_selected_specialization(person_id):
         return
-    var gain := COMBAT_BASE_PROGRESS + _equipped_piece_count(person) * EQUIPMENT_USE_BONUS
+    var gain := COMBAT_BASE_PROGRESS + _compatible_equipment_bonus(person)
     if bool(result.get("victory", false)):
         gain += VICTORY_BONUS
     _add_progress(person_id, gain)
@@ -104,13 +115,13 @@ func _add_progress(person_id: String, amount: int) -> int:
         specialization_mastered.emit(person_id, str(record.get("specialization", GladiatorProgressionManager.DEFAULT_SPECIALIZATION)))
     return updated - previous
 
-func _equipped_piece_count(person) -> int:
-    var loadout := EquipmentManager.get_equipped_loadout(person)
-    var count := 0
-    if str(loadout.get("weapon_name", "Ninguno")) != "Ninguno":
-        count += 1
-    if str(loadout.get("armor_name", "Ninguna")) != "Ninguna":
-        count += 1
-    if str(loadout.get("shield_name", "Ninguno")) != "Ninguno":
-        count += 1
-    return count
+func _compatible_equipment_bonus(person) -> int:
+    var compatible_tags := get_compatible_equipment_tags(person.id)
+    if compatible_tags.is_empty():
+        return 0
+    var equipped_tags := EquipmentManager.get_equipped_tags(person)
+    var matched := 0
+    for tag in compatible_tags:
+        if equipped_tags.has(tag):
+            matched += 1
+    return matched * EQUIPMENT_USE_BONUS
