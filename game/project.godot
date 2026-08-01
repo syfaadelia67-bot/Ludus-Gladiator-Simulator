@@ -72,6 +72,7 @@ GladiatorCareerJournalController="*res://scripts/systems/gladiator_career_journa
 GladiatorInjuryController="*res://scripts/systems/gladiator_injury_controller.gd"
 GladiatorMedicalCareController="*res://scripts/systems/gladiator_medical_care_controller.gd"
 RosterMarketPresentation="*res://scripts/ui/roster_market_presentation.gd"
+InitialGladiatorSelectionPresenter="*res://scripts/ui/initial_gladiator_selection_presenter.gd"
 AllTabsUIBootstrap="*res://scripts/ui/all_tabs_ui_bootstrap.gd"
 WeeklyCyclePresentation="*res://scripts/ui/weekly_cycle_presentation.gd"
 WeeklyCalendarPresenter="*res://scripts/ui/weekly_calendar_presenter.gd"
