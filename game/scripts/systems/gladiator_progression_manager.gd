@@ -292,6 +292,8 @@ func _migrate_record(raw_record: Dictionary, person_id: String = "") -> Dictiona
     var earned_points := int(record.get("level", 1))
     if record.has("skill_points"):
         record["skill_points"] = clampi(int(record.get("skill_points", 0)), 0, maxi(0, earned_points - spent_points))
+    elif record.has("technique_points"):
+        record["skill_points"] = clampi(int(record.get("technique_points", 0)), 0, maxi(0, earned_points - spent_points))
     else:
         record["skill_points"] = maxi(0, earned_points - spent_points)
 
