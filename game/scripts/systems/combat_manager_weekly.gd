@@ -111,6 +111,16 @@ func simulate_duel(gladiator_id: String, tactic: String = "balanced") -> Diction
         RivalUniqueGladiatorController.register_combat_result(_last_unique_enemy_id, bool(result.get("victory", false)))
     return result
 
+func _build_combatant(person, tactic: String) -> Dictionary:
+    var combatant := super._build_combatant(person, tactic)
+    var modifiers := GladiatorCareerStateController.get_combat_modifiers(person.id)
+    combatant.attack = int(round(float(combatant.attack + int(modifiers.get("attack_bonus", 0))) * float(modifiers.get("attack_multiplier", 1.0))))
+    combatant.accuracy = int(combatant.accuracy) + int(modifiers.get("accuracy_bonus", 0))
+    var energy_value := int(round(float(combatant.max_energy + int(modifiers.get("energy_bonus", 0))) * float(modifiers.get("energy_multiplier", 1.0))))
+    combatant.max_energy = maxi(20, energy_value)
+    combatant.energy = combatant.max_energy
+    return combatant
+
 func _build_enemy(person, event_type: String) -> Dictionary:
     var profile := RivalUniqueGladiatorController.get_opponent_for_week(GameState.get_week(), event_type)
     if profile.is_empty():
