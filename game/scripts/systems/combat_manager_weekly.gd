@@ -8,6 +8,9 @@ const WEEKLY_INJURIES := {
     3: ["Fractura grave", "Herida crítica", "Desgarro de bestia", "Trauma severo"]
 }
 
+var _last_unique_enemy_id := ""
+var _last_unique_enemy_rival_id := ""
+
 func get_event_type_for_week(week: int) -> String:
     var resolved_week := maxi(1, week)
     if resolved_week == DEMO_FINAL_WEEK:
@@ -71,7 +74,42 @@ func simulate_duel(gladiator_id: String, tactic: String = "balanced") -> Diction
     if last_combat_day == GameState.day:
         combat_failed.emit("El ludus ya disputó el combate de esta semana.")
         return {}
-    return super.simulate_duel(gladiator_id, tactic)
+    _last_unique_enemy_id = ""
+    _last_unique_enemy_rival_id = ""
+    var result := super.simulate_duel(gladiator_id, tactic)
+    if not result.is_empty() and not _last_unique_enemy_id.is_empty():
+        result["enemy_unique_gladiator_id"] = _last_unique_enemy_id
+        result["enemy_rival_id"] = _last_unique_enemy_rival_id
+        last_result["enemy_unique_gladiator_id"] = _last_unique_enemy_id
+        last_result["enemy_rival_id"] = _last_unique_enemy_rival_id
+        RivalUniqueGladiatorController.register_combat_result(_last_unique_enemy_id, bool(result.get("victory", false)))
+    return result
+
+func _build_enemy(person, event_type: String) -> Dictionary:
+    var profile := RivalUniqueGladiatorController.get_opponent_for_week(GameState.get_week(), event_type)
+    if profile.is_empty():
+        return super._build_enemy(person, event_type)
+    var gladiator_id := str(profile.get("gladiator_id", ""))
+    var entry := DataRepository.get_unique_gladiator(gladiator_id)
+    if entry.is_empty():
+        return super._build_enemy(person, event_type)
+    var level := maxi(1, int(profile.get("level", 1)))
+    var attack := int(entry.get("strength", 5)) * 2 + int(entry.get("technique", 5)) + level * 3
+    var defense := int(entry.get("endurance", 5)) * 2 + int(entry.get("agility", 5)) + level * 2
+    var health := int(entry.get("health", 50)) + level * 8
+    var energy := 65 + int(entry.get("endurance", 5)) * 4 + level * 3
+    var accuracy := 48 + int(entry.get("agility", 5)) * 3 + int(entry.get("technique", 5)) + level
+    var abilities := {"precise_strike":1, "feint":1, "opportunity_strike":1, "throw_sand":1}
+    var plan := [
+        {"ability_id":"opportunity_strike","condition":"target_vulnerable"},
+        {"ability_id":"throw_sand","condition":"opening"},
+        {"ability_id":"feint","condition":"always"},
+        {"ability_id":"precise_strike","condition":"always"}
+    ]
+    _last_unique_enemy_id = gladiator_id
+    _last_unique_enemy_rival_id = str(profile.get("rival_id", ""))
+    var rival_name := str(profile.get("rival_name", "Casa rival"))
+    return _combatant_base("%s · %s · nivel %d" % [entry.get("name", gladiator_id), rival_name, level], "unique_gladiator", health, energy, attack, defense, accuracy, abilities, plan)
 
 func _resolve_injury(fighter, player: Dictionary, victory: bool, surrendered: bool, rng: RandomNumberGenerator, event_type: String) -> String:
     var health_ratio := float(maxi(0, int(player.health))) / float(maxi(1, int(player.max_health)))
