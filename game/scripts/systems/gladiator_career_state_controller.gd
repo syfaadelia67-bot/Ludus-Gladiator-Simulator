@@ -10,7 +10,7 @@ const RETIRED := "retirado"
 const STAFF_ROLES := ["trainer", "mentor"]
 
 func _ready() -> void:
-    GameState.week_advanced.connect(func(_week: int): recalculate_all())
+    GameState.week_advanced.connect(_on_week_advanced)
     CombatManager.combat_finished.connect(func(result: Dictionary):
         var person_id := str(result.get("fighter_id", ""))
         if not person_id.is_empty():
@@ -20,9 +20,14 @@ func _ready() -> void:
     RosterManager.roster_changed.connect(recalculate_all)
     call_deferred("recalculate_all")
 
-func recalculate_all() -> void:
+func _on_week_advanced(_week: int) -> void:
     for person in RosterManager.get_people():
         if person.role == "gladiator":
+            process_week(person.id)
+
+func recalculate_all() -> void:
+    for person in RosterManager.get_people():
+        if person.role in ["gladiator", "retired"]:
             recalculate(person.id)
 
 func recalculate(person_id: String) -> String:
