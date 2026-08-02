@@ -102,8 +102,8 @@ func _apply_training(person, record: Dictionary, week: int) -> Dictionary:
         mastery_gain = SpecializationMasteryController.register_training_use(person.id)
     elif focus_id == "balanced":
         var balanced_progress: Dictionary = record.get("balanced_training_progress", {})
-        var attributes := ["strength", "agility", "endurance", "technique"]
-        var chosen := attributes[(week + absi(hash(person.id))) % attributes.size()]
+        var attributes: Array[String] = ["strength", "agility", "endurance", "technique"]
+        var chosen: String = attributes[(week + absi(hash(person.id))) % attributes.size()]
         balanced_progress[chosen] = int(balanced_progress.get(chosen, 0)) + gain
         if int(balanced_progress[chosen]) >= ATTRIBUTE_THRESHOLD:
             balanced_progress[chosen] = int(balanced_progress[chosen]) - ATTRIBUTE_THRESHOLD
