@@ -45,7 +45,7 @@ func _refresh() -> void:
     if market_panel == null or not is_instance_valid(market_panel):
         call_deferred("_bind")
         return
-    var choosing_first := not UniqueGladiatorManager.first_purchase_completed and not RosterManager.has_gladiators()
+    var choosing_first: bool = not UniqueGladiatorManager.first_purchase_completed and not RosterManager.has_gladiators()
     selection_root.visible = choosing_first
     if market_list != null:
         market_list.visible = not choosing_first
