@@ -66,7 +66,7 @@ func _ensure_dossier_section(person_id: String) -> void:
         return
     var information: Control = null
     for index in range(dossier.tab_container.get_tab_count()):
-        var control := dossier.tab_container.get_tab_control(index)
+        var control: Control = dossier.tab_container.get_tab_control(index)
         if control != null and control.name == "Información":
             information = control
             break
