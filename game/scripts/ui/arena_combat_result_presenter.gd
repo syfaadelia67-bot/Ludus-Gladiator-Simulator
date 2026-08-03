@@ -144,8 +144,11 @@ func _present_result() -> void:
     if title_label == null or summary_label == null or log_label == null:
         push_error("El overlay de Arena existe pero sus controles internos no pudieron recuperarse.")
         return
+    if TutorialController.has_method("suspend_for_modal"):
+        TutorialController.suspend_for_modal()
     if GladiatorDossierPresenter.has_method("_close"):
         GladiatorDossierPresenter.call("_close")
+    _hide_other_arena_overlays()
     if FincaHubController.has_method("open_system"):
         FincaHubController.open_system("arena")
     overlay.visible = true
@@ -178,6 +181,14 @@ func _present_result() -> void:
     if skip_button != null:
         skip_button.disabled = true
 
+func _hide_other_arena_overlays() -> void:
+    var scene := get_tree().current_scene
+    if scene == null:
+        return
+    var preview := scene.get_node_or_null("ArenaOpponentPreview") as Control
+    if preview != null:
+        preview.visible = false
+
 func _show_full_log() -> void:
     if log_label == null:
         return
@@ -189,23 +200,25 @@ func _show_full_log() -> void:
     if skip_button != null:
         skip_button.disabled = true
 
-func _close_overlay() -> void:
+func _finish_result_navigation(system_id: String) -> void:
     playback_token += 1
     cached_result.clear()
     if overlay != null and is_instance_valid(overlay):
         overlay.visible = false
-    if FincaHubController.has_method("open_system"):
-        FincaHubController.open_system("arena")
+    if system_id == "finca":
+        FincaHubController.show_finca()
+    else:
+        FincaHubController.open_system(system_id)
+    if TutorialController.has_method("resume_after_modal"):
+        TutorialController.resume_after_modal()
+
+func _close_overlay() -> void:
+    _finish_result_navigation("arena")
 
 func _return_to_finca() -> void:
-    playback_token += 1
-    cached_result.clear()
-    if overlay != null and is_instance_valid(overlay):
-        overlay.visible = false
-    if FincaHubController.has_method("show_finca"):
-        FincaHubController.show_finca()
+    _finish_result_navigation("finca")
 
 func _unhandled_key_input(event: InputEvent) -> void:
     if overlay != null and is_instance_valid(overlay) and overlay.visible and event.is_action_pressed("ui_cancel"):
-        _close_overlay()
+        _return_to_finca()
         get_viewport().set_input_as_handled()
