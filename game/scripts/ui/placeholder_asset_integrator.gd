@@ -1,7 +1,5 @@
 extends Node
 
-const HudVisualSkinControllerScript := preload("res://scripts/ui/hud_visual_skin_controller.gd")
-
 const MAIN_SCENE_NAME := "Main"
 const ARENA_PATH := "Margin/VBox/Tabs/Arena"
 
@@ -12,15 +10,20 @@ const VICTORY_ICON_PATH := "res://assets/placeholders/pack_000/ui/arena_combat/c
 var _mounted_scene_id: int = 0
 
 func _ready() -> void:
-    var skin_controller := HudVisualSkinControllerScript.new()
-    skin_controller.name = "HudVisualSkinController"
-    add_child(skin_controller)
     call_deferred("_attach_when_ready")
 
 func _attach_when_ready() -> void:
     while is_inside_tree():
-        await get_tree().process_frame
-        var scene := get_tree().current_scene
+        var tree := get_tree()
+        if tree == null:
+            return
+        await tree.process_frame
+        if not is_inside_tree():
+            return
+        tree = get_tree()
+        if tree == null:
+            return
+        var scene := tree.current_scene
         if scene == null or scene.name != MAIN_SCENE_NAME:
             continue
         var scene_id := scene.get_instance_id()
