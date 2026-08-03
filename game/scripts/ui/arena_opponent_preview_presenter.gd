@@ -2,11 +2,11 @@ extends Node
 
 const MAIN_SCENE_NAME := "Main"
 const ARENA_PATH := "Margin/VBox/Tabs/Arena"
-const SELECTOR_PATH := "Margin/VBox/Tabs/Arena/Setup/GladiatorSelector"
 const ATTACH_ATTEMPTS := 180
 
 var preview: RichTextLabel
 var selector: OptionButton
+var host: VBoxContainer
 var attach_in_progress := false
 
 func _ready() -> void:
@@ -33,10 +33,15 @@ func _attach_when_ready() -> void:
         if scene == null or scene.name != MAIN_SCENE_NAME:
             continue
         var arena := scene.get_node_or_null(ARENA_PATH) as VBoxContainer
-        selector = scene.get_node_or_null(SELECTOR_PATH) as OptionButton
-        if arena == null or selector == null:
+        if arena == null:
             continue
-        preview = arena.get_node_or_null("OpponentPreview") as RichTextLabel
+        host = arena.get_node_or_null("ArenaScroll/ArenaContent") as VBoxContainer
+        if host == null:
+            host = arena
+        selector = host.get_node_or_null("Setup/GladiatorSelector") as OptionButton
+        if selector == null:
+            continue
+        preview = host.get_node_or_null("OpponentPreview") as RichTextLabel
         if preview == null:
             preview = RichTextLabel.new()
             preview.name = "OpponentPreview"
@@ -44,8 +49,12 @@ func _attach_when_ready() -> void:
             preview.fit_content = true
             preview.custom_minimum_size = Vector2(0, 118)
             preview.tooltip_text = "Información conocida sobre el oponente programado para esta semana."
-            arena.add_child(preview)
-            arena.move_child(preview, mini(1, arena.get_child_count() - 1))
+            host.add_child(preview)
+            var event_card := host.get_node_or_null("EventPreparation")
+            if event_card != null:
+                host.move_child(preview, event_card.get_index() + 1)
+            else:
+                host.move_child(preview, 0)
         if not selector.item_selected.is_connected(_on_selector_item_selected):
             selector.item_selected.connect(_on_selector_item_selected)
         attach_in_progress = false
