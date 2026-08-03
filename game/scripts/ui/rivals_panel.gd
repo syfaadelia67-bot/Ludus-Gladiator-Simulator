@@ -1,13 +1,15 @@
 extends VBoxContainer
 
-@onready var rival_list: ItemList = $Content/RivalList
-@onready var rival_details: RichTextLabel = $Content/OperationPanel/RivalDetails
-@onready var agent_selector: OptionButton = $Content/OperationPanel/AgentSelector
-@onready var operation_selector: OptionButton = $Content/OperationPanel/OperationSelector
-@onready var operation_details: RichTextLabel = $Content/OperationPanel/OperationDetails
-@onready var execute_button: Button = $Content/OperationPanel/ExecuteOperation
-@onready var result_log: RichTextLabel = $ResultLog
-@onready var tension_label: Label = $Header/Tension
+@onready var back_button: Button = $Navigation/BackToFinca
+@onready var tension_label: Label = $Navigation/Tension
+@onready var scroll: ScrollContainer = $Scroll
+@onready var rival_list: ItemList = $Scroll/Content/RivalOperations/RivalList
+@onready var rival_details: RichTextLabel = $Scroll/Content/RivalOperations/OperationPanel/RivalDetails
+@onready var agent_selector: OptionButton = $Scroll/Content/RivalOperations/OperationPanel/AgentSelector
+@onready var operation_selector: OptionButton = $Scroll/Content/RivalOperations/OperationPanel/OperationSelector
+@onready var operation_details: RichTextLabel = $Scroll/Content/RivalOperations/OperationPanel/OperationDetails
+@onready var execute_button: Button = $Scroll/Content/RivalOperations/OperationPanel/ExecuteOperation
+@onready var result_log: RichTextLabel = $Scroll/Content/ResultLog
 
 var selected_rival_id: String = ""
 var rival_ids: Array[String] = []
@@ -15,6 +17,7 @@ var agent_ids: Array[String] = []
 var operation_ids: Array[String] = []
 
 func _ready() -> void:
+    back_button.pressed.connect(_return_to_finca)
     rival_list.item_selected.connect(_on_rival_selected)
     agent_selector.item_selected.connect(_on_selection_changed)
     operation_selector.item_selected.connect(_on_selection_changed)
@@ -27,6 +30,14 @@ func _ready() -> void:
     GameState.resources_changed.connect(_refresh_operation_details)
     _populate_operations()
     _refresh_all()
+
+func _unhandled_key_input(event: InputEvent) -> void:
+    if is_visible_in_tree() and event.is_action_pressed("ui_cancel"):
+        _return_to_finca()
+        get_viewport().set_input_as_handled()
+
+func _return_to_finca() -> void:
+    FincaHubController.show_finca()
 
 func _populate_operations() -> void:
     operation_selector.clear()
@@ -91,7 +102,7 @@ func _refresh_agents() -> void:
     _refresh_operation_details()
 
 func _refresh_tension() -> void:
-    tension_label.text = "Tensión regional: %d | Operaciones: %d | Detectadas: %d" % [
+    tension_label.text = "Tensión: %d | Operaciones: %d | Detectadas: %d" % [
         RivalManager.hostility_heat,
         RivalManager.operations_completed,
         RivalManager.operations_detected
@@ -191,10 +202,19 @@ func _on_operation_completed(result: Dictionary) -> void:
         result.get("effect", "")
     ])
     _refresh_all()
+    call_deferred("_scroll_to_results")
 
 func _on_operation_failed(reason: String) -> void:
     result_log.append_text("\n[color=orange]%s[/color]" % reason)
+    call_deferred("_scroll_to_results")
 
 func _on_rival_event(event: Dictionary) -> void:
     result_log.append_text("\n[color=red]%s[/color]" % str(event.get("description", "Un rival actuó contra la finca.")))
     _refresh_all()
+    call_deferred("_scroll_to_results")
+
+func _scroll_to_results() -> void:
+    if scroll == null or not is_instance_valid(scroll):
+        return
+    await get_tree().process_frame
+    scroll.scroll_vertical = int(scroll.get_v_scroll_bar().max_value)
