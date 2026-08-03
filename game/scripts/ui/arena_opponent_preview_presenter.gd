@@ -3,19 +3,31 @@ extends Node
 const MAIN_SCENE_NAME := "Main"
 const ARENA_PATH := "Margin/VBox/Tabs/Arena"
 const SELECTOR_PATH := "Margin/VBox/Tabs/Arena/Setup/GladiatorSelector"
+const ATTACH_ATTEMPTS := 180
 
 var preview: RichTextLabel
 var selector: OptionButton
+var attach_in_progress := false
 
 func _ready() -> void:
     GameState.week_advanced.connect(func(_week: int): call_deferred("_refresh"))
     RivalManager.rivals_changed.connect(func(): call_deferred("_refresh"))
     RosterManager.roster_changed.connect(func(): call_deferred("_refresh"))
     GladiatorRivalryController.rivalry_changed.connect(func(_person_id: String, _opponent_id: String): call_deferred("_refresh"))
+    get_tree().tree_changed.connect(_on_tree_changed)
     call_deferred("_attach_when_ready")
 
+func _on_tree_changed() -> void:
+    if preview == null or not is_instance_valid(preview):
+        call_deferred("_attach_when_ready")
+
 func _attach_when_ready() -> void:
-    for _attempt in range(60):
+    if attach_in_progress:
+        return
+    if preview != null and is_instance_valid(preview) and selector != null and is_instance_valid(selector):
+        return
+    attach_in_progress = true
+    for _attempt in range(ATTACH_ATTEMPTS):
         await get_tree().process_frame
         var scene := get_tree().current_scene
         if scene == null or scene.name != MAIN_SCENE_NAME:
@@ -24,25 +36,34 @@ func _attach_when_ready() -> void:
         selector = scene.get_node_or_null(SELECTOR_PATH) as OptionButton
         if arena == null or selector == null:
             continue
-        preview = RichTextLabel.new()
-        preview.name = "OpponentPreview"
-        preview.bbcode_enabled = true
-        preview.fit_content = true
-        preview.custom_minimum_size = Vector2(0, 118)
-        preview.tooltip_text = "Información conocida sobre el oponente programado para esta semana."
-        arena.add_child(preview)
-        arena.move_child(preview, 1)
-        selector.item_selected.connect(func(_index: int): _refresh())
+        preview = arena.get_node_or_null("OpponentPreview") as RichTextLabel
+        if preview == null:
+            preview = RichTextLabel.new()
+            preview.name = "OpponentPreview"
+            preview.bbcode_enabled = true
+            preview.fit_content = true
+            preview.custom_minimum_size = Vector2(0, 118)
+            preview.tooltip_text = "Información conocida sobre el oponente programado para esta semana."
+            arena.add_child(preview)
+            arena.move_child(preview, mini(1, arena.get_child_count() - 1))
+        if not selector.item_selected.is_connected(_on_selector_item_selected):
+            selector.item_selected.connect(_on_selector_item_selected)
+        attach_in_progress = false
         _refresh()
         return
+    attach_in_progress = false
     push_error("No se pudo montar la previsualización del rival semanal en Arena.")
 
+func _on_selector_item_selected(_index: int) -> void:
+    _refresh()
+
 func _refresh() -> void:
-    if preview == null:
+    if preview == null or not is_instance_valid(preview):
+        call_deferred("_attach_when_ready")
         return
     var fighter_id := _selected_fighter_id()
-    var event := CombatManager.get_current_event_details()
-    var opponent := CombatManager.get_current_opponent_preview(fighter_id)
+    var event: Dictionary = CombatManager.get_current_event_details()
+    var opponent: Dictionary = CombatManager.get_current_opponent_preview(fighter_id)
     var header := "[b]PRÓXIMO COMBATE · Semana %d[/b]\n%s\n" % [GameState.get_week(), event.get("name", "Arena")]
     if not bool(opponent.get("known", false)):
         preview.text = header + "[b]%s[/b]\n%s\nRiesgo: %s · Recompensa: %s" % [opponent.get("title", "Oponente por confirmar"), opponent.get("description", ""), event.get("risk", "—"), event.get("reward", "—")]
@@ -58,7 +79,7 @@ func _refresh() -> void:
     ]
 
 func _selected_fighter_id() -> String:
-    if selector == null or selector.selected < 0:
+    if selector == null or not is_instance_valid(selector) or selector.selected < 0:
         return ""
     var gladiators: Array = []
     for person in RosterManager.get_people():
