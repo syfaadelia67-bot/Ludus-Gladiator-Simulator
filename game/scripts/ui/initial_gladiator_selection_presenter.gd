@@ -37,7 +37,7 @@ func _ensure_selection_root() -> void:
     selection_root.name = ROOT_NAME
     selection_root.size_flags_horizontal = Control.SIZE_EXPAND_FILL
     selection_root.size_flags_vertical = Control.SIZE_EXPAND_FILL
-    selection_root.add_theme_constant_override("separation", 10)
+    selection_root.add_theme_constant_override("separation", 8)
     market_panel.add_child(selection_root)
     market_panel.move_child(selection_root, 0)
 
@@ -47,6 +47,7 @@ func _refresh() -> void:
         return
     var choosing_first: bool = not UniqueGladiatorManager.first_purchase_completed and not RosterManager.has_gladiator()
     selection_root.visible = choosing_first
+    _set_tutorial_occluded(choosing_first)
     if market_list != null:
         market_list.visible = not choosing_first
     if market_details != null:
@@ -56,6 +57,18 @@ func _refresh() -> void:
     if choosing_first:
         _render_candidates()
 
+func _set_tutorial_occluded(occluded: bool) -> void:
+    var scene := get_tree().current_scene
+    if scene == null:
+        return
+    var tutorial_panel := scene.get_node_or_null("CampaignTutorial") as Control
+    if tutorial_panel == null:
+        return
+    if occluded:
+        tutorial_panel.visible = false
+    elif LudusOwnerManager.should_show_tutorial():
+        tutorial_panel.visible = true
+
 func _render_candidates() -> void:
     for child in selection_root.get_children():
         child.queue_free()
@@ -63,11 +76,11 @@ func _render_candidates() -> void:
     var title := Label.new()
     title.text = "ELEGÍ AL PRIMER GLADIADOR DEL LUDUS"
     title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-    title.add_theme_font_size_override("font_size", 24)
+    title.add_theme_font_size_override("font_size", 22)
     selection_root.add_child(title)
 
     var introduction := Label.new()
-    introduction.text = "Solo podés contratar a uno. Los otros dos serán comprados por casas rivales y podrán reaparecer como enemigos durante la campaña."
+    introduction.text = "Solo podés contratar a uno. Los otros dos pasarán a casas rivales y podrán reaparecer durante la campaña."
     introduction.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
     introduction.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
     selection_root.add_child(introduction)
@@ -76,12 +89,13 @@ func _render_candidates() -> void:
     scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
     scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
     scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO
-    scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+    scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO
     selection_root.add_child(scroll)
 
     var cards := HBoxContainer.new()
     cards.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-    cards.add_theme_constant_override("separation", 12)
+    cards.size_flags_vertical = Control.SIZE_EXPAND_FILL
+    cards.add_theme_constant_override("separation", 10)
     scroll.add_child(cards)
 
     for offer in UniqueGladiatorManager.get_initial_candidate_offers():
@@ -94,32 +108,33 @@ func _render_candidates() -> void:
 
 func _build_candidate_card(offer: Dictionary) -> Control:
     var panel := PanelContainer.new()
-    panel.custom_minimum_size = Vector2(360, 470)
+    panel.custom_minimum_size = Vector2(320, 430)
     panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+    panel.size_flags_vertical = Control.SIZE_EXPAND_FILL
 
     var margin := MarginContainer.new()
-    margin.add_theme_constant_override("margin_left", 14)
-    margin.add_theme_constant_override("margin_top", 14)
-    margin.add_theme_constant_override("margin_right", 14)
-    margin.add_theme_constant_override("margin_bottom", 14)
+    margin.add_theme_constant_override("margin_left", 12)
+    margin.add_theme_constant_override("margin_top", 10)
+    margin.add_theme_constant_override("margin_right", 12)
+    margin.add_theme_constant_override("margin_bottom", 10)
     panel.add_child(margin)
 
     var box := VBoxContainer.new()
-    box.add_theme_constant_override("separation", 8)
+    box.add_theme_constant_override("separation", 6)
     margin.add_child(box)
 
     var portrait := Label.new()
-    portrait.custom_minimum_size = Vector2(0, 92)
+    portrait.custom_minimum_size = Vector2(0, 70)
     portrait.text = "RETRATO\nPENDIENTE"
     portrait.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
     portrait.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-    portrait.add_theme_font_size_override("font_size", 18)
+    portrait.add_theme_font_size_override("font_size", 16)
     box.add_child(portrait)
 
     var name_label := Label.new()
     name_label.text = str(offer.get("name", "Gladiador"))
     name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-    name_label.add_theme_font_size_override("font_size", 22)
+    name_label.add_theme_font_size_override("font_size", 20)
     box.add_child(name_label)
 
     var identity := Label.new()
