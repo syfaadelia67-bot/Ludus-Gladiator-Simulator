@@ -46,6 +46,7 @@ var progress_label: Label
 var action_button: Button
 var current_step := 0
 var completed_objectives: Dictionary = {}
+var modal_suspended := false
 
 func _ready() -> void:
     process_mode = Node.PROCESS_MODE_ALWAYS
@@ -59,7 +60,18 @@ func _ready() -> void:
     FincaHubController.system_opened.connect(_on_system_opened)
     call_deferred("_show_if_needed")
 
+func suspend_for_modal() -> void:
+    modal_suspended = true
+    _hide_panel()
+
+func resume_after_modal() -> void:
+    modal_suspended = false
+    call_deferred("_show_if_needed")
+
 func _show_if_needed() -> void:
+    if modal_suspended:
+        _hide_panel()
+        return
     if not LudusOwnerManager.should_show_tutorial():
         _hide_panel()
         return
@@ -136,6 +148,8 @@ func _build_panel(scene: Node) -> void:
     actions.add_child(action_button)
 
 func _render_step() -> void:
+    if modal_suspended:
+        return
     var step: Dictionary = STEPS[current_step]
     var objective_id := str(step.get("id", ""))
     var completed := bool(completed_objectives.get(objective_id, false))
@@ -153,7 +167,7 @@ func _render_step() -> void:
         _focus_system(str(step.get("system", "")))
 
 func _focus_system(system_id: String) -> void:
-    if system_id.is_empty():
+    if modal_suspended or system_id.is_empty():
         return
     FincaHubController.open_system(system_id)
 
@@ -180,7 +194,7 @@ func _mark_objective(objective_id: String) -> void:
         return
     completed_objectives[objective_id] = true
     _persist_progress()
-    if panel != null and is_instance_valid(panel) and current_step < STEPS.size():
+    if not modal_suspended and panel != null and is_instance_valid(panel) and current_step < STEPS.size():
         _render_step()
 
 func _check_event_resolution() -> void:
