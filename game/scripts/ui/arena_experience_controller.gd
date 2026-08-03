@@ -13,6 +13,9 @@ const TACTICAL_CONDITIONS := {
 const MAX_TACTICAL_ORDERS := 4
 
 var arena: VBoxContainer
+var navigation: HBoxContainer
+var scroll: ScrollContainer
+var content: VBoxContainer
 var event_card: RichTextLabel
 var energy_selector: OptionButton
 var surrender_selector: OptionButton
@@ -40,46 +43,75 @@ func setup(target_arena: VBoxContainer) -> void:
         queue_free()
         return
     arena.set_meta("enhanced_combat_ui", true)
+    _build_scroll_layout()
+    _disconnect_legacy_combat_result_handler()
     _build_interface()
     _connect_signals()
     _refresh_event()
     _refresh_tactical_editor()
 
+func _build_scroll_layout() -> void:
+    navigation = arena.get_node_or_null("ArenaNavigation") as HBoxContainer
+    if navigation == null:
+        navigation = HBoxContainer.new()
+        navigation.name = "ArenaNavigation"
+        arena.add_child(navigation)
+    navigation.custom_minimum_size.y = 44.0
+
+    scroll = arena.get_node_or_null("ArenaScroll") as ScrollContainer
+    if scroll == null:
+        scroll = ScrollContainer.new()
+        scroll.name = "ArenaScroll"
+        scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+        scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+        scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+        scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO
+        arena.add_child(scroll)
+
+    content = scroll.get_node_or_null("ArenaContent") as VBoxContainer
+    if content == null:
+        content = VBoxContainer.new()
+        content.name = "ArenaContent"
+        content.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+        content.add_theme_constant_override("separation", 10)
+        scroll.add_child(content)
+
+    var movable_children: Array[Node] = []
+    for child in arena.get_children():
+        if child == navigation or child == scroll or child == self:
+            continue
+        movable_children.append(child)
+    for child in movable_children:
+        arena.remove_child(child)
+        content.add_child(child)
+
+    arena.move_child(navigation, 0)
+    arena.move_child(scroll, 1)
+
+func _disconnect_legacy_combat_result_handler() -> void:
+    var scene := get_tree().current_scene
+    if scene == null:
+        return
+    var legacy_handler := Callable(scene, "_on_combat_finished")
+    if CombatManager.combat_finished.is_connected(legacy_handler):
+        CombatManager.combat_finished.disconnect(legacy_handler)
+
 func _build_interface() -> void:
-    var navigation_row := HBoxContainer.new()
-    navigation_row.name = "ArenaNavigation"
-    arena.add_child(navigation_row)
-    arena.move_child(navigation_row, 0)
-
-    var back_button := Button.new()
-    back_button.text = "← Volver a Personal"
-    back_button.tooltip_text = "Detiene la repetición y vuelve a la administración del ludus."
-    back_button.pressed.connect(_leave_arena)
-    navigation_row.add_child(back_button)
-
-    var navigation_hint := Label.new()
-    navigation_hint.text = "Arena · preparación táctica, combate e informe"
-    navigation_hint.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-    navigation_hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-    navigation_row.add_child(navigation_hint)
-
     event_card = RichTextLabel.new()
     event_card.name = "EventPreparation"
     event_card.bbcode_enabled = true
-    event_card.custom_minimum_size = Vector2(0, 86)
+    event_card.custom_minimum_size = Vector2(0, 76)
     event_card.fit_content = true
-    arena.add_child(event_card)
-    arena.move_child(event_card, 1)
+    _insert_before_setup(event_card)
 
     var instruction_title := Label.new()
+    instruction_title.name = "BattleInstructionsTitle"
     instruction_title.text = "INSTRUCCIONES PREVIAS"
-    arena.add_child(instruction_title)
-    arena.move_child(instruction_title, 2)
+    _insert_before_setup(instruction_title)
 
     var instruction_row := HBoxContainer.new()
     instruction_row.name = "BattleInstructions"
-    arena.add_child(instruction_row)
-    arena.move_child(instruction_row, 3)
+    _insert_before_setup(instruction_row)
 
     energy_selector = OptionButton.new()
     energy_selector.add_item("Energía equilibrada")
@@ -103,21 +135,20 @@ func _build_interface() -> void:
     instruction_row.add_child(finisher_toggle)
 
     loadout_summary = RichTextLabel.new()
+    loadout_summary.name = "LoadoutSummary"
     loadout_summary.bbcode_enabled = true
     loadout_summary.fit_content = true
-    loadout_summary.custom_minimum_size = Vector2(0, 72)
-    arena.add_child(loadout_summary)
-    arena.move_child(loadout_summary, 4)
+    loadout_summary.custom_minimum_size = Vector2(0, 64)
+    _insert_before_setup(loadout_summary)
 
     var tactical_title := Label.new()
+    tactical_title.name = "TacticalPlanTitle"
     tactical_title.text = "PLAN TÁCTICO — PRIORIDAD DE USO"
-    arena.add_child(tactical_title)
-    arena.move_child(tactical_title, 5)
+    _insert_before_setup(tactical_title)
 
     var tactical_row := HBoxContainer.new()
     tactical_row.name = "TacticalPlanEditor"
-    arena.add_child(tactical_row)
-    arena.move_child(tactical_row, 6)
+    _insert_before_setup(tactical_row)
 
     ability_selector = OptionButton.new()
     ability_selector.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -146,28 +177,29 @@ func _build_interface() -> void:
     tactical_row.add_child(reset_button)
 
     tactical_plan_list = RichTextLabel.new()
+    tactical_plan_list.name = "TacticalPlanList"
     tactical_plan_list.bbcode_enabled = true
-    tactical_plan_list.custom_minimum_size = Vector2(0, 105)
+    tactical_plan_list.custom_minimum_size = Vector2(0, 96)
     tactical_plan_list.fit_content = true
-    arena.add_child(tactical_plan_list)
-    arena.move_child(tactical_plan_list, 7)
+    _insert_before_setup(tactical_plan_list)
 
-    var arena_setup := arena.get_node_or_null("Setup") as HBoxContainer
+    var arena_setup := _node("Setup") as HBoxContainer
     if arena_setup != null:
         var gladiator_selector := arena_setup.get_node_or_null("GladiatorSelector") as OptionButton
-        if gladiator_selector != null:
-            gladiator_selector.item_selected.connect(func(_index: int): _refresh_tactical_editor())
+        if gladiator_selector != null and not gladiator_selector.item_selected.is_connected(_on_gladiator_selected):
+            gladiator_selector.item_selected.connect(_on_gladiator_selected)
         var start_button := arena_setup.get_node_or_null("StartDuel") as Button
         if start_button != null:
             start_button.text = "Confirmar plan y combatir"
-            start_button.button_down.connect(_configure_battle)
+            if not start_button.button_down.is_connected(_configure_battle):
+                start_button.button_down.connect(_configure_battle)
 
     var playback_row := HBoxContainer.new()
     playback_row.name = "PlaybackControls"
-    arena.add_child(playback_row)
+    content.add_child(playback_row)
 
     var playback_label := Label.new()
-    playback_label.text = "REPETICIÓN"
+    playback_label.text = "REPETICIÓN MANUAL"
     playback_row.add_child(playback_label)
 
     speed_selector = OptionButton.new()
@@ -178,7 +210,7 @@ func _build_interface() -> void:
     playback_row.add_child(speed_selector)
 
     replay_button = Button.new()
-    replay_button.text = "Repetir"
+    replay_button.text = "Repetir combate"
     replay_button.disabled = true
     replay_button.pressed.connect(_start_replay)
     playback_row.add_child(replay_button)
@@ -204,15 +236,21 @@ func _build_interface() -> void:
     report = RichTextLabel.new()
     report.name = "BattleReport"
     report.bbcode_enabled = true
-    report.custom_minimum_size = Vector2(0, 145)
-    report.scroll_following = true
+    report.custom_minimum_size = Vector2(0, 150)
+    report.scroll_active = true
     report.text = "[b]Informe[/b]\nTodavía no se disputó un combate."
-    arena.add_child(report)
+    content.add_child(report)
 
     replay_timer = Timer.new()
     replay_timer.one_shot = true
     replay_timer.timeout.connect(_play_next_action)
     add_child(replay_timer)
+
+func _insert_before_setup(control: Control) -> void:
+    content.add_child(control)
+    var setup := content.get_node_or_null("Setup")
+    if setup != null:
+        content.move_child(control, setup.get_index())
 
 func _connect_signals() -> void:
     CombatManager.combat_finished.connect(_on_combat_finished)
@@ -221,18 +259,22 @@ func _connect_signals() -> void:
     EquipmentManager.equipment_changed.connect(func(_person_id: String): _refresh_tactical_editor())
     RosterManager.roster_changed.connect(_refresh_tactical_editor)
     GladiatorProgressionManager.progression_changed.connect(_refresh_tactical_editor)
-
-func _leave_arena() -> void:
-    replay_timer.stop()
-    replay_paused = false
     var tabs := arena.get_parent() as TabContainer
-    if tabs != null:
-        var personal_index := tabs.get_tab_idx_from_control(tabs.get_node_or_null("Personal"))
-        if personal_index >= 0:
-            tabs.current_tab = personal_index
+    if tabs != null and not tabs.tab_changed.is_connected(_on_tab_changed):
+        tabs.tab_changed.connect(_on_tab_changed)
+
+func _on_tab_changed(_index: int) -> void:
+    var tabs := arena.get_parent() as TabContainer
+    if tabs == null or tabs.current_tab < 0:
+        return
+    if tabs.get_tab_control(tabs.current_tab) != arena:
+        _stop_replay()
+
+func _on_gladiator_selected(_index: int) -> void:
+    _refresh_tactical_editor()
 
 func _selected_gladiator():
-    var selector := arena.get_node_or_null("Setup/GladiatorSelector") as OptionButton
+    var selector := _node("Setup/GladiatorSelector") as OptionButton
     if selector == null or selector.selected < 0:
         return null
     var selected_text := selector.get_item_text(selector.selected)
@@ -370,17 +412,53 @@ func _refresh_event() -> void:
     event_card.text = "[b]%s[/b]\n%s\nRiesgo: %s | Recompensa: %s" % [data.get("name", "Arena"), data.get("rules", ""), data.get("risk", ""), data.get("reward", "")]
 
 func _on_combat_finished(result: Dictionary) -> void:
+    _stop_replay()
     last_result = result.duplicate(true)
     action_queue.assign(result.get("actions", []))
     var has_actions := not action_queue.is_empty()
     replay_button.disabled = not has_actions
-    pause_button.disabled = not has_actions
+    pause_button.disabled = true
     step_button.disabled = not has_actions
     skip_button.disabled = not has_actions
+    _render_base_result(result)
     _render_report(result)
-    _start_replay()
+    call_deferred("_scroll_to_result")
+
+func _render_base_result(result: Dictionary) -> void:
+    var player_name := _node("Stage/PlayerCard/Name") as Label
+    var enemy_name := _node("Stage/EnemyCard/Name") as Label
+    if player_name != null:
+        player_name.text = str(result.get("fighter", "Gladiador"))
+    if enemy_name != null:
+        enemy_name.text = str(result.get("enemy", "Rival"))
+    _set_bar("Stage/PlayerCard/Health", int(result.get("player_health", 0)), int(result.get("player_max_health", 1)))
+    _set_bar("Stage/PlayerCard/Energy", int(result.get("player_energy", 0)), int(result.get("player_max_energy", 1)))
+    _set_bar("Stage/EnemyCard/Health", int(result.get("enemy_health", 0)), int(result.get("enemy_max_health", 1)))
+    _set_bar("Stage/EnemyCard/Energy", int(result.get("enemy_energy", 0)), int(result.get("enemy_max_energy", 1)))
+
+    var status := "VICTORIA" if bool(result.get("victory", false)) else ("RENDICIÓN" if bool(result.get("surrendered", false)) else "DERROTA")
+    var result_label := _node("Result") as Label
+    if result_label != null:
+        result_label.text = "%s — %d denarios · Reputación %+d" % [status, int(result.get("reward", 0)), int(result.get("reputation", 0))]
+
+    var combat_log := _node("CombatLog") as RichTextLabel
+    if combat_log != null:
+        combat_log.clear()
+        combat_log.append_text("[b]Crónica de la arena[/b]\n")
+        for entry: Variant in result.get("log", []):
+            combat_log.append_text("%s\n" % str(entry))
+
+    var scene := get_tree().current_scene
+    if scene != null:
+        var activity_log := scene.get_node_or_null("Margin/VBox/Tabs/Personal/Log") as RichTextLabel
+        if activity_log != null:
+            activity_log.append_text("\n[color=gold]%s terminó el combate semanal en %d rondas.[/color]" % [result.get("fighter", "El gladiador"), int(result.get("rounds", 0))])
 
 func _on_combat_failed(reason: String) -> void:
+    _stop_replay()
+    var result_label := _node("Result") as Label
+    if result_label != null:
+        result_label.text = reason
     report.text = "[color=orange][b]No se pudo disputar el combate[/b][/color]\n%s" % reason
     _refresh_event()
 
@@ -390,8 +468,9 @@ func _start_replay() -> void:
     replay_timer.stop()
     replay_index = 0
     replay_paused = false
+    pause_button.disabled = false
     pause_button.text = "Pausar"
-    var combat_log := arena.get_node_or_null("CombatLog") as RichTextLabel
+    var combat_log := _node("CombatLog") as RichTextLabel
     if combat_log != null:
         combat_log.clear()
         combat_log.append_text("[b]Combate por turnos[/b]\n")
@@ -407,6 +486,7 @@ func _toggle_pause() -> void:
 func _step_replay() -> void:
     replay_paused = true
     replay_timer.stop()
+    pause_button.disabled = false
     pause_button.text = "Continuar"
     _play_next_action()
 
@@ -419,20 +499,31 @@ func _skip_to_result() -> void:
     replay_index = action_queue.size() - 1
     _play_next_action()
 
+func _stop_replay() -> void:
+    if replay_timer != null:
+        replay_timer.stop()
+    replay_paused = false
+    replay_index = 0
+    if pause_button != null:
+        pause_button.text = "Pausar"
+        pause_button.disabled = true
+
 func _play_next_action() -> void:
     if replay_index >= action_queue.size():
         return
     var action: Dictionary = action_queue[replay_index]
     replay_index += 1
     _apply_snapshot(action)
-    var combat_log := arena.get_node_or_null("CombatLog") as RichTextLabel
+    var combat_log := _node("CombatLog") as RichTextLabel
     if combat_log != null:
         combat_log.append_text("%s\n" % str(action.get("text", "")))
-    var result_label := arena.get_node_or_null("Result") as Label
+    var result_label := _node("Result") as Label
     if result_label != null:
         result_label.text = str(action.get("text", ""))
     if replay_index < action_queue.size() and not replay_paused:
         _schedule_next_action()
+    elif replay_index >= action_queue.size():
+        pause_button.disabled = true
 
 func _schedule_next_action() -> void:
     var delay := 0.78
@@ -447,15 +538,15 @@ func _apply_snapshot(action: Dictionary) -> void:
     _set_bar("Stage/PlayerCard/Energy", int(action.get("player_energy", 0)), int(action.get("player_max_energy", 1)))
     _set_bar("Stage/EnemyCard/Health", int(action.get("enemy_health", 0)), int(action.get("enemy_max_health", 1)))
     _set_bar("Stage/EnemyCard/Energy", int(action.get("enemy_energy", 0)), int(action.get("enemy_max_energy", 1)))
-    var player_body := arena.get_node_or_null("Stage/PlayerCard/Body") as ColorRect
-    var enemy_body := arena.get_node_or_null("Stage/EnemyCard/Body") as ColorRect
+    var player_body := _node("Stage/PlayerCard/Body") as ColorRect
+    var enemy_body := _node("Stage/EnemyCard/Body") as ColorRect
     if player_body != null:
         player_body.modulate = Color(1.25, 1.25, 1.25) if str(action.get("actor", "")) == "player" else Color.WHITE
     if enemy_body != null:
         enemy_body.modulate = Color(1.25, 1.25, 1.25) if str(action.get("actor", "")) == "enemy" else Color.WHITE
 
 func _set_bar(path: String, value: int, maximum: int) -> void:
-    var bar := arena.get_node_or_null(NodePath(path)) as ProgressBar
+    var bar := _node(path) as ProgressBar
     if bar == null:
         return
     bar.max_value = maxi(1, maximum)
@@ -485,3 +576,15 @@ func _render_report(result: Dictionary) -> void:
         for status_name in status_stats.keys():
             lines.append("• %s: %d" % [str(status_name).capitalize(), int(status_stats.get(status_name, 0))])
     report.text = "\n".join(lines)
+
+func _scroll_to_result() -> void:
+    await get_tree().process_frame
+    if scroll == null or not is_instance_valid(scroll):
+        return
+    var bar := scroll.get_v_scroll_bar()
+    scroll.scroll_vertical = int(bar.max_value)
+
+func _node(relative_path: String) -> Node:
+    if content == null or not is_instance_valid(content):
+        return null
+    return content.get_node_or_null(NodePath(relative_path))
