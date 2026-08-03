@@ -7,53 +7,73 @@ layout_mode = 2
 theme_override_constants/separation = 8
 script = ExtResource("1")
 
-[node name="Title" type="Label" parent="."]
+[node name="Navigation" type="HBoxContainer" parent="."]
 layout_mode = 2
+
+[node name="BackToFinca" type="Button" parent="Navigation"]
+layout_mode = 2
+text = "← Volver a la finca"
+tooltip_text = "Regresar al centro del ludus."
+
+[node name="Title" type="Label" parent="Navigation"]
+layout_mode = 2
+size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 22
 text = "PROGRESIÓN DE GLADIADORES"
+horizontal_alignment = 1
 
-[node name="GladiatorSelector" type="OptionButton" parent="."]
+[node name="Scroll" type="ScrollContainer" parent="."]
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="Content" type="VBoxContainer" parent="Scroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 10
+
+[node name="GladiatorSelector" type="OptionButton" parent="Scroll/Content"]
 layout_mode = 2
 
-[node name="Summary" type="RichTextLabel" parent="."]
+[node name="Summary" type="RichTextLabel" parent="Scroll/Content"]
 custom_minimum_size = Vector2(0, 250)
 layout_mode = 2
 bbcode_enabled = true
 text = "Seleccioná un gladiador."
 
-[node name="SpecializationRow" type="HBoxContainer" parent="."]
+[node name="SpecializationRow" type="HBoxContainer" parent="Scroll/Content"]
 layout_mode = 2
 
-[node name="SpecializationSelector" type="OptionButton" parent="SpecializationRow"]
+[node name="SpecializationSelector" type="OptionButton" parent="Scroll/Content/SpecializationRow"]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="ApplySpecialization" type="Button" parent="SpecializationRow"]
+[node name="ApplySpecialization" type="Button" parent="Scroll/Content/SpecializationRow"]
 layout_mode = 2
 text = "Aplicar especialización"
 
-[node name="AbilityRow" type="HBoxContainer" parent="."]
+[node name="AbilityRow" type="HBoxContainer" parent="Scroll/Content"]
 layout_mode = 2
 
-[node name="AbilitySelector" type="OptionButton" parent="AbilityRow"]
+[node name="AbilitySelector" type="OptionButton" parent="Scroll/Content/AbilityRow"]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="UpgradeAbility" type="Button" parent="AbilityRow"]
+[node name="UpgradeAbility" type="Button" parent="Scroll/Content/AbilityRow"]
 layout_mode = 2
 text = "Aprender / mejorar habilidad"
 
-[node name="RetireButton" type="Button" parent="."]
+[node name="RetireButton" type="Button" parent="Scroll/Content"]
 layout_mode = 2
 text = "Retirar gladiador"
 
-[node name="Feedback" type="Label" parent="."]
+[node name="Feedback" type="Label" parent="Scroll/Content"]
 layout_mode = 2
+autowrap_mode = 2
 text = ""
 
-[node name="RetiredHistory" type="RichTextLabel" parent="."]
-custom_minimum_size = Vector2(0, 150)
+[node name="RetiredHistory" type="RichTextLabel" parent="Scroll/Content"]
+custom_minimum_size = Vector2(0, 180)
 layout_mode = 2
-size_flags_vertical = 3
 bbcode_enabled = true
 text = "[b]Gladiadores retirados[/b]"
