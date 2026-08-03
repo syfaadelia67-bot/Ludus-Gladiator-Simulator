@@ -28,8 +28,8 @@ func get_opponent_for_week(week: int, event_type: String) -> Dictionary:
     if candidates.is_empty():
         return {}
     candidates.sort_custom(func(a: Dictionary, b: Dictionary): return str(a.get("gladiator_id", "")) < str(b.get("gladiator_id", "")))
-    var seed := absi(hash("unique-opponent|%d|%s" % [week, event_type]))
-    return candidates[seed % candidates.size()].duplicate(true)
+    var selection_seed := absi(hash("unique-opponent|%d|%s" % [week, event_type]))
+    return candidates[selection_seed % candidates.size()].duplicate(true)
 
 func get_profile(gladiator_id: String) -> Dictionary:
     for rival in RivalManager.rivals:
