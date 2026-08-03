@@ -1,0 +1,81 @@
+[gd_resource type="Theme" load_steps=7 format=3]
+
+[ext_resource type="Texture2D" path="res://assets/placeholders/pack_000/ui/panels/ui_panel_brown.png" id="1_panel"]
+[ext_resource type="Texture2D" path="res://assets/placeholders/pack_000/ui/buttons/ui_button_primary.png" id="2_primary"]
+[ext_resource type="Texture2D" path="res://assets/placeholders/pack_000/ui/buttons/ui_button_secondary.png" id="3_secondary"]
+
+[sub_resource type="StyleBoxTexture" id="StylePanel"]
+texture = ExtResource("1_panel")
+texture_margin_left = 14.0
+texture_margin_top = 12.0
+texture_margin_right = 14.0
+texture_margin_bottom = 12.0
+content_margin_left = 14.0
+content_margin_top = 10.0
+content_margin_right = 14.0
+content_margin_bottom = 10.0
+
+[sub_resource type="StyleBoxTexture" id="StylePrimary"]
+texture = ExtResource("2_primary")
+texture_margin_left = 16.0
+texture_margin_top = 9.0
+texture_margin_right = 16.0
+texture_margin_bottom = 9.0
+content_margin_left = 14.0
+content_margin_top = 8.0
+content_margin_right = 14.0
+content_margin_bottom = 8.0
+
+[sub_resource type="StyleBoxTexture" id="StyleSecondary"]
+texture = ExtResource("3_secondary")
+texture_margin_left = 12.0
+texture_margin_top = 8.0
+texture_margin_right = 12.0
+texture_margin_bottom = 8.0
+content_margin_left = 12.0
+content_margin_top = 7.0
+content_margin_right = 12.0
+content_margin_bottom = 7.0
+
+[sub_resource type="StyleBoxFlat" id="StyleFocus"]
+bg_color = Color(0.55, 0.32, 0.1, 0.45)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.95, 0.72, 0.32, 0.95)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+
+[resource]
+default_font_size = 17
+Button/colors/font_color = Color(0.96, 0.91, 0.82, 1)
+Button/colors/font_hover_color = Color(1, 1, 1, 1)
+Button/colors/font_pressed_color = Color(1, 1, 1, 1)
+Button/styles/normal = SubResource("StyleSecondary")
+Button/styles/hover = SubResource("StylePrimary")
+Button/styles/pressed = SubResource("StylePrimary")
+Button/styles/focus = SubResource("StyleFocus")
+Button/styles/disabled = SubResource("StyleSecondary")
+OptionButton/colors/font_color = Color(0.96, 0.91, 0.82, 1)
+OptionButton/styles/normal = SubResource("StyleSecondary")
+OptionButton/styles/hover = SubResource("StylePrimary")
+OptionButton/styles/pressed = SubResource("StylePrimary")
+OptionButton/styles/focus = SubResource("StyleFocus")
+Panel/styles/panel = SubResource("StylePanel")
+PanelContainer/styles/panel = SubResource("StylePanel")
+TabContainer/styles/panel = SubResource("StylePanel")
+TabBar/styles/tab_unselected = SubResource("StyleSecondary")
+TabBar/styles/tab_selected = SubResource("StylePrimary")
+TabBar/styles/tab_hovered = SubResource("StylePrimary")
+ItemList/styles/panel = SubResource("StylePanel")
+ItemList/styles/focus = SubResource("StyleFocus")
+RichTextLabel/styles/normal = SubResource("StylePanel")
+LineEdit/styles/normal = SubResource("StylePanel")
+TextEdit/styles/normal = SubResource("StylePanel")
+Label/colors/font_color = Color(0.94, 0.9, 0.83, 1)
+RichTextLabel/colors/default_color = Color(0.92, 0.88, 0.81, 1)
+VBoxContainer/constants/separation = 9
+HBoxContainer/constants/separation = 9
