@@ -4,9 +4,6 @@ const HudVisualSkinControllerScript := preload("res://scripts/ui/hud_visual_skin
 
 const MAIN_SCENE_NAME := "Main"
 const ARENA_PATH := "Margin/VBox/Tabs/Arena"
-const START_DUEL_PATH := "Margin/VBox/Tabs/Arena/Setup/StartDuel"
-const PLAYER_BODY_PATH := "Margin/VBox/Tabs/Arena/Stage/PlayerCard/Body"
-const ENEMY_BODY_PATH := "Margin/VBox/Tabs/Arena/Stage/EnemyCard/Body"
 
 const ATTACK_ICON_PATH := "res://assets/placeholders/pack_000/ui/arena_combat/combat_attack.png"
 const DEFENSE_ICON_PATH := "res://assets/placeholders/pack_000/ui/arena_combat/combat_defense.png"
@@ -34,11 +31,17 @@ func _attach_when_ready() -> void:
             return
 
 func _integrate_scene(scene: Node) -> bool:
-    var arena := scene.get_node_or_null(ARENA_PATH)
-    var start_duel := scene.get_node_or_null(START_DUEL_PATH) as Button
-    var player_body := scene.get_node_or_null(PLAYER_BODY_PATH) as Control
-    var enemy_body := scene.get_node_or_null(ENEMY_BODY_PATH) as Control
-    if arena == null or start_duel == null or player_body == null or enemy_body == null:
+    var arena := scene.get_node_or_null(ARENA_PATH) as VBoxContainer
+    if arena == null:
+        return false
+    var root := arena.get_node_or_null("ArenaScroll/ArenaContent")
+    if root == null:
+        root = arena
+
+    var start_duel := root.get_node_or_null("Setup/StartDuel") as Button
+    var player_body := root.get_node_or_null("Stage/PlayerCard/Body") as Control
+    var enemy_body := root.get_node_or_null("Stage/EnemyCard/Body") as Control
+    if start_duel == null or player_body == null or enemy_body == null:
         return false
 
     var attack_icon := _load_texture(ATTACK_ICON_PATH)
