@@ -1,6 +1,6 @@
-extends Node
+extends SceneTree
 
-func _ready() -> void:
+func _initialize() -> void:
     var project := FileAccess.get_file_as_string("res://project.godot")
     var integrator := FileAccess.get_file_as_string("res://scripts/ui/placeholder_asset_integrator.gd")
 
@@ -14,4 +14,4 @@ func _ready() -> void:
     assert(integrator.contains("PlaceholderCombatDefense"))
 
     print("Placeholder asset integration contract: OK")
-    get_tree().quit()
+    quit()
