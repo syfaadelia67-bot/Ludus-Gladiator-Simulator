@@ -118,7 +118,6 @@ func _show_event(event: Dictionary) -> void:
     card.add_child(feedback)
 
     overlay.visible = true
-    overlay.grab_focus()
 
 func _show_result(result: Dictionary) -> void:
     _clear_card()
@@ -152,7 +151,6 @@ func _show_result(result: Dictionary) -> void:
     continue_button.custom_minimum_size = Vector2(0, 46)
     continue_button.pressed.connect(_close_after_resolution)
     card.add_child(continue_button)
-    continue_button.grab_focus()
     overlay.visible = true
 
 func _ensure_modal(scene: Node) -> void:
