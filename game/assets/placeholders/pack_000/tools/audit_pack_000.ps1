@@ -26,7 +26,7 @@ if ($zeroByte) {
 }
 
 $unexpected = $files | Where-Object {
-    $_.Extension.ToLowerInvariant() -notin @(".png", ".md", ".txt", ".ps1")
+    $_.Extension.ToLowerInvariant() -notin @(".png", ".md", ".txt", ".ps1", ".import")
 }
 if ($unexpected) {
     Write-Warning "Unexpected extensions:"
@@ -95,3 +95,4 @@ if (-not $zeroByte -and -not $unexpected -and -not $pngSignatureErrors) {
 
 Write-Error "Audit found critical errors."
 exit 2
+
