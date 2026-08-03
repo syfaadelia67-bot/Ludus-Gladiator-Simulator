@@ -1,20 +1,23 @@
 extends VBoxContainer
 
-@onready var gladiator_selector: OptionButton = $GladiatorSelector
-@onready var summary: RichTextLabel = $Summary
-@onready var specialization_selector: OptionButton = $SpecializationRow/SpecializationSelector
-@onready var apply_specialization: Button = $SpecializationRow/ApplySpecialization
-@onready var ability_selector: OptionButton = $AbilityRow/AbilitySelector
-@onready var upgrade_ability: Button = $AbilityRow/UpgradeAbility
-@onready var retire_button: Button = $RetireButton
-@onready var retired_history: RichTextLabel = $RetiredHistory
-@onready var feedback: Label = $Feedback
+@onready var back_button: Button = $Navigation/BackToFinca
+@onready var scroll: ScrollContainer = $Scroll
+@onready var gladiator_selector: OptionButton = $Scroll/Content/GladiatorSelector
+@onready var summary: RichTextLabel = $Scroll/Content/Summary
+@onready var specialization_selector: OptionButton = $Scroll/Content/SpecializationRow/SpecializationSelector
+@onready var apply_specialization: Button = $Scroll/Content/SpecializationRow/ApplySpecialization
+@onready var ability_selector: OptionButton = $Scroll/Content/AbilityRow/AbilitySelector
+@onready var upgrade_ability: Button = $Scroll/Content/AbilityRow/UpgradeAbility
+@onready var retire_button: Button = $Scroll/Content/RetireButton
+@onready var retired_history: RichTextLabel = $Scroll/Content/RetiredHistory
+@onready var feedback: Label = $Scroll/Content/Feedback
 
 var gladiator_ids: Array[String] = []
 var specialization_ids: Array[String] = []
 var ability_ids: Array[String] = []
 
 func _ready() -> void:
+    back_button.pressed.connect(_return_to_finca)
     GladiatorProgressionManager.progression_changed.connect(_refresh)
     RosterManager.roster_changed.connect(_refresh)
     TraitManager.traits_changed.connect(func(_person_id: String): _refresh())
@@ -23,6 +26,14 @@ func _ready() -> void:
     upgrade_ability.pressed.connect(_on_upgrade_ability)
     retire_button.pressed.connect(_on_retire)
     _refresh()
+
+func _unhandled_key_input(event: InputEvent) -> void:
+    if is_visible_in_tree() and event.is_action_pressed("ui_cancel"):
+        _return_to_finca()
+        get_viewport().set_input_as_handled()
+
+func _return_to_finca() -> void:
+    FincaHubController.show_finca()
 
 func _refresh() -> void:
     var selected_id := _get_selected_gladiator_id()
@@ -152,6 +163,7 @@ func _on_gladiator_selected(_index: int) -> void:
     _refresh_specializations()
     _refresh_abilities()
     _refresh_details()
+    scroll.scroll_vertical = 0
 
 func _on_apply_specialization() -> void:
     var person_id := _get_selected_gladiator_id()
@@ -164,6 +176,7 @@ func _on_apply_specialization() -> void:
     else:
         feedback.text = "No se cumplen los requisitos o el gladiador ya está especializado."
     _refresh()
+    call_deferred("_scroll_to_feedback")
 
 func _on_upgrade_ability() -> void:
     var person_id := _get_selected_gladiator_id()
@@ -173,12 +186,14 @@ func _on_upgrade_ability() -> void:
     var ability_id := ability_ids[index]
     if ability_id.is_empty():
         feedback.text = "El nivel III estará disponible próximamente."
+        call_deferred("_scroll_to_feedback")
         return
     if GladiatorProgressionManager.upgrade_ability(person_id, ability_id):
         feedback.text = "Habilidad aprendida o mejorada."
     else:
         feedback.text = "No hay puntos suficientes o la habilidad está bloqueada."
     _refresh()
+    call_deferred("_scroll_to_feedback")
 
 func _on_retire() -> void:
     var person_id := _get_selected_gladiator_id()
@@ -189,3 +204,10 @@ func _on_retire() -> void:
     else:
         feedback.text = "Todavía no reúne la trayectoria necesaria para retirarse."
     _refresh()
+    call_deferred("_scroll_to_feedback")
+
+func _scroll_to_feedback() -> void:
+    if scroll == null or not is_instance_valid(scroll):
+        return
+    await get_tree().process_frame
+    scroll.scroll_vertical = int(scroll.get_v_scroll_bar().max_value)
