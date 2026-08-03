@@ -1,27 +1,27 @@
-param(
+﻿param(
     [string]$PackPath = ".\assets\placeholders\pack_000"
 )
 
 $ErrorActionPreference = "Stop"
 
 if (-not (Test-Path -LiteralPath $PackPath)) {
-    Write-Error "No existe el Pack 000 en: $PackPath"
+    Write-Error "Pack 000 not found: $PackPath"
     exit 1
 }
 
 $resolved = (Resolve-Path -LiteralPath $PackPath).Path
-Write-Host "Auditando Pack 000: $resolved"
+Write-Host "Auditing Pack 000: $resolved"
 
 $files = Get-ChildItem -LiteralPath $resolved -Recurse -File
 $pngs = $files | Where-Object { $_.Extension -ieq ".png" }
 
 Write-Host ""
-Write-Host "Archivos totales: $($files.Count)"
-Write-Host "PNG totales:      $($pngs.Count)"
+Write-Host "Total files: $($files.Count)"
+Write-Host "Total PNG:   $($pngs.Count)"
 
 $zeroByte = $files | Where-Object { $_.Length -eq 0 }
 if ($zeroByte) {
-    Write-Warning "Archivos vacíos:"
+    Write-Warning "Empty files:"
     $zeroByte | ForEach-Object { Write-Host " - $($_.FullName)" }
 }
 
@@ -29,21 +29,22 @@ $unexpected = $files | Where-Object {
     $_.Extension.ToLowerInvariant() -notin @(".png", ".md", ".txt", ".ps1")
 }
 if ($unexpected) {
-    Write-Warning "Extensiones inesperadas:"
+    Write-Warning "Unexpected extensions:"
     $unexpected | ForEach-Object { Write-Host " - $($_.FullName)" }
 }
 
-$badNames = $files | Where-Object {
+# Naming convention is enforced only for production PNG files.
+$badPngNames = $pngs | Where-Object {
     $_.Name -cmatch "[A-Z ]"
 }
-if ($badNames) {
-    Write-Warning "Nombres con mayúsculas o espacios:"
-    $badNames | ForEach-Object { Write-Host " - $($_.FullName)" }
+if ($badPngNames) {
+    Write-Warning "PNG names with uppercase letters or spaces:"
+    $badPngNames | ForEach-Object { Write-Host " - $($_.FullName)" }
 }
 
-$nameGroups = $files | Group-Object Name | Where-Object { $_.Count -gt 1 }
+$nameGroups = $pngs | Group-Object Name | Where-Object { $_.Count -gt 1 }
 if ($nameGroups) {
-    Write-Warning "Nombres repetidos en distintas rutas:"
+    Write-Warning "Repeated PNG names in different paths:"
     foreach ($group in $nameGroups) {
         Write-Host " - $($group.Name)"
         $group.Group | ForEach-Object { Write-Host "   $($_.FullName)" }
@@ -56,7 +57,7 @@ $hashGroups = $pngs |
     Where-Object { $_.Count -gt 1 }
 
 if ($hashGroups) {
-    Write-Warning "PNG con contenido idéntico:"
+    Write-Warning "PNG files with identical content (manual review):"
     foreach ($group in $hashGroups) {
         Write-Host " - SHA256 $($group.Name)"
         $group.Group | ForEach-Object { Write-Host "   $($_.Path)" }
@@ -82,15 +83,15 @@ foreach ($png in $pngs) {
 }
 
 if ($pngSignatureErrors) {
-    Write-Warning "Archivos .png con firma inválida:"
+    Write-Warning "Files with .png extension but invalid PNG signature:"
     $pngSignatureErrors | ForEach-Object { Write-Host " - $($_.FullName)" }
 }
 
 Write-Host ""
 if (-not $zeroByte -and -not $unexpected -and -not $pngSignatureErrors) {
-    Write-Host "Auditoría básica completada sin errores críticos."
+    Write-Host "Audit completed without critical errors."
     exit 0
 }
 
-Write-Error "La auditoría encontró errores críticos."
+Write-Error "Audit found critical errors."
 exit 2
