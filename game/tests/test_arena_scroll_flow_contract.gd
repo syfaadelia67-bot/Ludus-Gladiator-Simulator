@@ -5,6 +5,7 @@ func _initialize() -> void:
     var controller_text := FileAccess.get_file_as_string("res://scripts/ui/arena_experience_controller.gd")
     var bootstrap_text := FileAccess.get_file_as_string("res://scripts/ui/all_tabs_ui_bootstrap.gd")
     var preview_text := FileAccess.get_file_as_string("res://scripts/ui/arena_opponent_preview_presenter.gd")
+    var placeholder_text := FileAccess.get_file_as_string("res://scripts/ui/placeholder_asset_integrator.gd")
 
     assert(not project.contains("ArenaCombatResultPresenter="))
     assert(not FileAccess.file_exists("res://scripts/ui/arena_combat_result_presenter.gd"))
@@ -22,6 +23,11 @@ func _initialize() -> void:
     assert(bootstrap_text.contains("BackToFinca"))
     assert(bootstrap_text.contains("BackToPersonal"))
     assert(preview_text.contains("ArenaScroll/ArenaContent"))
+
+    assert(not placeholder_text.contains("HudVisualSkinControllerScript"))
+    assert(not placeholder_text.contains("hud_visual_skin_controller.gd"))
+    assert(placeholder_text.contains("if tree == null:"))
+    assert(placeholder_text.contains("if not is_inside_tree():"))
 
     var controller_script := load("res://scripts/ui/arena_experience_controller.gd")
     var main_scene := load("res://scenes/Main.tscn")
