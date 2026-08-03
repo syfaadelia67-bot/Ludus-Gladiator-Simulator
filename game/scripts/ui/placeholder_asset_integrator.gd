@@ -1,5 +1,7 @@
 extends Node
 
+const HudVisualSkinControllerScript := preload("res://scripts/ui/hud_visual_skin_controller.gd")
+
 const MAIN_SCENE_NAME := "Main"
 const ARENA_PATH := "Margin/VBox/Tabs/Arena"
 const START_DUEL_PATH := "Margin/VBox/Tabs/Arena/Setup/StartDuel"
@@ -13,6 +15,9 @@ const VICTORY_ICON_PATH := "res://assets/placeholders/pack_000/ui/arena_combat/c
 var _mounted_scene_id: int = 0
 
 func _ready() -> void:
+    var skin_controller := HudVisualSkinControllerScript.new()
+    skin_controller.name = "HudVisualSkinController"
+    add_child(skin_controller)
     call_deferred("_attach_when_ready")
 
 func _attach_when_ready() -> void:
