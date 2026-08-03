@@ -1,7 +1,10 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene load_steps=6 format=3]
 
 [ext_resource path="res://scripts/ui/main.gd" type="Script" id="1"]
 [ext_resource path="res://scripts/ui/equipment_panel.gd" type="Script" id="2"]
+[ext_resource path="res://assets/placeholders/pack_000/ui/arena_combat/combat_attack.png" type="Texture2D" id="3_attack"]
+[ext_resource path="res://assets/placeholders/pack_000/ui/arena_combat/combat_defense.png" type="Texture2D" id="4_defense"]
+[ext_resource path="res://assets/placeholders/pack_000/ui/arena_combat/combat_victory.png" type="Texture2D" id="5_victory"]
 
 [node name="Main" type="Control"]
 layout_mode = 3
@@ -266,6 +269,8 @@ size_flags_horizontal = 3
 
 [node name="StartDuel" type="Button" parent="Margin/VBox/Tabs/Arena/Setup"]
 layout_mode = 2
+icon = ExtResource("3_attack")
+expand_icon = true
 text = "Iniciar combate semanal"
 
 [node name="Stage" type="HBoxContainer" parent="Margin/VBox/Tabs/Arena"]
@@ -287,6 +292,18 @@ text = "Tu gladiador"
 custom_minimum_size = Vector2(120, 70)
 layout_mode = 2
 color = Color(0.35, 0.18, 0.08, 1)
+
+[node name="PlaceholderCombatAttack" type="TextureRect" parent="Margin/VBox/Tabs/Arena/Stage/PlayerCard/Body"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("3_attack")
+expand_mode = 1
+stretch_mode = 5
 
 [node name="Health" type="ProgressBar" parent="Margin/VBox/Tabs/Arena/Stage/PlayerCard"]
 layout_mode = 2
@@ -319,6 +336,18 @@ text = "Rival"
 custom_minimum_size = Vector2(120, 70)
 layout_mode = 2
 color = Color(0.22, 0.22, 0.24, 1)
+
+[node name="PlaceholderCombatDefense" type="TextureRect" parent="Margin/VBox/Tabs/Arena/Stage/EnemyCard/Body"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("4_defense")
+expand_mode = 1
+stretch_mode = 5
 
 [node name="Health" type="ProgressBar" parent="Margin/VBox/Tabs/Arena/Stage/EnemyCard"]
 layout_mode = 2
