@@ -13,6 +13,7 @@ const PANELS := [
     {"name":"Historial", "scene":preload("res://scenes/CombatHistoryPanel.tscn")}
 ]
 
+const FINCA_SCREEN = preload("res://scenes/FincaScreen.tscn")
 const ARENA_CONTROLLER = preload("res://scripts/ui/arena_experience_controller.gd")
 const MAX_ATTACH_ATTEMPTS := 30
 
@@ -33,8 +34,10 @@ func _attach_when_ready() -> void:
         var tabs := root.find_child("Tabs", true, false)
         if tabs is TabContainer:
             _attach_panels(tabs)
+            _attach_finca_screen(tabs)
             _attach_arena_controller(tabs)
             call_deferred("_repair_arena_navigation", tabs)
+            call_deferred("_select_finca_as_primary_view", tabs)
             return
     push_error("No se encontró el TabContainer principal llamado Tabs después de esperar la escena activa.")
 
@@ -50,6 +53,41 @@ func _attach_panels(tabs: TabContainer) -> void:
         var panel := packed_scene.instantiate()
         panel.name = panel_name
         tabs.add_child(panel)
+
+func _attach_finca_screen(tabs: TabContainer) -> void:
+    var finca := tabs.get_node_or_null("Finca") as Container
+    if finca == null:
+        push_error("No se encontró la pestaña Finca para montar la pantalla principal.")
+        return
+    if finca.has_meta("primary_finca_screen"):
+        return
+
+    for legacy_name in ["BuildingList", "BuildingPanel"]:
+        var legacy_control := finca.get_node_or_null(legacy_name) as Control
+        if legacy_control != null:
+            legacy_control.visible = false
+            legacy_control.mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+    var screen := finca.get_node_or_null("FincaScreen") as Control
+    if screen == null:
+        screen = FINCA_SCREEN.instantiate() as Control
+        if screen == null:
+            push_error("No se pudo instanciar FincaScreen.")
+            return
+        screen.name = "FincaScreen"
+        screen.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+        screen.size_flags_vertical = Control.SIZE_EXPAND_FILL
+        finca.add_child(screen)
+    finca.set_meta("primary_finca_screen", true)
+
+func _select_finca_as_primary_view(tabs: TabContainer) -> void:
+    await get_tree().process_frame
+    var finca := tabs.get_node_or_null("Finca") as Control
+    if finca == null:
+        return
+    var finca_index := tabs.get_tab_idx_from_control(finca)
+    if finca_index >= 0:
+        tabs.current_tab = finca_index
 
 func _attach_arena_controller(tabs: TabContainer) -> void:
     var arena := tabs.get_node_or_null("Arena") as VBoxContainer
