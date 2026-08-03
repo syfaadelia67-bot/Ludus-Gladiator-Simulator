@@ -17,6 +17,7 @@ const SYSTEM_TABS := {
     "economia": "Economía",
     "torneos": "Torneos",
     "progresion": "Progresión",
+    "relaciones": "Relaciones",
     "arena": "Arena",
     "campana": "Campaña"
 }
@@ -25,6 +26,8 @@ const BUILDING_SYSTEMS := {
     "barracks": "personal",
     "training_yard": "personal",
     "forge": "forja",
+    "infirmary": "personal",
+    "kitchen": "economia",
     "private_arena": "arena"
 }
 
@@ -68,6 +71,9 @@ func open_system(system_id: String) -> bool:
 
 func open_building_system(building_id: String) -> bool:
     var canonical_id := EstateManager.canonicalize_building_id(building_id)
+    if EstateManager.is_locked(canonical_id):
+        building_system_unavailable.emit(canonical_id)
+        return false
     var system_id := str(BUILDING_SYSTEMS.get(canonical_id, ""))
     if system_id.is_empty():
         building_system_unavailable.emit(canonical_id)
@@ -76,6 +82,8 @@ func open_building_system(building_id: String) -> bool:
 
 func get_building_system_id(building_id: String) -> String:
     var canonical_id := EstateManager.canonicalize_building_id(building_id)
+    if EstateManager.is_locked(canonical_id):
+        return ""
     return str(BUILDING_SYSTEMS.get(canonical_id, ""))
 
 func get_current_system_id() -> String:
