@@ -264,7 +264,7 @@ func import_state(data: Dictionary) -> void:
 func _new_record() -> Dictionary:
     return {"level":1, "experience":0, "specialization":DEFAULT_SPECIALIZATION, "fame":0, "wins":0, "losses":0, "age_days":0, "career_state":"activo", "skill_points":1, "abilities":{}, "tactical_plan":[]}
 
-func _migrate_record(raw_record: Dictionary, person_id: String = "") -> Dictionary:
+func _migrate_record(raw_record: Dictionary, _person_id: String = "") -> Dictionary:
     var record := raw_record.duplicate(true)
     record["level"] = clampi(int(record.get("level", 1)), 1, DEMO_MAX_LEVEL)
     record["experience"] = maxi(0, int(record.get("experience", 0)))
