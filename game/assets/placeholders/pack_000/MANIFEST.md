@@ -7,8 +7,7 @@ Current repository batches include:
 - Basic terrain placeholders
 - Basic UI controls and panels
 - Forge, infirmary, sanctuary, training yard and stable placeholders
-- Basic environmental props: fire, rock and tree
-- Additional finca layout pieces: road intersection and gate
+- Kitchen and warehouse placeholders
 
 These are placeholders only and must not be treated as final Ludus artwork.
 Keep filenames stable when replacing them later.
