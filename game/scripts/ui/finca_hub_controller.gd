@@ -15,6 +15,8 @@ const SYSTEM_TABS := {
     "eventos": "Eventos",
     "rivales": "Rivales",
     "economia": "Economía",
+    "torneos": "Torneos",
+    "progresion": "Progresión",
     "arena": "Arena",
     "campana": "Campaña"
 }
