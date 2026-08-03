@@ -149,7 +149,9 @@ func _present_result() -> void:
     if FincaHubController.has_method("open_system"):
         FincaHubController.open_system("arena")
     overlay.visible = true
-    overlay.grab_focus()
+    if close_button != null and is_instance_valid(close_button):
+        close_button.focus_mode = Control.FOCUS_ALL
+        close_button.grab_focus()
     playback_token += 1
     var token := playback_token
     var victory := bool(cached_result.get("victory", false))
