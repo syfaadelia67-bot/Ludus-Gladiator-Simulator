@@ -1,19 +1,22 @@
 extends VBoxContainer
 
-@onready var summary: RichTextLabel = $Summary
-@onready var sponsor_selector: OptionButton = $ContractRow/SponsorSelector
-@onready var sign_button: Button = $ContractRow/SignContract
-@onready var loan_selector: OptionButton = $LoanRow/LoanSelector
-@onready var loan_button: Button = $LoanRow/TakeLoan
-@onready var contracts: RichTextLabel = $Columns/Contracts
-@onready var loans: RichTextLabel = $Columns/Loans
-@onready var ledger: RichTextLabel = $Ledger
-@onready var status: Label = $Status
+@onready var back_button: Button = $Navigation/BackToFinca
+@onready var status: Label = $Navigation/Status
+@onready var scroll: ScrollContainer = $Scroll
+@onready var summary: RichTextLabel = $Scroll/Content/Summary
+@onready var sponsor_selector: OptionButton = $Scroll/Content/ContractRow/SponsorSelector
+@onready var sign_button: Button = $Scroll/Content/ContractRow/SignContract
+@onready var loan_selector: OptionButton = $Scroll/Content/LoanRow/LoanSelector
+@onready var loan_button: Button = $Scroll/Content/LoanRow/TakeLoan
+@onready var contracts: RichTextLabel = $Scroll/Content/Columns/Contracts
+@onready var loans: RichTextLabel = $Scroll/Content/Columns/Loans
+@onready var ledger: RichTextLabel = $Scroll/Content/Ledger
 
 var sponsor_ids: Array[String] = []
 var loan_ids: Array[String] = []
 
 func _ready() -> void:
+    back_button.pressed.connect(_return_to_finca)
     sign_button.pressed.connect(_on_sign_contract)
     loan_button.pressed.connect(_on_take_loan)
     sponsor_selector.item_selected.connect(_on_selection_changed)
@@ -25,6 +28,14 @@ func _ready() -> void:
     GameState.resources_changed.connect(_refresh)
     _populate_options()
     _refresh()
+
+func _unhandled_key_input(event: InputEvent) -> void:
+    if is_visible_in_tree() and event.is_action_pressed("ui_cancel"):
+        _return_to_finca()
+        get_viewport().set_input_as_handled()
+
+func _return_to_finca() -> void:
+    FincaHubController.show_finca()
 
 func _populate_options() -> void:
     sponsor_selector.clear()
@@ -44,6 +55,7 @@ func _on_sign_contract() -> void:
         return
     if EconomyManager.sign_contract(sponsor_ids[sponsor_selector.selected]):
         status.text = "Contrato firmado correctamente."
+        call_deferred("_scroll_to_ledger")
 
 func _on_take_loan() -> void:
     if loan_selector.selected < 0 or loan_ids.is_empty():
@@ -51,6 +63,7 @@ func _on_take_loan() -> void:
         return
     if EconomyManager.take_loan(loan_ids[loan_selector.selected]):
         status.text = "El préstamo fue depositado en la tesorería."
+        call_deferred("_scroll_to_ledger")
 
 func _on_selection_changed(_index: int) -> void:
     _refresh()
@@ -63,14 +76,26 @@ func _show_error(reason: String) -> void:
 
 func _refresh() -> void:
     var data := EconomyManager.get_summary()
-    summary.text = "[b]TESORERÍA[/b]\nCosto fijo semanal: %d | Deuda: %d | Contratos: %d | Préstamos: %d\nIngresos históricos: %d | Gastos históricos: %d\n[color=orange]%s[/color]" % [int(data.get("weekly_fixed_costs", data.get("daily_fixed_costs", 0))), int(data.get("total_debt", 0)), int(data.get("contracts", 0)), int(data.get("loans", 0)), int(data.get("total_income", 0)), int(data.get("total_expenses", 0)), data.get("message", "")]
+    summary.text = "[b]TESORERÍA[/b]\nCosto fijo semanal: %d | Deuda: %d | Contratos: %d | Préstamos: %d\nIngresos históricos: %d | Gastos históricos: %d\n[color=orange]%s[/color]" % [
+        int(data.get("weekly_fixed_costs", data.get("daily_fixed_costs", 0))),
+        int(data.get("total_debt", 0)),
+        int(data.get("contracts", 0)),
+        int(data.get("loans", 0)),
+        int(data.get("total_income", 0)),
+        int(data.get("total_expenses", 0)),
+        data.get("message", "")
+    ]
     _refresh_contracts()
     _refresh_loans()
     _refresh_ledger()
     if sponsor_selector.selected >= 0 and sponsor_selector.selected < sponsor_ids.size():
         var sponsor := EconomyManager.get_sponsor(sponsor_ids[sponsor_selector.selected])
         sign_button.disabled = not bool(sponsor.get("eligible", false))
-        sign_button.tooltip_text = "Anticipo %d | Ingreso semanal %d | Duración %d semanas" % [int(sponsor.get("upfront", 0)), int(sponsor.get("weekly_income", sponsor.get("daily_income", 0))), int(sponsor.get("duration_weeks", sponsor.get("duration", 0)))]
+        sign_button.tooltip_text = "Anticipo %d | Ingreso semanal %d | Duración %d semanas" % [
+            int(sponsor.get("upfront", 0)),
+            int(sponsor.get("weekly_income", sponsor.get("daily_income", 0))),
+            int(sponsor.get("duration_weeks", sponsor.get("duration", 0)))
+        ]
 
 func _refresh_contracts() -> void:
     if EconomyManager.active_contracts.is_empty():
@@ -78,7 +103,13 @@ func _refresh_contracts() -> void:
         return
     var lines: Array[String] = ["[b]CONTRATOS ACTIVOS[/b]"]
     for contract in EconomyManager.active_contracts:
-        lines.append("• %s — %d semanas — +%d/semana — V:%d D:%d" % [contract.get("name", "Contrato"), int(contract.get("weeks_remaining", contract.get("days_remaining", 0))), int(contract.get("weekly_income", contract.get("daily_income", 0))), int(contract.get("victories", 0)), int(contract.get("defeats", 0))])
+        lines.append("• %s — %d semanas — +%d/semana — V:%d D:%d" % [
+            contract.get("name", "Contrato"),
+            int(contract.get("weeks_remaining", contract.get("days_remaining", 0))),
+            int(contract.get("weekly_income", contract.get("daily_income", 0))),
+            int(contract.get("victories", 0)),
+            int(contract.get("defeats", 0))
+        ])
     contracts.text = "\n".join(lines)
 
 func _refresh_loans() -> void:
@@ -87,7 +118,13 @@ func _refresh_loans() -> void:
         return
     var lines: Array[String] = ["[b]DEUDAS ACTIVAS[/b]"]
     for loan in EconomyManager.active_loans:
-        lines.append("• %s — Debe %d — %d semanas — Cuota semanal %d — Impagos %d" % [loan.get("name", "Préstamo"), int(loan.get("remaining", 0)), int(loan.get("weeks_remaining", loan.get("days_remaining", 0))), int(loan.get("installment", 0)), int(loan.get("missed", 0))])
+        lines.append("• %s — Debe %d — %d semanas — Cuota semanal %d — Impagos %d" % [
+            loan.get("name", "Préstamo"),
+            int(loan.get("remaining", 0)),
+            int(loan.get("weeks_remaining", loan.get("days_remaining", 0))),
+            int(loan.get("installment", 0)),
+            int(loan.get("missed", 0))
+        ])
     loans.text = "\n".join(lines)
 
 func _refresh_ledger() -> void:
@@ -95,5 +132,16 @@ func _refresh_ledger() -> void:
     for index in range(mini(12, EconomyManager.ledger.size())):
         var entry: Dictionary = EconomyManager.ledger[index]
         var amount := int(entry.get("amount", 0))
-        lines.append("Semana %d | %s%d | %s" % [int(entry.get("week", entry.get("day", 0))), "+" if amount >= 0 else "", amount, entry.get("reason", "Movimiento")])
+        lines.append("Semana %d | %s%d | %s" % [
+            int(entry.get("week", entry.get("day", 0))),
+            "+" if amount >= 0 else "",
+            amount,
+            entry.get("reason", "Movimiento")
+        ])
     ledger.text = "\n".join(lines)
+
+func _scroll_to_ledger() -> void:
+    if scroll == null or not is_instance_valid(scroll):
+        return
+    await get_tree().process_frame
+    scroll.scroll_vertical = int(scroll.get_v_scroll_bar().max_value)
