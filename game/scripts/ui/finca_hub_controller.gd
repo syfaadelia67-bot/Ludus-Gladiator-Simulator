@@ -13,6 +13,8 @@ const SYSTEM_TABS := {
     "forja": "Forja",
     "equipamiento": "Equipamiento",
     "eventos": "Eventos",
+    "rivales": "Rivales",
+    "economia": "Economía",
     "arena": "Arena",
     "campana": "Campaña"
 }
@@ -87,7 +89,12 @@ func get_current_system_id() -> String:
     return ""
 
 func _get_tabs() -> TabContainer:
-    var scene := get_tree().current_scene
+    if not is_inside_tree():
+        return null
+    var tree := get_tree()
+    if tree == null:
+        return null
+    var scene := tree.current_scene
     if scene == null or scene.name != MAIN_SCENE_NAME:
         return null
     return scene.get_node_or_null(TAB_PATH) as TabContainer
