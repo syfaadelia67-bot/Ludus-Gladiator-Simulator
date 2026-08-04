@@ -6,7 +6,7 @@
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
-theme_override_constants/separation = 8
+theme_override_constants/separation = 6
 script = ExtResource("1")
 
 [node name="TopHUD" type="PanelContainer" parent="."]
@@ -89,11 +89,12 @@ text = "CAMPAÑA"
 
 [node name="Center" type="HSplitContainer" parent="."]
 layout_mode = 2
+size_flags_horizontal = 3
 size_flags_vertical = 3
-split_offset = 855
+split_offset = 820
 
 [node name="WorldPanel" type="PanelContainer" parent="Center"]
-custom_minimum_size = Vector2(760, 430)
+custom_minimum_size = Vector2(680, 0)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
@@ -106,7 +107,7 @@ theme_override_constants/margin_right = 8
 theme_override_constants/margin_bottom = 8
 
 [node name="WorldArea" type="Control" parent="Center/WorldPanel/WorldMargin"]
-custom_minimum_size = Vector2(740, 410)
+custom_minimum_size = Vector2(660, 300)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
@@ -126,88 +127,90 @@ color = Color(0.12, 0.095, 0.065, 1)
 layout_mode = 0
 offset_left = 16.0
 offset_top = 10.0
-offset_right = 380.0
+offset_right = 420.0
 offset_bottom = 42.0
 theme_override_font_sizes/font_size = 20
 text = "FINCA DEL LUDUS · MAPA DE GESTIÓN"
 
 [node name="MapHint" type="Label" parent="Center/WorldPanel/WorldMargin/WorldArea"]
-layout_mode = 1
-anchors_preset = 12
-anchor_top = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = 14.0
-offset_top = -35.0
-offset_right = -14.0
-offset_bottom = -8.0
-grow_horizontal = 2
-grow_vertical = 0
-text = "Seleccioná un edificio para consultar su estado. Los espacios oscuros están reservados para contenido posterior."
-horizontal_alignment = 1
+layout_mode = 0
+offset_left = 16.0
+offset_top = 43.0
+offset_right = 650.0
+offset_bottom = 68.0
+theme_override_font_sizes/font_size = 13
+text = "Seleccioná un edificio. Los espacios oscuros están reservados para contenido posterior."
 
 [node name="BuildingDetailsPanel" type="PanelContainer" parent="Center"]
-custom_minimum_size = Vector2(320, 430)
+custom_minimum_size = Vector2(300, 0)
 layout_mode = 2
+size_flags_vertical = 3
 
 [node name="Margin" type="MarginContainer" parent="Center/BuildingDetailsPanel"]
 layout_mode = 2
-theme_override_constants/margin_left = 15
-theme_override_constants/margin_top = 14
-theme_override_constants/margin_right = 15
-theme_override_constants/margin_bottom = 14
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
 
-[node name="Details" type="VBoxContainer" parent="Center/BuildingDetailsPanel/Margin"]
+[node name="Scroll" type="ScrollContainer" parent="Center/BuildingDetailsPanel/Margin"]
 layout_mode = 2
-theme_override_constants/separation = 9
+size_flags_horizontal = 3
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+follow_focus = true
 
-[node name="Title" type="Label" parent="Center/BuildingDetailsPanel/Margin/Details"]
+[node name="Details" type="VBoxContainer" parent="Center/BuildingDetailsPanel/Margin/Scroll"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 22
+size_flags_horizontal = 3
+theme_override_constants/separation = 6
+
+[node name="Title" type="Label" parent="Center/BuildingDetailsPanel/Margin/Scroll/Details"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 21
+autowrap_mode = 3
 text = "INSTALACIÓN"
 
-[node name="Status" type="Label" parent="Center/BuildingDetailsPanel/Margin/Details"]
+[node name="Status" type="Label" parent="Center/BuildingDetailsPanel/Margin/Scroll/Details"]
 layout_mode = 2
+autowrap_mode = 3
 text = "Estado"
 
-[node name="Description" type="RichTextLabel" parent="Center/BuildingDetailsPanel/Margin/Details"]
-custom_minimum_size = Vector2(0, 125)
+[node name="Description" type="RichTextLabel" parent="Center/BuildingDetailsPanel/Margin/Scroll/Details"]
+custom_minimum_size = Vector2(0, 90)
 layout_mode = 2
 bbcode_enabled = true
-fit_content = false
+fit_content = true
+scroll_active = false
 text = "Seleccioná un edificio."
 
-[node name="Effect" type="Label" parent="Center/BuildingDetailsPanel/Margin/Details"]
+[node name="Effect" type="Label" parent="Center/BuildingDetailsPanel/Margin/Scroll/Details"]
 layout_mode = 2
 autowrap_mode = 3
 text = "Efecto actual"
 
-[node name="NextUpgrade" type="Label" parent="Center/BuildingDetailsPanel/Margin/Details"]
+[node name="NextUpgrade" type="Label" parent="Center/BuildingDetailsPanel/Margin/Scroll/Details"]
 layout_mode = 2
 autowrap_mode = 3
 text = "Próxima mejora"
 
-[node name="Cost" type="Label" parent="Center/BuildingDetailsPanel/Margin/Details"]
+[node name="Cost" type="Label" parent="Center/BuildingDetailsPanel/Margin/Scroll/Details"]
 layout_mode = 2
 autowrap_mode = 3
 text = "Costo"
 
-[node name="Spacer" type="Control" parent="Center/BuildingDetailsPanel/Margin/Details"]
-layout_mode = 2
-size_flags_vertical = 3
-
-[node name="Feedback" type="Label" parent="Center/BuildingDetailsPanel/Margin/Details"]
+[node name="Feedback" type="Label" parent="Center/BuildingDetailsPanel/Margin/Scroll/Details"]
 layout_mode = 2
 autowrap_mode = 3
 text = ""
 
-[node name="Enter" type="Button" parent="Center/BuildingDetailsPanel/Margin/Details"]
-custom_minimum_size = Vector2(0, 42)
+[node name="Enter" type="Button" parent="Center/BuildingDetailsPanel/Margin/Scroll/Details"]
+custom_minimum_size = Vector2(0, 36)
 layout_mode = 2
 text = "Entrar"
 
-[node name="Upgrade" type="Button" parent="Center/BuildingDetailsPanel/Margin/Details"]
-custom_minimum_size = Vector2(0, 42)
+[node name="Upgrade" type="Button" parent="Center/BuildingDetailsPanel/Margin/Scroll/Details"]
+custom_minimum_size = Vector2(0, 36)
 layout_mode = 2
 text = "Mejorar instalación"
 
@@ -217,9 +220,9 @@ layout_mode = 2
 [node name="Margin" type="MarginContainer" parent="BottomStatusBar"]
 layout_mode = 2
 theme_override_constants/margin_left = 10
-theme_override_constants/margin_top = 7
+theme_override_constants/margin_top = 5
 theme_override_constants/margin_right = 10
-theme_override_constants/margin_bottom = 7
+theme_override_constants/margin_bottom = 5
 
 [node name="Row" type="HBoxContainer" parent="BottomStatusBar/Margin"]
 layout_mode = 2
