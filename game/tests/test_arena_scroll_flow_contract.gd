@@ -2,37 +2,64 @@ extends SceneTree
 
 func _initialize() -> void:
     var project := FileAccess.get_file_as_string("res://project.godot")
-    var controller_text := FileAccess.get_file_as_string("res://scripts/ui/arena_experience_controller.gd")
+    var arena_scene_text := FileAccess.get_file_as_string("res://scenes/ArenaScreen.tscn")
+    var controller_text := FileAccess.get_file_as_string("res://scripts/ui/arena_screen.gd")
     var bootstrap_text := FileAccess.get_file_as_string("res://scripts/ui/all_tabs_ui_bootstrap.gd")
-    var preview_text := FileAccess.get_file_as_string("res://scripts/ui/arena_opponent_preview_presenter.gd")
-    var placeholder_text := FileAccess.get_file_as_string("res://scripts/ui/placeholder_asset_integrator.gd")
 
     assert(not project.contains("ArenaCombatResultPresenter="))
-    assert(not FileAccess.file_exists("res://scripts/ui/arena_combat_result_presenter.gd"))
+    assert(not project.contains("ArenaOpponentPreviewPresenter="))
+    assert(not project.contains("ArenaFinaleWarningPresenter="))
+    assert(not project.contains("PlaceholderAssetIntegrator="))
 
-    assert(controller_text.contains("ScrollContainer.new()"))
-    assert(controller_text.contains("ArenaScroll"))
-    assert(controller_text.contains("ArenaContent"))
-    assert(controller_text.contains("_disconnect_legacy_combat_result_handler"))
-    assert(controller_text.contains("CombatManager.combat_finished.disconnect"))
-    assert(controller_text.contains("_render_base_result(result)"))
-    assert(controller_text.contains("REPETICIÓN MANUAL"))
-    assert(controller_text.contains("call_deferred(\"_scroll_to_result\")"))
-    assert(not controller_text.contains("_render_report(result)\n    _start_replay()"))
+    for required_node in [
+        "RosterPanel",
+        "CenterPanel",
+        "EncounterPanel",
+        "RosterList",
+        "ArenaVisual",
+        "Preparation",
+        "StartCombat",
+        "ResultSummary",
+        "CombatLog",
+        "BackToFinca"
+    ]:
+        assert(arena_scene_text.contains("name=\"%s\"" % required_node) or arena_scene_text.contains("name = \"%s\"" % required_node))
 
-    assert(bootstrap_text.contains("BackToFinca"))
-    assert(bootstrap_text.contains("BackToPersonal"))
-    assert(preview_text.contains("ArenaScroll/ArenaContent"))
+    assert(arena_scene_text.contains("combat_attack.png"))
+    assert(arena_scene_text.contains("combat_defense.png"))
+    assert(arena_scene_text.contains("combat_victory.png"))
+    assert(arena_scene_text.contains("ScrollContainer"))
 
-    assert(not placeholder_text.contains("HudVisualSkinControllerScript"))
-    assert(not placeholder_text.contains("hud_visual_skin_controller.gd"))
-    assert(placeholder_text.contains("if tree == null:"))
-    assert(placeholder_text.contains("if not is_inside_tree():"))
+    assert(controller_text.contains("CombatManager.get_current_opponent_preview"))
+    assert(controller_text.contains("CombatManager.configure_next_battle"))
+    assert(controller_text.contains("CombatManager.simulate_duel"))
+    assert(controller_text.contains("CombatManager.last_result"))
+    assert(controller_text.contains("_restore_persistent_result"))
+    assert(controller_text.contains("_start_replay"))
+    assert(controller_text.contains("_return_to_finca"))
+    assert(controller_text.contains("FincaHubController.open_system(\"equipamiento\")"))
+    assert(controller_text.contains("FincaHubController.open_system(\"progresion\")"))
+    assert(not controller_text.contains("grab_focus()"))
 
-    var controller_script := load("res://scripts/ui/arena_experience_controller.gd")
-    var main_scene := load("res://scenes/Main.tscn")
-    assert(controller_script != null)
-    assert(main_scene is PackedScene)
+    assert(bootstrap_text.contains("preload(\"res://scenes/ArenaScreen.tscn\")"))
+    assert(bootstrap_text.contains("_attach_arena_screen(tabs)"))
+    assert(bootstrap_text.contains("primary_arena_screen"))
+    assert(bootstrap_text.contains("CombatManager.combat_finished.disconnect"))
+    assert(not bootstrap_text.contains("ARENA_CONTROLLER"))
+    assert(not bootstrap_text.contains("_repair_arena_navigation"))
 
-    print("Arena scroll flow contract: OK")
+    var arena_scene := load("res://scenes/ArenaScreen.tscn")
+    var arena_script := load("res://scripts/ui/arena_screen.gd")
+    assert(arena_scene is PackedScene)
+    assert(arena_script != null)
+
+    var instance := (arena_scene as PackedScene).instantiate()
+    assert(instance.get_node_or_null("Body/RosterPanel") != null)
+    assert(instance.get_node_or_null("Body/MainAndEncounter/CenterPanel") != null)
+    assert(instance.get_node_or_null("Body/MainAndEncounter/EncounterPanel") != null)
+    assert(instance.get_node_or_null("Body/MainAndEncounter/CenterPanel/Margin/Scroll/Content/ActionRow/StartCombat") != null)
+    assert(instance.get_node_or_null("Body/MainAndEncounter/CenterPanel/Margin/Scroll/Content/ResultSummary") != null)
+    instance.free()
+
+    print("Arena dedicated screen contract: OK")
     quit()
