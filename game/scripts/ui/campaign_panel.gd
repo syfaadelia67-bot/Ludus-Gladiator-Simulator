@@ -71,7 +71,8 @@ func _rebuild_objectives() -> void:
     for objective_value in campaign_objectives:
         if not objective_value is Dictionary:
             continue
-        _add_objective_card(objective_value as Dictionary)
+        var objective: Dictionary = objective_value
+        _add_objective_card(objective)
 
 func _add_objective_card(objective: Dictionary) -> void:
     var card := PanelContainer.new()
