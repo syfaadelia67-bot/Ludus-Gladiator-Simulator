@@ -8,7 +8,7 @@ func _initialize() -> void:
     var shell_scene_text := FileAccess.get_file_as_string("res://scenes/UnifiedHudShell.tscn")
     var shell_controller_text := FileAccess.get_file_as_string("res://scripts/ui/unified_hud_shell.gd")
 
-    for required_node in ["TopHUD", "MainNavigation", "WorldArea", "BuildingDetailsPanel", "BottomStatusBar"]:
+    for required_node in ["TopHUD", "MainNavigation", "WorldArea", "BuildingDetailsPanel", "Scroll", "BottomStatusBar"]:
         assert(scene_text.contains("name=\"%s\"" % required_node) or scene_text.contains("name = \"%s\"" % required_node))
 
     for building_id in [
@@ -28,11 +28,22 @@ func _initialize() -> void:
     ]:
         assert(controller_text.contains("\"%s\"" % building_id))
 
+    assert(scene_text.contains("custom_minimum_size = Vector2(680, 0)"))
+    assert(scene_text.contains("custom_minimum_size = Vector2(300, 0)"))
+    assert(scene_text.contains("custom_minimum_size = Vector2(660, 300)"))
+    assert(scene_text.contains("horizontal_scroll_mode = 0"))
+    assert(scene_text.contains("follow_focus = true"))
+
     assert(controller_text.contains("const BUILDING_LAYOUT"))
+    assert(controller_text.contains("const HOTSPOT_NAMES"))
     assert(controller_text.contains("_build_hotspots()"))
+    assert(controller_text.contains("details_scroll"))
+    assert(controller_text.contains("_scroll_details_to_top"))
+    assert(controller_text.contains("clampf"))
     assert(controller_text.contains("EventManager.get_pending_event()"))
     assert(controller_text.contains("CombatManager.get_current_event_details()"))
     assert(controller_text.contains("EstateManager.can_upgrade"))
+    assert(not controller_text.contains("_restore_legacy_shell"))
 
     assert(bootstrap_text.contains("preload(\"res://scenes/FincaScreen.tscn\")"))
     assert(bootstrap_text.contains("preload(\"res://scenes/UnifiedHudShell.tscn\")"))
@@ -71,7 +82,9 @@ func _initialize() -> void:
 
     var finca_instance := (finca_scene as PackedScene).instantiate()
     assert(finca_instance.get_node_or_null("Center/WorldPanel/WorldMargin/WorldArea") != null)
-    assert(finca_instance.get_node_or_null("Center/BuildingDetailsPanel") != null)
+    assert(finca_instance.get_node_or_null("Center/BuildingDetailsPanel/Margin/Scroll") is ScrollContainer)
+    assert(finca_instance.get_node_or_null("Center/BuildingDetailsPanel/Margin/Scroll/Details/Enter") is Button)
+    assert(finca_instance.get_node_or_null("Center/BuildingDetailsPanel/Margin/Scroll/Details/Upgrade") is Button)
     finca_instance.free()
 
     var shell_instance := (shell_scene as PackedScene).instantiate()
@@ -80,5 +93,5 @@ func _initialize() -> void:
     assert(shell_instance.get_node_or_null("BottomStatusBar") != null)
     shell_instance.free()
 
-    print("Finca main screen and unified HUD contract: OK")
+    print("Finca responsive layout and unified HUD contract: OK")
     quit()
