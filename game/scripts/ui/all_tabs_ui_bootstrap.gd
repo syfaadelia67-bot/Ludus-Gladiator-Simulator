@@ -14,8 +14,8 @@ const PANELS := [
 ]
 
 const FINCA_SCREEN = preload("res://scenes/FincaScreen.tscn")
+const ARENA_SCREEN = preload("res://scenes/ArenaScreen.tscn")
 const UNIFIED_HUD = preload("res://scenes/UnifiedHudShell.tscn")
-const ARENA_CONTROLLER = preload("res://scripts/ui/arena_experience_controller.gd")
 const MAX_ATTACH_ATTEMPTS := 30
 
 var main_root: Control
@@ -42,12 +42,11 @@ func _attach_when_ready() -> void:
         main_tabs = tabs
         _attach_panels(tabs)
         _attach_finca_screen(tabs)
-        _attach_arena_controller(tabs)
+        _attach_arena_screen(tabs)
         _attach_unified_hud(root)
         _enforce_unified_layout()
         if not tabs.tab_changed.is_connected(_on_tab_changed):
             tabs.tab_changed.connect(_on_tab_changed)
-        call_deferred("_repair_arena_navigation", tabs)
         call_deferred("_select_finca_as_primary_view", tabs)
         return
     push_error("No se encontró el TabContainer principal llamado Tabs después de esperar la escena activa.")
@@ -90,6 +89,42 @@ func _attach_finca_screen(tabs: TabContainer) -> void:
 
     _disable_embedded_finca_shell(screen)
     finca.set_meta("primary_finca_screen", true)
+
+func _attach_arena_screen(tabs: TabContainer) -> void:
+    var arena := tabs.get_node_or_null("Arena") as VBoxContainer
+    if arena == null:
+        push_error("No se encontró la pestaña Arena para montar ArenaScreen.")
+        return
+
+    for child in arena.get_children():
+        if child.name == "ArenaScreen":
+            continue
+        if child is Control:
+            var legacy_control := child as Control
+            legacy_control.visible = false
+            legacy_control.mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+    var scene := get_tree().current_scene
+    if scene != null:
+        var legacy_result_handler := Callable(scene, "_on_combat_finished")
+        if CombatManager.combat_finished.is_connected(legacy_result_handler):
+            CombatManager.combat_finished.disconnect(legacy_result_handler)
+        var legacy_failure_handler := Callable(scene, "_on_action_failed")
+        if CombatManager.combat_failed.is_connected(legacy_failure_handler):
+            CombatManager.combat_failed.disconnect(legacy_failure_handler)
+
+    var screen := arena.get_node_or_null("ArenaScreen") as Control
+    if screen == null:
+        screen = ARENA_SCREEN.instantiate() as Control
+        if screen == null:
+            push_error("No se pudo instanciar ArenaScreen.")
+            return
+        screen.name = "ArenaScreen"
+        screen.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+        screen.size_flags_vertical = Control.SIZE_EXPAND_FILL
+        arena.add_child(screen)
+        arena.move_child(screen, 0)
+    arena.set_meta("primary_arena_screen", true)
 
 func _disable_embedded_finca_shell(screen: Control) -> void:
     for path in ["TopHUD", "MainNavigation", "BottomStatusBar"]:
@@ -147,60 +182,5 @@ func _select_finca_as_primary_view(tabs: TabContainer) -> void:
         tabs.current_tab = finca_index
     _enforce_unified_layout()
 
-func _attach_arena_controller(tabs: TabContainer) -> void:
-    var arena := tabs.get_node_or_null("Arena") as VBoxContainer
-    if arena == null:
-        push_error("No se encontró la pestaña Arena para activar el combate mejorado.")
-        return
-    if arena.has_meta("enhanced_combat_ui"):
-        return
-    var controller := Node.new()
-    controller.name = "ArenaExperienceController"
-    controller.set_script(ARENA_CONTROLLER)
-    arena.add_child(controller)
-    controller.call_deferred("setup", arena)
-
-func _repair_arena_navigation(tabs: TabContainer) -> void:
-    await get_tree().process_frame
-    var arena := tabs.get_node_or_null("Arena") as VBoxContainer
-    if arena == null:
-        return
-    var navigation := arena.get_node_or_null("ArenaNavigation") as HBoxContainer
-    if navigation == null:
-        navigation = HBoxContainer.new()
-        navigation.name = "ArenaNavigation"
-        arena.add_child(navigation)
-        arena.move_child(navigation, 0)
-
-    var finca_button := navigation.get_node_or_null("BackToFinca") as Button
-    if finca_button == null:
-        finca_button = Button.new()
-        finca_button.name = "BackToFinca"
-        navigation.add_child(finca_button)
-        navigation.move_child(finca_button, 0)
-    finca_button.text = "← Volver a la finca"
-    finca_button.tooltip_text = "Salir de la Arena y regresar al centro del ludus. También podés usar Esc."
-    if not finca_button.pressed.is_connected(_go_to_finca):
-        finca_button.pressed.connect(_go_to_finca)
-
-    var personal_button := navigation.get_node_or_null("BackToPersonal") as Button
-    if personal_button == null:
-        for control in navigation.get_children():
-            if control is Button and control != finca_button and str(control.text).contains("Volver"):
-                personal_button = control
-                personal_button.name = "BackToPersonal"
-                break
-    if personal_button == null:
-        personal_button = Button.new()
-        personal_button.name = "BackToPersonal"
-        navigation.add_child(personal_button)
-    personal_button.text = "Volver a Personal"
-    personal_button.tooltip_text = "Salir de la Arena y revisar el gladiador seleccionado."
-    if not personal_button.pressed.is_connected(_go_to_personal):
-        personal_button.pressed.connect(_go_to_personal)
-
 func _go_to_finca() -> void:
     FincaHubController.show_finca()
-
-func _go_to_personal() -> void:
-    FincaHubController.open_system("personal")
