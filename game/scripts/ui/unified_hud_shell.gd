@@ -2,6 +2,7 @@ extends Control
 
 const PRIMARY_SYSTEMS := {
     "finca":"Finca",
+    "barracks":"Barracones",
     "personal":"Personal",
     "mercado":"Mercado",
     "forja":"Forja",
@@ -40,7 +41,7 @@ func _ready() -> void:
     mouse_filter = Control.MOUSE_FILTER_IGNORE
     primary_buttons = {
         "finca":$MainNavigation/Margin/Row/Finca,
-        "personal":$MainNavigation/Margin/Row/Personal,
+        "barracks":$MainNavigation/Margin/Row/Personal,
         "mercado":$MainNavigation/Margin/Row/Mercado,
         "forja":$MainNavigation/Margin/Row/Forja,
         "relaciones":$MainNavigation/Margin/Row/Relaciones,
