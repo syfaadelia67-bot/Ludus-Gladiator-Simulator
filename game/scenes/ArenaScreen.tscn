@@ -1,9 +1,6 @@
-[gd_scene load_steps=5 format=3]
+[gd_scene load_steps=2 format=3]
 
 [ext_resource path="res://scripts/ui/arena_screen.gd" type="Script" id="1"]
-[ext_resource path="res://assets/placeholders/pack_000/ui/arena_combat/combat_attack.png" type="Texture2D" id="2_attack"]
-[ext_resource path="res://assets/placeholders/pack_000/ui/arena_combat/combat_defense.png" type="Texture2D" id="3_defense"]
-[ext_resource path="res://assets/placeholders/pack_000/ui/arena_combat/combat_victory.png" type="Texture2D" id="4_victory"]
 
 [node name="ArenaScreen" type="VBoxContainer"]
 layout_mode = 2
@@ -19,53 +16,94 @@ size_flags_vertical = 3
 theme_override_constants/separation = 16
 
 [node name="RosterPanel" type="PanelContainer" parent="Body"]
-custom_minimum_size = Vector2(320, 0)
+custom_minimum_size = Vector2(350, 0)
 layout_mode = 2
-size_flags_horizontal = 3
 size_flags_vertical = 3
-size_flags_stretch_ratio = 0.24
 
 [node name="Margin" type="MarginContainer" parent="Body/RosterPanel"]
 layout_mode = 2
-theme_override_constants/margin_left = 14
-theme_override_constants/margin_top = 14
-theme_override_constants/margin_right = 14
-theme_override_constants/margin_bottom = 14
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 12
 
-[node name="Content" type="VBoxContainer" parent="Body/RosterPanel/Margin"]
+[node name="Scroll" type="ScrollContainer" parent="Body/RosterPanel/Margin"]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
-theme_override_constants/separation = 10
+horizontal_scroll_mode = 0
+vertical_scroll_mode = 1
 
-[node name="Header" type="HBoxContainer" parent="Body/RosterPanel/Margin/Content"]
-custom_minimum_size = Vector2(0, 42)
-layout_mode = 2
-
-[node name="Title" type="Label" parent="Body/RosterPanel/Margin/Content/Header"]
+[node name="Content" type="VBoxContainer" parent="Body/RosterPanel/Margin/Scroll"]
+custom_minimum_size = Vector2(320, 980)
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_font_sizes/font_size = 22
-text = "TUS GLADIADORES"
-vertical_alignment = 1
+theme_override_constants/separation = 10
 
-[node name="Count" type="Label" parent="Body/RosterPanel/Margin/Content/Header"]
-custom_minimum_size = Vector2(48, 0)
+[node name="Header" type="HBoxContainer" parent="Body/RosterPanel/Margin/Scroll/Content"]
 layout_mode = 2
+
+[node name="Title" type="Label" parent="Body/RosterPanel/Margin/Scroll/Content/Header"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 24
+text = "TUS GLADIADORES"
+
+[node name="Count" type="Label" parent="Body/RosterPanel/Margin/Scroll/Content/Header"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
 text = "0"
 horizontal_alignment = 2
-vertical_alignment = 1
 
-[node name="RosterList" type="ItemList" parent="Body/RosterPanel/Margin/Content"]
+[node name="StatusIcons" type="HBoxContainer" parent="Body/RosterPanel/Margin/Scroll/Content"]
+custom_minimum_size = Vector2(0, 46)
+layout_mode = 2
+alignment = 1
+
+[node name="Health" type="TextureRect" parent="Body/RosterPanel/Margin/Scroll/Content/StatusIcons"]
+custom_minimum_size = Vector2(42, 42)
+layout_mode = 2
+expand_mode = 1
+stretch_mode = 5
+tooltip_text = "Salud"
+
+[node name="Fatigue" type="TextureRect" parent="Body/RosterPanel/Margin/Scroll/Content/StatusIcons"]
+custom_minimum_size = Vector2(42, 42)
+layout_mode = 2
+expand_mode = 1
+stretch_mode = 5
+tooltip_text = "Fatiga"
+
+[node name="Morale" type="TextureRect" parent="Body/RosterPanel/Margin/Scroll/Content/StatusIcons"]
+custom_minimum_size = Vector2(42, 42)
+layout_mode = 2
+expand_mode = 1
+stretch_mode = 5
+tooltip_text = "Moral"
+
+[node name="Injury" type="TextureRect" parent="Body/RosterPanel/Margin/Scroll/Content/StatusIcons"]
+custom_minimum_size = Vector2(42, 42)
+layout_mode = 2
+expand_mode = 1
+stretch_mode = 5
+tooltip_text = "Lesión"
+
+[node name="Rivalry" type="TextureRect" parent="Body/RosterPanel/Margin/Scroll/Content/StatusIcons"]
+custom_minimum_size = Vector2(42, 42)
+layout_mode = 2
+expand_mode = 1
+stretch_mode = 5
+tooltip_text = "Rivalidad"
+
+[node name="RosterList" type="ItemList" parent="Body/RosterPanel/Margin/Scroll/Content"]
 custom_minimum_size = Vector2(0, 500)
 layout_mode = 2
 size_flags_horizontal = 3
-size_flags_vertical = 3
 select_mode = 0
 allow_reselect = true
 
-[node name="FighterInfo" type="RichTextLabel" parent="Body/RosterPanel/Margin/Content"]
-custom_minimum_size = Vector2(0, 190)
+[node name="FighterInfo" type="RichTextLabel" parent="Body/RosterPanel/Margin/Scroll/Content"]
+custom_minimum_size = Vector2(0, 210)
 layout_mode = 2
 size_flags_horizontal = 3
 bbcode_enabled = true
@@ -73,57 +111,103 @@ fit_content = false
 scroll_active = false
 text = "Seleccioná un gladiador."
 
-[node name="ManageGladiators" type="Button" parent="Body/RosterPanel/Margin/Content"]
-custom_minimum_size = Vector2(0, 48)
+[node name="ManageGladiators" type="Button" parent="Body/RosterPanel/Margin/Scroll/Content"]
+custom_minimum_size = Vector2(0, 52)
 layout_mode = 2
 text = "GESTIONAR GLADIADORES"
 
 [node name="CenterPanel" type="PanelContainer" parent="Body"]
-custom_minimum_size = Vector2(820, 0)
+custom_minimum_size = Vector2(900, 0)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
-size_flags_stretch_ratio = 0.52
 
 [node name="Margin" type="MarginContainer" parent="Body/CenterPanel"]
 layout_mode = 2
-theme_override_constants/margin_left = 16
-theme_override_constants/margin_top = 14
-theme_override_constants/margin_right = 16
-theme_override_constants/margin_bottom = 14
+theme_override_constants/margin_left = 14
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 14
+theme_override_constants/margin_bottom = 12
 
-[node name="Content" type="VBoxContainer" parent="Body/CenterPanel/Margin"]
+[node name="Scroll" type="ScrollContainer" parent="Body/CenterPanel/Margin"]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
+horizontal_scroll_mode = 0
+vertical_scroll_mode = 1
+
+[node name="Content" type="VBoxContainer" parent="Body/CenterPanel/Margin/Scroll"]
+custom_minimum_size = Vector2(860, 1260)
+layout_mode = 2
+size_flags_horizontal = 3
 theme_override_constants/separation = 12
 
-[node name="TopBar" type="HBoxContainer" parent="Body/CenterPanel/Margin/Content"]
+[node name="TopBar" type="HBoxContainer" parent="Body/CenterPanel/Margin/Scroll/Content"]
 custom_minimum_size = Vector2(0, 54)
 layout_mode = 2
 
-[node name="BackToFinca" type="Button" parent="Body/CenterPanel/Margin/Content/TopBar"]
-custom_minimum_size = Vector2(190, 0)
+[node name="BackToFinca" type="Button" parent="Body/CenterPanel/Margin/Scroll/Content/TopBar"]
+custom_minimum_size = Vector2(180, 0)
 layout_mode = 2
 text = "← VOLVER A FINCA"
 
-[node name="Title" type="Label" parent="Body/CenterPanel/Margin/Content/TopBar"]
+[node name="Title" type="Label" parent="Body/CenterPanel/Margin/Scroll/Content/TopBar"]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_font_sizes/font_size = 28
+theme_override_font_sizes/font_size = 27
 text = "ARENA DEL LUDUS"
 horizontal_alignment = 1
-vertical_alignment = 1
 
-[node name="WeekEvent" type="Label" parent="Body/CenterPanel/Margin/Content/TopBar"]
-custom_minimum_size = Vector2(330, 0)
+[node name="WeekEvent" type="Label" parent="Body/CenterPanel/Margin/Scroll/Content/TopBar"]
+custom_minimum_size = Vector2(290, 0)
 layout_mode = 2
 text = "SEMANA 1"
 horizontal_alignment = 2
 vertical_alignment = 1
 clip_text = true
 
-[node name="EventConditions" type="RichTextLabel" parent="Body/CenterPanel/Margin/Content"]
+[node name="EventBanner" type="PanelContainer" parent="Body/CenterPanel/Margin/Scroll/Content"]
+layout_mode = 2
+
+[node name="Margin" type="MarginContainer" parent="Body/CenterPanel/Margin/Scroll/Content/EventBanner"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 8
+
+[node name="Row" type="HBoxContainer" parent="Body/CenterPanel/Margin/Scroll/Content/EventBanner/Margin"]
+layout_mode = 2
+
+[node name="EventIcons" type="HBoxContainer" parent="Body/CenterPanel/Margin/Scroll/Content/EventBanner/Margin/Row"]
+custom_minimum_size = Vector2(210, 0)
+layout_mode = 2
+
+[node name="Initiative" type="TextureRect" parent="Body/CenterPanel/Margin/Scroll/Content/EventBanner/Margin/Row/EventIcons"]
+custom_minimum_size = Vector2(46, 46)
+layout_mode = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Tactic" type="TextureRect" parent="Body/CenterPanel/Margin/Scroll/Content/EventBanner/Margin/Row/EventIcons"]
+custom_minimum_size = Vector2(46, 46)
+layout_mode = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Crowd" type="TextureRect" parent="Body/CenterPanel/Margin/Scroll/Content/EventBanner/Margin/Row/EventIcons"]
+custom_minimum_size = Vector2(46, 46)
+layout_mode = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Beast" type="TextureRect" parent="Body/CenterPanel/Margin/Scroll/Content/EventBanner/Margin/Row/EventIcons"]
+custom_minimum_size = Vector2(46, 46)
+layout_mode = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="EventConditions" type="RichTextLabel" parent="Body/CenterPanel/Margin/Scroll/Content/EventBanner/Margin/Row"]
 custom_minimum_size = Vector2(0, 92)
 layout_mode = 2
 size_flags_horizontal = 3
@@ -132,371 +216,534 @@ fit_content = false
 scroll_active = false
 text = "Condiciones de la Arena"
 
-[node name="PreparationView" type="VBoxContainer" parent="Body/CenterPanel/Margin/Content"]
+[node name="PreparationView" type="VBoxContainer" parent="Body/CenterPanel/Margin/Scroll/Content"]
 layout_mode = 2
 size_flags_horizontal = 3
-size_flags_vertical = 3
 theme_override_constants/separation = 12
 
-[node name="ArenaVisual" type="PanelContainer" parent="Body/CenterPanel/Margin/Content/PreparationView"]
-custom_minimum_size = Vector2(0, 410)
+[node name="ArenaVisual" type="PanelContainer" parent="Body/CenterPanel/Margin/Scroll/Content/PreparationView"]
+custom_minimum_size = Vector2(0, 520)
 layout_mode = 2
 size_flags_horizontal = 3
-size_flags_vertical = 3
 
-[node name="Margin" type="MarginContainer" parent="Body/CenterPanel/Margin/Content/PreparationView/ArenaVisual"]
+[node name="Margin" type="MarginContainer" parent="Body/CenterPanel/Margin/Scroll/Content/PreparationView/ArenaVisual"]
 layout_mode = 2
-theme_override_constants/margin_left = 22
-theme_override_constants/margin_top = 16
-theme_override_constants/margin_right = 22
-theme_override_constants/margin_bottom = 16
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 14
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 14
 
-[node name="VisualContent" type="VBoxContainer" parent="Body/CenterPanel/Margin/Content/PreparationView/ArenaVisual/Margin"]
+[node name="VisualContent" type="VBoxContainer" parent="Body/CenterPanel/Margin/Scroll/Content/PreparationView/ArenaVisual/Margin"]
 layout_mode = 2
-size_flags_vertical = 3
-theme_override_constants/separation = 10
+theme_override_constants/separation = 8
 
-[node name="SceneTitle" type="Label" parent="Body/CenterPanel/Margin/Content/PreparationView/ArenaVisual/Margin/VisualContent"]
-custom_minimum_size = Vector2(0, 38)
+[node name="SceneTitle" type="Label" parent="Body/CenterPanel/Margin/Scroll/Content/PreparationView/ArenaVisual/Margin/VisualContent"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 23
+theme_override_font_sizes/font_size = 22
 text = "PREPARACIÓN DEL ENCUENTRO"
 horizontal_alignment = 1
-vertical_alignment = 1
 
-[node name="Stage" type="HBoxContainer" parent="Body/CenterPanel/Margin/Content/PreparationView/ArenaVisual/Margin/VisualContent"]
+[node name="Battlefield" type="Control" parent="Body/CenterPanel/Margin/Scroll/Content/PreparationView/ArenaVisual/Margin/VisualContent"]
+custom_minimum_size = Vector2(0, 430)
 layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
-alignment = 1
+clip_contents = true
 
-[node name="PlayerCard" type="VBoxContainer" parent="Body/CenterPanel/Margin/Content/PreparationView/ArenaVisual/Margin/VisualContent/Stage"]
-custom_minimum_size = Vector2(320, 0)
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_constants/separation = 7
+[node name="ArenaBackdrop" type="TextureRect" parent="Body/CenterPanel/Margin/Scroll/Content/PreparationView/ArenaVisual/Margin/VisualContent/Battlefield"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+expand_mode = 1
+stretch_mode = 6
+modulate = Color(0.6, 0.6, 0.6, 0.55)
+mouse_filter = 2
 
-[node name="Name" type="Label" parent="Body/CenterPanel/Margin/Content/PreparationView/ArenaVisual/Margin/VisualContent/Stage/PlayerCard"]
-custom_minimum_size = Vector2(0, 34)
-layout_mode = 2
-theme_override_font_sizes/font_size = 20
-text = "Tu gladiador"
-horizontal_alignment = 1
-vertical_alignment = 1
-clip_text = true
-
-[node name="Portrait" type="TextureRect" parent="Body/CenterPanel/Margin/Content/PreparationView/ArenaVisual/Margin/VisualContent/Stage/PlayerCard"]
-custom_minimum_size = Vector2(0, 190)
-layout_mode = 2
-texture = ExtResource("2_attack")
+[node name="PlayerFrame" type="TextureRect" parent="Body/CenterPanel/Margin/Scroll/Content/PreparationView/ArenaVisual/Margin/VisualContent/Battlefield"]
+layout_mode = 1
+anchor_left = 0.055
+anchor_top = 0.10
+anchor_right = 0.36
+anchor_bottom = 0.76
 expand_mode = 1
 stretch_mode = 5
+mouse_filter = 2
 
-[node name="Health" type="ProgressBar" parent="Body/CenterPanel/Margin/Content/PreparationView/ArenaVisual/Margin/VisualContent/Stage/PlayerCard"]
-custom_minimum_size = Vector2(0, 24)
-layout_mode = 2
-value = 100.0
-show_percentage = false
+[node name="EnemyFrame" type="TextureRect" parent="Body/CenterPanel/Margin/Scroll/Content/PreparationView/ArenaVisual/Margin/VisualContent/Battlefield"]
+layout_mode = 1
+anchor_left = 0.64
+anchor_top = 0.10
+anchor_right = 0.945
+anchor_bottom = 0.76
+expand_mode = 1
+stretch_mode = 5
+mouse_filter = 2
 
-[node name="Energy" type="ProgressBar" parent="Body/CenterPanel/Margin/Content/PreparationView/ArenaVisual/Margin/VisualContent/Stage/PlayerCard"]
-custom_minimum_size = Vector2(0, 20)
-layout_mode = 2
-value = 100.0
-show_percentage = false
+[node name="PlayerFighter" type="TextureRect" parent="Body/CenterPanel/Margin/Scroll/Content/PreparationView/ArenaVisual/Margin/VisualContent/Battlefield"]
+layout_mode = 1
+anchor_left = 0.10
+anchor_top = 0.14
+anchor_right = 0.31
+anchor_bottom = 0.66
+expand_mode = 1
+stretch_mode = 5
+pivot_offset = Vector2(100, 100)
+mouse_filter = 2
 
-[node name="Versus" type="Label" parent="Body/CenterPanel/Margin/Content/PreparationView/ArenaVisual/Margin/VisualContent/Stage"]
-custom_minimum_size = Vector2(92, 0)
-layout_mode = 2
-theme_override_font_sizes/font_size = 38
+[node name="EnemyFighter" type="TextureRect" parent="Body/CenterPanel/Margin/Scroll/Content/PreparationView/ArenaVisual/Margin/VisualContent/Battlefield"]
+layout_mode = 1
+anchor_left = 0.69
+anchor_top = 0.14
+anchor_right = 0.90
+anchor_bottom = 0.66
+expand_mode = 1
+stretch_mode = 5
+pivot_offset = Vector2(100, 100)
+mouse_filter = 2
+
+[node name="EffectIcon" type="TextureRect" parent="Body/CenterPanel/Margin/Scroll/Content/PreparationView/ArenaVisual/Margin/VisualContent/Battlefield"]
+layout_mode = 1
+anchor_left = 0.455
+anchor_top = 0.25
+anchor_right = 0.545
+anchor_bottom = 0.49
+expand_mode = 1
+stretch_mode = 5
+modulate = Color(1, 1, 1, 0)
+mouse_filter = 2
+
+[node name="Versus" type="Label" parent="Body/CenterPanel/Margin/Scroll/Content/PreparationView/ArenaVisual/Margin/VisualContent/Battlefield"]
+layout_mode = 1
+anchor_left = 0.44
+anchor_top = 0.51
+anchor_right = 0.56
+anchor_bottom = 0.66
+theme_override_font_sizes/font_size = 34
 text = "VS"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="EnemyCard" type="VBoxContainer" parent="Body/CenterPanel/Margin/Content/PreparationView/ArenaVisual/Margin/VisualContent/Stage"]
-custom_minimum_size = Vector2(320, 0)
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_constants/separation = 7
-
-[node name="Name" type="Label" parent="Body/CenterPanel/Margin/Content/PreparationView/ArenaVisual/Margin/VisualContent/Stage/EnemyCard"]
-custom_minimum_size = Vector2(0, 34)
-layout_mode = 2
-theme_override_font_sizes/font_size = 20
-text = "Rival"
+[node name="PlayerName" type="Label" parent="Body/CenterPanel/Margin/Scroll/Content/PreparationView/ArenaVisual/Margin/VisualContent/Battlefield"]
+layout_mode = 1
+anchor_left = 0.04
+anchor_top = 0.72
+anchor_right = 0.38
+anchor_bottom = 0.80
+text = "Tu gladiador"
 horizontal_alignment = 1
-vertical_alignment = 1
 clip_text = true
 
-[node name="Portrait" type="TextureRect" parent="Body/CenterPanel/Margin/Content/PreparationView/ArenaVisual/Margin/VisualContent/Stage/EnemyCard"]
-custom_minimum_size = Vector2(0, 190)
-layout_mode = 2
-texture = ExtResource("3_defense")
-expand_mode = 1
-stretch_mode = 5
+[node name="EnemyName" type="Label" parent="Body/CenterPanel/Margin/Scroll/Content/PreparationView/ArenaVisual/Margin/VisualContent/Battlefield"]
+layout_mode = 1
+anchor_left = 0.62
+anchor_top = 0.72
+anchor_right = 0.96
+anchor_bottom = 0.80
+text = "Rival"
+horizontal_alignment = 1
+clip_text = true
 
-[node name="Health" type="ProgressBar" parent="Body/CenterPanel/Margin/Content/PreparationView/ArenaVisual/Margin/VisualContent/Stage/EnemyCard"]
-custom_minimum_size = Vector2(0, 24)
-layout_mode = 2
+[node name="PlayerHealth" type="ProgressBar" parent="Body/CenterPanel/Margin/Scroll/Content/PreparationView/ArenaVisual/Margin/VisualContent/Battlefield"]
+layout_mode = 1
+anchor_left = 0.05
+anchor_top = 0.82
+anchor_right = 0.38
+anchor_bottom = 0.87
 value = 100.0
 show_percentage = false
 
-[node name="Energy" type="ProgressBar" parent="Body/CenterPanel/Margin/Content/PreparationView/ArenaVisual/Margin/VisualContent/Stage/EnemyCard"]
-custom_minimum_size = Vector2(0, 20)
-layout_mode = 2
+[node name="PlayerEnergy" type="ProgressBar" parent="Body/CenterPanel/Margin/Scroll/Content/PreparationView/ArenaVisual/Margin/VisualContent/Battlefield"]
+layout_mode = 1
+anchor_left = 0.05
+anchor_top = 0.89
+anchor_right = 0.38
+anchor_bottom = 0.94
 value = 100.0
 show_percentage = false
 
-[node name="Preparation" type="PanelContainer" parent="Body/CenterPanel/Margin/Content/PreparationView"]
-custom_minimum_size = Vector2(0, 220)
-layout_mode = 2
-size_flags_horizontal = 3
+[node name="EnemyHealth" type="ProgressBar" parent="Body/CenterPanel/Margin/Scroll/Content/PreparationView/ArenaVisual/Margin/VisualContent/Battlefield"]
+layout_mode = 1
+anchor_left = 0.62
+anchor_top = 0.82
+anchor_right = 0.95
+anchor_bottom = 0.87
+value = 100.0
+show_percentage = false
 
-[node name="Margin" type="MarginContainer" parent="Body/CenterPanel/Margin/Content/PreparationView/Preparation"]
-layout_mode = 2
-theme_override_constants/margin_left = 16
-theme_override_constants/margin_top = 12
-theme_override_constants/margin_right = 16
-theme_override_constants/margin_bottom = 12
+[node name="EnemyEnergy" type="ProgressBar" parent="Body/CenterPanel/Margin/Scroll/Content/PreparationView/ArenaVisual/Margin/VisualContent/Battlefield"]
+layout_mode = 1
+anchor_left = 0.62
+anchor_top = 0.89
+anchor_right = 0.95
+anchor_bottom = 0.94
+value = 100.0
+show_percentage = false
 
-[node name="Content" type="VBoxContainer" parent="Body/CenterPanel/Margin/Content/PreparationView/Preparation/Margin"]
-layout_mode = 2
-theme_override_constants/separation = 9
+[node name="ActionText" type="Label" parent="Body/CenterPanel/Margin/Scroll/Content/PreparationView/ArenaVisual/Margin/VisualContent/Battlefield"]
+layout_mode = 1
+anchor_left = 0.20
+anchor_top = 0.02
+anchor_right = 0.80
+anchor_bottom = 0.10
+theme_override_font_sizes/font_size = 20
+text = "Seleccioná un gladiador para comenzar"
+horizontal_alignment = 1
+clip_text = true
 
-[node name="SelectedPrep" type="RichTextLabel" parent="Body/CenterPanel/Margin/Content/PreparationView/Preparation/Margin/Content"]
-custom_minimum_size = Vector2(0, 72)
+[node name="Preparation" type="PanelContainer" parent="Body/CenterPanel/Margin/Scroll/Content/PreparationView"]
+layout_mode = 2
+
+[node name="Margin" type="MarginContainer" parent="Body/CenterPanel/Margin/Scroll/Content/PreparationView/Preparation"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 10
+
+[node name="Content" type="VBoxContainer" parent="Body/CenterPanel/Margin/Scroll/Content/PreparationView/Preparation/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="SelectedPrep" type="RichTextLabel" parent="Body/CenterPanel/Margin/Scroll/Content/PreparationView/Preparation/Margin/Content"]
+custom_minimum_size = Vector2(0, 68)
 layout_mode = 2
 bbcode_enabled = true
 fit_content = false
 scroll_active = false
 text = "Preparación del gladiador"
 
-[node name="Options" type="GridContainer" parent="Body/CenterPanel/Margin/Content/PreparationView/Preparation/Margin/Content"]
+[node name="EquipmentIcons" type="HBoxContainer" parent="Body/CenterPanel/Margin/Scroll/Content/PreparationView/Preparation/Margin/Content"]
+custom_minimum_size = Vector2(0, 58)
+layout_mode = 2
+alignment = 1
+
+[node name="Weapon" type="TextureRect" parent="Body/CenterPanel/Margin/Scroll/Content/PreparationView/Preparation/Margin/Content/EquipmentIcons"]
+custom_minimum_size = Vector2(54, 54)
+layout_mode = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Armor" type="TextureRect" parent="Body/CenterPanel/Margin/Scroll/Content/PreparationView/Preparation/Margin/Content/EquipmentIcons"]
+custom_minimum_size = Vector2(54, 54)
+layout_mode = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Shield" type="TextureRect" parent="Body/CenterPanel/Margin/Scroll/Content/PreparationView/Preparation/Margin/Content/EquipmentIcons"]
+custom_minimum_size = Vector2(54, 54)
+layout_mode = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Helmet" type="TextureRect" parent="Body/CenterPanel/Margin/Scroll/Content/PreparationView/Preparation/Margin/Content/EquipmentIcons"]
+custom_minimum_size = Vector2(54, 54)
+layout_mode = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Boots" type="TextureRect" parent="Body/CenterPanel/Margin/Scroll/Content/PreparationView/Preparation/Margin/Content/EquipmentIcons"]
+custom_minimum_size = Vector2(54, 54)
+layout_mode = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Net" type="TextureRect" parent="Body/CenterPanel/Margin/Scroll/Content/PreparationView/Preparation/Margin/Content/EquipmentIcons"]
+custom_minimum_size = Vector2(54, 54)
+layout_mode = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Options" type="GridContainer" parent="Body/CenterPanel/Margin/Scroll/Content/PreparationView/Preparation/Margin/Content"]
 layout_mode = 2
 columns = 4
-theme_override_constants/h_separation = 12
-theme_override_constants/v_separation = 10
 
-[node name="TacticLabel" type="Label" parent="Body/CenterPanel/Margin/Content/PreparationView/Preparation/Margin/Content/Options"]
+[node name="TacticLabel" type="Label" parent="Body/CenterPanel/Margin/Scroll/Content/PreparationView/Preparation/Margin/Content/Options"]
 layout_mode = 2
 text = "Táctica"
 
-[node name="TacticSelector" type="OptionButton" parent="Body/CenterPanel/Margin/Content/PreparationView/Preparation/Margin/Content/Options"]
-custom_minimum_size = Vector2(230, 0)
+[node name="TacticSelector" type="OptionButton" parent="Body/CenterPanel/Margin/Scroll/Content/PreparationView/Preparation/Margin/Content/Options"]
+custom_minimum_size = Vector2(190, 0)
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="EnergyLabel" type="Label" parent="Body/CenterPanel/Margin/Content/PreparationView/Preparation/Margin/Content/Options"]
+[node name="EnergyLabel" type="Label" parent="Body/CenterPanel/Margin/Scroll/Content/PreparationView/Preparation/Margin/Content/Options"]
 layout_mode = 2
 text = "Energía"
 
-[node name="EnergySelector" type="OptionButton" parent="Body/CenterPanel/Margin/Content/PreparationView/Preparation/Margin/Content/Options"]
-custom_minimum_size = Vector2(220, 0)
+[node name="EnergySelector" type="OptionButton" parent="Body/CenterPanel/Margin/Scroll/Content/PreparationView/Preparation/Margin/Content/Options"]
+custom_minimum_size = Vector2(180, 0)
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="SurrenderLabel" type="Label" parent="Body/CenterPanel/Margin/Content/PreparationView/Preparation/Margin/Content/Options"]
+[node name="SurrenderLabel" type="Label" parent="Body/CenterPanel/Margin/Scroll/Content/PreparationView/Preparation/Margin/Content/Options"]
 layout_mode = 2
 text = "Rendición"
 
-[node name="SurrenderSelector" type="OptionButton" parent="Body/CenterPanel/Margin/Content/PreparationView/Preparation/Margin/Content/Options"]
-custom_minimum_size = Vector2(230, 0)
+[node name="SurrenderSelector" type="OptionButton" parent="Body/CenterPanel/Margin/Scroll/Content/PreparationView/Preparation/Margin/Content/Options"]
+custom_minimum_size = Vector2(190, 0)
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="FinisherLabel" type="Label" parent="Body/CenterPanel/Margin/Content/PreparationView/Preparation/Margin/Content/Options"]
+[node name="FinisherLabel" type="Label" parent="Body/CenterPanel/Margin/Scroll/Content/PreparationView/Preparation/Margin/Content/Options"]
 layout_mode = 2
 text = "Remate"
 
-[node name="FinisherToggle" type="CheckButton" parent="Body/CenterPanel/Margin/Content/PreparationView/Preparation/Margin/Content/Options"]
+[node name="FinisherToggle" type="CheckButton" parent="Body/CenterPanel/Margin/Scroll/Content/PreparationView/Preparation/Margin/Content/Options"]
 layout_mode = 2
 text = "Permitir"
 button_pressed = true
 
-[node name="PlanSummary" type="RichTextLabel" parent="Body/CenterPanel/Margin/Content/PreparationView/Preparation/Margin/Content"]
-custom_minimum_size = Vector2(0, 72)
+[node name="PlanSummary" type="RichTextLabel" parent="Body/CenterPanel/Margin/Scroll/Content/PreparationView/Preparation/Margin/Content"]
+custom_minimum_size = Vector2(0, 74)
 layout_mode = 2
 bbcode_enabled = true
 fit_content = false
 scroll_active = false
 text = "Plan táctico"
 
-[node name="ActionRow" type="HBoxContainer" parent="Body/CenterPanel/Margin/Content/PreparationView"]
-custom_minimum_size = Vector2(0, 58)
+[node name="ActionRow" type="HBoxContainer" parent="Body/CenterPanel/Margin/Scroll/Content/PreparationView"]
+custom_minimum_size = Vector2(0, 62)
 layout_mode = 2
 alignment = 1
-theme_override_constants/separation = 10
 
-[node name="EditPlan" type="Button" parent="Body/CenterPanel/Margin/Content/PreparationView/ActionRow"]
-custom_minimum_size = Vector2(150, 0)
+[node name="EditPlan" type="Button" parent="Body/CenterPanel/Margin/Scroll/Content/PreparationView/ActionRow"]
 layout_mode = 2
 text = "TÁCTICAS"
 
-[node name="StartCombat" type="Button" parent="Body/CenterPanel/Margin/Content/PreparationView/ActionRow"]
+[node name="StartCombat" type="Button" parent="Body/CenterPanel/Margin/Scroll/Content/PreparationView/ActionRow"]
 custom_minimum_size = Vector2(420, 58)
 layout_mode = 2
 size_flags_horizontal = 3
-icon = ExtResource("2_attack")
-expand_icon = true
 text = "ENTRAR A LA ARENA"
 
-[node name="Equipment" type="Button" parent="Body/CenterPanel/Margin/Content/PreparationView/ActionRow"]
-custom_minimum_size = Vector2(150, 0)
+[node name="Equipment" type="Button" parent="Body/CenterPanel/Margin/Scroll/Content/PreparationView/ActionRow"]
 layout_mode = 2
 text = "EQUIPO"
 
-[node name="ViewResult" type="Button" parent="Body/CenterPanel/Margin/Content/PreparationView/ActionRow"]
-custom_minimum_size = Vector2(150, 0)
+[node name="ViewResult" type="Button" parent="Body/CenterPanel/Margin/Scroll/Content/PreparationView/ActionRow"]
 layout_mode = 2
 disabled = true
 text = "RESULTADO"
 
-[node name="ResultView" type="VBoxContainer" parent="Body/CenterPanel/Margin/Content"]
+[node name="ResultView" type="VBoxContainer" parent="Body/CenterPanel/Margin/Scroll/Content"]
 visible = false
 layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
-theme_override_constants/separation = 12
+theme_override_constants/separation = 10
 
-[node name="ResultHeader" type="HBoxContainer" parent="Body/CenterPanel/Margin/Content/ResultView"]
-custom_minimum_size = Vector2(0, 56)
+[node name="ResultHeader" type="HBoxContainer" parent="Body/CenterPanel/Margin/Scroll/Content/ResultView"]
+custom_minimum_size = Vector2(0, 52)
 layout_mode = 2
 
-[node name="Icon" type="TextureRect" parent="Body/CenterPanel/Margin/Content/ResultView/ResultHeader"]
-custom_minimum_size = Vector2(56, 56)
+[node name="ResultIcon" type="TextureRect" parent="Body/CenterPanel/Margin/Scroll/Content/ResultView/ResultHeader"]
+custom_minimum_size = Vector2(50, 50)
 layout_mode = 2
-texture = ExtResource("4_victory")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="Title" type="Label" parent="Body/CenterPanel/Margin/Content/ResultView/ResultHeader"]
+[node name="Title" type="Label" parent="Body/CenterPanel/Margin/Scroll/Content/ResultView/ResultHeader"]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 24
 text = "RESULTADO DEL ENCUENTRO"
-vertical_alignment = 1
 
-[node name="BackToPreparation" type="Button" parent="Body/CenterPanel/Margin/Content/ResultView/ResultHeader"]
-custom_minimum_size = Vector2(230, 0)
+[node name="BackToPreparation" type="Button" parent="Body/CenterPanel/Margin/Scroll/Content/ResultView/ResultHeader"]
 layout_mode = 2
 text = "VOLVER A PREPARACIÓN"
 
-[node name="ResultSummary" type="RichTextLabel" parent="Body/CenterPanel/Margin/Content/ResultView"]
-custom_minimum_size = Vector2(0, 135)
+[node name="ResultEffects" type="HBoxContainer" parent="Body/CenterPanel/Margin/Scroll/Content/ResultView"]
+custom_minimum_size = Vector2(0, 64)
+layout_mode = 2
+alignment = 1
+
+[node name="Critical" type="TextureRect" parent="Body/CenterPanel/Margin/Scroll/Content/ResultView/ResultEffects"]
+custom_minimum_size = Vector2(58, 58)
+layout_mode = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Bleeding" type="TextureRect" parent="Body/CenterPanel/Margin/Scroll/Content/ResultView/ResultEffects"]
+custom_minimum_size = Vector2(58, 58)
+layout_mode = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Stun" type="TextureRect" parent="Body/CenterPanel/Margin/Scroll/Content/ResultView/ResultEffects"]
+custom_minimum_size = Vector2(58, 58)
+layout_mode = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Dodge" type="TextureRect" parent="Body/CenterPanel/Margin/Scroll/Content/ResultView/ResultEffects"]
+custom_minimum_size = Vector2(58, 58)
+layout_mode = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Victory" type="TextureRect" parent="Body/CenterPanel/Margin/Scroll/Content/ResultView/ResultEffects"]
+custom_minimum_size = Vector2(58, 58)
+layout_mode = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Defeat" type="TextureRect" parent="Body/CenterPanel/Margin/Scroll/Content/ResultView/ResultEffects"]
+custom_minimum_size = Vector2(58, 58)
+layout_mode = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="ResultSummary" type="RichTextLabel" parent="Body/CenterPanel/Margin/Scroll/Content/ResultView"]
+custom_minimum_size = Vector2(0, 150)
 layout_mode = 2
 bbcode_enabled = true
 fit_content = false
 scroll_active = false
 text = "Todavía no se disputó el combate semanal."
 
-[node name="ReplayControls" type="HBoxContainer" parent="Body/CenterPanel/Margin/Content/ResultView"]
-custom_minimum_size = Vector2(0, 48)
+[node name="ReplayControls" type="HBoxContainer" parent="Body/CenterPanel/Margin/Scroll/Content/ResultView"]
+custom_minimum_size = Vector2(0, 46)
 layout_mode = 2
 alignment = 1
-theme_override_constants/separation = 10
 
-[node name="Replay" type="Button" parent="Body/CenterPanel/Margin/Content/ResultView/ReplayControls"]
+[node name="Replay" type="Button" parent="Body/CenterPanel/Margin/Scroll/Content/ResultView/ReplayControls"]
 layout_mode = 2
 disabled = true
 text = "REPETIR"
 
-[node name="Pause" type="Button" parent="Body/CenterPanel/Margin/Content/ResultView/ReplayControls"]
+[node name="Pause" type="Button" parent="Body/CenterPanel/Margin/Scroll/Content/ResultView/ReplayControls"]
 layout_mode = 2
 disabled = true
 text = "PAUSAR"
 
-[node name="Step" type="Button" parent="Body/CenterPanel/Margin/Content/ResultView/ReplayControls"]
+[node name="Step" type="Button" parent="Body/CenterPanel/Margin/Scroll/Content/ResultView/ReplayControls"]
 layout_mode = 2
 disabled = true
 text = "SIGUIENTE"
 
-[node name="Skip" type="Button" parent="Body/CenterPanel/Margin/Content/ResultView/ReplayControls"]
+[node name="Skip" type="Button" parent="Body/CenterPanel/Margin/Scroll/Content/ResultView/ReplayControls"]
 layout_mode = 2
 disabled = true
 text = "RESULTADO FINAL"
 
-[node name="Speed" type="OptionButton" parent="Body/CenterPanel/Margin/Content/ResultView/ReplayControls"]
+[node name="Speed" type="OptionButton" parent="Body/CenterPanel/Margin/Scroll/Content/ResultView/ReplayControls"]
 layout_mode = 2
 
-[node name="CombatLog" type="RichTextLabel" parent="Body/CenterPanel/Margin/Content/ResultView"]
+[node name="CombatLog" type="RichTextLabel" parent="Body/CenterPanel/Margin/Scroll/Content/ResultView"]
 custom_minimum_size = Vector2(0, 520)
 layout_mode = 2
-size_flags_vertical = 3
 bbcode_enabled = true
 scroll_active = true
 scroll_following = true
 text = "[b]Crónica de la arena[/b]"
 
 [node name="EncounterPanel" type="PanelContainer" parent="Body"]
-custom_minimum_size = Vector2(340, 0)
+custom_minimum_size = Vector2(380, 0)
 layout_mode = 2
-size_flags_horizontal = 3
 size_flags_vertical = 3
-size_flags_stretch_ratio = 0.24
 
 [node name="Margin" type="MarginContainer" parent="Body/EncounterPanel"]
 layout_mode = 2
-theme_override_constants/margin_left = 14
-theme_override_constants/margin_top = 14
-theme_override_constants/margin_right = 14
-theme_override_constants/margin_bottom = 14
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 12
 
 [node name="Scroll" type="ScrollContainer" parent="Body/EncounterPanel/Margin"]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 horizontal_scroll_mode = 0
+vertical_scroll_mode = 1
 
 [node name="Content" type="VBoxContainer" parent="Body/EncounterPanel/Margin/Scroll"]
+custom_minimum_size = Vector2(350, 1160)
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 12
 
 [node name="Title" type="Label" parent="Body/EncounterPanel/Margin/Scroll/Content"]
-custom_minimum_size = Vector2(0, 44)
 layout_mode = 2
-theme_override_font_sizes/font_size = 22
+theme_override_font_sizes/font_size = 24
 text = "ENCUENTRO SELECCIONADO"
 autowrap_mode = 3
-vertical_alignment = 1
 
 [node name="OpponentPortrait" type="TextureRect" parent="Body/EncounterPanel/Margin/Scroll/Content"]
-custom_minimum_size = Vector2(0, 220)
+custom_minimum_size = Vector2(0, 230)
 layout_mode = 2
-texture = ExtResource("3_defense")
 expand_mode = 1
 stretch_mode = 5
 
 [node name="OpponentInfo" type="RichTextLabel" parent="Body/EncounterPanel/Margin/Scroll/Content"]
-custom_minimum_size = Vector2(0, 170)
+custom_minimum_size = Vector2(0, 220)
 layout_mode = 2
 bbcode_enabled = true
 fit_content = true
 text = "Oponente por confirmar"
 
-[node name="Difficulty" type="RichTextLabel" parent="Body/EncounterPanel/Margin/Scroll/Content"]
+[node name="DifficultyRow" type="HBoxContainer" parent="Body/EncounterPanel/Margin/Scroll/Content"]
+layout_mode = 2
+
+[node name="Icon" type="TextureRect" parent="Body/EncounterPanel/Margin/Scroll/Content/DifficultyRow"]
+custom_minimum_size = Vector2(54, 54)
+layout_mode = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Difficulty" type="RichTextLabel" parent="Body/EncounterPanel/Margin/Scroll/Content/DifficultyRow"]
 custom_minimum_size = Vector2(0, 72)
 layout_mode = 2
+size_flags_horizontal = 3
 bbcode_enabled = true
 fit_content = true
 text = "Dificultad"
 
-[node name="Rewards" type="RichTextLabel" parent="Body/EncounterPanel/Margin/Scroll/Content"]
-custom_minimum_size = Vector2(0, 90)
+[node name="RewardsRow" type="HBoxContainer" parent="Body/EncounterPanel/Margin/Scroll/Content"]
 layout_mode = 2
+
+[node name="Icon" type="TextureRect" parent="Body/EncounterPanel/Margin/Scroll/Content/RewardsRow"]
+custom_minimum_size = Vector2(54, 54)
+layout_mode = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Rewards" type="RichTextLabel" parent="Body/EncounterPanel/Margin/Scroll/Content/RewardsRow"]
+custom_minimum_size = Vector2(0, 86)
+layout_mode = 2
+size_flags_horizontal = 3
 bbcode_enabled = true
 fit_content = true
 text = "Recompensas"
 
-[node name="Entry" type="RichTextLabel" parent="Body/EncounterPanel/Margin/Scroll/Content"]
+[node name="EntryRow" type="HBoxContainer" parent="Body/EncounterPanel/Margin/Scroll/Content"]
+layout_mode = 2
+
+[node name="Icon" type="TextureRect" parent="Body/EncounterPanel/Margin/Scroll/Content/EntryRow"]
+custom_minimum_size = Vector2(54, 54)
+layout_mode = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Entry" type="RichTextLabel" parent="Body/EncounterPanel/Margin/Scroll/Content/EntryRow"]
 custom_minimum_size = Vector2(0, 80)
 layout_mode = 2
+size_flags_horizontal = 3
 bbcode_enabled = true
 fit_content = true
 text = "Entrada"
 
-[node name="CombatConditions" type="RichTextLabel" parent="Body/EncounterPanel/Margin/Scroll/Content"]
-custom_minimum_size = Vector2(0, 150)
+[node name="ConditionsRow" type="HBoxContainer" parent="Body/EncounterPanel/Margin/Scroll/Content"]
 layout_mode = 2
+
+[node name="Icon" type="TextureRect" parent="Body/EncounterPanel/Margin/Scroll/Content/ConditionsRow"]
+custom_minimum_size = Vector2(54, 54)
+layout_mode = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="CombatConditions" type="RichTextLabel" parent="Body/EncounterPanel/Margin/Scroll/Content/ConditionsRow"]
+custom_minimum_size = Vector2(0, 220)
+layout_mode = 2
+size_flags_horizontal = 3
 bbcode_enabled = true
 fit_content = true
 text = "Condiciones del combate"
