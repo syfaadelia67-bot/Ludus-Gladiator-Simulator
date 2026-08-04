@@ -18,7 +18,7 @@ const BUILDING_LAYOUT := [
 
 const BUILDING_SYSTEMS := {
     "dominus_house":"campana",
-    "barracks":"personal",
+    "barracks":"barracks",
     "training_yard":"personal",
     "forge":"forja",
     "infirmary":"personal"
@@ -67,7 +67,7 @@ func _ready() -> void:
     advance_week_button.pressed.connect(_advance_week)
     enter_button.pressed.connect(_open_selected_building)
     upgrade_button.pressed.connect(_upgrade_selected_building)
-    $MainNavigation/Margin/Row/Personal.pressed.connect(_open_system.bind("personal"))
+    $MainNavigation/Margin/Row/Personal.pressed.connect(_open_system.bind("barracks"))
     $MainNavigation/Margin/Row/Mercado.pressed.connect(_open_system.bind("mercado"))
     $MainNavigation/Margin/Row/Forja.pressed.connect(_open_system.bind("forja"))
     $MainNavigation/Margin/Row/Relaciones.pressed.connect(_open_system.bind("relaciones"))
@@ -246,7 +246,7 @@ func _entry_button_text(building_id: String) -> String:
         "dominus_house":
             return "Entrar a administración"
         "barracks":
-            return "Gestionar personal"
+            return "Entrar a barracones"
         "training_yard":
             return "Organizar entrenamiento"
         "forge":
