@@ -1,6 +1,7 @@
 extends Node
 
 const PANELS := [
+    {"name":"Barracones", "scene":preload("res://scenes/BarracksScreen.tscn")},
     {"name":"Rivales", "scene":preload("res://scenes/RivalsPanel.tscn")},
     {"name":"Eventos", "scene":preload("res://scenes/EventsPanel.tscn")},
     {"name":"Economía", "scene":preload("res://scenes/EconomyPanel.tscn")},
