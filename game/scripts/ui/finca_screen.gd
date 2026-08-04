@@ -1,19 +1,19 @@
 extends VBoxContainer
 
 const BUILDING_LAYOUT := [
-    {"id":"dominus_house", "x":0.39, "y":0.12, "w":0.22, "h":0.16},
-    {"id":"barracks", "x":0.05, "y":0.20, "w":0.22, "h":0.15},
-    {"id":"training_yard", "x":0.30, "y":0.42, "w":0.25, "h":0.16},
-    {"id":"forge", "x":0.74, "y":0.22, "w":0.20, "h":0.15},
-    {"id":"infirmary", "x":0.05, "y":0.49, "w":0.20, "h":0.14},
-    {"id":"kitchen", "x":0.73, "y":0.50, "w":0.21, "h":0.14},
-    {"id":"warehouse", "x":0.80, "y":0.07, "w":0.16, "h":0.12},
-    {"id":"worker_quarters", "x":0.05, "y":0.72, "w":0.23, "h":0.13},
-    {"id":"wall_and_gate", "x":0.38, "y":0.82, "w":0.24, "h":0.12},
-    {"id":"beast_area", "x":0.76, "y":0.73, "w":0.20, "h":0.13},
-    {"id":"sanctuary", "x":0.62, "y":0.08, "w":0.16, "h":0.13},
-    {"id":"private_arena", "x":0.50, "y":0.58, "w":0.23, "h":0.15},
-    {"id":"stable", "x":0.29, "y":0.72, "w":0.18, "h":0.13}
+    {"id":"dominus_house", "x":0.37, "y":0.14, "w":0.22, "h":0.13},
+    {"id":"barracks", "x":0.04, "y":0.23, "w":0.22, "h":0.13},
+    {"id":"training_yard", "x":0.28, "y":0.45, "w":0.25, "h":0.13},
+    {"id":"forge", "x":0.73, "y":0.25, "w":0.20, "h":0.13},
+    {"id":"infirmary", "x":0.04, "y":0.53, "w":0.20, "h":0.12},
+    {"id":"kitchen", "x":0.72, "y":0.54, "w":0.21, "h":0.12},
+    {"id":"warehouse", "x":0.80, "y":0.09, "w":0.16, "h":0.11},
+    {"id":"worker_quarters", "x":0.04, "y":0.75, "w":0.22, "h":0.11},
+    {"id":"wall_and_gate", "x":0.39, "y":0.85, "w":0.22, "h":0.10},
+    {"id":"beast_area", "x":0.76, "y":0.76, "w":0.20, "h":0.11},
+    {"id":"sanctuary", "x":0.61, "y":0.09, "w":0.16, "h":0.11},
+    {"id":"private_arena", "x":0.50, "y":0.63, "w":0.22, "h":0.12},
+    {"id":"stable", "x":0.30, "y":0.75, "w":0.17, "h":0.11}
 ]
 
 const BUILDING_SYSTEMS := {
@@ -24,19 +24,36 @@ const BUILDING_SYSTEMS := {
     "infirmary":"personal"
 }
 
+const HOTSPOT_NAMES := {
+    "dominus_house":"Casa del Dominus",
+    "barracks":"Barracones",
+    "training_yard":"Patio de entrenamiento",
+    "forge":"Forja",
+    "infirmary":"Enfermería",
+    "kitchen":"Cocina y comedor",
+    "warehouse":"Almacén",
+    "worker_quarters":"Trabajadores",
+    "wall_and_gate":"Muralla y puerta",
+    "beast_area":"Bestias",
+    "sanctuary":"Santuario",
+    "private_arena":"Arena privada",
+    "stable":"Establo"
+}
+
 @onready var resource_summary: Label = $TopHUD/Margin/Row/Resources
 @onready var week_summary: Label = $TopHUD/Margin/Row/Week
 @onready var advance_week_button: Button = $TopHUD/Margin/Row/AdvanceWeek
 @onready var world_area: Control = $Center/WorldPanel/WorldMargin/WorldArea
-@onready var building_title: Label = $Center/BuildingDetailsPanel/Margin/Details/Title
-@onready var building_status: Label = $Center/BuildingDetailsPanel/Margin/Details/Status
-@onready var building_description: RichTextLabel = $Center/BuildingDetailsPanel/Margin/Details/Description
-@onready var building_effect: Label = $Center/BuildingDetailsPanel/Margin/Details/Effect
-@onready var building_next_upgrade: Label = $Center/BuildingDetailsPanel/Margin/Details/NextUpgrade
-@onready var building_cost: Label = $Center/BuildingDetailsPanel/Margin/Details/Cost
-@onready var feedback: Label = $Center/BuildingDetailsPanel/Margin/Details/Feedback
-@onready var enter_button: Button = $Center/BuildingDetailsPanel/Margin/Details/Enter
-@onready var upgrade_button: Button = $Center/BuildingDetailsPanel/Margin/Details/Upgrade
+@onready var details_scroll: ScrollContainer = $Center/BuildingDetailsPanel/Margin/Scroll
+@onready var building_title: Label = $Center/BuildingDetailsPanel/Margin/Scroll/Details/Title
+@onready var building_status: Label = $Center/BuildingDetailsPanel/Margin/Scroll/Details/Status
+@onready var building_description: RichTextLabel = $Center/BuildingDetailsPanel/Margin/Scroll/Details/Description
+@onready var building_effect: Label = $Center/BuildingDetailsPanel/Margin/Scroll/Details/Effect
+@onready var building_next_upgrade: Label = $Center/BuildingDetailsPanel/Margin/Scroll/Details/NextUpgrade
+@onready var building_cost: Label = $Center/BuildingDetailsPanel/Margin/Scroll/Details/Cost
+@onready var feedback: Label = $Center/BuildingDetailsPanel/Margin/Scroll/Details/Feedback
+@onready var enter_button: Button = $Center/BuildingDetailsPanel/Margin/Scroll/Details/Enter
+@onready var upgrade_button: Button = $Center/BuildingDetailsPanel/Margin/Scroll/Details/Upgrade
 @onready var injuries_alert: Label = $BottomStatusBar/Margin/Row/Injuries
 @onready var food_alert: Label = $BottomStatusBar/Margin/Row/Food
 @onready var workers_alert: Label = $BottomStatusBar/Margin/Row/Workers
@@ -65,17 +82,12 @@ func _ready() -> void:
     RosterManager.roster_changed.connect(_refresh_all)
     EventManager.events_changed.connect(_refresh_alerts)
     CombatManager.combat_finished.connect(func(_result: Dictionary): _refresh_alerts())
-    visibility_changed.connect(_on_visibility_changed)
     world_area.resized.connect(_layout_hotspots)
 
     _build_hotspots()
     _refresh_all()
     _select_building(selected_building_id)
     call_deferred("_layout_hotspots")
-    call_deferred("_sync_shell_visibility")
-
-func _exit_tree() -> void:
-    _restore_legacy_shell()
 
 func _unhandled_key_input(event: InputEvent) -> void:
     if is_visible_in_tree() and event.is_action_pressed("ui_cancel"):
@@ -89,6 +101,8 @@ func _build_hotspots() -> void:
         var button := Button.new()
         button.name = "Hotspot_%s" % building_id
         button.focus_mode = Control.FOCUS_ALL
+        button.clip_text = true
+        button.add_theme_font_size_override("font_size", 14)
         button.pressed.connect(_select_building.bind(building_id))
         world_area.add_child(button)
         hotspot_buttons[building_id] = button
@@ -104,11 +118,18 @@ func _layout_hotspots() -> void:
         var button := hotspot_buttons.get(building_id) as Button
         if button == null:
             continue
-        button.position = Vector2(area_size.x * float(entry.get("x", 0.0)), area_size.y * float(entry.get("y", 0.0)))
-        button.size = Vector2(
-            maxf(108.0, area_size.x * float(entry.get("w", 0.15))),
-            maxf(48.0, area_size.y * float(entry.get("h", 0.12)))
+        var button_size := Vector2(
+            clampf(area_size.x * float(entry.get("w", 0.15)), 96.0, 190.0),
+            clampf(area_size.y * float(entry.get("h", 0.11)), 40.0, 62.0)
         )
+        var desired_position := Vector2(
+            area_size.x * float(entry.get("x", 0.0)),
+            area_size.y * float(entry.get("y", 0.0))
+        )
+        desired_position.x = clampf(desired_position.x, 4.0, maxf(4.0, area_size.x - button_size.x - 4.0))
+        desired_position.y = clampf(desired_position.y, 72.0, maxf(72.0, area_size.y - button_size.y - 4.0))
+        button.position = desired_position
+        button.size = button_size
 
 func _refresh_all() -> void:
     _refresh_top_hud()
@@ -143,15 +164,20 @@ func _refresh_hotspots() -> void:
             continue
         var locked := bool(data.get("locked", false))
         var level := int(data.get("level", 0))
-        var name := str(data.get("name", building_id))
-        button.text = "%s\n%s" % [name, "EN CONSTRUCCIÓN" if locked else "Nivel %d" % level]
-        button.tooltip_text = "%s\n%s" % [name, str(data.get("description", ""))]
+        var display_name := str(HOTSPOT_NAMES.get(building_id, data.get("name", building_id)))
+        button.text = "%s\n%s" % [display_name, "EN CONSTRUCCIÓN" if locked else "Nivel %d" % level]
+        button.tooltip_text = "%s\n%s" % [str(data.get("name", building_id)), str(data.get("description", ""))]
         button.self_modulate = Color(0.55, 0.55, 0.55, 0.88) if locked else Color.WHITE
 
 func _select_building(building_id: String) -> void:
     selected_building_id = EstateManager.canonicalize_building_id(building_id)
     feedback.text = ""
     _refresh_selected_building()
+    call_deferred("_scroll_details_to_top")
+
+func _scroll_details_to_top() -> void:
+    if details_scroll != null and is_instance_valid(details_scroll):
+        details_scroll.scroll_vertical = 0
 
 func _refresh_selected_building() -> void:
     var data := EstateManager.get_building_data(selected_building_id)
@@ -217,12 +243,18 @@ func _building_effect_text(data: Dictionary) -> String:
 
 func _entry_button_text(building_id: String) -> String:
     match building_id:
-        "dominus_house": return "Entrar a administración"
-        "barracks": return "Gestionar personal"
-        "training_yard": return "Organizar entrenamiento"
-        "forge": return "Entrar a la forja"
-        "infirmary": return "Revisar heridos"
-        _: return "Entrar"
+        "dominus_house":
+            return "Entrar a administración"
+        "barracks":
+            return "Gestionar personal"
+        "training_yard":
+            return "Organizar entrenamiento"
+        "forge":
+            return "Entrar a la forja"
+        "infirmary":
+            return "Revisar heridos"
+        _:
+            return "Entrar"
 
 func _open_selected_building() -> void:
     if EstateManager.is_locked(selected_building_id):
@@ -278,46 +310,3 @@ func _refresh_alerts() -> void:
         str(event_details.get("name", "Combate semanal")),
         "Completado" if combat_done else "Pendiente"
     ]
-
-func _on_visibility_changed() -> void:
-    call_deferred("_sync_shell_visibility")
-
-func _sync_shell_visibility() -> void:
-    if not is_inside_tree():
-        return
-    var active := is_visible_in_tree()
-    var tabs := _find_tabs()
-    if tabs != null:
-        tabs.tabs_visible = not active
-    var tree := get_tree()
-    if tree == null:
-        return
-    var scene := tree.current_scene
-    if scene == null:
-        return
-    for path in ["Margin/VBox/Title", "Margin/VBox/Resources", "Margin/VBox/TopButtons"]:
-        var control := scene.get_node_or_null(path) as Control
-        if control != null:
-            control.visible = not active
-
-func _restore_legacy_shell() -> void:
-    if not is_inside_tree():
-        return
-    var tabs := _find_tabs()
-    if tabs != null:
-        tabs.tabs_visible = true
-    var tree := get_tree()
-    if tree == null or tree.current_scene == null:
-        return
-    for path in ["Margin/VBox/Title", "Margin/VBox/Resources", "Margin/VBox/TopButtons"]:
-        var control := tree.current_scene.get_node_or_null(path) as Control
-        if control != null:
-            control.visible = true
-
-func _find_tabs() -> TabContainer:
-    var node: Node = self
-    while node != null:
-        if node is TabContainer:
-            return node as TabContainer
-        node = node.get_parent()
-    return null
