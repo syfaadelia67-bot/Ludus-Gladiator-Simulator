@@ -79,7 +79,7 @@ text = "FINCA"
 
 [node name="Personal" type="Button" parent="MainNavigation/Margin/Row"]
 layout_mode = 2
-text = "PERSONAL"
+text = "BARRACONES"
 
 [node name="Mercado" type="Button" parent="MainNavigation/Margin/Row"]
 layout_mode = 2
