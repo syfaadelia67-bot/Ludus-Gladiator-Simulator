@@ -8,6 +8,7 @@ const MAIN_SCENE_NAME := "Main"
 const TAB_PATH := "Margin/VBox/Tabs"
 const SYSTEM_TABS := {
     "finca": "Finca",
+    "barracks": "Barracones",
     "personal": "Personal",
     "mercado": "Mercado",
     "forja": "Forja",
@@ -26,7 +27,7 @@ const SYSTEM_TABS := {
 }
 const BUILDING_SYSTEMS := {
     "dominus_house": "campana",
-    "barracks": "personal",
+    "barracks": "barracks",
     "training_yard": "personal",
     "forge": "forja",
     "infirmary": "personal",
