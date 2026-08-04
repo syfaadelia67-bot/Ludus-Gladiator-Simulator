@@ -3,8 +3,8 @@
 ; since the parameters are not all obvious.
 ;
 ; Format:
-; [section]
-; param=value
+;   [section]
+;   param=value
 
 config_version=5
 
@@ -86,9 +86,6 @@ WeeklyCyclePresentation="*res://scripts/ui/weekly_cycle_presentation.gd"
 WeeklyClosurePresenter="*res://scripts/ui/weekly_closure_presenter.gd"
 WeeklyCalendarPresenter="*res://scripts/ui/weekly_calendar_presenter.gd"
 WeeklyEventModalPresenter="*res://scripts/ui/weekly_event_modal_presenter.gd"
-ArenaFinaleWarningPresenter="*res://scripts/ui/arena_finale_warning_presenter.gd"
-ArenaOpponentPreviewPresenter="*res://scripts/ui/arena_opponent_preview_presenter.gd"
-PlaceholderAssetIntegrator="*res://scripts/ui/placeholder_asset_integrator.gd"
 CampaignResultPresenter="*res://scripts/ui/campaign_result_presenter.gd"
 CompletedCampaignReadOnlyPresenter="*res://scripts/ui/completed_campaign_read_only_presenter.gd"
 FincaHubController="*res://scripts/ui/finca_hub_controller.gd"
