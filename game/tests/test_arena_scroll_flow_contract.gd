@@ -4,12 +4,14 @@ func _initialize() -> void:
     var project := FileAccess.get_file_as_string("res://project.godot")
     var arena_scene_text := FileAccess.get_file_as_string("res://scenes/ArenaScreen.tscn")
     var controller_text := FileAccess.get_file_as_string("res://scripts/ui/arena_screen.gd")
+    var registry_text := FileAccess.get_file_as_string("res://scripts/ui/pack_000_asset_registry.gd")
     var bootstrap_text := FileAccess.get_file_as_string("res://scripts/ui/all_tabs_ui_bootstrap.gd")
 
     assert(project.contains("window/size/viewport_width=1920"))
     assert(project.contains("window/size/viewport_height=1080"))
     assert(project.contains("window/stretch/mode=\"canvas_items\""))
     assert(project.contains("window/stretch/aspect=\"expand\""))
+    assert(project.contains("Pack000Assets=\"*res://scripts/ui/pack_000_asset_registry.gd\""))
 
     assert(not project.contains("ArenaCombatResultPresenter="))
     assert(not project.contains("ArenaOpponentPreviewPresenter="))
@@ -22,6 +24,10 @@ func _initialize() -> void:
         "EncounterPanel",
         "RosterList",
         "ArenaVisual",
+        "Battlefield",
+        "PlayerFighter",
+        "EnemyFighter",
+        "EffectIcon",
         "PreparationView",
         "ResultView",
         "StartCombat",
@@ -35,54 +41,57 @@ func _initialize() -> void:
 
     assert(arena_scene_text.contains("[node name=\"Body\" type=\"HBoxContainer\""))
     assert(not arena_scene_text.contains("HSplitContainer"))
-    assert(not arena_scene_text.contains("Body/CenterPanel/Margin/Scroll"))
-    assert(arena_scene_text.contains("custom_minimum_size = Vector2(320, 0)"))
-    assert(arena_scene_text.contains("custom_minimum_size = Vector2(820, 0)"))
-    assert(arena_scene_text.contains("custom_minimum_size = Vector2(340, 0)"))
-    assert(arena_scene_text.contains("size_flags_stretch_ratio = 0.24"))
-    assert(arena_scene_text.contains("size_flags_stretch_ratio = 0.52"))
-    assert(arena_scene_text.contains("custom_minimum_size = Vector2(0, 410)"))
+    assert(arena_scene_text.count("type=\"ScrollContainer\"") == 3)
+    assert(arena_scene_text.contains("Body/RosterPanel/Margin/Scroll"))
+    assert(arena_scene_text.contains("Body/CenterPanel/Margin/Scroll"))
+    assert(arena_scene_text.contains("Body/EncounterPanel/Margin/Scroll"))
+    assert(arena_scene_text.contains("custom_minimum_size = Vector2(350, 0)"))
+    assert(arena_scene_text.contains("custom_minimum_size = Vector2(900, 0)"))
+    assert(arena_scene_text.contains("custom_minimum_size = Vector2(380, 0)"))
+    assert(arena_scene_text.contains("custom_minimum_size = Vector2(0, 520)"))
     assert(arena_scene_text.contains("custom_minimum_size = Vector2(420, 58)"))
-    assert(arena_scene_text.contains("combat_attack.png"))
-    assert(arena_scene_text.contains("combat_defense.png"))
-    assert(arena_scene_text.contains("combat_victory.png"))
 
-    assert(controller_text.contains("CombatManager.get_current_opponent_preview"))
-    assert(controller_text.contains("CombatManager.configure_next_battle"))
+    assert(controller_text.contains("_begin_live_animation"))
+    assert(controller_text.contains("_play_next_live_action"))
+    assert(controller_text.contains("_animate_action"))
+    assert(controller_text.contains("create_tween()"))
+    assert(controller_text.contains("action_queue"))
     assert(controller_text.contains("CombatManager.simulate_duel"))
     assert(controller_text.contains("CombatManager.last_result"))
     assert(controller_text.contains("_restore_persistent_result"))
+    assert(controller_text.contains("_settle_live_animation"))
     assert(controller_text.contains("_show_preparation_view"))
     assert(controller_text.contains("_show_result_view"))
-    assert(controller_text.contains("preparation_view.visible = false"))
-    assert(controller_text.contains("result_view.visible = true"))
-    assert(controller_text.contains("_start_replay"))
-    assert(controller_text.contains("_return_to_finca"))
     assert(controller_text.contains("FincaHubController.open_system(\"equipamiento\")"))
     assert(controller_text.contains("FincaHubController.open_system(\"progresion\")"))
     assert(not controller_text.contains("grab_focus()"))
-    assert(not controller_text.contains("center_scroll"))
+
+    assert(registry_text.contains("_scan_directory(PACK_ROOT)"))
+    assert(registry_text.contains("entry.to_lower().ends_with(\".png\")"))
+    assert(registry_text.contains("textures[relative] = texture"))
 
     assert(bootstrap_text.contains("preload(\"res://scenes/ArenaScreen.tscn\")"))
     assert(bootstrap_text.contains("_attach_arena_screen(tabs)"))
     assert(bootstrap_text.contains("primary_arena_screen"))
     assert(bootstrap_text.contains("CombatManager.combat_finished.disconnect"))
     assert(not bootstrap_text.contains("ARENA_CONTROLLER"))
-    assert(not bootstrap_text.contains("_repair_arena_navigation"))
 
     var arena_scene := load("res://scenes/ArenaScreen.tscn")
     var arena_script := load("res://scripts/ui/arena_screen.gd")
+    var registry_script := load("res://scripts/ui/pack_000_asset_registry.gd")
     assert(arena_scene is PackedScene)
     assert(arena_script != null)
+    assert(registry_script != null)
 
     var instance := (arena_scene as PackedScene).instantiate()
-    assert(instance.get_node_or_null("Body/RosterPanel") != null)
-    assert(instance.get_node_or_null("Body/CenterPanel") != null)
-    assert(instance.get_node_or_null("Body/EncounterPanel") != null)
-    assert(instance.get_node_or_null("Body/CenterPanel/Margin/Content/PreparationView/ActionRow/StartCombat") != null)
-    assert(instance.get_node_or_null("Body/CenterPanel/Margin/Content/ResultView/ResultSummary") != null)
-    assert(instance.get_node_or_null("Body/CenterPanel/Margin/Content/TopBar/BackToFinca") != null)
+    assert(instance.get_node_or_null("Body/RosterPanel/Margin/Scroll") != null)
+    assert(instance.get_node_or_null("Body/CenterPanel/Margin/Scroll") != null)
+    assert(instance.get_node_or_null("Body/EncounterPanel/Margin/Scroll") != null)
+    assert(instance.get_node_or_null("Body/CenterPanel/Margin/Scroll/Content/PreparationView/ArenaVisual/Margin/VisualContent/Battlefield/PlayerFighter") != null)
+    assert(instance.get_node_or_null("Body/CenterPanel/Margin/Scroll/Content/PreparationView/ArenaVisual/Margin/VisualContent/Battlefield/EnemyFighter") != null)
+    assert(instance.get_node_or_null("Body/CenterPanel/Margin/Scroll/Content/PreparationView/ActionRow/StartCombat") != null)
+    assert(instance.get_node_or_null("Body/CenterPanel/Margin/Scroll/Content/ResultView/ResultSummary") != null)
     instance.free()
 
-    print("Arena Full HD layout contract: OK")
+    print("Arena three-column scroll and live animation contract: OK")
     quit()
