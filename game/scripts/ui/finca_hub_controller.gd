@@ -17,7 +17,10 @@ const SYSTEM_TABS := {
     "economia": "Economía",
     "torneos": "Torneos",
     "progresion": "Progresión",
+    "personalidad": "Personalidad",
     "relaciones": "Relaciones",
+    "transferencias": "Transferencias",
+    "historial": "Historial",
     "arena": "Arena",
     "campana": "Campaña"
 }
