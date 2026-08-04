@@ -1,0 +1,418 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource path="res://scripts/ui/arena_screen.gd" type="Script" id="1"]
+[ext_resource path="res://assets/placeholders/pack_000/ui/arena_combat/combat_attack.png" type="Texture2D" id="2_attack"]
+[ext_resource path="res://assets/placeholders/pack_000/ui/arena_combat/combat_defense.png" type="Texture2D" id="3_defense"]
+[ext_resource path="res://assets/placeholders/pack_000/ui/arena_combat/combat_victory.png" type="Texture2D" id="4_victory"]
+
+[node name="ArenaScreen" type="VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 8
+script = ExtResource("1")
+
+[node name="Header" type="PanelContainer" parent="."]
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 2
+
+[node name="Margin" type="MarginContainer" parent="Header"]
+layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 6
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 6
+
+[node name="Row" type="HBoxContainer" parent="Header/Margin"]
+layout_mode = 2
+
+[node name="BackToFinca" type="Button" parent="Header/Margin/Row"]
+layout_mode = 2
+text = "← Volver a la finca"
+
+[node name="Title" type="Label" parent="Header/Margin/Row"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 21
+text = "ARENA DEL LUDUS"
+horizontal_alignment = 1
+
+[node name="WeekEvent" type="Label" parent="Header/Margin/Row"]
+custom_minimum_size = Vector2(300, 0)
+layout_mode = 2
+autowrap_mode = 3
+text = "Encuentro semanal"
+horizontal_alignment = 2
+
+[node name="Body" type="HSplitContainer" parent="."]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+split_offset = 275
+
+[node name="RosterPanel" type="PanelContainer" parent="Body"]
+custom_minimum_size = Vector2(265, 0)
+layout_mode = 2
+
+[node name="Margin" type="MarginContainer" parent="Body/RosterPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 9
+theme_override_constants/margin_top = 9
+theme_override_constants/margin_right = 9
+theme_override_constants/margin_bottom = 9
+
+[node name="Content" type="VBoxContainer" parent="Body/RosterPanel/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 7
+
+[node name="Title" type="Label" parent="Body/RosterPanel/Margin/Content"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "TUS GLADIADORES"
+
+[node name="RosterList" type="ItemList" parent="Body/RosterPanel/Margin/Content"]
+custom_minimum_size = Vector2(0, 190)
+layout_mode = 2
+size_flags_vertical = 3
+select_mode = 0
+
+[node name="FighterInfo" type="RichTextLabel" parent="Body/RosterPanel/Margin/Content"]
+custom_minimum_size = Vector2(0, 140)
+layout_mode = 2
+bbcode_enabled = true
+fit_content = false
+text = "Seleccioná un gladiador."
+
+[node name="ManageGladiators" type="Button" parent="Body/RosterPanel/Margin/Content"]
+layout_mode = 2
+text = "Gestionar gladiadores"
+
+[node name="MainAndEncounter" type="HSplitContainer" parent="Body"]
+layout_mode = 2
+size_flags_horizontal = 3
+split_offset = 610
+
+[node name="CenterPanel" type="PanelContainer" parent="Body/MainAndEncounter"]
+custom_minimum_size = Vector2(560, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Margin" type="MarginContainer" parent="Body/MainAndEncounter/CenterPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 9
+theme_override_constants/margin_top = 9
+theme_override_constants/margin_right = 9
+theme_override_constants/margin_bottom = 9
+
+[node name="Scroll" type="ScrollContainer" parent="Body/MainAndEncounter/CenterPanel/Margin"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="Content" type="VBoxContainer" parent="Body/MainAndEncounter/CenterPanel/Margin/Scroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
+[node name="EventConditions" type="RichTextLabel" parent="Body/MainAndEncounter/CenterPanel/Margin/Scroll/Content"]
+custom_minimum_size = Vector2(0, 68)
+layout_mode = 2
+bbcode_enabled = true
+fit_content = true
+text = "Condiciones de la Arena"
+
+[node name="ArenaVisual" type="PanelContainer" parent="Body/MainAndEncounter/CenterPanel/Margin/Scroll/Content"]
+custom_minimum_size = Vector2(0, 205)
+layout_mode = 2
+
+[node name="Margin" type="MarginContainer" parent="Body/MainAndEncounter/CenterPanel/Margin/Scroll/Content/ArenaVisual"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 10
+
+[node name="VisualContent" type="VBoxContainer" parent="Body/MainAndEncounter/CenterPanel/Margin/Scroll/Content/ArenaVisual/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="SceneTitle" type="Label" parent="Body/MainAndEncounter/CenterPanel/Margin/Scroll/Content/ArenaVisual/Margin/VisualContent"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "PREPARACIÓN DEL ENCUENTRO"
+horizontal_alignment = 1
+
+[node name="Stage" type="HBoxContainer" parent="Body/MainAndEncounter/CenterPanel/Margin/Scroll/Content/ArenaVisual/Margin/VisualContent"]
+layout_mode = 2
+size_flags_vertical = 3
+alignment = 1
+
+[node name="PlayerCard" type="VBoxContainer" parent="Body/MainAndEncounter/CenterPanel/Margin/Scroll/Content/ArenaVisual/Margin/VisualContent/Stage"]
+custom_minimum_size = Vector2(210, 0)
+layout_mode = 2
+
+[node name="Name" type="Label" parent="Body/MainAndEncounter/CenterPanel/Margin/Scroll/Content/ArenaVisual/Margin/VisualContent/Stage/PlayerCard"]
+layout_mode = 2
+text = "Tu gladiador"
+horizontal_alignment = 1
+
+[node name="Portrait" type="TextureRect" parent="Body/MainAndEncounter/CenterPanel/Margin/Scroll/Content/ArenaVisual/Margin/VisualContent/Stage/PlayerCard"]
+custom_minimum_size = Vector2(0, 82)
+layout_mode = 2
+texture = ExtResource("2_attack")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Health" type="ProgressBar" parent="Body/MainAndEncounter/CenterPanel/Margin/Scroll/Content/ArenaVisual/Margin/VisualContent/Stage/PlayerCard"]
+layout_mode = 2
+value = 100.0
+show_percentage = false
+
+[node name="Energy" type="ProgressBar" parent="Body/MainAndEncounter/CenterPanel/Margin/Scroll/Content/ArenaVisual/Margin/VisualContent/Stage/PlayerCard"]
+layout_mode = 2
+value = 100.0
+show_percentage = false
+
+[node name="Versus" type="Label" parent="Body/MainAndEncounter/CenterPanel/Margin/Scroll/Content/ArenaVisual/Margin/VisualContent/Stage"]
+custom_minimum_size = Vector2(58, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 25
+text = "VS"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="EnemyCard" type="VBoxContainer" parent="Body/MainAndEncounter/CenterPanel/Margin/Scroll/Content/ArenaVisual/Margin/VisualContent/Stage"]
+custom_minimum_size = Vector2(210, 0)
+layout_mode = 2
+
+[node name="Name" type="Label" parent="Body/MainAndEncounter/CenterPanel/Margin/Scroll/Content/ArenaVisual/Margin/VisualContent/Stage/EnemyCard"]
+layout_mode = 2
+text = "Rival"
+horizontal_alignment = 1
+
+[node name="Portrait" type="TextureRect" parent="Body/MainAndEncounter/CenterPanel/Margin/Scroll/Content/ArenaVisual/Margin/VisualContent/Stage/EnemyCard"]
+custom_minimum_size = Vector2(0, 82)
+layout_mode = 2
+texture = ExtResource("3_defense")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Health" type="ProgressBar" parent="Body/MainAndEncounter/CenterPanel/Margin/Scroll/Content/ArenaVisual/Margin/VisualContent/Stage/EnemyCard"]
+layout_mode = 2
+value = 100.0
+show_percentage = false
+
+[node name="Energy" type="ProgressBar" parent="Body/MainAndEncounter/CenterPanel/Margin/Scroll/Content/ArenaVisual/Margin/VisualContent/Stage/EnemyCard"]
+layout_mode = 2
+value = 100.0
+show_percentage = false
+
+[node name="Preparation" type="PanelContainer" parent="Body/MainAndEncounter/CenterPanel/Margin/Scroll/Content"]
+layout_mode = 2
+
+[node name="Margin" type="MarginContainer" parent="Body/MainAndEncounter/CenterPanel/Margin/Scroll/Content/Preparation"]
+layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 8
+
+[node name="Content" type="VBoxContainer" parent="Body/MainAndEncounter/CenterPanel/Margin/Scroll/Content/Preparation/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="SelectedPrep" type="RichTextLabel" parent="Body/MainAndEncounter/CenterPanel/Margin/Scroll/Content/Preparation/Margin/Content"]
+custom_minimum_size = Vector2(0, 54)
+layout_mode = 2
+bbcode_enabled = true
+fit_content = true
+text = "Preparación del gladiador"
+
+[node name="TacticRow" type="HBoxContainer" parent="Body/MainAndEncounter/CenterPanel/Margin/Scroll/Content/Preparation/Margin/Content"]
+layout_mode = 2
+
+[node name="TacticLabel" type="Label" parent="Body/MainAndEncounter/CenterPanel/Margin/Scroll/Content/Preparation/Margin/Content/TacticRow"]
+custom_minimum_size = Vector2(92, 0)
+layout_mode = 2
+text = "Táctica"
+
+[node name="TacticSelector" type="OptionButton" parent="Body/MainAndEncounter/CenterPanel/Margin/Scroll/Content/Preparation/Margin/Content/TacticRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="EnergyLabel" type="Label" parent="Body/MainAndEncounter/CenterPanel/Margin/Scroll/Content/Preparation/Margin/Content/TacticRow"]
+layout_mode = 2
+text = "Energía"
+
+[node name="EnergySelector" type="OptionButton" parent="Body/MainAndEncounter/CenterPanel/Margin/Scroll/Content/Preparation/Margin/Content/TacticRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="RiskRow" type="HBoxContainer" parent="Body/MainAndEncounter/CenterPanel/Margin/Scroll/Content/Preparation/Margin/Content"]
+layout_mode = 2
+
+[node name="SurrenderLabel" type="Label" parent="Body/MainAndEncounter/CenterPanel/Margin/Scroll/Content/Preparation/Margin/Content/RiskRow"]
+custom_minimum_size = Vector2(92, 0)
+layout_mode = 2
+text = "Rendición"
+
+[node name="SurrenderSelector" type="OptionButton" parent="Body/MainAndEncounter/CenterPanel/Margin/Scroll/Content/Preparation/Margin/Content/RiskRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="FinisherToggle" type="CheckButton" parent="Body/MainAndEncounter/CenterPanel/Margin/Scroll/Content/Preparation/Margin/Content/RiskRow"]
+layout_mode = 2
+text = "Permitir ejecución"
+button_pressed = true
+
+[node name="PlanSummary" type="RichTextLabel" parent="Body/MainAndEncounter/CenterPanel/Margin/Scroll/Content/Preparation/Margin/Content"]
+custom_minimum_size = Vector2(0, 66)
+layout_mode = 2
+bbcode_enabled = true
+fit_content = true
+text = "Plan táctico"
+
+[node name="ActionRow" type="HBoxContainer" parent="Body/MainAndEncounter/CenterPanel/Margin/Scroll/Content"]
+layout_mode = 2
+alignment = 1
+
+[node name="EditPlan" type="Button" parent="Body/MainAndEncounter/CenterPanel/Margin/Scroll/Content/ActionRow"]
+layout_mode = 2
+text = "Revisar plan táctico"
+
+[node name="Equipment" type="Button" parent="Body/MainAndEncounter/CenterPanel/Margin/Scroll/Content/ActionRow"]
+layout_mode = 2
+text = "Preparación y equipo"
+
+[node name="StartCombat" type="Button" parent="Body/MainAndEncounter/CenterPanel/Margin/Scroll/Content/ActionRow"]
+custom_minimum_size = Vector2(255, 46)
+layout_mode = 2
+icon = ExtResource("2_attack")
+expand_icon = true
+text = "ENTRAR A LA ARENA"
+
+[node name="ResultHeader" type="HBoxContainer" parent="Body/MainAndEncounter/CenterPanel/Margin/Scroll/Content"]
+layout_mode = 2
+
+[node name="Icon" type="TextureRect" parent="Body/MainAndEncounter/CenterPanel/Margin/Scroll/Content/ResultHeader"]
+custom_minimum_size = Vector2(40, 40)
+layout_mode = 2
+texture = ExtResource("4_victory")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Title" type="Label" parent="Body/MainAndEncounter/CenterPanel/Margin/Scroll/Content/ResultHeader"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 18
+text = "RESULTADO Y REGISTRO"
+
+[node name="ResultSummary" type="RichTextLabel" parent="Body/MainAndEncounter/CenterPanel/Margin/Scroll/Content"]
+custom_minimum_size = Vector2(0, 105)
+layout_mode = 2
+bbcode_enabled = true
+text = "Todavía no se disputó el combate semanal."
+
+[node name="ReplayControls" type="HBoxContainer" parent="Body/MainAndEncounter/CenterPanel/Margin/Scroll/Content"]
+layout_mode = 2
+
+[node name="Replay" type="Button" parent="Body/MainAndEncounter/CenterPanel/Margin/Scroll/Content/ReplayControls"]
+layout_mode = 2
+disabled = true
+text = "Repetir combate"
+
+[node name="Pause" type="Button" parent="Body/MainAndEncounter/CenterPanel/Margin/Scroll/Content/ReplayControls"]
+layout_mode = 2
+disabled = true
+text = "Pausar"
+
+[node name="Step" type="Button" parent="Body/MainAndEncounter/CenterPanel/Margin/Scroll/Content/ReplayControls"]
+layout_mode = 2
+disabled = true
+text = "Siguiente acción"
+
+[node name="Skip" type="Button" parent="Body/MainAndEncounter/CenterPanel/Margin/Scroll/Content/ReplayControls"]
+layout_mode = 2
+disabled = true
+text = "Saltar al resultado"
+
+[node name="Speed" type="OptionButton" parent="Body/MainAndEncounter/CenterPanel/Margin/Scroll/Content/ReplayControls"]
+layout_mode = 2
+
+[node name="CombatLog" type="RichTextLabel" parent="Body/MainAndEncounter/CenterPanel/Margin/Scroll/Content"]
+custom_minimum_size = Vector2(0, 145)
+layout_mode = 2
+bbcode_enabled = true
+scroll_active = true
+scroll_following = true
+text = "[b]Crónica de la arena[/b]"
+
+[node name="EncounterPanel" type="PanelContainer" parent="Body/MainAndEncounter"]
+custom_minimum_size = Vector2(305, 0)
+layout_mode = 2
+
+[node name="Margin" type="MarginContainer" parent="Body/MainAndEncounter/EncounterPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 9
+theme_override_constants/margin_top = 9
+theme_override_constants/margin_right = 9
+theme_override_constants/margin_bottom = 9
+
+[node name="Scroll" type="ScrollContainer" parent="Body/MainAndEncounter/EncounterPanel/Margin"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="Content" type="VBoxContainer" parent="Body/MainAndEncounter/EncounterPanel/Margin/Scroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
+[node name="Title" type="Label" parent="Body/MainAndEncounter/EncounterPanel/Margin/Scroll/Content"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "ENCUENTRO SELECCIONADO"
+
+[node name="OpponentPortrait" type="TextureRect" parent="Body/MainAndEncounter/EncounterPanel/Margin/Scroll/Content"]
+custom_minimum_size = Vector2(0, 112)
+layout_mode = 2
+texture = ExtResource("3_defense")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="OpponentInfo" type="RichTextLabel" parent="Body/MainAndEncounter/EncounterPanel/Margin/Scroll/Content"]
+custom_minimum_size = Vector2(0, 125)
+layout_mode = 2
+bbcode_enabled = true
+fit_content = true
+text = "Oponente por confirmar"
+
+[node name="Difficulty" type="RichTextLabel" parent="Body/MainAndEncounter/EncounterPanel/Margin/Scroll/Content"]
+custom_minimum_size = Vector2(0, 55)
+layout_mode = 2
+bbcode_enabled = true
+fit_content = true
+text = "Dificultad"
+
+[node name="Rewards" type="RichTextLabel" parent="Body/MainAndEncounter/EncounterPanel/Margin/Scroll/Content"]
+custom_minimum_size = Vector2(0, 70)
+layout_mode = 2
+bbcode_enabled = true
+fit_content = true
+text = "Recompensas"
+
+[node name="Entry" type="RichTextLabel" parent="Body/MainAndEncounter/EncounterPanel/Margin/Scroll/Content"]
+custom_minimum_size = Vector2(0, 64)
+layout_mode = 2
+bbcode_enabled = true
+fit_content = true
+text = "Entrada"
+
+[node name="CombatConditions" type="RichTextLabel" parent="Body/MainAndEncounter/EncounterPanel/Margin/Scroll/Content"]
+custom_minimum_size = Vector2(0, 110)
+layout_mode = 2
+bbcode_enabled = true
+fit_content = true
+text = "Condiciones del combate"
