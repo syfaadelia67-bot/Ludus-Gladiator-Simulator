@@ -5,6 +5,7 @@ const BUILDING_LIST_PATH := "Margin/VBox/Tabs/Finca/BuildingList"
 const BUILDING_PANEL_PATH := "Margin/VBox/Tabs/Finca/BuildingPanel"
 const SYSTEM_LABELS := {
     "campana":"Abrir administración y campaña",
+    "barracks":"Entrar a barracones",
     "personal":"Abrir gestión de personal",
     "forja":"Entrar a la forja",
     "arena":"Entrar a la arena"
