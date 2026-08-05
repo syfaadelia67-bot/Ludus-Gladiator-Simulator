@@ -183,7 +183,7 @@ custom_minimum_size = Vector2(58, 58)
 layout_mode = 2
 icon = ExtResource("6_relations")
 expand_icon = true
-tooltip_text = "Relaciones"
+tooltip_text = "Vínculos"
 theme_override_styles/normal = SubResource("StyleBoxFlat_nav_normal")
 theme_override_styles/hover = SubResource("StyleBoxFlat_nav_hover")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_nav_pressed")
@@ -261,6 +261,12 @@ layout_mode = 2
 size_flags_horizontal = 3
 autowrap_mode = 3
 text = "PERSONAL"
+
+[node name="Social" type="Label" parent="BottomStatusBar/Margin/Row"]
+layout_mode = 2
+size_flags_horizontal = 3
+autowrap_mode = 3
+text = "VÍNCULOS"
 
 [node name="Event" type="Label" parent="BottomStatusBar/Margin/Row"]
 layout_mode = 2
