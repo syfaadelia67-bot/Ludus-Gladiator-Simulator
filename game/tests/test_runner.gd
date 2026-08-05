@@ -20,6 +20,12 @@ const SUITE_SUFFIX := "/..."
 const FALLBACK_TIMEOUT_FRAMES := 300
 const SUPPORTED_TEST_SUFFIXES: Array[String] = ["_test.gd", "_contract.gd"]
 const SUPPORTED_TEST_PREFIXES: Array[String] = ["test_"]
+const FAILURE_OUTPUT_MARKERS: Array[String] = [
+	"SCRIPT ERROR: Assertion failed",
+	"SCRIPT ERROR: Parse Error",
+	"SCRIPT ERROR: Compile Error",
+	"ERROR: Test did not complete or call get_tree().quit()"
+]
 
 # Every exclusion must include a human-readable reason. The suite contract
 # verifies this dictionary so files cannot silently disappear from CI.
@@ -27,11 +33,14 @@ const EXCLUDED_TEST_FILES := {
 	"test_runner.gd": "Autoload test orchestrator; it is infrastructure, not a test case."
 }
 
-# Tests are classified by path. UI markers are intentionally narrow; every
-# other discovered test belongs to core, so there is no unassigned state.
+# Tests are classified by path. Every test that exercises a screen, presenter,
+# visual layout or navigation belongs to UI. Everything else belongs to core,
+# so there is no unassigned state.
 const UI_TEST_MARKERS: Array[String] = [
-	"screen", "router", "hud", "finca", "market_hub", "barracks_hub",
-	"arena_scroll", "relationships", "dossier", "localization"
+	"screen", "router", "hud", "finca", "presenter", "_ui_", "arena",
+	"market_hub", "market_roster", "barracks_hub", "relationships", "dossier",
+	"localization", "campaign_panel", "campaign_result", "continue_summary",
+	"completed_campaign", "onboarding", "menu", "placeholder_asset"
 ]
 
 var _test_path := ""
@@ -152,9 +161,22 @@ func _execute_isolated_test(path: String) -> int:
 		arguments.append("--")
 		arguments.append("%s%s" % [TEST_ARGUMENT_PREFIX, path])
 	var exit_code := OS.execute(OS.get_executable_path(), arguments, output, true)
-	for line in output:
-		print(str(line).trim_suffix("\n"))
+	var output_detected_failure := false
+	for line_value in output:
+		var line := str(line_value).trim_suffix("\n")
+		print(line)
+		if _line_reports_test_failure(line):
+			output_detected_failure = true
+	if exit_code == 0 and output_detected_failure:
+		push_error("Test emitted an assertion, parse or completion failure despite exit code 0: %s" % path)
+		return 1
 	return exit_code
+
+func _line_reports_test_failure(line: String) -> bool:
+	for marker in FAILURE_OUTPUT_MARKERS:
+		if line.contains(marker):
+			return true
+	return false
 
 func _run_external_test(path: String, quit_after: bool) -> void:
 	if not ResourceLoader.exists(path):
