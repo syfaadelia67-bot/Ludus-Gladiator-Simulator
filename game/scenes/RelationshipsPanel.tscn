@@ -1,6 +1,7 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=3 format=3]
 
 [ext_resource path="res://scripts/ui/relationships_panel.gd" type="Script" id="1"]
+[ext_resource path="res://assets/placeholders/pack_000/ui/traits_relations/relation_friendship.png" type="Texture2D" id="2_bonds"]
 
 [node name="RelationshipsPanel" type="Control"]
 layout_mode = 3
@@ -16,92 +17,275 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 16.0
-offset_top = 16.0
-offset_right = -16.0
-offset_bottom = -16.0
+offset_left = 18.0
+offset_top = 14.0
+offset_right = -18.0
+offset_bottom = -14.0
+grow_horizontal = 2
+grow_vertical = 2
 
-[node name="Scroll" type="ScrollContainer" parent="Margin"]
+[node name="Main" type="VBoxContainer" parent="Margin"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 12
+
+[node name="Header" type="PanelContainer" parent="Margin/Main"]
+custom_minimum_size = Vector2(0, 66)
 layout_mode = 2
 
-[node name="Content" type="VBoxContainer" parent="Margin/Scroll"]
+[node name="Row" type="HBoxContainer" parent="Margin/Main/Header"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="BackToFinca" type="Button" parent="Margin/Main/Header/Row"]
+custom_minimum_size = Vector2(190, 0)
+layout_mode = 2
+text = "← VOLVER A FINCA"
+
+[node name="Icon" type="TextureRect" parent="Margin/Main/Header/Row"]
+custom_minimum_size = Vector2(54, 54)
+layout_mode = 2
+texture = ExtResource("2_bonds")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Title" type="Label" parent="Margin/Main/Header/Row"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 28
+text = "VÍNCULOS DEL LUDUS"
+vertical_alignment = 1
+
+[node name="Interventions" type="Label" parent="Margin/Main/Header/Row"]
+custom_minimum_size = Vector2(310, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "INTERVENCIONES 2/2"
+horizontal_alignment = 2
+vertical_alignment = 1
+
+[node name="Overview" type="PanelContainer" parent="Margin/Main"]
+custom_minimum_size = Vector2(0, 58)
+layout_mode = 2
+
+[node name="Row" type="HBoxContainer" parent="Margin/Main/Overview"]
+layout_mode = 2
+alignment = 1
+theme_override_constants/separation = 28
+
+[node name="Cohesion" type="Label" parent="Margin/Main/Overview/Row"]
+custom_minimum_size = Vector2(250, 0)
+layout_mode = 2
+text = "COHESIÓN · 50"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Tension" type="Label" parent="Margin/Main/Overview/Row"]
+custom_minimum_size = Vector2(250, 0)
+layout_mode = 2
+text = "TENSIÓN · 0"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Mentorships" type="Label" parent="Margin/Main/Overview/Row"]
+custom_minimum_size = Vector2(250, 0)
+layout_mode = 2
+text = "MENTORÍAS · 0"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Conflicts" type="Label" parent="Margin/Main/Overview/Row"]
+custom_minimum_size = Vector2(250, 0)
+layout_mode = 2
+text = "CONFLICTOS · 0"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="IncidentPanel" type="PanelContainer" parent="Margin/Main"]
+visible = false
+custom_minimum_size = Vector2(0, 150)
+layout_mode = 2
+
+[node name="Margin" type="MarginContainer" parent="Margin/Main/IncidentPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 10
+
+[node name="Content" type="VBoxContainer" parent="Margin/Main/IncidentPanel/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Title" type="Label" parent="Margin/Main/IncidentPanel/Margin/Content"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 21
+text = "INCIDENTE SOCIAL"
+
+[node name="Description" type="Label" parent="Margin/Main/IncidentPanel/Margin/Content"]
+layout_mode = 2
+autowrap_mode = 3
+text = "Una situación requiere la decisión del Dominus."
+
+[node name="Choices" type="HBoxContainer" parent="Margin/Main/IncidentPanel/Margin/Content"]
 layout_mode = 2
 theme_override_constants/separation = 10
 
-[node name="Title" type="Label" parent="Margin/Scroll/Content"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 24
-text = "Relaciones"
-
-[node name="Selectors" type="HBoxContainer" parent="Margin/Scroll/Content"]
-layout_mode = 2
-
-[node name="FirstSelect" type="OptionButton" parent="Margin/Scroll/Content/Selectors"]
-unique_name_in_owner = true
+[node name="Body" type="HBoxContainer" parent="Margin/Main"]
 layout_mode = 2
 size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 12
 
-[node name="SecondSelect" type="OptionButton" parent="Margin/Scroll/Content/Selectors"]
-unique_name_in_owner = true
+[node name="PeoplePanel" type="PanelContainer" parent="Margin/Main/Body"]
+custom_minimum_size = Vector2(330, 0)
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="Margin" type="MarginContainer" parent="Margin/Main/Body/PeoplePanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 12
+
+[node name="Content" type="VBoxContainer" parent="Margin/Main/Body/PeoplePanel/Margin"]
 layout_mode = 2
 size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 8
 
-[node name="SummaryLabel" type="Label" parent="Margin/Scroll/Content"]
-unique_name_in_owner = true
+[node name="Title" type="Label" parent="Margin/Main/Body/PeoplePanel/Margin/Content"]
 layout_mode = 2
+theme_override_font_sizes/font_size = 21
+text = "INTEGRANTES"
 
-[node name="ValuesLabel" type="Label" parent="Margin/Scroll/Content"]
-unique_name_in_owner = true
+[node name="Help" type="Label" parent="Margin/Main/Body/PeoplePanel/Margin/Content"]
 layout_mode = 2
-autowrap_mode = 2
+autowrap_mode = 3
+text = "Seleccioná una persona para revisar solamente sus vínculos relevantes."
 
-[node name="Actions" type="HBoxContainer" parent="Margin/Scroll/Content"]
+[node name="PeopleList" type="ItemList" parent="Margin/Main/Body/PeoplePanel/Margin/Content"]
 layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+allow_reselect = true
 
-[node name="TrainTogetherButton" type="Button" parent="Margin/Scroll/Content/Actions"]
-unique_name_in_owner = true
+[node name="SelectedSummary" type="Label" parent="Margin/Main/Body/PeoplePanel/Margin/Content"]
+custom_minimum_size = Vector2(0, 70)
 layout_mode = 2
-text = "Entrenar juntos"
+autowrap_mode = 3
+text = "Sin integrante seleccionado."
 
-[node name="MediateButton" type="Button" parent="Margin/Scroll/Content/Actions"]
-unique_name_in_owner = true
+[node name="BondsPanel" type="PanelContainer" parent="Margin/Main/Body"]
+custom_minimum_size = Vector2(600, 0)
 layout_mode = 2
-text = "Mediar (15 denarios)"
+size_flags_horizontal = 3
+size_flags_vertical = 3
 
-[node name="EncourageButton" type="Button" parent="Margin/Scroll/Content/Actions"]
-unique_name_in_owner = true
+[node name="Margin" type="MarginContainer" parent="Margin/Main/Body/BondsPanel"]
 layout_mode = 2
-text = "Fomentar rivalidad"
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 12
 
-[node name="IncidentBox" type="VBoxContainer" parent="Margin/Scroll/Content"]
-unique_name_in_owner = true
+[node name="Content" type="VBoxContainer" parent="Margin/Main/Body/BondsPanel/Margin"]
 layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 8
 
-[node name="IncidentTitle" type="Label" parent="Margin/Scroll/Content/IncidentBox"]
-unique_name_in_owner = true
+[node name="Title" type="Label" parent="Margin/Main/Body/BondsPanel/Margin/Content"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 21
+text = "VÍNCULOS IMPORTANTES"
+
+[node name="Scroll" type="ScrollContainer" parent="Margin/Main/Body/BondsPanel/Margin/Content"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="BondCards" type="VBoxContainer" parent="Margin/Main/Body/BondsPanel/Margin/Content/Scroll"]
+custom_minimum_size = Vector2(560, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 10
+
+[node name="DetailPanel" type="PanelContainer" parent="Margin/Main/Body"]
+custom_minimum_size = Vector2(500, 0)
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="Margin" type="MarginContainer" parent="Margin/Main/Body/DetailPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 14
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 14
+theme_override_constants/margin_bottom = 12
+
+[node name="Scroll" type="ScrollContainer" parent="Margin/Main/Body/DetailPanel/Margin"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="Content" type="VBoxContainer" parent="Margin/Main/Body/DetailPanel/Margin/Scroll"]
+custom_minimum_size = Vector2(455, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 10
+
+[node name="DetailTitle" type="Label" parent="Margin/Main/Body/DetailPanel/Margin/Scroll/Content"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+text = "SELECCIONÁ UN VÍNCULO"
+autowrap_mode = 3
+
+[node name="Tone" type="Label" parent="Margin/Main/Body/DetailPanel/Margin/Scroll/Content"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 18
+text = "Estado neutral"
+autowrap_mode = 3
 
-[node name="IncidentDescription" type="Label" parent="Margin/Scroll/Content/IncidentBox"]
-unique_name_in_owner = true
+[node name="Metrics" type="RichTextLabel" parent="Margin/Main/Body/DetailPanel/Margin/Scroll/Content"]
+custom_minimum_size = Vector2(0, 145)
 layout_mode = 2
-autowrap_mode = 2
-
-[node name="IncidentChoices" type="VBoxContainer" parent="Margin/Scroll/Content/IncidentBox"]
-unique_name_in_owner = true
-layout_mode = 2
-
-[node name="StatusLabel" type="Label" parent="Margin/Scroll/Content"]
-unique_name_in_owner = true
-layout_mode = 2
-autowrap_mode = 2
-
-[node name="EventsTitle" type="Label" parent="Margin/Scroll/Content"]
-layout_mode = 2
-text = "Historial social reciente"
-
-[node name="EventsLabel" type="RichTextLabel" parent="Margin/Scroll/Content"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 180)
-layout_mode = 2
+bbcode_enabled = true
 fit_content = true
+text = "Seleccioná una relación para ver sus valores."
+
+[node name="Effect" type="Label" parent="Margin/Main/Body/DetailPanel/Margin/Scroll/Content"]
+custom_minimum_size = Vector2(0, 70)
+layout_mode = 2
+autowrap_mode = 3
+text = "Sin efecto activo."
+
+[node name="ActionsTitle" type="Label" parent="Margin/Main/Body/DetailPanel/Margin/Scroll/Content"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "INTERVENIR"
+
+[node name="Actions" type="VBoxContainer" parent="Margin/Main/Body/DetailPanel/Margin/Scroll/Content"]
+layout_mode = 2
+theme_override_constants/separation = 7
+
+[node name="Status" type="Label" parent="Margin/Main/Body/DetailPanel/Margin/Scroll/Content"]
+custom_minimum_size = Vector2(0, 56)
+layout_mode = 2
+autowrap_mode = 3
+text = "Dos intervenciones disponibles por semana."
+
+[node name="EventsTitle" type="Label" parent="Margin/Main/Body/DetailPanel/Margin/Scroll/Content"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "CRÓNICA SOCIAL"
+
+[node name="RecentEvents" type="RichTextLabel" parent="Margin/Main/Body/DetailPanel/Margin/Scroll/Content"]
+custom_minimum_size = Vector2(0, 190)
+layout_mode = 2
+bbcode_enabled = true
+fit_content = true
+text = "Todavía no hay acontecimientos sociales."
