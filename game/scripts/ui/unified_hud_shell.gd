@@ -6,7 +6,7 @@ const PRIMARY_SYSTEMS := {
     "personal":"Personal",
     "mercado":"Mercado",
     "forja":"Forja",
-    "relaciones":"Relaciones",
+    "relaciones":"Vínculos",
     "arena":"Arena",
     "campana":"Campaña"
 }
@@ -31,6 +31,7 @@ const MORE_SYSTEMS := [
 @onready var injuries_alert: Label = $BottomStatusBar/Margin/Row/Injuries
 @onready var food_alert: Label = $BottomStatusBar/Margin/Row/Food
 @onready var workers_alert: Label = $BottomStatusBar/Margin/Row/Workers
+@onready var social_alert: Label = $BottomStatusBar/Margin/Row/Social
 @onready var event_alert: Label = $BottomStatusBar/Margin/Row/Event
 @onready var combat_alert: Label = $BottomStatusBar/Margin/Row/Combat
 
@@ -60,6 +61,7 @@ func _ready() -> void:
     GameState.week_advanced.connect(func(_week: int): _refresh_all())
     RosterManager.roster_changed.connect(_refresh_all)
     EventManager.events_changed.connect(_refresh_alerts)
+    RelationshipManager.relationships_changed.connect(_refresh_alerts)
     CombatManager.combat_finished.connect(func(_result: Dictionary): _refresh_alerts())
     FincaHubController.system_opened.connect(_on_system_opened)
     FincaHubController.hub_opened.connect(func(): _refresh_navigation("finca"))
@@ -152,6 +154,16 @@ func _refresh_alerts() -> void:
     var weekly_need := maxi(1, RosterManager.get_people().size() * GameState.DAYS_PER_WEEK)
     food_alert.text = "COMIDA\n%d disponibles · %s" % [GameState.food, "RIESGO" if GameState.food < weekly_need else "Suficiente"]
     workers_alert.text = "PERSONAL\n%d sin asignación · %s" % [idle_workers, RosterManager.get_capacity_summary()]
+
+    var social_overview := RelationshipManager.get_social_overview()
+    var social_incident := RelationshipManager.get_pending_incident()
+    if social_incident.is_empty():
+        social_alert.text = "VÍNCULOS\nCohesión %d · Tensión %d" % [
+            int(social_overview.get("cohesion", 50)),
+            int(social_overview.get("tension", 0))
+        ]
+    else:
+        social_alert.text = "VÍNCULOS\nATENCIÓN · %s" % str(social_incident.get("title", "Incidente social"))
 
     var pending: Dictionary = EventManager.get_pending_event()
     event_alert.text = "EVENTO\n%s" % (str(pending.get("title", pending.get("name", "Decisión pendiente"))) if not pending.is_empty() else "Sin decisión pendiente")
