@@ -35,13 +35,14 @@ func _initialize() -> void:
 
     for required_node in [
         "RelationshipsPanel", "BackToFinca", "Overview", "IncidentPanel", "PeopleList",
-        "BondCards", "DetailPanel", "Actions", "RecentEvents", "Interventions"
+        "BondCards", "DetailPanel", "Actions", "Status", "RecentEvents", "Interventions"
     ]:
         assert(scene_text.contains("name=\"%s\"" % required_node) or scene_text.contains("name = \"%s\"" % required_node))
 
     assert(scene_text.contains("VÍNCULOS DEL LUDUS"))
     assert(scene_text.contains("COHESIÓN"))
     assert(scene_text.contains("TENSIÓN"))
+    assert(scene_text.find("name=\"Status\"") < scene_text.find("name=\"ActionsTitle\""))
     assert(not scene_text.contains("OptionButton"))
     assert(not scene_text.contains("FirstSelect"))
     assert(not scene_text.contains("SecondSelect"))
@@ -49,6 +50,12 @@ func _initialize() -> void:
     assert(screen_text.contains("RelationshipManager.get_social_overview()"))
     assert(screen_text.contains("RelationshipManager.get_person_relationships"))
     assert(screen_text.contains("RelationshipManager.get_available_interactions"))
+    assert(screen_text.contains("func _attempt_interaction"))
+    assert(screen_text.contains("NO DISPONIBLE"))
+    assert(screen_text.contains("INTERVENCIÓN APLICADA"))
+    assert(screen_text.contains("interaction_in_progress"))
+    assert(screen_text.contains("refresh_pending"))
+    assert(not screen_text.contains("button.disabled = not bool(action.get(\"allowed\""))
     assert(screen_text.contains("FincaHubController.show_finca()"))
     assert(not screen_text.contains("_selected_id"))
 
@@ -71,7 +78,50 @@ func _initialize() -> void:
     assert(instance.get_node_or_null("Margin/Main/Body/BondsPanel/Margin/Content/Scroll/BondCards") is VBoxContainer)
     assert(instance.get_node_or_null("Margin/Main/IncidentPanel/Margin/Content/Choices") is HBoxContainer)
     assert(instance.get_node_or_null("Margin/Main/Body/DetailPanel/Margin/Scroll/Content/Actions") is VBoxContainer)
+    assert(instance.get_node_or_null("Margin/Main/Body/DetailPanel/Margin/Scroll/Content/Status") is Label)
     instance.free()
 
-    print("Ludus bonds weekly gameplay contract: OK")
+    _test_intervention_changes_gameplay_state()
+
+    print("Ludus bonds intervention feedback and gameplay contract: OK")
     quit()
+
+func _test_intervention_changes_gameplay_state() -> void:
+    var people := RosterManager.get_people()
+    assert(people.size() >= 2)
+    var a = people[0]
+    var b = people[1]
+    var a_id := str(a.id)
+    var b_id := str(b.id)
+
+    var previous_manager_state := RelationshipManager.export_state()
+    var previous_a_fatigue := int(a.fatigue)
+    var previous_b_fatigue := int(b.fatigue)
+    var previous_a_injury_days := int(a.injury_days)
+    var previous_b_injury_days := int(b.injury_days)
+
+    a.fatigue = 0
+    b.fatigue = 0
+    a.injury_days = 0
+    b.injury_days = 0
+    RelationshipManager.relationships.clear()
+    RelationshipManager.interventions_week = GameState.get_week()
+    RelationshipManager.interventions_used = 0
+
+    var before := RelationshipManager.ensure_relationship(a_id, b_id).duplicate(true)
+    var result := RelationshipManager.register_interaction(a_id, b_id, "train_together")
+    var after := RelationshipManager.get_relationship(a_id, b_id)
+
+    assert(bool(result.get("success", false)))
+    assert(not str(result.get("description", "")).is_empty())
+    assert(int(result.get("interventions_remaining", -1)) == 1)
+    assert(int(after.get("affinity", 0)) == int(before.get("affinity", 0)) + 3)
+    assert(int(after.get("respect", 0)) == int(before.get("respect", 0)) + 4)
+    assert(int(a.fatigue) == 6)
+    assert(int(b.fatigue) == 6)
+
+    a.fatigue = previous_a_fatigue
+    b.fatigue = previous_b_fatigue
+    a.injury_days = previous_a_injury_days
+    b.injury_days = previous_b_injury_days
+    RelationshipManager.import_state(previous_manager_state)
