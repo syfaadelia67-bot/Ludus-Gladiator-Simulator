@@ -8,6 +8,8 @@ const MAIN_SCENE_NAME := "Main"
 const TAB_PATH := "Margin/VBox/Tabs"
 const VBOX_PATH := "Margin/VBox"
 const SCREEN_HOST_NAME := "ScreenHost"
+const ARENA_MANAGE_PATH := "Body/RosterPanel/Margin/Scroll/Content/ManageGladiators"
+const ARENA_EQUIPMENT_PATH := "Body/CenterPanel/Margin/Scroll/Content/PreparationView/ActionRow/Equipment"
 
 const SCREEN_SCENES := {
     "finca": "res://scenes/FincaScreen.tscn",
@@ -193,16 +195,53 @@ func _show_legacy_screen(system_id: String, host: Control, tabs: TabContainer) -
     return true
 
 func _configure_hosted_screen(system_id: String, screen: Control) -> void:
-    if system_id != "finca":
+    if system_id == "finca":
+        for path in ["TopHUD", "MainNavigation", "BottomStatusBar"]:
+            var embedded := screen.get_node_or_null(path) as Control
+            if embedded != null:
+                embedded.visible = false
+                embedded.mouse_filter = Control.MOUSE_FILTER_IGNORE
+        var callback := Callable(screen, "_on_visibility_changed")
+        if screen.visibility_changed.is_connected(callback):
+            screen.visibility_changed.disconnect(callback)
+    elif system_id == "arena":
+        call_deferred("_configure_arena_dossier_actions", screen)
+
+func _configure_arena_dossier_actions(screen: Control) -> void:
+    if screen == null or not is_instance_valid(screen):
         return
-    for path in ["TopHUD", "MainNavigation", "BottomStatusBar"]:
-        var embedded := screen.get_node_or_null(path) as Control
-        if embedded != null:
-            embedded.visible = false
-            embedded.mouse_filter = Control.MOUSE_FILTER_IGNORE
-    var callback := Callable(screen, "_on_visibility_changed")
-    if screen.visibility_changed.is_connected(callback):
-        screen.visibility_changed.disconnect(callback)
+    var manage_button := screen.get_node_or_null(ARENA_MANAGE_PATH) as Button
+    var equipment_button := screen.get_node_or_null(ARENA_EQUIPMENT_PATH) as Button
+    if manage_button != null:
+        manage_button.text = "FICHA DEL GLADIADOR"
+        manage_button.tooltip_text = "Abrir el panel individual del gladiador seleccionado."
+        _replace_button_action(manage_button, Callable(self, "_open_arena_dossier").bind(screen, "information"))
+    if equipment_button != null:
+        equipment_button.tooltip_text = "Abrir las siete ranuras de equipamiento del gladiador seleccionado."
+        _replace_button_action(equipment_button, Callable(self, "_open_arena_dossier").bind(screen, "equipment"))
+
+func _replace_button_action(button: Button, action: Callable) -> void:
+    for connection_value in button.pressed.get_connections():
+        if not connection_value is Dictionary:
+            continue
+        var connection: Dictionary = connection_value
+        var existing = connection.get("callable")
+        if existing is Callable and button.pressed.is_connected(existing):
+            button.pressed.disconnect(existing)
+    if not button.pressed.is_connected(action):
+        button.pressed.connect(action)
+
+func _open_arena_dossier(arena_screen: Control, initial_tab: String) -> void:
+    if arena_screen == null or not is_instance_valid(arena_screen):
+        return
+    var person_id := str(arena_screen.get("selected_fighter_id"))
+    if person_id.is_empty():
+        open_system("barracks")
+        return
+    open_gladiator_dossier(person_id, {
+        "system_id": "arena",
+        "selected_id": person_id
+    }, initial_tab)
 
 func open_building_system(building_id: String) -> bool:
     var canonical_id := EstateManager.canonicalize_building_id(building_id)
