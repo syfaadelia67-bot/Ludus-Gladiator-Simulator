@@ -147,7 +147,7 @@ text = "RASGOS"
 [node name="Bonds" type="Button" parent="Margin/Main/Tabs/Margin/Row"]
 custom_minimum_size = Vector2(205, 46)
 layout_mode = 2
-text = "VÍNCULOS"
+text = "VÍNCULO"
 
 [node name="Body" type="HBoxContainer" parent="Margin/Main"]
 layout_mode = 2
