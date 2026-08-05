@@ -107,7 +107,7 @@ func _open_equipment() -> void:
     equipment_view.visible = true
     equipment_view.mouse_filter = Control.MOUSE_FILTER_PASS
     section_title.text = "MERCADO DE EQUIPAMIENTO"
-    feedback.text = "Podés renovar únicamente esta sección por 100 denarios."
+    feedback.text = "Podés renovar únicamente esta sección por 100 denarios. Los objetos se equipan desde la ficha individual del gladiador."
     _refresh_equipment_offers()
 
 func _refresh_all() -> void:
@@ -191,8 +191,9 @@ func _refresh_equipment_offers() -> void:
     var offers := MarketManager.get_equipment_offers()
     for index in range(offers.size()):
         var offer: Dictionary = offers[index]
+        var slot_id := _offer_slot(offer)
         equipment_list.add_item("%s · %s · %s · %d denarios" % [
-            offer.get("name", "Objeto"), _equipment_type_label(str(offer.get("type", "weapon"))),
+            offer.get("name", "Objeto"), EquipmentManager.get_slot_label(slot_id),
             offer.get("quality", "Común"), int(offer.get("price", 0))
         ])
         equipment_list.set_item_metadata(index, str(offer.get("id", "")))
@@ -234,13 +235,19 @@ func _refresh_equipment_details() -> void:
     var tags: Array[String] = []
     for raw_tag in offer.get("tags", []):
         tags.append(str(raw_tag).replace("_", " ").capitalize())
-    equipment_details.text = "[b]%s[/b]\n%s · Calidad %s\n\n%s\n\nEtiquetas: %s\n\nAl comprarlo se guardará en el inventario del ludus.\n\n[b]PRECIO: %d DENARIOS[/b]" % [
+    var slot_id := _offer_slot(offer)
+    equipment_details.text = "[b]%s[/b]\n%s · Ranura: %s · Calidad %s\n\n%s\n\nEtiquetas: %s\n\nAl comprarlo se guardará en el inventario del ludus y aparecerá en la pestaña Equipamiento de cada ficha compatible.\n\n[b]PRECIO: %d DENARIOS[/b]" % [
         offer.get("name", "Objeto"), _equipment_type_label(str(offer.get("type", "weapon"))),
-        offer.get("quality", "Común"), "\n".join(stat_lines) if not stat_lines.is_empty() else "Sin bonificación de combate.",
+        EquipmentManager.get_slot_label(slot_id), offer.get("quality", "Común"),
+        "\n".join(stat_lines) if not stat_lines.is_empty() else "Sin bonificación de combate.",
         ", ".join(tags) if not tags.is_empty() else "Ninguna", int(offer.get("price", 0))
     ]
     equipment_buy_button.text = "COMPRAR %s · %d" % [offer.get("name", "EQUIPAMIENTO"), int(offer.get("price", 0))]
     equipment_buy_button.disabled = CampaignManager.campaign_over or GameState.denarii < int(offer.get("price", 0))
+
+func _offer_slot(offer: Dictionary) -> String:
+    var slot_id := EquipmentManager.canonical_slot_id(str(offer.get("slot", "")))
+    return slot_id if not slot_id.is_empty() else EquipmentManager.get_item_slot(offer)
 
 func _buy_selected_equipment() -> void:
     if selected_equipment_offer_id.is_empty():
@@ -289,9 +296,13 @@ func _role_label(role: String) -> String:
 func _equipment_type_label(item_type: String) -> String:
     match item_type:
         "weapon": return "Arma"
-        "armor": return "Armadura"
+        "armor": return "Armadura de torso"
         "shield": return "Escudo"
-        _: return item_type.capitalize()
+        "helmet", "head": return "Casco"
+        "lower_body", "boots", "greaves": return "Protección inferior"
+        "accessory", "antidote", "cheat_item": return "Accesorio"
+        "mount": return "Montura"
+        _: return item_type.replace("_", " ").capitalize()
 
 func _return_to_finca() -> void:
     FincaHubController.show_finca()
