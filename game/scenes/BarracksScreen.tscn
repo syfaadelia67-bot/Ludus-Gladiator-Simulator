@@ -46,100 +46,176 @@ text = "CAPACIDAD 0/0"
 horizontal_alignment = 2
 vertical_alignment = 1
 
-[node name="PrimaryChoices" type="HBoxContainer" parent="."]
-custom_minimum_size = Vector2(0, 138)
-layout_mode = 2
-theme_override_constants/separation = 16
-
-[node name="PersonalButton" type="Button" parent="PrimaryChoices"]
-custom_minimum_size = Vector2(0, 138)
-layout_mode = 2
-size_flags_horizontal = 3
-icon = ExtResource("2_personal")
-expand_icon = true
-text = "PERSONAL\nEsclavos y trabajadores"
-
-[node name="FightersButton" type="Button" parent="PrimaryChoices"]
-custom_minimum_size = Vector2(0, 138)
-layout_mode = 2
-size_flags_horizontal = 3
-icon = ExtResource("3_fighters")
-expand_icon = true
-text = "LUCHADORES\nGladiadores y bestias"
-
-[node name="Sections" type="TabContainer" parent="."]
+[node name="Landing" type="VBoxContainer" parent="."]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
-tabs_visible = false
+alignment = 1
+theme_override_constants/separation = 18
 
-[node name="Personal" type="HBoxContainer" parent="Sections"]
+[node name="Intro" type="Label" parent="Landing"]
 layout_mode = 2
+theme_override_font_sizes/font_size = 22
+text = "ELEGÍ QUÉ ÁREA DE LOS BARRACONES QUERÉS GESTIONAR"
+horizontal_alignment = 1
+
+[node name="Cards" type="HBoxContainer" parent="Landing"]
+custom_minimum_size = Vector2(0, 500)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+alignment = 1
+theme_override_constants/separation = 24
+
+[node name="PersonalCard" type="TextureButton" parent="Landing/Cards"]
+custom_minimum_size = Vector2(0, 480)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+texture_normal = ExtResource("2_personal")
+ignore_texture_size = true
+stretch_mode = 6
+tooltip_text = "Abrir personal"
+
+[node name="Overlay" type="PanelContainer" parent="Landing/Cards/PersonalCard"]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -118.0
+grow_horizontal = 2
+grow_vertical = 0
+mouse_filter = 2
+
+[node name="Label" type="Label" parent="Landing/Cards/PersonalCard/Overlay"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 28
+text = "PERSONAL\nEsclavos y trabajadores"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="FightersCard" type="TextureButton" parent="Landing/Cards"]
+custom_minimum_size = Vector2(0, 480)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+texture_normal = ExtResource("3_fighters")
+ignore_texture_size = true
+stretch_mode = 6
+tooltip_text = "Abrir luchadores"
+
+[node name="Overlay" type="PanelContainer" parent="Landing/Cards/FightersCard"]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -118.0
+grow_horizontal = 2
+grow_vertical = 0
+mouse_filter = 2
+
+[node name="Label" type="Label" parent="Landing/Cards/FightersCard/Overlay"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 28
+text = "LUCHADORES\nGladiadores y bestias"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ContentShell" type="VBoxContainer" parent="."]
+visible = false
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 10
+
+[node name="SectionHeader" type="HBoxContainer" parent="ContentShell"]
+custom_minimum_size = Vector2(0, 52)
+layout_mode = 2
+
+[node name="BackToBarracksHome" type="Button" parent="ContentShell/SectionHeader"]
+custom_minimum_size = Vector2(260, 0)
+layout_mode = 2
+text = "← VOLVER A BARRACONES"
+
+[node name="SectionTitle" type="Label" parent="ContentShell/SectionHeader"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 24
+text = "SECCIÓN"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="PersonalView" type="HBoxContainer" parent="ContentShell"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
 theme_override_constants/separation = 14
 
-[node name="ListPanel" type="PanelContainer" parent="Sections/Personal"]
+[node name="ListPanel" type="PanelContainer" parent="ContentShell/PersonalView"]
 custom_minimum_size = Vector2(520, 0)
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="Margin" type="MarginContainer" parent="Sections/Personal/ListPanel"]
+[node name="Margin" type="MarginContainer" parent="ContentShell/PersonalView/ListPanel"]
 layout_mode = 2
 theme_override_constants/margin_left = 12
 theme_override_constants/margin_top = 12
 theme_override_constants/margin_right = 12
 theme_override_constants/margin_bottom = 12
 
-[node name="Content" type="VBoxContainer" parent="Sections/Personal/ListPanel/Margin"]
+[node name="Content" type="VBoxContainer" parent="ContentShell/PersonalView/ListPanel/Margin"]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 theme_override_constants/separation = 8
 
-[node name="Title" type="Label" parent="Sections/Personal/ListPanel/Margin/Content"]
+[node name="Title" type="Label" parent="ContentShell/PersonalView/ListPanel/Margin/Content"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 21
 text = "ESCLAVOS Y TRABAJADORES"
 
-[node name="Summary" type="Label" parent="Sections/Personal/ListPanel/Margin/Content"]
+[node name="Summary" type="Label" parent="ContentShell/PersonalView/ListPanel/Margin/Content"]
 layout_mode = 2
 text = "0 integrantes"
 
-[node name="PersonalList" type="ItemList" parent="Sections/Personal/ListPanel/Margin/Content"]
+[node name="PersonalList" type="ItemList" parent="ContentShell/PersonalView/ListPanel/Margin/Content"]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 allow_reselect = true
 
-[node name="DetailsPanel" type="PanelContainer" parent="Sections/Personal"]
+[node name="DetailsPanel" type="PanelContainer" parent="ContentShell/PersonalView"]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 
-[node name="Margin" type="MarginContainer" parent="Sections/Personal/DetailsPanel"]
+[node name="Margin" type="MarginContainer" parent="ContentShell/PersonalView/DetailsPanel"]
 layout_mode = 2
 theme_override_constants/margin_left = 14
 theme_override_constants/margin_top = 12
 theme_override_constants/margin_right = 14
 theme_override_constants/margin_bottom = 12
 
-[node name="Content" type="VBoxContainer" parent="Sections/Personal/DetailsPanel/Margin"]
+[node name="Content" type="VBoxContainer" parent="ContentShell/PersonalView/DetailsPanel/Margin"]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 theme_override_constants/separation = 10
 
-[node name="Title" type="Label" parent="Sections/Personal/DetailsPanel/Margin/Content"]
+[node name="Title" type="Label" parent="ContentShell/PersonalView/DetailsPanel/Margin/Content"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 21
 text = "FICHA DE PERSONAL"
 
-[node name="DetailsScroll" type="ScrollContainer" parent="Sections/Personal/DetailsPanel/Margin/Content"]
+[node name="DetailsScroll" type="ScrollContainer" parent="ContentShell/PersonalView/DetailsPanel/Margin/Content"]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 horizontal_scroll_mode = 0
 
-[node name="PersonalDetails" type="RichTextLabel" parent="Sections/Personal/DetailsPanel/Margin/Content/DetailsScroll"]
+[node name="PersonalDetails" type="RichTextLabel" parent="ContentShell/PersonalView/DetailsPanel/Margin/Content/DetailsScroll"]
 custom_minimum_size = Vector2(760, 340)
 layout_mode = 2
 size_flags_horizontal = 3
@@ -147,111 +223,125 @@ bbcode_enabled = true
 fit_content = true
 text = "Seleccioná un integrante del personal."
 
-[node name="JobPanel" type="PanelContainer" parent="Sections/Personal/DetailsPanel/Margin/Content"]
+[node name="JobPanel" type="PanelContainer" parent="ContentShell/PersonalView/DetailsPanel/Margin/Content"]
 layout_mode = 2
 
-[node name="Margin" type="MarginContainer" parent="Sections/Personal/DetailsPanel/Margin/Content/JobPanel"]
+[node name="Margin" type="MarginContainer" parent="ContentShell/PersonalView/DetailsPanel/Margin/Content/JobPanel"]
 layout_mode = 2
 theme_override_constants/margin_left = 10
 theme_override_constants/margin_top = 8
 theme_override_constants/margin_right = 10
 theme_override_constants/margin_bottom = 8
 
-[node name="Row" type="HBoxContainer" parent="Sections/Personal/DetailsPanel/Margin/Content/JobPanel/Margin"]
+[node name="Row" type="HBoxContainer" parent="ContentShell/PersonalView/DetailsPanel/Margin/Content/JobPanel/Margin"]
 layout_mode = 2
 
-[node name="JobSelector" type="OptionButton" parent="Sections/Personal/DetailsPanel/Margin/Content/JobPanel/Margin/Row"]
+[node name="JobSelector" type="OptionButton" parent="ContentShell/PersonalView/DetailsPanel/Margin/Content/JobPanel/Margin/Row"]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="AssignJob" type="Button" parent="Sections/Personal/DetailsPanel/Margin/Content/JobPanel/Margin/Row"]
+[node name="AssignJob" type="Button" parent="ContentShell/PersonalView/DetailsPanel/Margin/Content/JobPanel/Margin/Row"]
 custom_minimum_size = Vector2(220, 0)
 layout_mode = 2
 text = "ASIGNAR TRABAJO"
 
-[node name="Feedback" type="Label" parent="Sections/Personal/DetailsPanel/Margin/Content"]
+[node name="Feedback" type="Label" parent="ContentShell/PersonalView/DetailsPanel/Margin/Content"]
 layout_mode = 2
 autowrap_mode = 3
 text = ""
 
-[node name="Luchadores" type="VBoxContainer" parent="Sections"]
+[node name="FightersView" type="VBoxContainer" parent="ContentShell"]
+visible = false
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
-theme_override_constants/separation = 8
+theme_override_constants/separation = 10
 
-[node name="FighterTabs" type="TabContainer" parent="Sections/Luchadores"]
+[node name="ModeButtons" type="HBoxContainer" parent="ContentShell/FightersView"]
+custom_minimum_size = Vector2(0, 54)
+layout_mode = 2
+alignment = 1
+theme_override_constants/separation = 12
+
+[node name="GladiatorsButton" type="Button" parent="ContentShell/FightersView/ModeButtons"]
+custom_minimum_size = Vector2(260, 48)
+layout_mode = 2
+text = "GLADIADORES"
+
+[node name="BeastsButton" type="Button" parent="ContentShell/FightersView/ModeButtons"]
+custom_minimum_size = Vector2(260, 48)
+layout_mode = 2
+text = "BESTIAS"
+
+[node name="GladiatorsView" type="HBoxContainer" parent="ContentShell/FightersView"]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
-
-[node name="Gladiadores" type="HBoxContainer" parent="Sections/Luchadores/FighterTabs"]
-layout_mode = 2
 theme_override_constants/separation = 14
 
-[node name="ListPanel" type="PanelContainer" parent="Sections/Luchadores/FighterTabs/Gladiadores"]
+[node name="ListPanel" type="PanelContainer" parent="ContentShell/FightersView/GladiatorsView"]
 custom_minimum_size = Vector2(520, 0)
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="Margin" type="MarginContainer" parent="Sections/Luchadores/FighterTabs/Gladiadores/ListPanel"]
+[node name="Margin" type="MarginContainer" parent="ContentShell/FightersView/GladiatorsView/ListPanel"]
 layout_mode = 2
 theme_override_constants/margin_left = 12
 theme_override_constants/margin_top = 12
 theme_override_constants/margin_right = 12
 theme_override_constants/margin_bottom = 12
 
-[node name="Content" type="VBoxContainer" parent="Sections/Luchadores/FighterTabs/Gladiadores/ListPanel/Margin"]
+[node name="Content" type="VBoxContainer" parent="ContentShell/FightersView/GladiatorsView/ListPanel/Margin"]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 theme_override_constants/separation = 8
 
-[node name="Title" type="Label" parent="Sections/Luchadores/FighterTabs/Gladiadores/ListPanel/Margin/Content"]
+[node name="Title" type="Label" parent="ContentShell/FightersView/GladiatorsView/ListPanel/Margin/Content"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 21
 text = "GLADIADORES"
 
-[node name="Summary" type="Label" parent="Sections/Luchadores/FighterTabs/Gladiadores/ListPanel/Margin/Content"]
+[node name="Summary" type="Label" parent="ContentShell/FightersView/GladiatorsView/ListPanel/Margin/Content"]
 layout_mode = 2
 text = "0 gladiadores"
 
-[node name="GladiatorList" type="ItemList" parent="Sections/Luchadores/FighterTabs/Gladiadores/ListPanel/Margin/Content"]
+[node name="GladiatorList" type="ItemList" parent="ContentShell/FightersView/GladiatorsView/ListPanel/Margin/Content"]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 allow_reselect = true
 
-[node name="DetailsPanel" type="PanelContainer" parent="Sections/Luchadores/FighterTabs/Gladiadores"]
+[node name="DetailsPanel" type="PanelContainer" parent="ContentShell/FightersView/GladiatorsView"]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 
-[node name="Margin" type="MarginContainer" parent="Sections/Luchadores/FighterTabs/Gladiadores/DetailsPanel"]
+[node name="Margin" type="MarginContainer" parent="ContentShell/FightersView/GladiatorsView/DetailsPanel"]
 layout_mode = 2
 theme_override_constants/margin_left = 14
 theme_override_constants/margin_top = 12
 theme_override_constants/margin_right = 14
 theme_override_constants/margin_bottom = 12
 
-[node name="Content" type="VBoxContainer" parent="Sections/Luchadores/FighterTabs/Gladiadores/DetailsPanel/Margin"]
+[node name="Content" type="VBoxContainer" parent="ContentShell/FightersView/GladiatorsView/DetailsPanel/Margin"]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 theme_override_constants/separation = 10
 
-[node name="Title" type="Label" parent="Sections/Luchadores/FighterTabs/Gladiadores/DetailsPanel/Margin/Content"]
+[node name="Title" type="Label" parent="ContentShell/FightersView/GladiatorsView/DetailsPanel/Margin/Content"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 21
 text = "FICHA DEL GLADIADOR"
 
-[node name="DetailsScroll" type="ScrollContainer" parent="Sections/Luchadores/FighterTabs/Gladiadores/DetailsPanel/Margin/Content"]
+[node name="DetailsScroll" type="ScrollContainer" parent="ContentShell/FightersView/GladiatorsView/DetailsPanel/Margin/Content"]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 horizontal_scroll_mode = 0
 
-[node name="GladiatorDetails" type="RichTextLabel" parent="Sections/Luchadores/FighterTabs/Gladiadores/DetailsPanel/Margin/Content/DetailsScroll"]
+[node name="GladiatorDetails" type="RichTextLabel" parent="ContentShell/FightersView/GladiatorsView/DetailsPanel/Margin/Content/DetailsScroll"]
 custom_minimum_size = Vector2(760, 390)
 layout_mode = 2
 size_flags_horizontal = 3
@@ -259,56 +349,57 @@ bbcode_enabled = true
 fit_content = true
 text = "Seleccioná un gladiador."
 
-[node name="Actions" type="HBoxContainer" parent="Sections/Luchadores/FighterTabs/Gladiadores/DetailsPanel/Margin/Content"]
+[node name="Actions" type="HBoxContainer" parent="ContentShell/FightersView/GladiatorsView/DetailsPanel/Margin/Content"]
 layout_mode = 2
 alignment = 1
 
-[node name="Training" type="Button" parent="Sections/Luchadores/FighterTabs/Gladiadores/DetailsPanel/Margin/Content/Actions"]
+[node name="Training" type="Button" parent="ContentShell/FightersView/GladiatorsView/DetailsPanel/Margin/Content/Actions"]
 layout_mode = 2
 text = "ENTRENAMIENTO"
 
-[node name="Equipment" type="Button" parent="Sections/Luchadores/FighterTabs/Gladiadores/DetailsPanel/Margin/Content/Actions"]
+[node name="Equipment" type="Button" parent="ContentShell/FightersView/GladiatorsView/DetailsPanel/Margin/Content/Actions"]
 layout_mode = 2
 text = "EQUIPAMIENTO"
 
-[node name="Arena" type="Button" parent="Sections/Luchadores/FighterTabs/Gladiadores/DetailsPanel/Margin/Content/Actions"]
+[node name="Arena" type="Button" parent="ContentShell/FightersView/GladiatorsView/DetailsPanel/Margin/Content/Actions"]
 layout_mode = 2
 text = "ARENA"
 
-[node name="Bestias" type="ScrollContainer" parent="Sections/Luchadores/FighterTabs"]
+[node name="BeastsView" type="ScrollContainer" parent="ContentShell/FightersView"]
+visible = false
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 horizontal_scroll_mode = 0
 
-[node name="Content" type="VBoxContainer" parent="Sections/Luchadores/FighterTabs/Bestias"]
+[node name="Content" type="VBoxContainer" parent="ContentShell/FightersView/BeastsView"]
 custom_minimum_size = Vector2(1100, 620)
 layout_mode = 2
 size_flags_horizontal = 3
 alignment = 1
 theme_override_constants/separation = 18
 
-[node name="Icon" type="TextureRect" parent="Sections/Luchadores/FighterTabs/Bestias/Content"]
+[node name="Icon" type="TextureRect" parent="ContentShell/FightersView/BeastsView/Content"]
 custom_minimum_size = Vector2(0, 190)
 layout_mode = 2
 texture = ExtResource("4_beast")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="Title" type="Label" parent="Sections/Luchadores/FighterTabs/Bestias/Content"]
+[node name="Title" type="Label" parent="ContentShell/FightersView/BeastsView/Content"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 28
 text = "BESTIAS DEL LUDUS"
 horizontal_alignment = 1
 
-[node name="Status" type="RichTextLabel" parent="Sections/Luchadores/FighterTabs/Bestias/Content"]
+[node name="Status" type="RichTextLabel" parent="ContentShell/FightersView/BeastsView/Content"]
 custom_minimum_size = Vector2(0, 180)
 layout_mode = 2
 bbcode_enabled = true
 fit_content = true
 text = "[center]Todavía no hay bestias registradas.[/center]"
 
-[node name="Notice" type="Label" parent="Sections/Luchadores/FighterTabs/Bestias/Content"]
+[node name="Notice" type="Label" parent="ContentShell/FightersView/BeastsView/Content"]
 layout_mode = 2
 autowrap_mode = 3
 text = "Las bestias adquiridas o capturadas aparecerán aquí, separadas del personal y de los gladiadores."
