@@ -22,7 +22,9 @@ Se ejecutan dentro del proyecto mediante el autoload `TestRunner`, con todos los
 godot --headless --path game -- --test=res://tests/example_test.gd
 ```
 
-Los tests nuevos con un método `run()` deben dejar que `TestRunner` cierre el proceso. El runner libera el nodo y la referencia a su script antes de llamar a `quit()`, evitando referencias retenidas durante el cierre.
+Los tests nuevos deben exponer un método `run()` y dejar que `TestRunner` cierre el proceso. El runner retira el nodo del árbol, elimina su script y libera todas sus referencias antes de llamar a `quit()`.
+
+Los tests legacy que todavía llaman `get_tree().quit(0)` se adaptan en memoria. El runner reemplaza ese cierre por una notificación controlada, libera el nodo y el `GDScript` adaptado y recién entonces termina el proceso. Esta compatibilidad existe para migrar pruebas históricas sin tolerar fugas; no debe usarse en tests nuevos.
 
 ### Tests que extienden `SceneTree`
 
@@ -66,15 +68,23 @@ godot --headless --path game -- --test=res://tests/... --test-group=ui
 
 Los tests con marcadores de pantalla, presenter, router, HUD, Finca, Mercado, Barracones, Arena, Relaciones, dossier, localización, resumen de campaña o recursos visuales se asignan a `ui`.
 
+Los nombres históricos ambiguos se resuelven mediante `TEST_GROUP_OVERRIDES`. Actualmente el flujo completo de campaña y el resumen de continuar campaña pertenecen explícitamente a `ui`.
+
 Todo test restante se asigna a `core`. No existe un estado sin grupo.
 
 La clasificación afecta únicamente la distribución del CI; no cambia cómo se ejecuta el test.
 
 ## Detección de fallos
 
-Además del código de salida del proceso hijo, la suite revisa la salida de Godot. Un test se considera fallido si emite una assertion, un error de parseo, un error de compilación o el mensaje de timeout del runner, aunque después llame a `quit(0)`.
+Además del código de salida del proceso hijo, la suite revisa la salida de Godot. Un test se considera fallido si emite:
 
-Esto impide falsos positivos de pruebas históricas que imprimían `OK` después de una assertion abortada.
+- una assertion;
+- un error de parseo o compilación;
+- un timeout del runner;
+- `ObjectDB instances leaked at exit`;
+- `resources still in use at exit`.
+
+Esto impide falsos positivos de pruebas históricas que imprimían `OK` después de una assertion abortada y evita aceptar procesos que finalizan con objetos o recursos vivos.
 
 ## Exclusiones
 
@@ -94,7 +104,9 @@ Toda exclusión futura debe agregarse a `EXCLUDED_TEST_FILES` dentro de `test_ru
 - el runner deja de reconocer tests o contratos;
 - el CI deja de ejecutar las suites `core` y `ui`;
 - se retira el guard headless del helper MCP;
-- el runner deja de liberar los tests basados en `run()`.
+- el runner deja de liberar nodos y scripts;
+- desaparece el adaptador legacy;
+- los leaks de `ObjectDB` o recursos dejan de tratarse como fallos.
 
 El propio contrato extiende `Node` y debe ejecutarse así:
 
