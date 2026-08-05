@@ -7,8 +7,16 @@ const EXCLUDED_FILES := {
     "test_runner.gd": "Autoload test orchestrator; it is infrastructure, not a test case."
 }
 const UI_MARKERS: Array[String] = [
-    "screen", "router", "hud", "finca", "market_hub", "barracks_hub",
-    "arena_scroll", "relationships", "dossier", "localization"
+    "screen", "router", "hud", "finca", "presenter", "_ui_", "arena",
+    "market_hub", "market_roster", "barracks_hub", "relationships", "dossier",
+    "localization", "campaign_panel", "campaign_result", "continue_summary",
+    "completed_campaign", "onboarding", "menu", "placeholder_asset"
+]
+const FAILURE_MARKERS: Array[String] = [
+    "SCRIPT ERROR: Assertion failed",
+    "SCRIPT ERROR: Parse Error",
+    "SCRIPT ERROR: Compile Error",
+    "ERROR: Test did not complete or call get_tree().quit()"
 ]
 
 func _ready() -> void:
@@ -23,8 +31,11 @@ func _ready() -> void:
     assert(not workflow_text.is_empty(), "Could not read workflow: %s" % workflow_path)
     assert(runner_text.contains("const SUPPORTED_TEST_SUFFIXES: Array[String] = [\"_test.gd\", \"_contract.gd\"]"))
     assert(runner_text.contains("const SUPPORTED_TEST_PREFIXES: Array[String] = [\"test_\"]"))
+    assert(runner_text.contains("const FAILURE_OUTPUT_MARKERS"))
     assert(runner_text.contains("func _collect_tests"))
     assert(runner_text.contains("func _requires_script_mode"))
+    assert(runner_text.contains("func _line_reports_test_failure"))
+    assert(runner_text.contains("output_detected_failure"))
     assert(runner_text.contains("line.begins_with(\"extends SceneTree\")"))
     assert(runner_text.contains("--script"))
     assert(runner_text.contains("--test-group="))
@@ -38,6 +49,8 @@ func _ready() -> void:
         assert(runner_text.contains("\"%s\"" % prefix))
     for marker in UI_MARKERS:
         assert(runner_text.contains("\"%s\"" % marker))
+    for failure_marker in FAILURE_MARKERS:
+        assert(runner_text.contains("\"%s\"" % failure_marker))
     for file_name in EXCLUDED_FILES.keys():
         var reason := str(EXCLUDED_FILES[file_name]).strip_edges()
         assert(not reason.is_empty())
@@ -60,6 +73,7 @@ func _ready() -> void:
     assert(documentation_text.contains("*_test.gd"))
     assert(documentation_text.contains("*_contract.gd"))
     assert(documentation_text.contains("test_*.gd"))
+    assert(documentation_text.contains("assertion"))
     assert(documentation_text.contains("No existe un estado sin grupo"))
     assert(documentation_text.contains("No se instala ningún plugin"))
 
