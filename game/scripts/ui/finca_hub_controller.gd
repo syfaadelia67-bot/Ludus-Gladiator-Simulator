@@ -14,6 +14,7 @@ const SCREEN_SCENES := {
     "barracks": "res://scenes/BarracksScreen.tscn",
     "mercado": "res://scenes/MarketScreen.tscn",
     "arena": "res://scenes/ArenaScreen.tscn",
+    "gladiator_dossier": "res://scenes/GladiatorDossierPanel.tscn",
     "campana": "res://scenes/CampaignPanel.tscn",
     "eventos": "res://scenes/EventsPanel.tscn",
     "rivales": "res://scenes/RivalsPanel.tscn",
@@ -103,6 +104,44 @@ func open_system(system_id: String) -> bool:
     current_system_id = normalized_id
     system_opened.emit(normalized_id)
     return true
+
+func open_gladiator_dossier(person_id: String, context: Dictionary = {}, initial_tab: String = "information") -> bool:
+    var person = RosterManager.get_person(person_id)
+    if person == null or str(person.role) != "gladiator":
+        return false
+    var resolved_context := context.duplicate(true)
+    if str(resolved_context.get("system_id", "")).is_empty():
+        var origin_system := current_system_id
+        if origin_system == "gladiator_dossier":
+            origin_system = "finca"
+        resolved_context["system_id"] = origin_system
+    resolved_context["selected_id"] = person_id
+    if not open_system("gladiator_dossier"):
+        return false
+    var screen := screen_instances.get("gladiator_dossier") as Control
+    if screen == null or not screen.has_method("open_gladiator"):
+        return false
+    screen.call("open_gladiator", person_id, resolved_context, initial_tab)
+    return true
+
+func return_from_gladiator_dossier(context: Dictionary = {}) -> bool:
+    var target_system := str(context.get("system_id", "finca")).strip_edges().to_lower()
+    if target_system.is_empty() or target_system == "gladiator_dossier":
+        target_system = "finca"
+    var opened := show_finca() if target_system == "finca" else open_system(target_system)
+    if not opened:
+        return show_finca()
+    var callback_name := str(context.get("callback", ""))
+    if callback_name.is_empty() or not screen_instances.has(target_system):
+        return true
+    var target_screen := screen_instances.get(target_system) as Control
+    if target_screen != null and target_screen.has_method(callback_name):
+        target_screen.call_deferred(callback_name, context.duplicate(true))
+    return true
+
+func get_hosted_screen(system_id: String) -> Control:
+    var screen := screen_instances.get(system_id.strip_edges().to_lower()) as Control
+    return screen if screen != null and is_instance_valid(screen) else null
 
 func _show_hosted_screen(system_id: String, host: Control, tabs: TabContainer) -> bool:
     var screen := screen_instances.get(system_id) as Control
