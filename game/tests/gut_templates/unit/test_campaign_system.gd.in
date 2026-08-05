@@ -1,0 +1,91 @@
+extends GutTest
+
+const CAMPAIGN_MANAGER_SCRIPT := preload("res://scripts/systems/campaign_manager.gd")
+
+var manager
+var original_week: int
+
+func before_each() -> void:
+    original_week = GameState.day
+    manager = autofree(CAMPAIGN_MANAGER_SCRIPT.new())
+
+func after_each() -> void:
+    GameState.day = original_week
+
+func test_campaign_catalog_has_three_chapters_and_a_week_sixteen_finale() -> void:
+    assert_eq(manager.CHAPTERS.size(), 3)
+    assert_eq(manager.DEMO_FINAL_WEEK, 16)
+    assert_eq(str(manager.CHAPTERS[0].get("id", "")), "ruins")
+    assert_eq(str(manager.CHAPTERS[1].get("id", "")), "blood_reputation")
+    assert_eq(str(manager.CHAPTERS[2].get("id", "")), "name_of_ludus")
+    assert_eq(int(manager.CHAPTERS[2].get("week_end", 0)), 16)
+
+func test_finale_becomes_victory_with_six_wins() -> void:
+    GameState.day = 16
+    manager.total_wins = 6
+    manager.final_combat_resolved = true
+
+    manager._evaluate_campaign_finale()
+
+    assert_true(manager.campaign_over)
+    assert_true(manager.victory_achieved)
+    assert_eq(manager.defeat_reason, "")
+
+func test_finale_becomes_defeat_with_fewer_than_six_wins() -> void:
+    GameState.day = 16
+    manager.total_wins = 5
+    manager.final_combat_resolved = true
+
+    manager._evaluate_campaign_finale()
+
+    assert_true(manager.campaign_over)
+    assert_false(manager.victory_achieved)
+    assert_false(manager.defeat_reason.is_empty())
+
+func test_unresolved_finale_does_not_end_campaign() -> void:
+    GameState.day = 16
+    manager.total_wins = 6
+    manager.final_combat_resolved = false
+
+    manager._evaluate_campaign_finale()
+
+    assert_false(manager.campaign_over)
+    assert_false(manager.victory_achieved)
+
+func test_campaign_state_round_trip_preserves_results_and_objectives() -> void:
+    GameState.day = 12
+    manager.current_rank_index = 2
+    manager.total_wins = 7
+    manager.total_losses = 3
+    manager.completed_objectives.assign(["first_fight", "first_victory", "three_victories"])
+    manager.campaign_over = true
+    manager.victory_achieved = true
+    manager.final_combat_resolved = true
+
+    var exported: Dictionary = manager.export_state()
+    var restored = autofree(CAMPAIGN_MANAGER_SCRIPT.new())
+    restored.import_state(exported)
+
+    assert_eq(restored.current_rank_index, 2)
+    assert_eq(restored.current_chapter_index, 2)
+    assert_eq(restored.total_wins, 7)
+    assert_eq(restored.total_losses, 3)
+    assert_eq(restored.completed_objectives, ["first_fight", "first_victory", "three_victories"])
+    assert_true(restored.campaign_over)
+    assert_true(restored.victory_achieved)
+    assert_true(restored.final_combat_resolved)
+
+func test_rank_requirements_are_strictly_increasing() -> void:
+    var previous_reputation := -1
+    var previous_wins := -1
+    var previous_wealth := -1
+    for rank in manager.RANKS:
+        var reputation := int(rank.get("reputation", 0))
+        var wins := int(rank.get("wins", 0))
+        var wealth := int(rank.get("wealth", 0))
+        assert_true(reputation >= previous_reputation)
+        assert_true(wins >= previous_wins)
+        assert_true(wealth >= previous_wealth)
+        previous_reputation = reputation
+        previous_wins = wins
+        previous_wealth = wealth
