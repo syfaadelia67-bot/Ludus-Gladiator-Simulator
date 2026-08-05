@@ -145,6 +145,7 @@ func _generate_equipment_offer(recipe_id: String, index: int) -> Dictionary:
         "recipe_id":recipe_id,
         "name":str(recipe.get("name", recipe_id)),
         "type":str(recipe.get("type", "weapon")),
+        "slot":str(recipe.get("slot", EquipmentManager.get_item_slot(recipe))),
         "quality":quality,
         "power":int(recipe.get("power", 0)),
         "defense":int(recipe.get("defense", 0)),
