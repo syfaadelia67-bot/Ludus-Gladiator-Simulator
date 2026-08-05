@@ -8,24 +8,7 @@ func _initialize() -> void:
     var shell_scene_text := FileAccess.get_file_as_string("res://scenes/UnifiedHudShell.tscn")
     var shell_controller_text := FileAccess.get_file_as_string("res://scripts/ui/unified_hud_shell.gd")
 
-    for required_node in [
-        "BarracksScreen",
-        "Landing",
-        "PersonalCard",
-        "FightersCard",
-        "ContentShell",
-        "BackToBarracksHome",
-        "PersonalView",
-        "FightersView",
-        "GladiatorsButton",
-        "BeastsButton",
-        "GladiatorsView",
-        "BeastsView",
-        "PersonalList",
-        "GladiatorList",
-        "AssignJob",
-        "BackToFinca"
-    ]:
+    for required_node in ["BarracksScreen", "Landing", "PersonalCard", "FightersCard", "ContentShell", "BackToBarracksHome", "PersonalView", "FightersView", "GladiatorsButton", "BeastsButton", "GladiatorsView", "BeastsView", "PersonalList", "GladiatorList", "AssignJob", "BackToFinca"]:
         assert(scene_text.contains("name=\"%s\"" % required_node) or scene_text.contains("name = \"%s\"" % required_node))
 
     assert(scene_text.count("type=\"TextureButton\"") >= 2)
@@ -44,7 +27,7 @@ func _initialize() -> void:
     assert(not controller_text.contains("current_tab"))
     assert(not controller_text.contains("fighter_tabs"))
 
-    assert(hub_text.contains("\"barracks\": preload(\"res://scenes/BarracksScreen.tscn\")"))
+    assert(hub_text.contains("\"barracks\": \"res://scenes/BarracksScreen.tscn\""))
     assert(hub_text.contains("\"barracks\": \"barracks\""))
     assert(finca_text.contains("\"barracks\":\"barracks\""))
     assert(finca_text.contains("Entrar a barracones"))
