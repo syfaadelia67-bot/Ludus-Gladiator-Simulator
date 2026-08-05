@@ -14,7 +14,7 @@ func _initialize() -> void:
 
     for tab_node in ["Information", "Statistics", "Equipment", "Skills", "Specialization", "Traits", "Bonds"]:
         assert(scene_text.contains("name=\"%s\"" % tab_node) or scene_text.contains("name = \"%s\"" % tab_node))
-    assert(scene_text.contains("VÍNCULOS"))
+    assert(scene_text.contains("text = \"VÍNCULO\""))
     assert(scene_text.contains("ESPECIALIZACIÓN"))
     assert(not scene_text.contains("TabContainer"))
     assert(scene_text.contains("offset_right = -104.0"))
@@ -87,6 +87,7 @@ func _initialize() -> void:
     var instance := (packed as PackedScene).instantiate()
     assert(instance.get_node_or_null("Margin/Main/Header/Margin/Row/Back") is Button)
     assert(instance.get_node_or_null("Margin/Main/Tabs/Margin/Row/Bonds") is Button)
+    assert((instance.get_node("Margin/Main/Tabs/Margin/Row/Bonds") as Button).text == "VÍNCULO")
     assert(instance.get_node_or_null("Margin/Main/Body/SummaryPanel") is PanelContainer)
     assert(instance.get_node_or_null("Margin/Main/Body/ContentPanel/Margin/Layout/Scroll/Content") is VBoxContainer)
     instance.free()
@@ -106,5 +107,5 @@ func _initialize() -> void:
     assert(legacy_person.get_equipped_item_id("head") == "helmet_1")
     assert(legacy_person.equipped_weapon_id == "legacy_weapon")
 
-    print("Gladiator dossier, bonds and seven-slot integration contract: OK")
+    print("Gladiator dossier, bond and seven-slot integration contract: OK")
     quit()
