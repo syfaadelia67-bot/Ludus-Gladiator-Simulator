@@ -8,18 +8,7 @@ func _initialize() -> void:
     var save_text := FileAccess.get_file_as_string("res://scripts/core/save_manager.gd")
     var hub_text := FileAccess.get_file_as_string("res://scripts/ui/finca_hub_controller.gd")
 
-    for required_node in [
-        "MarketScreen",
-        "Landing",
-        "FightersCard",
-        "EquipmentCard",
-        "ContentShell",
-        "BackToMarketHome",
-        "FightersView",
-        "EquipmentView",
-        "Refresh",
-        "BackToFinca"
-    ]:
+    for required_node in ["MarketScreen", "Landing", "FightersCard", "EquipmentCard", "ContentShell", "BackToMarketHome", "FightersView", "EquipmentView", "Refresh", "BackToFinca"]:
         assert(scene_text.contains("name=\"%s\"" % required_node) or scene_text.contains("name = \"%s\"" % required_node))
 
     assert(scene_text.count("type=\"TextureButton\"") >= 2)
@@ -47,8 +36,8 @@ func _initialize() -> void:
 
     assert(save_text.contains("const SAVE_VERSION := 14"))
     assert(save_text.contains("\"equipment_offers\":MarketManager.equipment_offers"))
-    assert(hub_text.contains("\"mercado\": preload(\"res://scenes/MarketScreen.tscn\")"))
-    assert(hub_text.contains("_show_hosted_screen"))
+    assert(hub_text.contains("\"mercado\": \"res://scenes/MarketScreen.tscn\""))
+    assert(hub_text.contains("var packed := load(scene_path) as PackedScene"))
 
     var packed := load("res://scenes/MarketScreen.tscn")
     var screen_script := load("res://scripts/ui/market_screen.gd")
