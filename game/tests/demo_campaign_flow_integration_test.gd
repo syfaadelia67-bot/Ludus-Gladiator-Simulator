@@ -53,9 +53,31 @@ func _run() -> void:
     var close_week := main_scene.get_node_or_null("Margin/VBox/TopButtons/AdvanceDay") as Button
     assert(close_week != null, "Main debe exponer el botón Cerrar semana.")
     var starting_week := GameState.get_week()
+
     close_week.pressed.emit()
     await _wait_frames(2)
-    assert(GameState.get_week() == starting_week + 1, "Cerrar semana debe avanzar exactamente una semana.")
+    assert(WeeklyClosurePresenter.overlay != null and WeeklyClosurePresenter.overlay.visible, "Cerrar semana debe abrir el resumen previo.")
+
+    var weekly_summary := WeeklyPlanningController.get_summary()
+    assert(not bool(weekly_summary.get("event_pending", false)), "Una campaña recién creada no debe bloquear el primer cierre con un evento pendiente.")
+    if bool(weekly_summary.get("fight_pending", false)):
+        var fighter_id := ""
+        for person in RosterManager.get_people():
+            if str(person.role) == "gladiator" and person.is_available_for_combat():
+                fighter_id = str(person.id)
+                break
+        assert(not fighter_id.is_empty(), "El cierre semanal obligatorio debe disponer de un gladiador para la Arena.")
+        var combat_result := CombatManager.simulate_duel(fighter_id, "balanced")
+        assert(not combat_result.is_empty(), "El combate obligatorio debe completarse antes de cerrar la semana.")
+        await _wait_frames(2)
+        WeeklyClosurePresenter.open_summary()
+        await _wait_frames(1)
+
+    weekly_summary = WeeklyPlanningController.get_summary()
+    assert(bool(weekly_summary.get("can_close", false)), "El resumen semanal debe quedar habilitado después de resolver sus bloqueos.")
+    WeeklyClosurePresenter._confirm()
+    await _wait_frames(2)
+    assert(GameState.get_week() == starting_week + 1, "Confirmar el cierre debe avanzar exactamente una semana.")
 
     assert(SaveManager.save_game(), "La campaña debe guardarse antes de volver al menú.")
     MainMenuReturnController._save_and_return()
