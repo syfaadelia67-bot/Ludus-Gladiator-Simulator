@@ -34,6 +34,19 @@ godot --headless --path game --script res://tests/example_contract.gd
 
 Los contratos que extienden `Node` deben ejecutarse mediante `TestRunner`, no mediante `--script`, para disponer de `Main.tscn` y evitar mensajes falsos de presenters sin escena principal.
 
+## Detección real de fallos
+
+El código de salida del proceso sigue siendo la primera fuente de verdad. Además, el runner inspecciona la salida del proceso y convierte en fallo cualquier ejecución que emita:
+
+- `SCRIPT ERROR: Assertion failed`;
+- errores de parseo;
+- errores de compilación;
+- timeout por no finalizar el test.
+
+Esto evita falsos positivos de tests históricos que ejecutaban una assertion, imprimían luego un mensaje `OK` y terminaban con código 0.
+
+Los avisos de `ObjectDB instances leaked` y `resources still in use at exit` no se interpretan por sí solos como assertion fallida; deben limpiarse progresivamente, pero no sustituyen el resultado funcional del test.
+
 ## Suites
 
 Suite completa:
@@ -56,7 +69,7 @@ godot --headless --path game -- --test=res://tests/... --test-group=ui
 
 ## Clasificación
 
-Los tests con marcadores de pantalla, router, HUD, Finca, Mercado, Barracones, Arena, Relaciones, dossier o localización se asignan a `ui`.
+Los tests relacionados con pantallas, presenters, layouts, router, HUD, Finca, Mercado, Barracones, Arena, Relaciones, dossier, menús o localización se asignan a `ui`.
 
 Todo test restante se asigna a `core`. No existe un estado sin grupo.
 
@@ -78,6 +91,7 @@ Toda exclusión futura debe agregarse a `EXCLUDED_TEST_FILES` dentro de `test_ru
 - una exclusión no tiene justificación;
 - desaparece alguno de los tres bloques del workflow;
 - el runner deja de reconocer tests o contratos;
+- deja de detectar assertions y fallos de compilación;
 - el CI deja de ejecutar las suites `core` y `ui`.
 
 El propio contrato extiende `Node` y debe ejecutarse así:
