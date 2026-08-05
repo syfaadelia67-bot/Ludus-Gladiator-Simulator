@@ -28,6 +28,7 @@ const COVER_CARD_SIZE := Vector2(850, 478)
 @onready var gladiator_summary: Label = $ContentShell/FightersView/GladiatorsView/ListPanel/Margin/Content/Summary
 @onready var gladiator_list: ItemList = $ContentShell/FightersView/GladiatorsView/ListPanel/Margin/Content/GladiatorList
 @onready var gladiator_details: RichTextLabel = $ContentShell/FightersView/GladiatorsView/DetailsPanel/Margin/Content/DetailsScroll/GladiatorDetails
+@onready var gladiator_actions: HBoxContainer = $ContentShell/FightersView/GladiatorsView/DetailsPanel/Margin/Content/Actions
 @onready var training_button: Button = $ContentShell/FightersView/GladiatorsView/DetailsPanel/Margin/Content/Actions/Training
 @onready var equipment_button: Button = $ContentShell/FightersView/GladiatorsView/DetailsPanel/Margin/Content/Actions/Equipment
 @onready var arena_button: Button = $ContentShell/FightersView/GladiatorsView/DetailsPanel/Margin/Content/Actions/Arena
@@ -38,8 +39,10 @@ var gladiator_ids: Array[String] = []
 var job_ids: Array[String] = []
 var selected_personal_id := ""
 var selected_gladiator_id := ""
+var dossier_button: Button
 
 func _ready() -> void:
+    _install_dossier_button()
     back_button.pressed.connect(_return_to_finca)
     personal_card.pressed.connect(_open_personal_section)
     fighters_card.pressed.connect(_open_fighters_section)
@@ -48,6 +51,7 @@ func _ready() -> void:
     beasts_button.pressed.connect(_show_beasts)
     personal_list.item_selected.connect(_on_personal_selected)
     gladiator_list.item_selected.connect(_on_gladiator_selected)
+    gladiator_list.item_activated.connect(_on_gladiator_activated)
     assign_job_button.pressed.connect(_assign_selected_job)
     training_button.pressed.connect(_open_training)
     equipment_button.pressed.connect(_open_equipment)
@@ -64,6 +68,16 @@ func _ready() -> void:
     _configure_cover_cards()
     _show_barracks_home()
     _refresh_all()
+
+func _install_dossier_button() -> void:
+    dossier_button = Button.new()
+    dossier_button.name = "Dossier"
+    dossier_button.custom_minimum_size = Vector2(220, 44)
+    dossier_button.text = "FICHA COMPLETA"
+    dossier_button.tooltip_text = "Abrir información, estadísticas, equipamiento, habilidades, especialización, rasgos y vínculos."
+    dossier_button.pressed.connect(_open_dossier.bind("information"))
+    gladiator_actions.add_child(dossier_button)
+    gladiator_actions.move_child(dossier_button, 0)
 
 func _configure_cover_cards() -> void:
     cards_row.size_flags_vertical = Control.SIZE_SHRINK_CENTER
@@ -133,6 +147,12 @@ func _show_beasts() -> void:
     gladiators_button.disabled = false
     beasts_button.disabled = true
     _refresh_beasts()
+
+func restore_gladiator_context(context: Dictionary) -> void:
+    selected_gladiator_id = str(context.get("selected_id", selected_gladiator_id))
+    _open_fighters_section()
+    _show_gladiators()
+    _refresh_gladiators()
 
 func _populate_jobs() -> void:
     job_selector.clear()
@@ -236,6 +256,7 @@ func _refresh_gladiators() -> void:
     if gladiator_ids.is_empty():
         selected_gladiator_id = ""
         gladiator_details.text = "[b]SIN GLADIADORES[/b]\n\nLos esclavos que completen su formación y los luchadores comprados aparecerán aquí."
+        dossier_button.disabled = true
         training_button.disabled = true
         equipment_button.disabled = true
         arena_button.disabled = true
@@ -254,10 +275,15 @@ func _on_gladiator_selected(index: int) -> void:
     selected_gladiator_id = gladiator_ids[index]
     _refresh_gladiator_details()
 
+func _on_gladiator_activated(index: int) -> void:
+    _on_gladiator_selected(index)
+    _open_dossier("information")
+
 func _refresh_gladiator_details() -> void:
     var fighter = RosterManager.get_person(selected_gladiator_id)
     if fighter == null:
         gladiator_details.text = "Seleccioná un gladiador."
+        dossier_button.disabled = true
         training_button.disabled = true
         equipment_button.disabled = true
         arena_button.disabled = true
@@ -267,17 +293,21 @@ func _refresh_gladiator_details() -> void:
     var specialization_id := str(record.get("specialization", GladiatorProgressionManager.DEFAULT_SPECIALIZATION))
     var specialization := GladiatorProgressionManager.get_specialization_name(specialization_id)
     var loadout: Dictionary = EquipmentManager.get_equipped_loadout(fighter)
+    var slot_names: Dictionary = loadout.get("slot_names", {})
     var traits_text := ", ".join(fighter.traits) if not fighter.traits.is_empty() else "Ninguno"
 
-    gladiator_details.text = "[b]%s[/b]\n%s · Nivel %d\n%s\n\n[b]ESTADO DE COMBATE[/b]\nSalud %d/%d · Energía %d\nMoral %d · Fatiga %d\nEstado: %s\n\n[b]ATRIBUTOS[/b]\nAtaque %d · Defensa %d\nFuerza %d · Agilidad %d · Resistencia %d · Técnica %d\n\n[b]EQUIPAMIENTO[/b]\nArma: %s\nArmadura: %s\nEscudo: %s\n\n[b]CARRERA[/b]\nExperiencia %d · Victorias %d · Derrotas %d\nRasgos: %s" % [
+    gladiator_details.text = "[b]%s[/b]\n%s · Nivel %d\n%s\n\n[b]ESTADO DE COMBATE[/b]\nSalud %d/%d · Energía %d\nMoral %d · Fatiga %d\nEstado: %s\n\n[b]ATRIBUTOS[/b]\nAtaque %d · Defensa %d\nFuerza %d · Agilidad %d · Resistencia %d · Técnica %d\n\n[b]EQUIPAMIENTO[/b]\nCasco: %s\nTorso: %s\nMano derecha: %s\nMano izquierda: %s\nParte inferior: %s\nAccesorio: %s\nMontura: Próximamente\n\n[b]CARRERA[/b]\nExperiencia %d · Victorias %d · Derrotas %d\nRasgos: %s" % [
         fighter.display_name, fighter.origin, int(record.get("level", 1)), specialization,
         int(fighter.health), int(fighter.get_max_health()), int(fighter.get_max_energy()), int(fighter.morale), int(fighter.fatigue),
         "Listo" if fighter.is_available_for_combat() else _fighter_state_text(fighter).capitalize(),
         int(fighter.get_base_attack()), int(fighter.get_base_defense()), int(fighter.strength), int(fighter.agility),
-        int(fighter.endurance), int(fighter.technique), loadout.get("weapon_name", "Sin arma"),
-        loadout.get("armor_name", "Sin armadura"), loadout.get("shield_name", "Sin escudo"),
+        int(fighter.endurance), int(fighter.technique),
+        slot_names.get("head", "Ninguno"), slot_names.get("torso", "Ninguno"),
+        slot_names.get("right_hand", "Ninguno"), slot_names.get("left_hand", "Ninguno"),
+        slot_names.get("lower_body", "Ninguno"), slot_names.get("accessory", "Ninguno"),
         int(record.get("experience", 0)), int(record.get("wins", 0)), int(record.get("losses", 0)), traits_text
     ]
+    dossier_button.disabled = false
     training_button.disabled = false
     equipment_button.disabled = false
     arena_button.disabled = false
@@ -302,11 +332,23 @@ func _short_job_name(job_id: String) -> String:
     var separator := full_name.find(" — ")
     return full_name.substr(0, separator) if separator >= 0 else full_name
 
+func _dossier_context() -> Dictionary:
+    return {
+        "system_id": "barracks",
+        "callback": "restore_gladiator_context",
+        "selected_id": selected_gladiator_id
+    }
+
+func _open_dossier(initial_tab: String = "information") -> void:
+    if selected_gladiator_id.is_empty():
+        return
+    FincaHubController.open_gladiator_dossier(selected_gladiator_id, _dossier_context(), initial_tab)
+
 func _open_training() -> void:
     FincaHubController.open_system("progresion")
 
 func _open_equipment() -> void:
-    FincaHubController.open_system("equipamiento")
+    _open_dossier("equipment")
 
 func _open_arena() -> void:
     FincaHubController.open_system("arena")
