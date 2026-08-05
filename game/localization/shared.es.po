@@ -1,0 +1,10 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Ludus Gladiator Simulator\n"
+"Language: es\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "START_BRAND"
+msgstr "LUDUS"
