@@ -34,18 +34,11 @@ const PRESENTATION_AUTOLOADS: Array[String] = [
 ]
 
 func _init() -> void:
+    # Some Godot startup paths create autoloads before this coroutine begins;
+    # others finish adding them during the first idle frames. Remove presenters
+    # both immediately and after the main loop settles.
     _disable_presentation_autoloads()
 
-    var version_conversion = load("res://addons/gut/version_conversion.gd")
-    if version_conversion == null:
-        push_error("GUT no está instalado. Ejecutá tools/install_gut_9_5.ps1 o tools/install_gut_9_5.sh.")
-        quit(1)
-        return
-    if version_conversion.error_if_not_all_classes_imported():
-        quit(1)
-        return
-
-    var loader = load("res://addons/gut/gut_loader.gd")
     var max_iterations := 20
     var iteration := 0
     while Engine.get_main_loop() == null and iteration < max_iterations:
@@ -57,8 +50,22 @@ func _init() -> void:
         quit(1)
         return
 
+    for _settle_frame in range(2):
+        await process_frame
+        _disable_presentation_autoloads()
+
+    var version_conversion = load("res://addons/gut/version_conversion.gd")
+    if version_conversion == null:
+        push_error("GUT no está instalado. Ejecutá tools/install_gut_9_5.ps1 o tools/install_gut_9_5.sh.")
+        quit(1)
+        return
+    if version_conversion.error_if_not_all_classes_imported():
+        quit(1)
+        return
+
+    var loader = load("res://addons/gut/gut_loader.gd")
     var cli := load("res://addons/gut/cli/gut_cli.gd").new() as Node
-    if cli == null:
+    if loader == null or cli == null:
         push_error("No se pudo crear el CLI de GUT 9.5.0.")
         quit(1)
         return
