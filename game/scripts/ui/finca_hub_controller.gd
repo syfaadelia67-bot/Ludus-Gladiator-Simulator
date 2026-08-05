@@ -10,20 +10,20 @@ const VBOX_PATH := "Margin/VBox"
 const SCREEN_HOST_NAME := "ScreenHost"
 
 const SCREEN_SCENES := {
-    "finca": preload("res://scenes/FincaScreen.tscn"),
-    "barracks": preload("res://scenes/BarracksScreen.tscn"),
-    "mercado": preload("res://scenes/MarketScreen.tscn"),
-    "arena": preload("res://scenes/ArenaScreen.tscn"),
-    "campana": preload("res://scenes/CampaignPanel.tscn"),
-    "eventos": preload("res://scenes/EventsPanel.tscn"),
-    "rivales": preload("res://scenes/RivalsPanel.tscn"),
-    "economia": preload("res://scenes/EconomyPanel.tscn"),
-    "torneos": preload("res://scenes/TournamentsPanel.tscn"),
-    "progresion": preload("res://scenes/ProgressionPanel.tscn"),
-    "personalidad": preload("res://scenes/PersonalityPanel.tscn"),
-    "relaciones": preload("res://scenes/RelationshipsPanel.tscn"),
-    "transferencias": preload("res://scenes/TransfersPanel.tscn"),
-    "historial": preload("res://scenes/CombatHistoryPanel.tscn")
+    "finca": "res://scenes/FincaScreen.tscn",
+    "barracks": "res://scenes/BarracksScreen.tscn",
+    "mercado": "res://scenes/MarketScreen.tscn",
+    "arena": "res://scenes/ArenaScreen.tscn",
+    "campana": "res://scenes/CampaignPanel.tscn",
+    "eventos": "res://scenes/EventsPanel.tscn",
+    "rivales": "res://scenes/RivalsPanel.tscn",
+    "economia": "res://scenes/EconomyPanel.tscn",
+    "torneos": "res://scenes/TournamentsPanel.tscn",
+    "progresion": "res://scenes/ProgressionPanel.tscn",
+    "personalidad": "res://scenes/PersonalityPanel.tscn",
+    "relaciones": "res://scenes/RelationshipsPanel.tscn",
+    "transferencias": "res://scenes/TransfersPanel.tscn",
+    "historial": "res://scenes/CombatHistoryPanel.tscn"
 }
 
 # Compatibility only. These screens still depend on fixed paths in Main.tscn,
@@ -107,8 +107,10 @@ func open_system(system_id: String) -> bool:
 func _show_hosted_screen(system_id: String, host: Control, tabs: TabContainer) -> bool:
     var screen := screen_instances.get(system_id) as Control
     if screen == null or not is_instance_valid(screen):
-        var packed := SCREEN_SCENES.get(system_id) as PackedScene
+        var scene_path := str(SCREEN_SCENES.get(system_id, ""))
+        var packed := load(scene_path) as PackedScene
         if packed == null:
+            push_error("No se pudo cargar la pantalla %s desde %s." % [system_id, scene_path])
             return false
         screen = packed.instantiate() as Control
         if screen == null:
