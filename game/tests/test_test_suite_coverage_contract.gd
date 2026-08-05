@@ -12,12 +12,14 @@ const UI_MARKERS: Array[String] = [
 
 func _initialize() -> void:
     var runner_text := FileAccess.get_file_as_string("res://tests/test_runner.gd")
-    var workflow_text := FileAccess.get_file_as_string("res://../.github/workflows/godot-tests.yml")
-    if workflow_text.is_empty():
-        workflow_text = FileAccess.get_file_as_string(ProjectSettings.globalize_path("res://../.github/workflows/godot-tests.yml"))
+    var game_root := ProjectSettings.globalize_path("res://").trim_suffix("/").trim_suffix("\\")
+    var repository_root := game_root.get_base_dir()
+    var workflow_path := repository_root.path_join(".github/workflows/godot-tests.yml")
+    var workflow_text := FileAccess.get_file_as_string(workflow_path)
     var project_text := FileAccess.get_file_as_string("res://project.godot")
     var documentation_text := FileAccess.get_file_as_string("res://tests/TEST_SUITE.md")
 
+    assert(not workflow_text.is_empty(), "Could not read workflow: %s" % workflow_path)
     assert(runner_text.contains("const SUPPORTED_TEST_SUFFIXES: Array[String] = [\"_test.gd\", \"_contract.gd\"]"))
     assert(runner_text.contains("func _collect_tests"))
     assert(runner_text.contains("func _requires_script_mode"))
@@ -26,7 +28,12 @@ func _initialize() -> void:
     assert(runner_text.contains("--test-group="))
     assert(runner_text.contains("group == \"all\" or assigned_group == group"))
     assert(runner_text.contains("Every exclusion must include a human-readable reason"))
+    assert(runner_text.contains("Test did not complete or call get_tree().quit()"))
 
+    for suffix in SUPPORTED_SUFFIXES:
+        assert(runner_text.contains("\"%s\"" % suffix))
+    for marker in UI_MARKERS:
+        assert(runner_text.contains("\"%s\"" % marker))
     for file_name in EXCLUDED_FILES.keys():
         var reason := str(EXCLUDED_FILES[file_name]).strip_edges()
         assert(not reason.is_empty())
