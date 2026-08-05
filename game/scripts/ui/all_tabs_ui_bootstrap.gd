@@ -9,14 +9,6 @@ var main_tabs: TabContainer
 func _ready() -> void:
     _attach_when_ready()
 
-func _unhandled_key_input(event: InputEvent) -> void:
-    if not event.is_action_pressed("ui_cancel"):
-        return
-    if FincaHubController.get_current_system_id() == "finca":
-        return
-    FincaHubController.show_finca()
-    get_viewport().set_input_as_handled()
-
 func _attach_when_ready() -> void:
     for _attempt in range(MAX_ATTACH_ATTEMPTS):
         await get_tree().process_frame
