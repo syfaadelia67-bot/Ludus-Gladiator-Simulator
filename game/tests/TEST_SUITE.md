@@ -22,6 +22,8 @@ Se ejecutan dentro del proyecto mediante el autoload `TestRunner`, con todos los
 godot --headless --path game -- --test=res://tests/example_test.gd
 ```
 
+Los tests nuevos con un método `run()` deben dejar que `TestRunner` cierre el proceso. El runner libera el nodo y la referencia a su script antes de llamar a `quit()`, evitando referencias retenidas durante el cierre.
+
 ### Tests que extienden `SceneTree`
 
 El ejecutor los detecta por su declaración `extends SceneTree` y los lanza automáticamente mediante `--script`.
@@ -34,18 +36,11 @@ godot --headless --path game --script res://tests/example_contract.gd
 
 Los contratos que extienden `Node` deben ejecutarse mediante `TestRunner`, no mediante `--script`, para disponer de `Main.tscn` y evitar mensajes falsos de presenters sin escena principal.
 
-## Detección real de fallos
+## Ejecución headless y MCP
 
-El código de salida del proceso sigue siendo la primera fuente de verdad. Además, el runner inspecciona la salida del proceso y convierte en fallo cualquier ejecución que emita:
+El addon Godot AI continúa instalado y disponible en sesiones normales. El autoload del proyecto usa `mcp_game_helper_guard.gd`, que hereda el helper original y lo desactiva únicamente cuando `DisplayServer` es `headless`.
 
-- `SCRIPT ERROR: Assertion failed`;
-- errores de parseo;
-- errores de compilación;
-- timeout por no finalizar el test.
-
-Esto evita falsos positivos de tests históricos que ejecutaban una assertion, imprimían luego un mensaje `OK` y terminaban con código 0.
-
-Los avisos de `ObjectDB instances leaked` y `resources still in use at exit` no se interpretan por sí solos como assertion fallida; deben limpiarse progresivamente, pero no sustituyen el resultado funcional del test.
+En CI y pruebas locales headless no se registra la captura MCP ni se crea el `Logger` del addon. Esto evita dejar un `Logger` y su script precargado vivos durante la limpieza global de Godot. En una partida iniciada desde el editor se ejecuta `super._ready()` y el comportamiento MCP original se conserva.
 
 ## Suites
 
@@ -69,11 +64,17 @@ godot --headless --path game -- --test=res://tests/... --test-group=ui
 
 ## Clasificación
 
-Los tests relacionados con pantallas, presenters, layouts, router, HUD, Finca, Mercado, Barracones, Arena, Relaciones, dossier, menús o localización se asignan a `ui`.
+Los tests con marcadores de pantalla, presenter, router, HUD, Finca, Mercado, Barracones, Arena, Relaciones, dossier, localización, resumen de campaña o recursos visuales se asignan a `ui`.
 
 Todo test restante se asigna a `core`. No existe un estado sin grupo.
 
 La clasificación afecta únicamente la distribución del CI; no cambia cómo se ejecuta el test.
+
+## Detección de fallos
+
+Además del código de salida del proceso hijo, la suite revisa la salida de Godot. Un test se considera fallido si emite una assertion, un error de parseo, un error de compilación o el mensaje de timeout del runner, aunque después llame a `quit(0)`.
+
+Esto impide falsos positivos de pruebas históricas que imprimían `OK` después de una assertion abortada.
 
 ## Exclusiones
 
@@ -91,8 +92,9 @@ Toda exclusión futura debe agregarse a `EXCLUDED_TEST_FILES` dentro de `test_ru
 - una exclusión no tiene justificación;
 - desaparece alguno de los tres bloques del workflow;
 - el runner deja de reconocer tests o contratos;
-- deja de detectar assertions y fallos de compilación;
-- el CI deja de ejecutar las suites `core` y `ui`.
+- el CI deja de ejecutar las suites `core` y `ui`;
+- se retira el guard headless del helper MCP;
+- el runner deja de liberar los tests basados en `run()`.
 
 El propio contrato extiende `Node` y debe ejecutarse así:
 
