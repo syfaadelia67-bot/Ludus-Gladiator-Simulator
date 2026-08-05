@@ -81,47 +81,73 @@ func _initialize() -> void:
     assert(instance.get_node_or_null("Margin/Main/Body/DetailPanel/Margin/Scroll/Content/Status") is Label)
     instance.free()
 
-    _test_intervention_changes_gameplay_state()
+    # Autoload singletons are mounted after the SceneTree script begins.
+    # Defer the functional check and resolve them through /root so this
+    # contract also works when launched with Godot's --script flag.
+    call_deferred("_run_runtime_checks")
 
+func _run_runtime_checks() -> void:
+    await process_frame
+    _test_intervention_changes_gameplay_state()
     print("Ludus bonds intervention feedback and gameplay contract: OK")
     quit()
 
 func _test_intervention_changes_gameplay_state() -> void:
-    var people := RosterManager.get_people()
+    var root := get_root()
+    var roster_manager := root.get_node_or_null("RosterManager")
+    var relationship_manager := root.get_node_or_null("RelationshipManager")
+    var game_state := root.get_node_or_null("GameState")
+
+    assert(roster_manager != null)
+    assert(relationship_manager != null)
+    assert(game_state != null)
+
+    var people_value = roster_manager.call("get_people")
+    assert(people_value is Array)
+    var people: Array = people_value
     assert(people.size() >= 2)
+
     var a = people[0]
     var b = people[1]
-    var a_id := str(a.id)
-    var b_id := str(b.id)
+    var a_id := str(a.get("id"))
+    var b_id := str(b.get("id"))
 
-    var previous_manager_state := RelationshipManager.export_state()
-    var previous_a_fatigue := int(a.fatigue)
-    var previous_b_fatigue := int(b.fatigue)
-    var previous_a_injury_days := int(a.injury_days)
-    var previous_b_injury_days := int(b.injury_days)
+    var previous_manager_state_value = relationship_manager.call("export_state")
+    assert(previous_manager_state_value is Dictionary)
+    var previous_manager_state: Dictionary = previous_manager_state_value
+    var previous_a_fatigue := int(a.get("fatigue"))
+    var previous_b_fatigue := int(b.get("fatigue"))
+    var previous_a_injury_days := int(a.get("injury_days"))
+    var previous_b_injury_days := int(b.get("injury_days"))
 
-    a.fatigue = 0
-    b.fatigue = 0
-    a.injury_days = 0
-    b.injury_days = 0
-    RelationshipManager.relationships.clear()
-    RelationshipManager.interventions_week = GameState.get_week()
-    RelationshipManager.interventions_used = 0
+    a.set("fatigue", 0)
+    b.set("fatigue", 0)
+    a.set("injury_days", 0)
+    b.set("injury_days", 0)
+    relationship_manager.set("relationships", {})
+    relationship_manager.set("interventions_week", int(game_state.call("get_week")))
+    relationship_manager.set("interventions_used", 0)
 
-    var before := RelationshipManager.ensure_relationship(a_id, b_id).duplicate(true)
-    var result := RelationshipManager.register_interaction(a_id, b_id, "train_together")
-    var after := RelationshipManager.get_relationship(a_id, b_id)
+    var before_value = relationship_manager.call("ensure_relationship", a_id, b_id)
+    assert(before_value is Dictionary)
+    var before: Dictionary = (before_value as Dictionary).duplicate(true)
+    var result_value = relationship_manager.call("register_interaction", a_id, b_id, "train_together")
+    assert(result_value is Dictionary)
+    var result: Dictionary = result_value
+    var after_value = relationship_manager.call("get_relationship", a_id, b_id)
+    assert(after_value is Dictionary)
+    var after: Dictionary = after_value
 
     assert(bool(result.get("success", false)))
     assert(not str(result.get("description", "")).is_empty())
     assert(int(result.get("interventions_remaining", -1)) == 1)
     assert(int(after.get("affinity", 0)) == int(before.get("affinity", 0)) + 3)
     assert(int(after.get("respect", 0)) == int(before.get("respect", 0)) + 4)
-    assert(int(a.fatigue) == 6)
-    assert(int(b.fatigue) == 6)
+    assert(int(a.get("fatigue")) == 6)
+    assert(int(b.get("fatigue")) == 6)
 
-    a.fatigue = previous_a_fatigue
-    b.fatigue = previous_b_fatigue
-    a.injury_days = previous_a_injury_days
-    b.injury_days = previous_b_injury_days
-    RelationshipManager.import_state(previous_manager_state)
+    a.set("fatigue", previous_a_fatigue)
+    b.set("fatigue", previous_b_fatigue)
+    a.set("injury_days", previous_a_injury_days)
+    b.set("injury_days", previous_b_injury_days)
+    relationship_manager.call("import_state", previous_manager_state)
