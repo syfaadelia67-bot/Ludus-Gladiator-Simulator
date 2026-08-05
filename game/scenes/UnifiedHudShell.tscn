@@ -1,6 +1,50 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=13 format=3]
 
 [ext_resource path="res://scripts/ui/unified_hud_shell.gd" type="Script" id="1"]
+[ext_resource path="res://assets/placeholders/pack_000/ui/facilities/facility_dominus_house.png" type="Texture2D" id="2_finca"]
+[ext_resource path="res://assets/placeholders/pack_000/ui/facilities/facility_barracks.png" type="Texture2D" id="3_barracks"]
+[ext_resource path="res://assets/placeholders/pack_000/ui/facilities/facility_market.png" type="Texture2D" id="4_market"]
+[ext_resource path="res://assets/placeholders/pack_000/ui/facilities/facility_forge.png" type="Texture2D" id="5_forge"]
+[ext_resource path="res://assets/placeholders/pack_000/ui/traits_relations/relation_friendship.png" type="Texture2D" id="6_relations"]
+[ext_resource path="res://assets/placeholders/pack_000/ui/arena_combat/combat_attack.png" type="Texture2D" id="7_arena"]
+[ext_resource path="res://assets/placeholders/pack_000/ui/management_actions/action_research.png" type="Texture2D" id="8_campaign"]
+[ext_resource path="res://assets/placeholders/pack_000/ui/icons/ui_icon_circle_brown.png" type="Texture2D" id="9_more"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_nav_normal"]
+bg_color = Color(0.12, 0.09, 0.065, 0.97)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.56, 0.35, 0.16, 1)
+corner_radius_top_left = 30
+corner_radius_top_right = 30
+corner_radius_bottom_right = 30
+corner_radius_bottom_left = 30
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_nav_hover"]
+bg_color = Color(0.23, 0.15, 0.08, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.92, 0.68, 0.28, 1)
+corner_radius_top_left = 30
+corner_radius_top_right = 30
+corner_radius_bottom_right = 30
+corner_radius_bottom_left = 30
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_nav_pressed"]
+bg_color = Color(0.42, 0.25, 0.08, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(1, 0.79, 0.32, 1)
+corner_radius_top_left = 30
+corner_radius_top_right = 30
+corner_radius_bottom_right = 30
+corner_radius_bottom_left = 30
 
 [node name="UnifiedHudShell" type="Control"]
 layout_mode = 3
@@ -17,6 +61,7 @@ script = ExtResource("1")
 layout_mode = 1
 anchors_preset = 10
 anchor_right = 1.0
+offset_right = -92.0
 offset_bottom = 58.0
 grow_horizontal = 2
 mouse_filter = 0
@@ -30,6 +75,7 @@ theme_override_constants/margin_bottom = 7
 
 [node name="Row" type="HBoxContainer" parent="TopHUD/Margin"]
 layout_mode = 2
+theme_override_constants/separation = 12
 
 [node name="LudusName" type="Label" parent="TopHUD/Margin/Row"]
 custom_minimum_size = Vector2(180, 0)
@@ -41,11 +87,20 @@ text = "TU LUDUS"
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Recursos"
+vertical_alignment = 1
+
+[node name="Section" type="Label" parent="TopHUD/Margin/Row"]
+custom_minimum_size = Vector2(250, 0)
+layout_mode = 2
+horizontal_alignment = 2
+vertical_alignment = 1
+text = "SECCIÓN · FINCA"
 
 [node name="Week" type="Label" parent="TopHUD/Margin/Row"]
 custom_minimum_size = Vector2(120, 0)
 layout_mode = 2
 horizontal_alignment = 2
+vertical_alignment = 1
 text = "SEMANA 1"
 
 [node name="AdvanceWeek" type="Button" parent="TopHUD/Margin/Row"]
@@ -55,62 +110,117 @@ tooltip_text = "Procesar trabajos, economía, recuperación y eventos de la sema
 
 [node name="MainNavigation" type="PanelContainer" parent="."]
 layout_mode = 1
-anchors_preset = 10
+anchor_left = 1.0
+anchor_top = 0.5
 anchor_right = 1.0
-offset_top = 60.0
-offset_bottom = 108.0
-grow_horizontal = 2
+anchor_bottom = 0.5
+offset_left = -84.0
+offset_top = -300.0
+offset_right = -8.0
+offset_bottom = 300.0
+grow_horizontal = 0
+grow_vertical = 2
 mouse_filter = 0
 
 [node name="Margin" type="MarginContainer" parent="MainNavigation"]
 layout_mode = 2
 theme_override_constants/margin_left = 8
-theme_override_constants/margin_top = 5
+theme_override_constants/margin_top = 8
 theme_override_constants/margin_right = 8
-theme_override_constants/margin_bottom = 5
+theme_override_constants/margin_bottom = 8
 
-[node name="Row" type="HBoxContainer" parent="MainNavigation/Margin"]
+[node name="Column" type="VBoxContainer" parent="MainNavigation/Margin"]
 layout_mode = 2
 alignment = 1
+theme_override_constants/separation = 10
 
-[node name="Finca" type="Button" parent="MainNavigation/Margin/Row"]
+[node name="Finca" type="Button" parent="MainNavigation/Margin/Column"]
+custom_minimum_size = Vector2(58, 58)
 layout_mode = 2
-text = "FINCA"
+icon = ExtResource("2_finca")
+expand_icon = true
+tooltip_text = "Finca"
+theme_override_styles/normal = SubResource("StyleBoxFlat_nav_normal")
+theme_override_styles/hover = SubResource("StyleBoxFlat_nav_hover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_nav_pressed")
+theme_override_styles/disabled = SubResource("StyleBoxFlat_nav_pressed")
 
-[node name="Personal" type="Button" parent="MainNavigation/Margin/Row"]
+[node name="Barracks" type="Button" parent="MainNavigation/Margin/Column"]
+custom_minimum_size = Vector2(58, 58)
 layout_mode = 2
-text = "BARRACONES"
+icon = ExtResource("3_barracks")
+expand_icon = true
+tooltip_text = "Barracones"
+theme_override_styles/normal = SubResource("StyleBoxFlat_nav_normal")
+theme_override_styles/hover = SubResource("StyleBoxFlat_nav_hover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_nav_pressed")
+theme_override_styles/disabled = SubResource("StyleBoxFlat_nav_pressed")
 
-[node name="Mercado" type="Button" parent="MainNavigation/Margin/Row"]
+[node name="Mercado" type="Button" parent="MainNavigation/Margin/Column"]
+custom_minimum_size = Vector2(58, 58)
 layout_mode = 2
-text = "MERCADO"
+icon = ExtResource("4_market")
+expand_icon = true
+tooltip_text = "Mercado"
+theme_override_styles/normal = SubResource("StyleBoxFlat_nav_normal")
+theme_override_styles/hover = SubResource("StyleBoxFlat_nav_hover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_nav_pressed")
+theme_override_styles/disabled = SubResource("StyleBoxFlat_nav_pressed")
 
-[node name="Forja" type="Button" parent="MainNavigation/Margin/Row"]
+[node name="Forja" type="Button" parent="MainNavigation/Margin/Column"]
+custom_minimum_size = Vector2(58, 58)
 layout_mode = 2
-text = "FORJA"
+icon = ExtResource("5_forge")
+expand_icon = true
+tooltip_text = "Forja"
+theme_override_styles/normal = SubResource("StyleBoxFlat_nav_normal")
+theme_override_styles/hover = SubResource("StyleBoxFlat_nav_hover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_nav_pressed")
+theme_override_styles/disabled = SubResource("StyleBoxFlat_nav_pressed")
 
-[node name="Relaciones" type="Button" parent="MainNavigation/Margin/Row"]
+[node name="Relaciones" type="Button" parent="MainNavigation/Margin/Column"]
+custom_minimum_size = Vector2(58, 58)
 layout_mode = 2
-text = "RELACIONES"
+icon = ExtResource("6_relations")
+expand_icon = true
+tooltip_text = "Relaciones"
+theme_override_styles/normal = SubResource("StyleBoxFlat_nav_normal")
+theme_override_styles/hover = SubResource("StyleBoxFlat_nav_hover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_nav_pressed")
+theme_override_styles/disabled = SubResource("StyleBoxFlat_nav_pressed")
 
-[node name="Arena" type="Button" parent="MainNavigation/Margin/Row"]
+[node name="Arena" type="Button" parent="MainNavigation/Margin/Column"]
+custom_minimum_size = Vector2(58, 58)
 layout_mode = 2
-text = "ARENA"
+icon = ExtResource("7_arena")
+expand_icon = true
+tooltip_text = "Arena"
+theme_override_styles/normal = SubResource("StyleBoxFlat_nav_normal")
+theme_override_styles/hover = SubResource("StyleBoxFlat_nav_hover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_nav_pressed")
+theme_override_styles/disabled = SubResource("StyleBoxFlat_nav_pressed")
 
-[node name="Campana" type="Button" parent="MainNavigation/Margin/Row"]
+[node name="Campana" type="Button" parent="MainNavigation/Margin/Column"]
+custom_minimum_size = Vector2(58, 58)
 layout_mode = 2
-text = "CAMPAÑA"
+icon = ExtResource("8_campaign")
+expand_icon = true
+tooltip_text = "Campaña"
+theme_override_styles/normal = SubResource("StyleBoxFlat_nav_normal")
+theme_override_styles/hover = SubResource("StyleBoxFlat_nav_hover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_nav_pressed")
+theme_override_styles/disabled = SubResource("StyleBoxFlat_nav_pressed")
 
-[node name="More" type="MenuButton" parent="MainNavigation/Margin/Row"]
+[node name="More" type="MenuButton" parent="MainNavigation/Margin/Column"]
+custom_minimum_size = Vector2(58, 58)
 layout_mode = 2
-text = "MÁS"
-
-[node name="Section" type="Label" parent="MainNavigation/Margin/Row"]
-custom_minimum_size = Vector2(180, 0)
-layout_mode = 2
-size_flags_horizontal = 3
-horizontal_alignment = 2
-text = "SECCIÓN · FINCA"
+icon = ExtResource("9_more")
+expand_icon = true
+tooltip_text = "Más sistemas"
+theme_override_styles/normal = SubResource("StyleBoxFlat_nav_normal")
+theme_override_styles/hover = SubResource("StyleBoxFlat_nav_hover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_nav_pressed")
+theme_override_styles/disabled = SubResource("StyleBoxFlat_nav_pressed")
 
 [node name="BottomStatusBar" type="PanelContainer" parent="."]
 layout_mode = 1
@@ -119,6 +229,7 @@ anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
 offset_top = -76.0
+offset_right = -92.0
 grow_horizontal = 2
 grow_vertical = 0
 mouse_filter = 0
