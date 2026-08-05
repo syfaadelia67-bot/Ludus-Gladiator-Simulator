@@ -32,11 +32,15 @@ else
 fi
 
 mkdir -p "$PROJECT_ROOT/test-results"
+cd "$PROJECT_ROOT"
+
+LUDUS_GUT_MODE=1 "$GODOT_COMMAND" --headless --editor --path "$PROJECT_ROOT" --quit
+
 ARGS=(
   --headless
   -d
   --path "$PROJECT_ROOT"
-  -s addons/gut/gut_cmdln.gd
+  -s tools/ludus_gut_cmdln.gd
   -gconfig=res://.gutconfig.json
   -gexit
 )
@@ -44,5 +48,4 @@ if [[ -n "$SELECT" ]]; then
   ARGS+=("-gselect=$SELECT")
 fi
 
-cd "$PROJECT_ROOT"
 LUDUS_GUT_MODE=1 "$GODOT_COMMAND" "${ARGS[@]}"
