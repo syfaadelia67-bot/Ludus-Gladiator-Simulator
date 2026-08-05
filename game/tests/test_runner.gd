@@ -19,6 +19,7 @@ const GROUP_ARGUMENT_PREFIX := "--test-group="
 const SUITE_SUFFIX := "/..."
 const FALLBACK_TIMEOUT_FRAMES := 300
 const SUPPORTED_TEST_SUFFIXES: Array[String] = ["_test.gd", "_contract.gd"]
+const SUPPORTED_TEST_PREFIXES: Array[String] = ["test_"]
 
 # Every exclusion must include a human-readable reason. The suite contract
 # verifies this dictionary so files cannot silently disappear from CI.
@@ -112,6 +113,9 @@ func _collect_tests(directory_path: String, result: Array[String]) -> void:
 	directory.list_dir_end()
 
 func _is_test_file(file_name: String) -> bool:
+	for prefix in SUPPORTED_TEST_PREFIXES:
+		if file_name.begins_with(prefix) and file_name.ends_with(".gd"):
+			return true
 	for suffix in SUPPORTED_TEST_SUFFIXES:
 		if file_name.ends_with(suffix):
 			return true
