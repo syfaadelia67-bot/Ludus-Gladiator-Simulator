@@ -164,7 +164,13 @@ func _build_payload() -> Dictionary:
         "roster":{"people":people_data,"capacity":RosterManager.capacity,"security_score":RosterManager.security_score,"intelligence_points":RosterManager.intelligence_points},
         "estate":{"levels":EstateManager.export_levels()},
         "equipment":{"inventory":EquipmentManager.inventory.duplicate(true),"serial":EquipmentManager.serial},
-        "market":{"offers":MarketManager.offers.duplicate(true),"serial":MarketManager._serial},
+        "market":{
+            "offers":MarketManager.offers.duplicate(true),
+            "serial":MarketManager._serial,
+            "equipment_offers":MarketManager.equipment_offers.duplicate(true),
+            "equipment_offer_serial":MarketManager._equipment_offer_serial,
+            "last_auto_refresh_week":MarketManager.last_auto_refresh_week
+        },
         "rivals":{"entries":RivalManager.rivals.duplicate(true),"hostility_heat":RivalManager.hostility_heat,"operations_completed":RivalManager.operations_completed,"operations_detected":RivalManager.operations_detected},
         "combat":{"last_combat_day":CombatManager.last_combat_day,"last_result":CombatManager.last_result.duplicate(true),"next_battle_config":CombatManager.next_battle_config.duplicate(true)},
         "combat_history":CombatHistoryManager.export_state(),
@@ -215,8 +221,18 @@ func _apply_payload(data: Dictionary) -> bool:
         if raw_offer is Dictionary:
             MarketManager.offers.append(_migrate_market_offer(raw_offer))
     MarketManager._serial = maxi(0, int(market_data.get("serial", 0)))
+
+    MarketManager.equipment_offers.clear()
+    for raw_equipment_offer in market_data.get("equipment_offers", []):
+        if raw_equipment_offer is Dictionary:
+            MarketManager.equipment_offers.append(_migrate_equipment_market_offer(raw_equipment_offer))
+    MarketManager._equipment_offer_serial = maxi(0, int(market_data.get("equipment_offer_serial", 0)))
+    MarketManager.last_auto_refresh_week = maxi(1, int(market_data.get("last_auto_refresh_week", GameState.get_week())))
+
     if MarketManager.offers.is_empty():
         MarketManager.refresh_market(false)
+    if MarketManager.equipment_offers.is_empty():
+        MarketManager.refresh_equipment_market(false)
 
     RivalManager.rivals.assign(rival_data.get("entries", []))
     if RivalManager.rivals.is_empty():
@@ -244,6 +260,7 @@ func _apply_payload(data: Dictionary) -> bool:
     RosterManager.roster_changed.emit()
     EquipmentManager.inventory_changed.emit()
     MarketManager.market_changed.emit()
+    MarketManager.equipment_market_changed.emit()
     RivalManager.rivals_changed.emit()
     EventManager.events_changed.emit()
     EconomyManager.economy_changed.emit()
@@ -291,6 +308,19 @@ func _migrate_market_offer(raw_offer: Dictionary) -> Dictionary:
     while offer["traits"].size() > 2:
         offer["traits"].pop_back()
     offer["price"] = MarketValuation.value_offer(offer)
+    return offer
+
+func _migrate_equipment_market_offer(raw_offer: Dictionary) -> Dictionary:
+    var offer := raw_offer.duplicate(true)
+    var recipe_id := str(offer.get("recipe_id", ""))
+    var recipe := EquipmentManager.get_recipe(recipe_id)
+    offer["name"] = str(offer.get("name", recipe.get("name", "Objeto")))
+    offer["type"] = str(offer.get("type", recipe.get("type", "weapon")))
+    offer["quality"] = str(offer.get("quality", "Común"))
+    offer["power"] = int(offer.get("power", recipe.get("power", 0)))
+    offer["defense"] = int(offer.get("defense", recipe.get("defense", 0)))
+    offer["tags"] = _unique_strings(offer.get("tags", recipe.get("tags", [])))
+    offer["price"] = maxi(1, int(offer.get("price", recipe.get("denarii", 20))))
     return offer
 
 func _migrate_battle_config(raw_config: Dictionary) -> Dictionary:
