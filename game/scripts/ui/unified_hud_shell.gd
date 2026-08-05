@@ -18,7 +18,6 @@ const MORE_SYSTEMS := [
     {"id":"economia", "label":"Economía"},
     {"id":"torneos", "label":"Torneos"},
     {"id":"progresion", "label":"Progresión"},
-    {"id":"equipamiento", "label":"Equipamiento"},
     {"id":"personalidad", "label":"Personalidad"},
     {"id":"transferencias", "label":"Transferencias"},
     {"id":"historial", "label":"Historial"}
