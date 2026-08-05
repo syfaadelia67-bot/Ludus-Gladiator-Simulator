@@ -19,8 +19,9 @@ const FAILURE_MARKERS: Array[String] = [
     "ERROR: Test did not complete or call get_tree().quit()"
 ]
 
-func _ready() -> void:
+func run() -> void:
     var runner_text := FileAccess.get_file_as_string("res://tests/test_runner.gd")
+    var helper_guard_text := FileAccess.get_file_as_string("res://scripts/core/mcp_game_helper_guard.gd")
     var game_root := ProjectSettings.globalize_path("res://").trim_suffix("/").trim_suffix("\\")
     var repository_root := game_root.get_base_dir()
     var workflow_path := repository_root.path_join(".github/workflows/godot-tests.yml")
@@ -35,6 +36,7 @@ func _ready() -> void:
     assert(runner_text.contains("func _collect_tests"))
     assert(runner_text.contains("func _requires_script_mode"))
     assert(runner_text.contains("func _line_reports_test_failure"))
+    assert(runner_text.contains("func _dispose_test_node"))
     assert(runner_text.contains("output_detected_failure"))
     assert(runner_text.contains("line.begins_with(\"extends SceneTree\")"))
     assert(runner_text.contains("--script"))
@@ -70,10 +72,16 @@ func _ready() -> void:
     assert(not workflow_text.contains("godot --headless --path game --script res://tests/history_integrity_validator_test.gd"))
 
     assert(project_text.contains("TestRunner=\"*res://tests/test_runner.gd\""))
+    assert(project_text.contains("_mcp_game_helper=\"*res://scripts/core/mcp_game_helper_guard.gd\""))
+    assert(helper_guard_text.contains("extends \"res://addons/godot_ai/runtime/game_helper.gd\""))
+    assert(helper_guard_text.contains("DisplayServer.get_name() == \"headless\""))
+    assert(helper_guard_text.contains("set_process(false)"))
+    assert(helper_guard_text.contains("super._ready()"))
     assert(documentation_text.contains("*_test.gd"))
     assert(documentation_text.contains("*_contract.gd"))
     assert(documentation_text.contains("test_*.gd"))
     assert(documentation_text.contains("assertion"))
+    assert(documentation_text.contains("headless"))
     assert(documentation_text.contains("No existe un estado sin grupo"))
     assert(documentation_text.contains("No se instala ningún plugin"))
 
@@ -118,7 +126,6 @@ func _ready() -> void:
     assert(node_count > 0)
 
     print("Test discovery, isolation and CI group coverage contract: OK · %d tests (%d core, %d UI)" % [recognized_count, core_count, ui_count])
-    get_tree().quit(0)
 
 func _collect_scripts(directory_path: String, result: Array[String]) -> void:
     var directory := DirAccess.open(ProjectSettings.globalize_path(directory_path))
