@@ -7,6 +7,8 @@ func _initialize() -> void:
     var equipment_text := FileAccess.get_file_as_string("res://scripts/systems/equipment_manager.gd")
     var router_text := FileAccess.get_file_as_string("res://scripts/ui/finca_hub_controller.gd")
     var barracks_text := FileAccess.get_file_as_string("res://scripts/ui/barracks_screen.gd")
+    var market_manager_text := FileAccess.get_file_as_string("res://scripts/systems/market_manager.gd")
+    var market_screen_text := FileAccess.get_file_as_string("res://scripts/ui/market_screen.gd")
     var hud_text := FileAccess.get_file_as_string("res://scripts/ui/unified_hud_shell.gd")
     var save_text := FileAccess.get_file_as_string("res://scripts/core/save_manager.gd")
 
@@ -51,6 +53,7 @@ func _initialize() -> void:
     assert(router_text.contains("ARENA_MANAGE_PATH"))
     assert(router_text.contains("ARENA_EQUIPMENT_PATH"))
     assert(router_text.contains("_configure_arena_dossier_actions"))
+    assert(router_text.contains("typeof(existing_value) != TYPE_CALLABLE"))
 
     assert(barracks_text.contains("FICHA COMPLETA"))
     assert(barracks_text.contains("func restore_gladiator_context"))
@@ -59,7 +62,13 @@ func _initialize() -> void:
     assert(barracks_text.contains("Casco:"))
     assert(barracks_text.contains("Montura: Próximamente"))
 
+    assert(market_manager_text.contains("\"slot\":str(recipe.get(\"slot\", EquipmentManager.get_item_slot(recipe)))"))
+    assert(market_screen_text.contains("func _offer_slot"))
+    assert(market_screen_text.contains("EquipmentManager.get_slot_label(slot_id)"))
+    assert(market_screen_text.contains("Los objetos se equipan desde la ficha individual del gladiador"))
+
     assert(hud_text.contains("\"gladiator_dossier\":\"Ficha del gladiador\""))
+    assert(not hud_text.contains("{\"id\":\"equipamiento\", \"label\":\"Equipamiento\"}"))
     assert(save_text.contains("const SAVE_VERSION := 14"))
     assert(save_text.contains("\"equipped_weapon_id\":person.equipped_weapon_id"))
     assert(save_text.contains("\"equipment\":{\"inventory\":EquipmentManager.inventory.duplicate(true)"))
@@ -68,10 +77,12 @@ func _initialize() -> void:
     var dossier_script := load("res://scripts/ui/gladiator_dossier_panel.gd")
     var person_script := load("res://scripts/entities/person.gd")
     var equipment_script := load("res://scripts/systems/equipment_manager.gd")
+    var market_screen_script := load("res://scripts/ui/market_screen.gd")
     assert(packed is PackedScene)
     assert(dossier_script != null)
     assert(person_script != null)
     assert(equipment_script != null)
+    assert(market_screen_script != null)
 
     var instance := (packed as PackedScene).instantiate()
     assert(instance.get_node_or_null("Margin/Main/Header/Margin/Row/Back") is Button)
