@@ -8,6 +8,7 @@ const PRIMARY_SYSTEMS := {
     "forja":"Forja",
     "relaciones":"Vínculos",
     "arena":"Arena",
+    "gladiator_dossier":"Ficha del gladiador",
     "campana":"Campaña"
 }
 
