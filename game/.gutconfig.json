@@ -17,7 +17,7 @@
   "compact_mode": true,
   "should_maximize": false,
   "disable_colors": false,
-  "double_strategy": "script_only",
+  "double_strategy": "SCRIPT_ONLY",
   "no_error_tracking": false,
   "failure_error_types": [
     "engine",
