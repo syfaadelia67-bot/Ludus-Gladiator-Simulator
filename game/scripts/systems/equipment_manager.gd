@@ -6,15 +6,40 @@ signal craft_failed(reason: String)
 signal equipment_changed(person_id: String)
 signal equipment_failed(reason: String)
 
+const EQUIPMENT_SLOTS := {
+    "head": "Casco",
+    "torso": "Torso",
+    "right_hand": "Mano derecha",
+    "left_hand": "Mano izquierda",
+    "lower_body": "Parte inferior",
+    "accessory": "Accesorio",
+    "mount": "Montura"
+}
+const EQUIPMENT_SLOT_ORDER: Array[String] = [
+    "head", "torso", "right_hand", "left_hand", "lower_body", "accessory", "mount"
+]
+const LEGACY_SLOT_ALIASES := {
+    "weapon": "right_hand",
+    "armor": "torso",
+    "shield": "left_hand"
+}
+
 const RECIPES := {
-    "gladius": {"name":"Gladius","type":"weapon","forge_level":1,"ore":8,"denarii":45,"power":12,"tags":["weapon","blade","single_weapon"]},
-    "spear": {"name":"Lanza de arena","type":"weapon","forge_level":1,"ore":10,"denarii":50,"power":10,"tags":["weapon","spear","single_weapon"]},
-    "mace": {"name":"Maza pesada","type":"weapon","forge_level":2,"ore":14,"denarii":75,"power":15,"tags":["weapon","blunt","single_weapon"]},
-    "retiarius_kit": {"name":"Red y tridente","type":"weapon","forge_level":1,"ore":12,"denarii":65,"power":10,"tags":["weapon","spear","net","retiarius_kit"]},
-    "dual_blades": {"name":"Par de espadas cortas","type":"weapon","forge_level":2,"ore":16,"denarii":85,"power":14,"tags":["weapon","blade","dual_blades"]},
-    "leather_armor": {"name":"Armadura de cuero","type":"armor","forge_level":1,"ore":5,"denarii":40,"defense":6,"tags":["armor","light_armor"]},
-    "mail_armor": {"name":"Cota de malla","type":"armor","forge_level":2,"ore":16,"denarii":90,"defense":11,"tags":["armor","heavy_armor"]},
-    "tower_shield": {"name":"Escudo de torre","type":"shield","forge_level":3,"ore":20,"denarii":120,"defense":15,"tags":["shield","large_shield"]}
+    "gladius": {"name":"Gladius","type":"weapon","slot":"right_hand","forge_level":1,"ore":8,"denarii":45,"power":12,"tags":["weapon","blade","single_weapon"]},
+    "spear": {"name":"Lanza de arena","type":"weapon","slot":"right_hand","forge_level":1,"ore":10,"denarii":50,"power":10,"tags":["weapon","spear","single_weapon"]},
+    "mace": {"name":"Maza pesada","type":"weapon","slot":"right_hand","forge_level":2,"ore":14,"denarii":75,"power":15,"tags":["weapon","blunt","single_weapon"]},
+    "retiarius_kit": {"name":"Red y tridente","type":"weapon","slot":"right_hand","forge_level":1,"ore":12,"denarii":65,"power":10,"tags":["weapon","spear","net","retiarius_kit"]},
+    "dual_blades": {"name":"Par de espadas cortas","type":"weapon","slot":"right_hand","forge_level":2,"ore":16,"denarii":85,"power":14,"tags":["weapon","blade","dual_blades"]},
+    "leather_armor": {"name":"Armadura de cuero","type":"armor","slot":"torso","forge_level":1,"ore":5,"denarii":40,"defense":6,"tags":["armor","light_armor"]},
+    "mail_armor": {"name":"Cota de malla","type":"armor","slot":"torso","forge_level":2,"ore":16,"denarii":90,"defense":11,"tags":["armor","heavy_armor"]},
+    "tower_shield": {"name":"Escudo de torre","type":"shield","slot":"left_hand","forge_level":3,"ore":20,"denarii":120,"defense":15,"tags":["shield","large_shield"]},
+    "bronze_helmet": {"name":"Casco de bronce","type":"helmet","slot":"head","forge_level":1,"ore":7,"denarii":45,"defense":4,"tags":["helmet","head_armor"]},
+    "reinforced_helmet": {"name":"Yelmo reforzado","type":"helmet","slot":"head","forge_level":2,"ore":12,"denarii":75,"defense":7,"tags":["helmet","head_armor","heavy_armor"]},
+    "bronze_greaves": {"name":"Grebas de bronce","type":"lower_body","slot":"lower_body","forge_level":1,"ore":6,"denarii":42,"defense":4,"tags":["greaves","lower_armor"]},
+    "reinforced_boots": {"name":"Botas reforzadas","type":"lower_body","slot":"lower_body","forge_level":2,"ore":9,"denarii":65,"defense":6,"tags":["boots","lower_armor"]},
+    "linen_wraps": {"name":"Vendas de combate","type":"accessory","slot":"accessory","forge_level":1,"ore":1,"denarii":28,"defense":1,"tags":["accessory","bandages","recovery"]},
+    "antidote_kit": {"name":"Estuche de antídotos","type":"accessory","slot":"accessory","forge_level":1,"ore":2,"denarii":55,"tags":["accessory","antidote"]},
+    "hidden_hook": {"name":"Gancho oculto","type":"accessory","slot":"accessory","forge_level":2,"ore":5,"denarii":80,"power":3,"tags":["accessory","cheat_item","contraband"]}
 }
 
 const UNIVERSAL_TECHNIQUES: Array[String] = ["basic_attack", "precise_strike", "feint", "opportunity_strike", "throw_sand"]
@@ -32,7 +57,29 @@ func get_recipe(recipe_id: String) -> Dictionary:
     var data: Dictionary = RECIPES.get(recipe_id, {}).duplicate(true)
     data["id"] = recipe_id
     data["unlocked"] = EstateManager.get_forge_level() >= int(data.get("forge_level", 99))
+    data["slot"] = get_item_slot(data)
     return data
+
+func get_slot_ids() -> Array[String]:
+    return EQUIPMENT_SLOT_ORDER.duplicate()
+
+func get_slot_label(slot_id: String) -> String:
+    return str(EQUIPMENT_SLOTS.get(canonical_slot_id(slot_id), slot_id.capitalize()))
+
+func canonical_slot_id(slot_id: String) -> String:
+    var canonical := str(LEGACY_SLOT_ALIASES.get(slot_id, slot_id))
+    return canonical if EQUIPMENT_SLOTS.has(canonical) else ""
+
+func get_slot_icon_asset(slot_id: String) -> String:
+    match canonical_slot_id(slot_id):
+        "head": return "ui/equipment/equipment_head_helmet"
+        "torso": return "ui/equipment/equipment_torso_armor"
+        "right_hand": return "ui/equipment/equipment_weapon_sword"
+        "left_hand": return "ui/equipment/equipment_shield"
+        "lower_body": return "ui/equipment/equipment_feet_boots"
+        "accessory": return "ui/equipment/equipment_additional_net"
+        "mount": return "ui/icons/ui_icon_circle_brown"
+        _: return ""
 
 func craft(recipe_id: String) -> bool:
     if CampaignManager.campaign_over:
@@ -60,7 +107,9 @@ func craft(recipe_id: String) -> bool:
     item["id"] = "%s_%d" % [recipe_id, serial]
     item["recipe_id"] = recipe_id
     item["quality"] = _roll_quality()
+    item["slot"] = get_item_slot(item)
     item["equipped_by"] = ""
+    item["equipped_slot"] = ""
     inventory.append(item)
     GameState.resources_changed.emit()
     inventory_changed.emit()
@@ -77,63 +126,110 @@ func add_market_item(offer: Dictionary) -> Dictionary:
         "recipe_id":recipe_id,
         "name":str(offer.get("name", "Objeto de mercado")),
         "type":str(offer.get("type", "weapon")),
+        "slot":str(offer.get("slot", "")),
         "quality":str(offer.get("quality", "Común")),
         "power":int(offer.get("power", 0)),
         "defense":int(offer.get("defense", 0)),
         "tags":offer.get("tags", []).duplicate(),
-        "equipped_by":""
+        "equipped_by":"",
+        "equipped_slot":""
     }
+    item["slot"] = get_item_slot(item)
     inventory.append(item)
     inventory_changed.emit()
     return item.duplicate(true)
 
+func get_item_slot(item: Dictionary) -> String:
+    var explicit := canonical_slot_id(str(item.get("slot", item.get("equipped_slot", ""))))
+    if not explicit.is_empty():
+        return explicit
+    match str(item.get("type", "")):
+        "weapon": return "right_hand"
+        "armor": return "torso"
+        "shield": return "left_hand"
+        "helmet", "head": return "head"
+        "lower_body", "boots", "greaves": return "lower_body"
+        "accessory", "consumable", "antidote", "cheat_item": return "accessory"
+        "mount": return "mount"
+        _: return ""
+
+func is_item_compatible_with_slot(item: Dictionary, slot_id: String) -> bool:
+    var canonical := canonical_slot_id(slot_id)
+    if canonical.is_empty() or canonical == "mount":
+        return false
+    return get_item_slot(item) == canonical
+
 func equip_item(person_id: String, item_id: String) -> bool:
+    var item := get_item(item_id)
+    if item.is_empty():
+        equipment_failed.emit("Objeto inválido.")
+        return false
+    return equip_item_to_slot(person_id, item_id, get_item_slot(item))
+
+func equip_item_to_slot(person_id: String, item_id: String, slot_id: String) -> bool:
     var person = RosterManager.get_person(person_id)
     var item := get_item(item_id)
+    var canonical := canonical_slot_id(slot_id)
     if person == null or item.is_empty():
         equipment_failed.emit("Personaje u objeto inválido.")
         return false
-    if person.role != "gladiator":
+    if str(person.role) != "gladiator":
         equipment_failed.emit("Solo los gladiadores pueden equiparse.")
         return false
-    if not str(item.get("equipped_by", "")).is_empty() and str(item.get("equipped_by", "")) != person_id:
+    if canonical == "mount":
+        equipment_failed.emit("Las monturas estarán disponibles próximamente.")
+        return false
+    if not is_item_compatible_with_slot(item, canonical):
+        equipment_failed.emit("El objeto no corresponde a la ranura %s." % get_slot_label(canonical))
+        return false
+    var equipped_person_id := str(item.get("equipped_by", ""))
+    if not equipped_person_id.is_empty() and equipped_person_id != person_id:
         equipment_failed.emit("Ese objeto ya está equipado por otro gladiador.")
         return false
-    var item_type := str(item.get("type", ""))
-    var previous_id := ""
-    match item_type:
-        "weapon": previous_id = person.equipped_weapon_id; person.equipped_weapon_id = item_id
-        "armor": previous_id = person.equipped_armor_id; person.equipped_armor_id = item_id
-        "shield": previous_id = person.equipped_shield_id; person.equipped_shield_id = item_id
-        _:
-            equipment_failed.emit("Tipo de objeto no equipable.")
-            return false
+
+    _rebuild_person_slots(person)
+    var previous_slot := canonical_slot_id(str(item.get("equipped_slot", "")))
+    if equipped_person_id == person_id and not previous_slot.is_empty() and previous_slot != canonical:
+        person.set_equipped_item_id(previous_slot, "")
+
+    var previous_id := person.get_equipped_item_id(canonical)
     if not previous_id.is_empty() and previous_id != item_id:
         var previous := get_item(previous_id)
         if not previous.is_empty():
             previous["equipped_by"] = ""
+            previous["equipped_slot"] = ""
+
+    person.set_equipped_item_id(canonical, item_id)
+    item["slot"] = canonical
     item["equipped_by"] = person_id
+    item["equipped_slot"] = canonical
     inventory_changed.emit()
     equipment_changed.emit(person_id)
     return true
 
 func unequip_slot(person_id: String, slot: String) -> bool:
+    return unequip_equipment_slot(person_id, canonical_slot_id(slot))
+
+func unequip_equipment_slot(person_id: String, slot_id: String) -> bool:
     var person = RosterManager.get_person(person_id)
+    var canonical := canonical_slot_id(slot_id)
     if person == null:
         equipment_failed.emit("Personaje inválido.")
         return false
-    var item_id := ""
-    match slot:
-        "weapon": item_id = person.equipped_weapon_id; person.equipped_weapon_id = ""
-        "armor": item_id = person.equipped_armor_id; person.equipped_armor_id = ""
-        "shield": item_id = person.equipped_shield_id; person.equipped_shield_id = ""
-        _:
-            equipment_failed.emit("Ranura inválida.")
-            return false
+    if canonical.is_empty():
+        equipment_failed.emit("Ranura inválida.")
+        return false
+    if canonical == "mount":
+        equipment_failed.emit("Las monturas todavía no están habilitadas.")
+        return false
+    _rebuild_person_slots(person)
+    var item_id := person.get_equipped_item_id(canonical)
+    person.set_equipped_item_id(canonical, "")
     if not item_id.is_empty():
         var item := get_item(item_id)
         if not item.is_empty():
             item["equipped_by"] = ""
+            item["equipped_slot"] = ""
     inventory_changed.emit()
     equipment_changed.emit(person_id)
     return true
@@ -146,6 +242,22 @@ func get_available_items(item_type: String, person_id: String = "") -> Array[Dic
         var equipped_person_id := str(item.get("equipped_by", ""))
         if equipped_person_id.is_empty() or equipped_person_id == person_id:
             result.append(item.duplicate(true))
+    return result
+
+func get_available_items_for_slot(slot_id: String, person_id: String = "") -> Array[Dictionary]:
+    var canonical := canonical_slot_id(slot_id)
+    var result: Array[Dictionary] = []
+    if canonical.is_empty() or canonical == "mount":
+        return result
+    for item in inventory:
+        if not is_item_compatible_with_slot(item, canonical):
+            continue
+        var equipped_person_id := str(item.get("equipped_by", ""))
+        if equipped_person_id.is_empty() or equipped_person_id == person_id:
+            var copy := item.duplicate(true)
+            copy["slot"] = canonical
+            result.append(copy)
+    result.sort_custom(func(a: Dictionary, b: Dictionary): return str(a.get("name", "")) < str(b.get("name", "")))
     return result
 
 func get_item(item_id: String) -> Dictionary:
@@ -162,11 +274,40 @@ func get_item_name(item_id: String) -> String:
         return "Ninguno"
     return "%s (%s)" % [item.get("name", "Objeto"), item.get("quality", "Común")]
 
+func get_equipped_slots(person) -> Dictionary:
+    if person == null:
+        var empty: Dictionary = {}
+        for slot_id in EQUIPMENT_SLOT_ORDER:
+            empty[slot_id] = ""
+        return empty
+    _rebuild_person_slots(person)
+    return person.get_equipped_slots()
+
+func _rebuild_person_slots(person) -> void:
+    if person == null:
+        return
+    person.synchronize_legacy_equipment()
+    for item in inventory:
+        if str(item.get("equipped_by", "")) != str(person.id):
+            continue
+        var slot_id := canonical_slot_id(str(item.get("equipped_slot", "")))
+        if slot_id.is_empty():
+            slot_id = get_item_slot(item)
+            item["equipped_slot"] = slot_id
+        if slot_id.is_empty() or slot_id == "mount":
+            continue
+        var current_id := person.get_equipped_item_id(slot_id)
+        if current_id.is_empty() or current_id == str(item.get("id", "")):
+            person.set_equipped_item_id(slot_id, str(item.get("id", "")))
+
 func get_equipped_stats(person) -> Dictionary:
     var stats := {"power":0, "defense":0}
-    for item_id in [person.equipped_weapon_id, person.equipped_armor_id, person.equipped_shield_id]:
-        if item_id.is_empty():
+    var seen: Dictionary = {}
+    for item_id_value in get_equipped_slots(person).values():
+        var item_id := str(item_id_value)
+        if item_id.is_empty() or seen.has(item_id):
             continue
+        seen[item_id] = true
         var item := get_item(item_id)
         var multiplier := _quality_multiplier(str(item.get("quality", "Común")))
         stats.power += int(round(int(item.get("power", 0)) * multiplier))
@@ -175,17 +316,28 @@ func get_equipped_stats(person) -> Dictionary:
 
 func get_equipped_loadout(person) -> Dictionary:
     if person == null:
-        return {"weapon":"", "armor":"", "shield":"", "weapon_name":"Ninguno", "armor_name":"Ninguna", "shield_name":"Ninguno", "tags":[]}
-    var weapon := get_item(person.equipped_weapon_id)
-    var armor := get_item(person.equipped_armor_id)
-    var shield := get_item(person.equipped_shield_id)
+        return {
+            "weapon":"", "armor":"", "shield":"",
+            "weapon_name":"Ninguno", "armor_name":"Ninguna", "shield_name":"Ninguno",
+            "slots":get_equipped_slots(null), "slot_names":{}, "tags":[]
+        }
+    var slots := get_equipped_slots(person)
+    var weapon := get_item(str(slots.get("right_hand", "")))
+    var armor := get_item(str(slots.get("torso", "")))
+    var shield := get_item(str(slots.get("left_hand", "")))
+    var slot_names: Dictionary = {}
+    for slot_id in EQUIPMENT_SLOT_ORDER:
+        var item_id := str(slots.get(slot_id, ""))
+        slot_names[slot_id] = "Próximamente" if slot_id == "mount" else get_item_name(item_id)
     return {
         "weapon":str(weapon.get("recipe_id", "")),
         "armor":str(armor.get("recipe_id", "")),
         "shield":str(shield.get("recipe_id", "")),
-        "weapon_name":get_item_name(person.equipped_weapon_id),
-        "armor_name":get_item_name(person.equipped_armor_id),
-        "shield_name":get_item_name(person.equipped_shield_id),
+        "weapon_name":get_item_name(str(slots.get("right_hand", ""))),
+        "armor_name":get_item_name(str(slots.get("torso", ""))),
+        "shield_name":get_item_name(str(slots.get("left_hand", ""))),
+        "slots":slots,
+        "slot_names":slot_names,
         "tags":get_equipped_tags(person)
     }
 
@@ -193,9 +345,12 @@ func get_equipped_tags(person) -> Array[String]:
     var tags: Array[String] = []
     if person == null:
         return tags
-    for item_id in [person.equipped_weapon_id, person.equipped_armor_id, person.equipped_shield_id]:
-        if item_id.is_empty():
+    var seen: Dictionary = {}
+    for item_id_value in get_equipped_slots(person).values():
+        var item_id := str(item_id_value)
+        if item_id.is_empty() or seen.has(item_id):
             continue
+        seen[item_id] = true
         var item := get_item(item_id)
         for raw_tag in item.get("tags", []):
             var tag := str(raw_tag)
