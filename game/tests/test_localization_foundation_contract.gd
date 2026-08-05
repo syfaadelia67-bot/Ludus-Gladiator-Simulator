@@ -149,9 +149,13 @@ func _po_translations(text: String) -> Dictionary:
     return result
 
 func _valid_key(key: String) -> bool:
-    if key.is_empty() or not key[0].to_upper() == key[0]:
+    if key.is_empty():
         return false
-    for character in key:
+    var first := key.substr(0, 1)
+    if first.to_upper() != first:
+        return false
+    for index in range(key.length()):
+        var character := key.substr(index, 1)
         var code := character.unicode_at(0)
         var is_upper := code >= 65 and code <= 90
         var is_digit := code >= 48 and code <= 57
