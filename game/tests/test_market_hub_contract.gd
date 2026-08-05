@@ -6,13 +6,15 @@ func _initialize() -> void:
     var market_text := FileAccess.get_file_as_string("res://scripts/systems/market_manager.gd")
     var equipment_text := FileAccess.get_file_as_string("res://scripts/systems/equipment_manager.gd")
     var save_text := FileAccess.get_file_as_string("res://scripts/core/save_manager.gd")
-    var bootstrap_text := FileAccess.get_file_as_string("res://scripts/ui/all_tabs_ui_bootstrap.gd")
+    var hub_text := FileAccess.get_file_as_string("res://scripts/ui/finca_hub_controller.gd")
 
     for required_node in [
         "MarketScreen",
-        "ModeButtons",
-        "Fighters",
-        "Equipment",
+        "Landing",
+        "FightersCard",
+        "EquipmentCard",
+        "ContentShell",
+        "BackToMarketHome",
         "FightersView",
         "EquipmentView",
         "Refresh",
@@ -20,53 +22,46 @@ func _initialize() -> void:
     ]:
         assert(scene_text.contains("name=\"%s\"" % required_node) or scene_text.contains("name = \"%s\"" % required_node))
 
+    assert(scene_text.count("type=\"TextureButton\"") >= 2)
+    assert(scene_text.contains("custom_minimum_size = Vector2(0, 480)"))
     assert(scene_text.contains("LUCHADORES"))
     assert(scene_text.contains("EQUIPAMIENTO"))
     assert(scene_text.contains("RENOVAR EQUIPAMIENTO · 100"))
-    assert(scene_text.contains("facility_market.png"))
-    assert(scene_text.contains("equipment_weapon_sword.png"))
-    assert(scene_text.contains("ui_resource_gold.png"))
+    assert(not scene_text.contains("ModeButtons"))
+    assert(not scene_text.contains("TabContainer"))
 
     assert(market_text.contains("const AUTO_REFRESH_WEEKS := 3"))
     assert(market_text.contains("const EQUIPMENT_REFRESH_COST := 100"))
     assert(market_text.contains("func refresh_equipment_market"))
     assert(market_text.contains("func buy_equipment_offer"))
-    assert(market_text.contains("week - last_auto_refresh_week < AUTO_REFRESH_WEEKS"))
-    assert(market_text.contains("refresh_market(false)"))
-    assert(market_text.contains("refresh_equipment_market(false)"))
-    assert(market_text.contains("Las ofertas de luchadores se renuevan automáticamente cada 3 semanas"))
-
     assert(equipment_text.contains("func add_market_item"))
-    assert(equipment_text.contains("inventory.append(item)"))
-    assert(screen_text.contains("MarketManager.refresh_equipment_market(true)"))
+
+    assert(screen_text.contains("func _show_market_home"))
+    assert(screen_text.contains("func _open_fighters"))
+    assert(screen_text.contains("func _open_equipment"))
+    assert(screen_text.contains("active_section == \"fighters\""))
+    assert(screen_text.contains("active_section == \"equipment\""))
+    assert(screen_text.contains("content_shell.visible = true"))
     assert(screen_text.contains("MarketManager.buy_offer"))
     assert(screen_text.contains("MarketManager.buy_equipment_offer"))
-    assert(screen_text.contains("MarketManager.get_next_auto_refresh_week"))
-    assert(screen_text.contains("FincaHubController.show_finca()"))
 
     assert(save_text.contains("const SAVE_VERSION := 14"))
     assert(save_text.contains("\"equipment_offers\":MarketManager.equipment_offers"))
-    assert(save_text.contains("\"last_auto_refresh_week\":MarketManager.last_auto_refresh_week"))
-    assert(save_text.contains("MarketManager.equipment_market_changed.emit()"))
-
-    assert(bootstrap_text.contains("preload(\"res://scenes/MarketScreen.tscn\")"))
-    assert(bootstrap_text.contains("_attach_market_screen(tabs)"))
-    assert(bootstrap_text.contains("primary_market_screen"))
+    assert(hub_text.contains("\"mercado\": preload(\"res://scenes/MarketScreen.tscn\")"))
+    assert(hub_text.contains("_show_hosted_screen"))
 
     var packed := load("res://scenes/MarketScreen.tscn")
     var screen_script := load("res://scripts/ui/market_screen.gd")
-    var market_script := load("res://scripts/systems/market_manager.gd")
     assert(packed is PackedScene)
     assert(screen_script != null)
-    assert(market_script != null)
 
     var instance := (packed as PackedScene).instantiate()
-    assert(instance.get_node_or_null("ModeButtons/Fighters") is Button)
-    assert(instance.get_node_or_null("ModeButtons/Equipment") is Button)
-    assert(instance.get_node_or_null("FightersView/OffersPanel/Margin/Content/List") is ItemList)
-    assert(instance.get_node_or_null("EquipmentView/OffersPanel/Margin/Content/Header/Refresh") is Button)
-    assert(instance.get_node_or_null("EquipmentView/DetailsPanel/Margin/Scroll/Content/Buy") is Button)
+    assert(instance.get_node_or_null("Landing/Cards/FightersCard") is TextureButton)
+    assert(instance.get_node_or_null("Landing/Cards/EquipmentCard") is TextureButton)
+    assert(instance.get_node_or_null("ContentShell/SectionHeader/BackToMarketHome") is Button)
+    assert(instance.get_node_or_null("ContentShell/FightersView/OffersPanel/Margin/Content/List") is ItemList)
+    assert(instance.get_node_or_null("ContentShell/EquipmentView/OffersPanel/Margin/Content/Header/Refresh") is Button)
     instance.free()
 
-    print("Split fighters and equipment market contract: OK")
+    print("Market cover navigation and purchase stability contract: OK")
     quit()
