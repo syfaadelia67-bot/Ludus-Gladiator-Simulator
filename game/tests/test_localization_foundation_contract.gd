@@ -17,7 +17,7 @@ func _initialize() -> void:
     var pot_text := FileAccess.get_file_as_string("res://localization/messages.pot")
     var shared_text := FileAccess.get_file_as_string("res://localization/shared.es.po")
     var manifest_text := FileAccess.get_file_as_string("res://localization/localization_manifest.json")
-    var save_text := FileAccess.get_file_as_string("res://scripts/core/save_manager_demo.gd")
+    var save_text := FileAccess.get_file_as_string("res://scripts/core/save_manager.gd")
 
     assert(project_text.contains("[internationalization]"))
     assert(project_text.contains("locale/fallback=\"es\""))
