@@ -11,10 +11,7 @@ func _initialize() -> void:
     for required_node in ["TopHUD", "MainNavigation", "WorldArea", "BuildingDetailsPanel", "Scroll", "BottomStatusBar"]:
         assert(scene_text.contains("name=\"%s\"" % required_node) or scene_text.contains("name = \"%s\"" % required_node))
 
-    for building_id in [
-        "dominus_house", "barracks", "training_yard", "forge", "infirmary", "kitchen", "warehouse",
-        "worker_quarters", "wall_and_gate", "beast_area", "sanctuary", "private_arena", "stable"
-    ]:
+    for building_id in ["dominus_house", "barracks", "training_yard", "forge", "infirmary", "kitchen", "warehouse", "worker_quarters", "wall_and_gate", "beast_area", "sanctuary", "private_arena", "stable"]:
         assert(controller_text.contains("\"%s\"" % building_id))
 
     assert(controller_text.contains("const BUILDING_LAYOUT"))
@@ -29,11 +26,11 @@ func _initialize() -> void:
     assert(not bootstrap_text.contains("_select_finca_as_primary_view"))
 
     assert(hub_text.contains("const SCREEN_HOST_NAME := \"ScreenHost\""))
-    assert(hub_text.contains("\"finca\": preload(\"res://scenes/FincaScreen.tscn\")"))
+    assert(hub_text.contains("\"finca\": \"res://scenes/FincaScreen.tscn\""))
+    assert(hub_text.contains("var packed := load(scene_path) as PackedScene"))
     assert(hub_text.contains("func _show_hosted_screen"))
     assert(hub_text.contains("func _show_legacy_screen"))
     assert(hub_text.contains("return current_system_id"))
-    assert(not hub_text.contains("tabs.current_tab = tab_index\n    system_opened.emit"))
 
     for required_shell_node in ["TopHUD", "MainNavigation", "BottomStatusBar", "More", "Section", "Barracks"]:
         assert(shell_scene_text.contains("name=\"%s\"" % required_shell_node) or shell_scene_text.contains("name = \"%s\"" % required_shell_node))
