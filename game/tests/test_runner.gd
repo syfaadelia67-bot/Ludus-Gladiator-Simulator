@@ -26,8 +26,8 @@ const EXCLUDED_TEST_FILES := {
 	"test_runner.gd": "Autoload test orchestrator; it is infrastructure, not a test case."
 }
 
-# Tests are classified by filename only. UI markers are intentionally narrow;
-# every other discovered test belongs to core, so there is no unassigned state.
+# Tests are classified by path. UI markers are intentionally narrow; every
+# other discovered test belongs to core, so there is no unassigned state.
 const UI_TEST_MARKERS: Array[String] = [
 	"screen", "router", "hud", "finca", "market_hub", "barracks_hub",
 	"arena_scroll", "relationships", "dossier", "localization"
@@ -84,22 +84,32 @@ func _run_suite(request_path: String) -> void:
 	get_tree().quit(0)
 
 func _discover_tests(directory_path: String, group: String = "all") -> Array[String]:
+	var discovered: Array[String] = []
+	_collect_tests(directory_path, discovered)
+	var result: Array[String] = []
+	for test_path in discovered:
+		var assigned_group := _classify_test(test_path)
+		if group == "all" or assigned_group == group:
+			result.append(test_path)
+	result.sort()
+	return result
+
+func _collect_tests(directory_path: String, result: Array[String]) -> void:
 	var absolute_directory := ProjectSettings.globalize_path(directory_path)
 	var directory := DirAccess.open(absolute_directory)
 	if directory == null:
-		return []
-	var result: Array[String] = []
+		return
 	directory.list_dir_begin()
-	var file_name := directory.get_next()
-	while not file_name.is_empty():
-		if not directory.current_is_dir() and _is_test_file(file_name) and not EXCLUDED_TEST_FILES.has(file_name):
-			var assigned_group := _classify_test(file_name)
-			if group == "all" or assigned_group == group:
-				result.append("%s/%s" % [directory_path, file_name])
-		file_name = directory.get_next()
+	var entry_name := directory.get_next()
+	while not entry_name.is_empty():
+		var entry_path := "%s/%s" % [directory_path, entry_name]
+		if directory.current_is_dir():
+			if not entry_name.begins_with("."):
+				_collect_tests(entry_path, result)
+		elif _is_test_file(entry_name) and not EXCLUDED_TEST_FILES.has(entry_name):
+			result.append(entry_path)
+		entry_name = directory.get_next()
 	directory.list_dir_end()
-	result.sort()
-	return result
 
 func _is_test_file(file_name: String) -> bool:
 	for suffix in SUPPORTED_TEST_SUFFIXES:
@@ -107,8 +117,8 @@ func _is_test_file(file_name: String) -> bool:
 			return true
 	return false
 
-func _classify_test(file_name: String) -> String:
-	var normalized := file_name.to_lower()
+func _classify_test(test_path: String) -> String:
+	var normalized := test_path.to_lower()
 	for marker in UI_TEST_MARKERS:
 		if normalized.contains(marker):
 			return "ui"
@@ -132,9 +142,11 @@ func _execute_isolated_test(path: String) -> int:
 		"--path", ProjectSettings.globalize_path("res://")
 	]
 	if _requires_script_mode(path):
-		arguments.append_array(["--script", path])
+		arguments.append("--script")
+		arguments.append(path)
 	else:
-		arguments.append_array(["--", "%s%s" % [TEST_ARGUMENT_PREFIX, path]])
+		arguments.append("--")
+		arguments.append("%s%s" % [TEST_ARGUMENT_PREFIX, path])
 	var exit_code := OS.execute(OS.get_executable_path(), arguments, output, true)
 	for line in output:
 		print(str(line).trim_suffix("\n"))
