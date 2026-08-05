@@ -1,0 +1,71 @@
+extends GutTest
+
+const SAVE_MANAGER_SCRIPT := preload("res://scripts/core/save_manager.gd")
+const PERSON_SCRIPT := preload("res://scripts/entities/person.gd")
+
+var manager
+
+func before_each() -> void:
+    manager = autofree(SAVE_MANAGER_SCRIPT.new())
+
+func test_v14_payload_validation_accepts_canonical_shape() -> void:
+    var payload := _valid_payload()
+    assert_true(manager._validate_payload(payload), "El formato canónico v14 debe superar la validación estructural.")
+
+func test_payload_validation_rejects_duplicate_person_ids() -> void:
+    var payload := _valid_payload()
+    payload["roster"]["people"].append({"id":"gladiator_test"})
+    assert_false(manager._validate_payload(payload), "Un guardado no puede contener dos personas con el mismo id.")
+
+func test_payload_validation_rejects_negative_resources() -> void:
+    var payload := _valid_payload()
+    payload["game_state"]["denarii"] = -1
+    assert_false(manager._validate_payload(payload), "Los recursos negativos deben invalidar el guardado.")
+
+func test_person_round_trip_keeps_v14_progression_and_legacy_equipment() -> void:
+    var person = PERSON_SCRIPT.new({
+        "id":"gut_gladiator",
+        "name":"Aquila",
+        "role":"gladiator",
+        "origin":"Hispania",
+        "technique":9,
+        "health":73,
+        "traits":["arena_lover", "protector"],
+        "applied_trait_effects":["protector"]
+    })
+    person.set_equipped_item_id("right_hand", "item_sword")
+    person.set_equipped_item_id("torso", "item_armor")
+    person.set_equipped_item_id("left_hand", "item_shield")
+
+    var serialized: Dictionary = manager._serialize_person(person)
+    var restored = manager._deserialize_person(serialized)
+
+    assert_eq(restored.id, "gut_gladiator")
+    assert_eq(restored.technique, 9)
+    assert_eq(restored.health, 73)
+    assert_eq(restored.traits, ["arena_lover", "protector"])
+    assert_eq(restored.applied_trait_effects, ["protector"])
+    assert_eq(restored.equipped_weapon_id, "item_sword")
+    assert_eq(restored.equipped_armor_id, "item_armor")
+    assert_eq(restored.equipped_shield_id, "item_shield")
+
+func test_unique_string_migration_removes_empty_and_duplicate_values() -> void:
+    var migrated: Array[String] = manager._unique_strings(["protector", "", "protector", "dreamer"])
+    assert_eq(migrated, ["protector", "dreamer"])
+
+func _valid_payload() -> Dictionary:
+    return {
+        "version":14,
+        "saved_at_unix":1,
+        "game_state":{
+            "day":1,
+            "week":1,
+            "denarii":500,
+            "food":100,
+            "ore":20,
+            "reputation":0
+        },
+        "owner":{"profile":{}},
+        "roster":{"people":[{"id":"gladiator_test"}]},
+        "combat_history":{"entries":[]}
+    }
