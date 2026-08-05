@@ -3,8 +3,10 @@ extends Node
 signal locale_changed(locale: String)
 signal locale_preference_changed(preference: String)
 signal pseudolocalization_changed(enabled: bool)
+signal typography_profile_changed(profile: String)
 
 const SETTINGS_PATH := "user://localization.cfg"
+const THEME_PATH := "res://assets/placeholders/pack_000/ui/pack_000_theme.tres"
 const AUTOMATIC_LOCALE := "automatic"
 const DEFAULT_LOCALE := "es"
 const SUPPORTED_LOCALES: Array[String] = ["es", "en", "zh_CN", "ja", "pt_BR"]
@@ -16,16 +18,23 @@ const LOCALE_LABEL_KEYS := {
     "ja": "LANGUAGE_JAPANESE",
     "pt_BR": "LANGUAGE_PORTUGUESE_BRAZIL"
 }
+const LATIN_BODY_FONT_NAMES: Array[String] = ["Noto Sans", "Segoe UI", "Arial", "sans-serif"]
+const LATIN_TITLE_FONT_NAMES: Array[String] = ["Cinzel", "Marcellus", "Georgia", "Times New Roman", "serif"]
+const CHINESE_BODY_FONT_NAMES: Array[String] = ["Noto Sans CJK SC", "Microsoft YaHei UI", "PingFang SC", "Arial Unicode MS", "sans-serif"]
+const CHINESE_TITLE_FONT_NAMES: Array[String] = ["Noto Serif CJK SC", "SimSun", "Microsoft YaHei UI", "serif"]
+const JAPANESE_BODY_FONT_NAMES: Array[String] = ["Noto Sans CJK JP", "Yu Gothic UI", "Meiryo", "Arial Unicode MS", "sans-serif"]
+const JAPANESE_TITLE_FONT_NAMES: Array[String] = ["Noto Serif CJK JP", "Yu Mincho", "Yu Gothic UI", "serif"]
 
 var locale_preference := AUTOMATIC_LOCALE
 var active_locale := DEFAULT_LOCALE
 var pseudolocalization_enabled := false
+var typography_profile := "latin"
 
 func _ready() -> void:
     process_mode = Node.PROCESS_MODE_ALWAYS
     _load_preferences()
-    _apply_locale_preference(false)
     TranslationServer.set_pseudolocalization_enabled(pseudolocalization_enabled)
+    _apply_locale_preference(false)
 
 func get_supported_locales() -> Array[String]:
     return SUPPORTED_LOCALES.duplicate()
@@ -40,6 +49,9 @@ func get_locale_preference() -> String:
 
 func get_active_locale() -> String:
     return active_locale
+
+func get_typography_profile() -> String:
+    return typography_profile
 
 func get_locale_label(locale_or_preference: String) -> String:
     var key := str(LOCALE_LABEL_KEYS.get(locale_or_preference, "LANGUAGE_SPANISH"))
@@ -97,9 +109,49 @@ func _apply_locale_preference(persist: bool) -> void:
         resolved = DEFAULT_LOCALE
     active_locale = resolved
     TranslationServer.set_locale(active_locale)
+    _apply_typography_for_locale()
     if persist:
         _save_preferences()
     locale_changed.emit(active_locale)
+
+func _apply_typography_for_locale() -> void:
+    var theme := load(THEME_PATH) as Theme
+    if theme == null:
+        return
+    var body_names := LATIN_BODY_FONT_NAMES
+    var title_names := LATIN_TITLE_FONT_NAMES
+    var next_profile := "latin"
+    if active_locale == "zh_CN":
+        body_names = CHINESE_BODY_FONT_NAMES
+        title_names = CHINESE_TITLE_FONT_NAMES
+        next_profile = "cjk_sc"
+    elif active_locale == "ja":
+        body_names = JAPANESE_BODY_FONT_NAMES
+        title_names = JAPANESE_TITLE_FONT_NAMES
+        next_profile = "cjk_jp"
+
+    var body_font := _create_system_font(body_names, 400)
+    var title_font := _create_system_font(title_names, 600)
+    theme.default_font = body_font
+    theme.set_font(&"font", &"Label", body_font)
+    theme.set_font(&"font", &"Button", body_font)
+    theme.set_font(&"font", &"OptionButton", body_font)
+    theme.set_font(&"font", &"LineEdit", body_font)
+    theme.set_font(&"font", &"TextEdit", body_font)
+    theme.set_font(&"normal_font", &"RichTextLabel", body_font)
+    theme.set_font(&"font", &"TitleLabel", title_font)
+    theme.set_font(&"font", &"HeadingLabel", title_font)
+    theme.set_font(&"font", &"BodyLabel", body_font)
+    theme.set_font(&"font", &"CompactLabel", body_font)
+    if typography_profile != next_profile:
+        typography_profile = next_profile
+        typography_profile_changed.emit(typography_profile)
+
+func _create_system_font(names: Array[String], weight: int) -> SystemFont:
+    var font := SystemFont.new()
+    font.font_names = PackedStringArray(names)
+    font.font_weight = weight
+    return font
 
 func _resolve_system_locale() -> String:
     var system_locale := TranslationServer.standardize_locale(OS.get_locale(), true)
