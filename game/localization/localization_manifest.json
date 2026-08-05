@@ -1,0 +1,38 @@
+{
+  "version": 1,
+  "source_locale": "es",
+  "fallback_locale": "es",
+  "supported_locales": ["es", "en", "zh_CN", "ja", "pt_BR"],
+  "locale_preference_path": "user://localization.cfg",
+  "save_version_impact": "none",
+  "key_pattern": "^[A-Z][A-Z0-9_]+$",
+  "migrated_files": [
+    "res://scripts/ui/start_screen_controller.gd"
+  ],
+  "localized_data_fields": {
+    "preferred": ["name_key", "description_key", "title_key", "tooltip_key"],
+    "legacy_fallback": ["name", "description", "title", "tooltip"]
+  },
+  "typography_profiles": {
+    "latin": ["es", "en", "pt_BR"],
+    "cjk_sc": ["zh_CN"],
+    "cjk_jp": ["ja"]
+  },
+  "migration_order": [
+    "UnifiedHudShell and Finca",
+    "GladiatorDossierPanel",
+    "BarracksScreen",
+    "MarketScreen",
+    "ArenaScreen",
+    "RelationshipsPanel",
+    "data catalogs and narrative events",
+    "legacy compatibility screens"
+  ],
+  "rules": [
+    "Every new player-visible string must use a semantic translation key.",
+    "Do not save translated display strings when a stable content ID exists.",
+    "Use placeholders for complete sentences instead of concatenating translated fragments.",
+    "Use plural translation APIs for quantities.",
+    "Brand names and technical diagnostics require an explicit NO_TRANSLATE comment when intentionally excluded."
+  ]
+}
