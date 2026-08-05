@@ -233,7 +233,13 @@ func _run_single_node_test(path: String) -> void:
 	if test_node.has_method("run"):
 		test_node.call("run")
 		await get_tree().process_frame
-		await _finish_node_test(path, test_node, test_instance, test_script, 0)
+		_dispose_test_node(test_node)
+		test_node = null
+		test_instance = null
+		test_script = null
+		await get_tree().process_frame
+		print("COMPLETED: %s" % path)
+		get_tree().quit(0)
 		return
 
 	if uses_legacy_adapter:
@@ -241,7 +247,13 @@ func _run_single_node_test(path: String) -> void:
 			if _legacy_test_completed:
 				var legacy_exit_code := _legacy_test_exit_code
 				_active_legacy_test = null
-				await _finish_node_test(path, test_node, test_instance, test_script, legacy_exit_code)
+				_dispose_test_node(test_node)
+				test_node = null
+				test_instance = null
+				test_script = null
+				await get_tree().process_frame
+				print("COMPLETED: %s" % path)
+				get_tree().quit(legacy_exit_code)
 				return
 			await get_tree().process_frame
 		_active_legacy_test = null
@@ -284,15 +296,6 @@ func _build_legacy_compatible_script(path: String, source: String) -> Script:
 		push_error("Could not compile legacy-compatible test %s (error %d)." % [path, reload_error])
 		return null
 	return adapted_script
-
-func _finish_node_test(path: String, test_node: Node, test_instance: Variant, test_script: Script, exit_code: int) -> void:
-	_dispose_test_node(test_node)
-	test_node = null
-	test_instance = null
-	test_script = null
-	await get_tree().process_frame
-	print("COMPLETED: %s" % path)
-	get_tree().quit(exit_code)
 
 func _dispose_test_node(test_node: Node) -> void:
 	if test_node == null or not is_instance_valid(test_node):
