@@ -1,0 +1,168 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Ludus Gladiator Simulator\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "START_BRAND"
+msgstr ""
+
+msgid "LANGUAGE_LABEL"
+msgstr ""
+
+msgid "LANGUAGE_AUTOMATIC"
+msgstr ""
+
+msgid "LANGUAGE_SPANISH"
+msgstr ""
+
+msgid "LANGUAGE_ENGLISH"
+msgstr ""
+
+msgid "LANGUAGE_CHINESE_SIMPLIFIED"
+msgstr ""
+
+msgid "LANGUAGE_JAPANESE"
+msgstr ""
+
+msgid "LANGUAGE_PORTUGUESE_BRAZIL"
+msgstr ""
+
+msgid "LOCALIZATION_PSEUDO_LABEL"
+msgstr ""
+
+msgid "LOCALIZATION_PSEUDO_TOOLTIP"
+msgstr ""
+
+msgid "START_GAME_TITLE"
+msgstr ""
+
+msgid "START_SUBTITLE"
+msgstr ""
+
+msgid "START_VIEW_FINAL_RESULT"
+msgstr ""
+
+msgid "START_CONTINUE_CAMPAIGN"
+msgstr ""
+
+msgid "START_NEW_CAMPAIGN"
+msgstr ""
+
+msgid "START_EXIT"
+msgstr ""
+
+msgid "START_NO_SAVE"
+msgstr ""
+
+msgid "START_NO_CAMPAIGN"
+msgstr ""
+
+msgid "START_LOADING"
+msgstr ""
+
+msgid "START_LOAD_FAILED"
+msgstr ""
+
+msgid "START_NEW_CAMPAIGN_TITLE"
+msgstr ""
+
+msgid "START_OWNER_EXPLANATION"
+msgstr ""
+
+msgid "START_OWNER_NAME_PLACEHOLDER"
+msgstr ""
+
+msgid "START_BEGIN_CAMPAIGN"
+msgstr ""
+
+msgid "COMMON_BACK"
+msgstr ""
+
+msgid "START_SELECT_ORIGIN"
+msgstr ""
+
+msgid "START_NAME_MIN_LENGTH"
+msgstr ""
+
+msgid "START_RESET_FAILED"
+msgstr ""
+
+msgid "START_OWNER_CONFIG_FAILED"
+msgstr ""
+
+msgid "START_SAVE_FAILED"
+msgstr ""
+
+msgid "START_BONUSES"
+msgstr ""
+
+msgid "START_NO_BONUSES"
+msgstr ""
+
+msgid "START_ORIGIN_FALLBACK"
+msgstr ""
+
+msgid "START_BONUS_DENARII"
+msgstr ""
+
+msgid "START_BONUS_FOOD"
+msgstr ""
+
+msgid "START_BONUS_ORE"
+msgstr ""
+
+msgid "START_BONUS_REPUTATION"
+msgstr ""
+
+msgid "START_BONUS_LOYALTY"
+msgstr ""
+
+msgid "START_BONUS_MORALE"
+msgstr ""
+
+msgid "START_BONUS_GLADIATOR_EXPERIENCE"
+msgstr ""
+
+msgid "START_RESULT_VICTORY"
+msgstr ""
+
+msgid "START_RESULT_DEFEAT"
+msgstr ""
+
+msgid "START_CAMPAIGN_FINISHED_SUMMARY"
+msgstr ""
+
+msgid "START_ACTIVE_CAMPAIGN_SUMMARY"
+msgstr ""
+
+msgid "OWNER_TITLE_DOMINUS"
+msgstr ""
+
+msgid "OWNER_TITLE_DOMINA"
+msgstr ""
+
+msgid "CHAPTER_1_NAME"
+msgstr ""
+
+msgid "CHAPTER_2_NAME"
+msgstr ""
+
+msgid "CHAPTER_3_NAME"
+msgstr ""
+
+msgid "BATTLE_DEMO_FINAL"
+msgstr ""
+
+msgid "BATTLE_OFFICIAL_TOURNAMENT"
+msgstr ""
+
+msgid "BATTLE_BEAST_HUNT"
+msgstr ""
+
+msgid "BATTLE_UNDERGROUND"
+msgstr ""
+
+msgid "BATTLE_WEEKLY_EXHIBITION"
+msgstr ""
