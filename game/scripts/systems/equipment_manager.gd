@@ -67,6 +67,26 @@ func craft(recipe_id: String) -> bool:
     craft_completed.emit(str(recipe.get("name", recipe_id)), ore_cost, denarii_cost)
     return true
 
+func add_market_item(offer: Dictionary) -> Dictionary:
+    if offer.is_empty():
+        return {}
+    var recipe_id := str(offer.get("recipe_id", "market_item"))
+    serial += 1
+    var item := {
+        "id":"%s_market_%d" % [recipe_id, serial],
+        "recipe_id":recipe_id,
+        "name":str(offer.get("name", "Objeto de mercado")),
+        "type":str(offer.get("type", "weapon")),
+        "quality":str(offer.get("quality", "Común")),
+        "power":int(offer.get("power", 0)),
+        "defense":int(offer.get("defense", 0)),
+        "tags":offer.get("tags", []).duplicate(),
+        "equipped_by":""
+    }
+    inventory.append(item)
+    inventory_changed.emit()
+    return item.duplicate(true)
+
 func equip_item(person_id: String, item_id: String) -> bool:
     var person = RosterManager.get_person(person_id)
     var item := get_item(item_id)
