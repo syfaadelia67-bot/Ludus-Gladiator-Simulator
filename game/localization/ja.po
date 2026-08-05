@@ -1,0 +1,167 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Ludus Gladiator Simulator\n"
+"Language: ja\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+msgid "LANGUAGE_LABEL"
+msgstr "言語"
+
+msgid "LANGUAGE_AUTOMATIC"
+msgstr "自動（システム）"
+
+msgid "LANGUAGE_SPANISH"
+msgstr "Español"
+
+msgid "LANGUAGE_ENGLISH"
+msgstr "English"
+
+msgid "LANGUAGE_CHINESE_SIMPLIFIED"
+msgstr "简体中文"
+
+msgid "LANGUAGE_JAPANESE"
+msgstr "日本語"
+
+msgid "LANGUAGE_PORTUGUESE_BRAZIL"
+msgstr "Português (Brasil)"
+
+msgid "LOCALIZATION_PSEUDO_LABEL"
+msgstr "拡張テキストテスト"
+
+msgid "LOCALIZATION_PSEUDO_TOOLTIP"
+msgstr "切れたテキストや未翻訳テキストを検出するための開発モードです。ショートカット：F8。"
+
+msgid "START_GAME_TITLE"
+msgstr "剣闘士経営シミュレーター"
+
+msgid "START_SUBTITLE"
+msgstr "剣闘士養成所を築き、16週間を生き延びよう。"
+
+msgid "START_VIEW_FINAL_RESULT"
+msgstr "最終結果を見る"
+
+msgid "START_CONTINUE_CAMPAIGN"
+msgstr "キャンペーンを続ける"
+
+msgid "START_NEW_CAMPAIGN"
+msgstr "新しいキャンペーン"
+
+msgid "START_EXIT"
+msgstr "終了"
+
+msgid "START_NO_SAVE"
+msgstr "セーブデータがありません。"
+
+msgid "START_NO_CAMPAIGN"
+msgstr "保存されたキャンペーンはありません。"
+
+msgid "START_LOADING"
+msgstr "キャンペーンを読み込み中…"
+
+msgid "START_LOAD_FAILED"
+msgstr "有効なセーブデータを読み込めませんでした。"
+
+msgid "START_NEW_CAMPAIGN_TITLE"
+msgstr "新しいキャンペーン"
+
+msgid "START_OWNER_EXPLANATION"
+msgstr "ルドゥスを率いる人物と、その財産の由来を選びます。この選択でキャンペーン開始時の資源が決まります。"
+
+msgid "START_OWNER_NAME_PLACEHOLDER"
+msgstr "所有者の名前"
+
+msgid "START_BEGIN_CAMPAIGN"
+msgstr "キャンペーンを開始"
+
+msgid "COMMON_BACK"
+msgstr "戻る"
+
+msgid "START_SELECT_ORIGIN"
+msgstr "出自を選択してください。"
+
+msgid "START_NAME_MIN_LENGTH"
+msgstr "2文字以上の名前を入力してください。"
+
+msgid "START_RESET_FAILED"
+msgstr "前回のキャンペーン状態をリセットできませんでした。"
+
+msgid "START_OWNER_CONFIG_FAILED"
+msgstr "ルドゥスの所有者を設定できませんでした。"
+
+msgid "START_SAVE_FAILED"
+msgstr "キャンペーンは作成されましたが、保存できませんでした。"
+
+msgid "START_BONUSES"
+msgstr "ボーナス"
+
+msgid "START_NO_BONUSES"
+msgstr "ボーナスなし。"
+
+msgid "START_ORIGIN_FALLBACK"
+msgstr "出自"
+
+msgid "START_BONUS_DENARII"
+msgstr "開始時デナリウス"
+
+msgid "START_BONUS_FOOD"
+msgstr "開始時食料"
+
+msgid "START_BONUS_ORE"
+msgstr "開始時鉱石"
+
+msgid "START_BONUS_REPUTATION"
+msgstr "開始時名声"
+
+msgid "START_BONUS_LOYALTY"
+msgstr "人員の忠誠"
+
+msgid "START_BONUS_MORALE"
+msgstr "人員の士気"
+
+msgid "START_BONUS_GLADIATOR_EXPERIENCE"
+msgstr "剣闘士の経験値"
+
+msgid "START_RESULT_VICTORY"
+msgstr "勝利"
+
+msgid "START_RESULT_DEFEAT"
+msgstr "敗北"
+
+msgid "START_CAMPAIGN_FINISHED_SUMMARY"
+msgstr "{owner}\nキャンペーン終了 — {result}\n第{week}/16週 | 戦績：{wins}勝 {losses}敗"
+
+msgid "START_ACTIVE_CAMPAIGN_SUMMARY"
+msgstr "{owner}\n第{week}/16週 — 第{chapter}章：{chapter_name}\n次の戦い：{battle}"
+
+msgid "OWNER_TITLE_DOMINUS"
+msgstr "ドミヌス"
+
+msgid "OWNER_TITLE_DOMINA"
+msgstr "ドミナ"
+
+msgid "CHAPTER_1_NAME"
+msgstr "廃墟のルドゥス"
+
+msgid "CHAPTER_2_NAME"
+msgstr "血と名声"
+
+msgid "CHAPTER_3_NAME"
+msgstr "ルドゥスの名"
+
+msgid "BATTLE_DEMO_FINAL"
+msgstr "デモ版最終戦"
+
+msgid "BATTLE_OFFICIAL_TOURNAMENT"
+msgstr "闘技場公式大会"
+
+msgid "BATTLE_BEAST_HUNT"
+msgstr "円形闘技場の猛獣狩り"
+
+msgid "BATTLE_UNDERGROUND"
+msgstr "地下世界の非合法試合"
+
+msgid "BATTLE_WEEKLY_EXHIBITION"
+msgstr "ルドゥス週間公開試合"
