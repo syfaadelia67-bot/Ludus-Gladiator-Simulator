@@ -155,7 +155,6 @@ func _refresh_bond_cards() -> void:
         button.custom_minimum_size = Vector2(0, 96)
         button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
         button.alignment = HORIZONTAL_ALIGNMENT_LEFT
-        button.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
         button.text = "%s  ·  %s\nAfinidad %d · Respeto %d · Tensión %d\n%s" % [
             relation.get("other_name", "Desconocido"),
             relation.get("tone", "Neutral"),
@@ -271,6 +270,7 @@ func _refresh_events() -> void:
 
 func _clear_children(container: Node) -> void:
     for child in container.get_children():
+        container.remove_child(child)
         child.queue_free()
 
 func _return_to_finca() -> void:
