@@ -2,25 +2,33 @@ extends VBoxContainer
 
 @onready var back_button: Button = $Header/Margin/Row/BackToFinca
 @onready var capacity_label: Label = $Header/Margin/Row/Capacity
-@onready var personal_button: Button = $PrimaryChoices/PersonalButton
-@onready var fighters_button: Button = $PrimaryChoices/FightersButton
-@onready var sections: TabContainer = $Sections
+@onready var landing: VBoxContainer = $Landing
+@onready var personal_card: TextureButton = $Landing/Cards/PersonalCard
+@onready var fighters_card: TextureButton = $Landing/Cards/FightersCard
+@onready var content_shell: VBoxContainer = $ContentShell
+@onready var back_to_barracks_home: Button = $ContentShell/SectionHeader/BackToBarracksHome
+@onready var section_title: Label = $ContentShell/SectionHeader/SectionTitle
 
-@onready var personal_summary: Label = $Sections/Personal/ListPanel/Margin/Content/Summary
-@onready var personal_list: ItemList = $Sections/Personal/ListPanel/Margin/Content/PersonalList
-@onready var personal_details: RichTextLabel = $Sections/Personal/DetailsPanel/Margin/Content/DetailsScroll/PersonalDetails
-@onready var job_selector: OptionButton = $Sections/Personal/DetailsPanel/Margin/Content/JobPanel/Margin/Row/JobSelector
-@onready var assign_job_button: Button = $Sections/Personal/DetailsPanel/Margin/Content/JobPanel/Margin/Row/AssignJob
-@onready var personal_feedback: Label = $Sections/Personal/DetailsPanel/Margin/Content/Feedback
+@onready var personal_view: HBoxContainer = $ContentShell/PersonalView
+@onready var personal_summary: Label = $ContentShell/PersonalView/ListPanel/Margin/Content/Summary
+@onready var personal_list: ItemList = $ContentShell/PersonalView/ListPanel/Margin/Content/PersonalList
+@onready var personal_details: RichTextLabel = $ContentShell/PersonalView/DetailsPanel/Margin/Content/DetailsScroll/PersonalDetails
+@onready var job_selector: OptionButton = $ContentShell/PersonalView/DetailsPanel/Margin/Content/JobPanel/Margin/Row/JobSelector
+@onready var assign_job_button: Button = $ContentShell/PersonalView/DetailsPanel/Margin/Content/JobPanel/Margin/Row/AssignJob
+@onready var personal_feedback: Label = $ContentShell/PersonalView/DetailsPanel/Margin/Content/Feedback
 
-@onready var fighter_tabs: TabContainer = $Sections/Luchadores/FighterTabs
-@onready var gladiator_summary: Label = $Sections/Luchadores/FighterTabs/Gladiadores/ListPanel/Margin/Content/Summary
-@onready var gladiator_list: ItemList = $Sections/Luchadores/FighterTabs/Gladiadores/ListPanel/Margin/Content/GladiatorList
-@onready var gladiator_details: RichTextLabel = $Sections/Luchadores/FighterTabs/Gladiadores/DetailsPanel/Margin/Content/DetailsScroll/GladiatorDetails
-@onready var training_button: Button = $Sections/Luchadores/FighterTabs/Gladiadores/DetailsPanel/Margin/Content/Actions/Training
-@onready var equipment_button: Button = $Sections/Luchadores/FighterTabs/Gladiadores/DetailsPanel/Margin/Content/Actions/Equipment
-@onready var arena_button: Button = $Sections/Luchadores/FighterTabs/Gladiadores/DetailsPanel/Margin/Content/Actions/Arena
-@onready var beast_status: RichTextLabel = $Sections/Luchadores/FighterTabs/Bestias/Content/Status
+@onready var fighters_view: VBoxContainer = $ContentShell/FightersView
+@onready var gladiators_button: Button = $ContentShell/FightersView/ModeButtons/GladiatorsButton
+@onready var beasts_button: Button = $ContentShell/FightersView/ModeButtons/BeastsButton
+@onready var gladiators_view: HBoxContainer = $ContentShell/FightersView/GladiatorsView
+@onready var beasts_view: ScrollContainer = $ContentShell/FightersView/BeastsView
+@onready var gladiator_summary: Label = $ContentShell/FightersView/GladiatorsView/ListPanel/Margin/Content/Summary
+@onready var gladiator_list: ItemList = $ContentShell/FightersView/GladiatorsView/ListPanel/Margin/Content/GladiatorList
+@onready var gladiator_details: RichTextLabel = $ContentShell/FightersView/GladiatorsView/DetailsPanel/Margin/Content/DetailsScroll/GladiatorDetails
+@onready var training_button: Button = $ContentShell/FightersView/GladiatorsView/DetailsPanel/Margin/Content/Actions/Training
+@onready var equipment_button: Button = $ContentShell/FightersView/GladiatorsView/DetailsPanel/Margin/Content/Actions/Equipment
+@onready var arena_button: Button = $ContentShell/FightersView/GladiatorsView/DetailsPanel/Margin/Content/Actions/Arena
+@onready var beast_status: RichTextLabel = $ContentShell/FightersView/BeastsView/Content/Status
 
 var personal_ids: Array[String] = []
 var gladiator_ids: Array[String] = []
@@ -30,8 +38,11 @@ var selected_gladiator_id := ""
 
 func _ready() -> void:
     back_button.pressed.connect(_return_to_finca)
-    personal_button.pressed.connect(_show_personal)
-    fighters_button.pressed.connect(_show_fighters)
+    personal_card.pressed.connect(_open_personal_section)
+    fighters_card.pressed.connect(_open_fighters_section)
+    back_to_barracks_home.pressed.connect(_show_barracks_home)
+    gladiators_button.pressed.connect(_show_gladiators)
+    beasts_button.pressed.connect(_show_beasts)
     personal_list.item_selected.connect(_on_personal_selected)
     gladiator_list.item_selected.connect(_on_gladiator_selected)
     assign_job_button.pressed.connect(_assign_selected_job)
@@ -47,34 +58,76 @@ func _ready() -> void:
     GladiatorProgressionManager.progression_changed.connect(_refresh_gladiators)
 
     _populate_jobs()
-    _show_personal()
+    _show_barracks_home()
     _refresh_all()
 
 func _unhandled_key_input(event: InputEvent) -> void:
-    if is_visible_in_tree() and event.is_action_pressed("ui_cancel"):
+    if not is_visible_in_tree() or not event.is_action_pressed("ui_cancel"):
+        return
+    if content_shell.visible:
+        _show_barracks_home()
+    else:
         _return_to_finca()
-        get_viewport().set_input_as_handled()
+    get_viewport().set_input_as_handled()
 
 func _on_visibility_changed() -> void:
     if is_visible_in_tree():
+        _show_barracks_home()
         _refresh_all()
+
+func _show_barracks_home() -> void:
+    landing.visible = true
+    landing.mouse_filter = Control.MOUSE_FILTER_PASS
+    content_shell.visible = false
+    content_shell.mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+func _open_personal_section() -> void:
+    landing.visible = false
+    landing.mouse_filter = Control.MOUSE_FILTER_IGNORE
+    content_shell.visible = true
+    content_shell.mouse_filter = Control.MOUSE_FILTER_PASS
+    personal_view.visible = true
+    personal_view.mouse_filter = Control.MOUSE_FILTER_PASS
+    fighters_view.visible = false
+    fighters_view.mouse_filter = Control.MOUSE_FILTER_IGNORE
+    section_title.text = "PERSONAL · ESCLAVOS Y TRABAJADORES"
+    _refresh_personal()
+
+func _open_fighters_section() -> void:
+    landing.visible = false
+    landing.mouse_filter = Control.MOUSE_FILTER_IGNORE
+    content_shell.visible = true
+    content_shell.mouse_filter = Control.MOUSE_FILTER_PASS
+    personal_view.visible = false
+    personal_view.mouse_filter = Control.MOUSE_FILTER_IGNORE
+    fighters_view.visible = true
+    fighters_view.mouse_filter = Control.MOUSE_FILTER_PASS
+    section_title.text = "LUCHADORES DEL LUDUS"
+    _show_gladiators()
+
+func _show_gladiators() -> void:
+    gladiators_view.visible = true
+    gladiators_view.mouse_filter = Control.MOUSE_FILTER_PASS
+    beasts_view.visible = false
+    beasts_view.mouse_filter = Control.MOUSE_FILTER_IGNORE
+    gladiators_button.disabled = true
+    beasts_button.disabled = false
+    _refresh_gladiators()
+
+func _show_beasts() -> void:
+    gladiators_view.visible = false
+    gladiators_view.mouse_filter = Control.MOUSE_FILTER_IGNORE
+    beasts_view.visible = true
+    beasts_view.mouse_filter = Control.MOUSE_FILTER_PASS
+    gladiators_button.disabled = false
+    beasts_button.disabled = true
+    _refresh_beasts()
 
 func _populate_jobs() -> void:
     job_selector.clear()
     job_ids = RosterManager.get_job_ids()
     for job_id in job_ids:
         job_selector.add_item(RosterManager.get_job_name(job_id))
-
-func _show_personal() -> void:
-    sections.current_tab = 0
-    personal_button.disabled = true
-    fighters_button.disabled = false
-
-func _show_fighters() -> void:
-    sections.current_tab = 1
-    personal_button.disabled = false
-    fighters_button.disabled = true
-    fighter_tabs.current_tab = 0
 
 func _refresh_all() -> void:
     capacity_label.text = "CAPACIDAD %s" % RosterManager.get_capacity_summary()
@@ -91,16 +144,11 @@ func _refresh_personal() -> void:
         if str(person.role) == "gladiator":
             continue
         personal_ids.append(str(person.id))
-        personal_list.add_item("%s  ·  %s  ·  %s" % [
-            person.display_name,
-            person.origin,
-            _short_job_name(str(person.job))
-        ])
+        personal_list.add_item("%s  ·  %s  ·  %s" % [person.display_name, person.origin, _short_job_name(str(person.job))])
         personal_list.set_item_metadata(personal_list.item_count - 1, person.id)
 
     personal_summary.text = "%d integrante(s) · %d plaza(s) libres" % [
-        personal_ids.size(),
-        maxi(0, RosterManager.capacity - RosterManager.get_people().size())
+        personal_ids.size(), maxi(0, RosterManager.capacity - RosterManager.get_people().size())
     ]
 
     if personal_ids.is_empty():
@@ -134,24 +182,12 @@ func _refresh_personal_details() -> void:
     assign_job_button.disabled = false
     var traits_text := ", ".join(person.traits) if not person.traits.is_empty() else "Ninguno"
     personal_details.text = "[b]%s[/b]\n%s · %s\n\n[b]ESTADO[/b]\nLealtad %d · Moral %d · Fatiga %d\nSalud %d/%d · Herida: %s\n\n[b]APTITUDES[/b]\nFuerza %d · Agilidad %d · Resistencia %d\nInteligencia %d · Técnica %d\n\n[b]TRABAJO ACTUAL[/b]\n%s\n%s\n\n[b]FORMACIÓN[/b]\nEntrenamiento %d/100\nRasgos: %s" % [
-        person.display_name,
-        person.origin,
-        "Esclavo" if str(person.role) == "slave" else str(person.role).capitalize(),
-        int(person.loyalty),
-        int(person.morale),
-        int(person.fatigue),
-        int(person.health),
-        int(person.get_max_health()),
+        person.display_name, person.origin, "Esclavo" if str(person.role) == "slave" else str(person.role).capitalize(),
+        int(person.loyalty), int(person.morale), int(person.fatigue), int(person.health), int(person.get_max_health()),
         str(person.injury_name) if int(person.injury_days) > 0 else "Ninguna",
-        int(person.strength),
-        int(person.agility),
-        int(person.endurance),
-        int(person.intelligence),
-        int(person.technique),
-        RosterManager.get_job_name(str(person.job)),
-        RosterManager.get_job_description(str(person.job)),
-        int(person.training),
-        traits_text
+        int(person.strength), int(person.agility), int(person.endurance), int(person.intelligence), int(person.technique),
+        RosterManager.get_job_name(str(person.job)), RosterManager.get_job_description(str(person.job)),
+        int(person.training), traits_text
     ]
 
     var current_job_index := job_ids.find(str(person.job))
@@ -181,11 +217,7 @@ func _refresh_gladiators() -> void:
         gladiator_ids.append(str(person.id))
         var record: Dictionary = GladiatorProgressionManager.get_record(str(person.id))
         var availability := "LISTO" if person.is_available_for_combat() else _fighter_state_text(person)
-        gladiator_list.add_item("%s  ·  Nv.%d  ·  %s" % [
-            person.display_name,
-            int(record.get("level", 1)),
-            availability
-        ])
+        gladiator_list.add_item("%s  ·  Nv.%d  ·  %s" % [person.display_name, int(record.get("level", 1)), availability])
         gladiator_list.set_item_metadata(gladiator_list.item_count - 1, person.id)
 
     gladiator_summary.text = "%d gladiador(es)" % gladiator_ids.size()
@@ -227,29 +259,13 @@ func _refresh_gladiator_details() -> void:
     var traits_text := ", ".join(fighter.traits) if not fighter.traits.is_empty() else "Ninguno"
 
     gladiator_details.text = "[b]%s[/b]\n%s · Nivel %d\n%s\n\n[b]ESTADO DE COMBATE[/b]\nSalud %d/%d · Energía %d\nMoral %d · Fatiga %d\nEstado: %s\n\n[b]ATRIBUTOS[/b]\nAtaque %d · Defensa %d\nFuerza %d · Agilidad %d · Resistencia %d · Técnica %d\n\n[b]EQUIPAMIENTO[/b]\nArma: %s\nArmadura: %s\nEscudo: %s\n\n[b]CARRERA[/b]\nExperiencia %d · Victorias %d · Derrotas %d\nRasgos: %s" % [
-        fighter.display_name,
-        fighter.origin,
-        int(record.get("level", 1)),
-        specialization,
-        int(fighter.health),
-        int(fighter.get_max_health()),
-        int(fighter.get_max_energy()),
-        int(fighter.morale),
-        int(fighter.fatigue),
+        fighter.display_name, fighter.origin, int(record.get("level", 1)), specialization,
+        int(fighter.health), int(fighter.get_max_health()), int(fighter.get_max_energy()), int(fighter.morale), int(fighter.fatigue),
         "Listo" if fighter.is_available_for_combat() else _fighter_state_text(fighter).capitalize(),
-        int(fighter.get_base_attack()),
-        int(fighter.get_base_defense()),
-        int(fighter.strength),
-        int(fighter.agility),
-        int(fighter.endurance),
-        int(fighter.technique),
-        loadout.get("weapon_name", "Sin arma"),
-        loadout.get("armor_name", "Sin armadura"),
-        loadout.get("shield_name", "Sin escudo"),
-        int(record.get("experience", 0)),
-        int(record.get("wins", 0)),
-        int(record.get("losses", 0)),
-        traits_text
+        int(fighter.get_base_attack()), int(fighter.get_base_defense()), int(fighter.strength), int(fighter.agility),
+        int(fighter.endurance), int(fighter.technique), loadout.get("weapon_name", "Sin arma"),
+        loadout.get("armor_name", "Sin armadura"), loadout.get("shield_name", "Sin escudo"),
+        int(record.get("experience", 0)), int(record.get("wins", 0)), int(record.get("losses", 0)), traits_text
     ]
     training_button.disabled = false
     equipment_button.disabled = false
@@ -266,7 +282,7 @@ func _refresh_beasts() -> void:
     var beast_area: Dictionary = EstateManager.get_building_data("beast_area")
     var locked := beast_area.is_empty() or bool(beast_area.get("locked", true))
     if locked:
-        beast_status.text = "[center][b]CORRALES EN CONSTRUCCIÓN[/b]\n\nLas bestias estarán separadas de los gladiadores y del personal. Cuando se habilite el área de bestias, esta pestaña mostrará sus fichas, estado, alimentación y disponibilidad para la Arena.[/center]"
+        beast_status.text = "[center][b]CORRALES EN CONSTRUCCIÓN[/b]\n\nCuando se habilite el área de bestias, esta sección mostrará sus fichas, estado, alimentación y disponibilidad para la Arena.[/center]"
     else:
         beast_status.text = "[center][b]NO HAY BESTIAS REGISTRADAS[/b]\n\nLas bestias adquiridas o capturadas aparecerán aquí con su estado y preparación.[/center]"
 
