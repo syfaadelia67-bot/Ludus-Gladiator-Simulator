@@ -24,11 +24,17 @@ $exitCode = 1
 
 try {
     Push-Location $projectRoot
+
+    & $GodotCommand --headless --editor --path $projectRoot --quit
+    if ($LASTEXITCODE -ne 0) {
+        throw "Godot no pudo importar el proyecto y registrar las clases de GUT."
+    }
+
     $arguments = @(
         "--headless",
         "-d",
         "--path", $projectRoot,
-        "-s", "addons/gut/gut_cmdln.gd",
+        "-s", "tools/ludus_gut_cmdln.gd",
         "-gconfig=res://.gutconfig.json",
         "-gexit"
     )
