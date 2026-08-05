@@ -2,28 +2,34 @@ extends VBoxContainer
 
 @onready var back_button: Button = $Header/BackToFinca
 @onready var rotation_label: Label = $Header/Rotation
-@onready var fighters_button: Button = $ModeButtons/Fighters
-@onready var equipment_button: Button = $ModeButtons/Equipment
-@onready var feedback: Label = $Feedback
+@onready var landing: VBoxContainer = $Landing
+@onready var fighters_card: TextureButton = $Landing/Cards/FightersCard
+@onready var equipment_card: TextureButton = $Landing/Cards/EquipmentCard
+@onready var content_shell: VBoxContainer = $ContentShell
+@onready var back_to_market_home: Button = $ContentShell/SectionHeader/BackToMarketHome
+@onready var section_title: Label = $ContentShell/SectionHeader/SectionTitle
+@onready var feedback: Label = $ContentShell/Feedback
 
-@onready var fighters_view: HSplitContainer = $FightersView
-@onready var fighter_list: ItemList = $FightersView/OffersPanel/Margin/Content/List
-@onready var fighter_details: RichTextLabel = $FightersView/DetailsPanel/Margin/Scroll/Content/Details
-@onready var fighter_buy_button: Button = $FightersView/DetailsPanel/Margin/Scroll/Content/Buy
+@onready var fighters_view: HSplitContainer = $ContentShell/FightersView
+@onready var fighter_list: ItemList = $ContentShell/FightersView/OffersPanel/Margin/Content/List
+@onready var fighter_details: RichTextLabel = $ContentShell/FightersView/DetailsPanel/Margin/Scroll/Content/Details
+@onready var fighter_buy_button: Button = $ContentShell/FightersView/DetailsPanel/Margin/Scroll/Content/Buy
 
-@onready var equipment_view: HSplitContainer = $EquipmentView
-@onready var equipment_list: ItemList = $EquipmentView/OffersPanel/Margin/Content/List
-@onready var equipment_refresh_button: Button = $EquipmentView/OffersPanel/Margin/Content/Header/Refresh
-@onready var equipment_details: RichTextLabel = $EquipmentView/DetailsPanel/Margin/Scroll/Content/Details
-@onready var equipment_buy_button: Button = $EquipmentView/DetailsPanel/Margin/Scroll/Content/Buy
+@onready var equipment_view: HSplitContainer = $ContentShell/EquipmentView
+@onready var equipment_list: ItemList = $ContentShell/EquipmentView/OffersPanel/Margin/Content/List
+@onready var equipment_refresh_button: Button = $ContentShell/EquipmentView/OffersPanel/Margin/Content/Header/Refresh
+@onready var equipment_details: RichTextLabel = $ContentShell/EquipmentView/DetailsPanel/Margin/Scroll/Content/Details
+@onready var equipment_buy_button: Button = $ContentShell/EquipmentView/DetailsPanel/Margin/Scroll/Content/Buy
 
 var selected_fighter_offer_id := ""
 var selected_equipment_offer_id := ""
+var active_section := ""
 
 func _ready() -> void:
     back_button.pressed.connect(_return_to_finca)
-    fighters_button.pressed.connect(_show_fighters)
-    equipment_button.pressed.connect(_show_equipment)
+    fighters_card.pressed.connect(_open_fighters)
+    equipment_card.pressed.connect(_open_equipment)
+    back_to_market_home.pressed.connect(_show_market_home)
     fighter_list.item_selected.connect(_on_fighter_selected)
     equipment_list.item_selected.connect(_on_equipment_selected)
     fighter_buy_button.pressed.connect(_buy_selected_fighter)
@@ -40,35 +46,58 @@ func _ready() -> void:
     GameState.resources_changed.connect(_refresh_controls)
     GameState.week_advanced.connect(func(_week: int): _refresh_all())
 
-    _show_fighters()
+    _show_market_home()
     _refresh_all()
 
 func _unhandled_key_input(event: InputEvent) -> void:
-    if is_visible_in_tree() and event.is_action_pressed("ui_cancel"):
+    if not is_visible_in_tree() or not event.is_action_pressed("ui_cancel"):
+        return
+    if content_shell.visible:
+        _show_market_home()
+    else:
         _return_to_finca()
-        get_viewport().set_input_as_handled()
+    get_viewport().set_input_as_handled()
 
 func _on_visibility_changed() -> void:
     if is_visible_in_tree():
+        _show_market_home()
         _refresh_all()
 
-func _show_fighters() -> void:
+func _show_market_home() -> void:
+    active_section = ""
+    landing.visible = true
+    landing.mouse_filter = Control.MOUSE_FILTER_PASS
+    content_shell.visible = false
+    content_shell.mouse_filter = Control.MOUSE_FILTER_IGNORE
+    feedback.text = ""
+
+func _open_fighters() -> void:
+    active_section = "fighters"
+    landing.visible = false
+    landing.mouse_filter = Control.MOUSE_FILTER_IGNORE
+    content_shell.visible = true
+    content_shell.mouse_filter = Control.MOUSE_FILTER_PASS
     fighters_view.visible = true
     fighters_view.mouse_filter = Control.MOUSE_FILTER_PASS
     equipment_view.visible = false
     equipment_view.mouse_filter = Control.MOUSE_FILTER_IGNORE
-    fighters_button.disabled = true
-    equipment_button.disabled = false
-    feedback.text = "Ofertas de luchadores. La renovación de esta sección es automática."
+    section_title.text = "MERCADO DE LUCHADORES"
+    feedback.text = "La renovación de luchadores ocurre automáticamente cada tres semanas."
+    _refresh_fighter_offers()
 
-func _show_equipment() -> void:
+func _open_equipment() -> void:
+    active_section = "equipment"
+    landing.visible = false
+    landing.mouse_filter = Control.MOUSE_FILTER_IGNORE
+    content_shell.visible = true
+    content_shell.mouse_filter = Control.MOUSE_FILTER_PASS
     fighters_view.visible = false
     fighters_view.mouse_filter = Control.MOUSE_FILTER_IGNORE
     equipment_view.visible = true
     equipment_view.mouse_filter = Control.MOUSE_FILTER_PASS
-    fighters_button.disabled = false
-    equipment_button.disabled = true
-    feedback.text = "Equipamiento del mercado. Podés renovar solo esta sección por 100 denarios."
+    section_title.text = "MERCADO DE EQUIPAMIENTO"
+    feedback.text = "Podés renovar únicamente esta sección por 100 denarios."
+    _refresh_equipment_offers()
 
 func _refresh_all() -> void:
     _refresh_rotation_label()
@@ -77,10 +106,9 @@ func _refresh_all() -> void:
     _refresh_controls()
 
 func _refresh_rotation_label() -> void:
-    var weeks_left := MarketManager.get_weeks_until_auto_refresh()
     rotation_label.text = "RENOVACIÓN GENERAL · SEMANA %d\nFALTAN %d SEMANA(S)" % [
         MarketManager.get_next_auto_refresh_week(),
-        weeks_left
+        MarketManager.get_weeks_until_auto_refresh()
     ]
 
 func _refresh_fighter_offers() -> void:
@@ -89,12 +117,10 @@ func _refresh_fighter_offers() -> void:
     var offers := MarketManager.get_offers()
     for index in range(offers.size()):
         var offer: Dictionary = offers[index]
-        var role_text := _role_label(str(offer.get("role", "slave")))
-        var unique_text := " · ÚNICO" if bool(offer.get("unique", false)) else ""
         fighter_list.add_item("%s · %s%s · %d denarios" % [
             offer.get("name", "Sin nombre"),
-            role_text,
-            unique_text,
+            _role_label(str(offer.get("role", "slave"))),
+            " · ÚNICO" if bool(offer.get("unique", false)) else "",
             int(offer.get("price", 0))
         ])
         fighter_list.set_item_metadata(index, str(offer.get("id", "")))
@@ -129,20 +155,14 @@ func _refresh_fighter_details() -> void:
     var traits: Array[String] = []
     for raw_trait in offer.get("traits", []):
         traits.append(str(raw_trait).replace("_", " ").capitalize())
-    var unique_line := "\n[color=gold][b]GLADIADOR ÚNICO[/b][/color]" if bool(offer.get("unique", false)) else ""
     fighter_details.text = "[b]%s[/b]%s\n%s de %s\n\nFuerza %d · Agilidad %d\nResistencia %d · Técnica %d\nInteligencia %d · Salud %d\nLealtad %d\n\nRasgos: %s\n\n[b]PRECIO: %d DENARIOS[/b]" % [
         offer.get("name", "Sin nombre"),
-        unique_line,
+        "\n[color=gold][b]GLADIADOR ÚNICO[/b][/color]" if bool(offer.get("unique", false)) else "",
         _role_label(str(offer.get("role", "slave"))),
         offer.get("origin", "Origen desconocido"),
-        int(offer.get("strength", 0)),
-        int(offer.get("agility", 0)),
-        int(offer.get("endurance", 0)),
-        int(offer.get("technique", 0)),
-        int(offer.get("intelligence", 0)),
-        int(offer.get("health", 0)),
-        int(offer.get("loyalty", 0)),
-        ", ".join(traits) if not traits.is_empty() else "Ninguno",
+        int(offer.get("strength", 0)), int(offer.get("agility", 0)), int(offer.get("endurance", 0)),
+        int(offer.get("technique", 0)), int(offer.get("intelligence", 0)), int(offer.get("health", 0)),
+        int(offer.get("loyalty", 0)), ", ".join(traits) if not traits.is_empty() else "Ninguno",
         int(offer.get("price", 0))
     ]
     fighter_buy_button.text = "COMPRAR A %s · %d" % [offer.get("name", "LUCHADOR"), int(offer.get("price", 0))]
@@ -161,10 +181,8 @@ func _refresh_equipment_offers() -> void:
     for index in range(offers.size()):
         var offer: Dictionary = offers[index]
         equipment_list.add_item("%s · %s · %s · %d denarios" % [
-            offer.get("name", "Objeto"),
-            _equipment_type_label(str(offer.get("type", "weapon"))),
-            offer.get("quality", "Común"),
-            int(offer.get("price", 0))
+            offer.get("name", "Objeto"), _equipment_type_label(str(offer.get("type", "weapon"))),
+            offer.get("quality", "Común"), int(offer.get("price", 0))
         ])
         equipment_list.set_item_metadata(index, str(offer.get("id", "")))
 
@@ -206,12 +224,9 @@ func _refresh_equipment_details() -> void:
     for raw_tag in offer.get("tags", []):
         tags.append(str(raw_tag).replace("_", " ").capitalize())
     equipment_details.text = "[b]%s[/b]\n%s · Calidad %s\n\n%s\n\nEtiquetas: %s\n\nAl comprarlo se guardará en el inventario del ludus.\n\n[b]PRECIO: %d DENARIOS[/b]" % [
-        offer.get("name", "Objeto"),
-        _equipment_type_label(str(offer.get("type", "weapon"))),
-        offer.get("quality", "Común"),
-        "\n".join(stat_lines) if not stat_lines.is_empty() else "Sin bonificación de combate.",
-        ", ".join(tags) if not tags.is_empty() else "Ninguna",
-        int(offer.get("price", 0))
+        offer.get("name", "Objeto"), _equipment_type_label(str(offer.get("type", "weapon"))),
+        offer.get("quality", "Común"), "\n".join(stat_lines) if not stat_lines.is_empty() else "Sin bonificación de combate.",
+        ", ".join(tags) if not tags.is_empty() else "Ninguna", int(offer.get("price", 0))
     ]
     equipment_buy_button.text = "COMPRAR %s · %d" % [offer.get("name", "EQUIPAMIENTO"), int(offer.get("price", 0))]
     equipment_buy_button.disabled = CampaignManager.campaign_over or GameState.denarii < int(offer.get("price", 0))
@@ -237,6 +252,9 @@ func _on_fighter_purchase_completed(person_name: String, price: int) -> void:
     feedback.text = "%s se incorporó al ludus por %d denarios." % [person_name, price]
     selected_fighter_offer_id = ""
     _refresh_fighter_offers()
+    if active_section == "fighters":
+        content_shell.visible = true
+        fighters_view.visible = true
 
 func _on_fighter_purchase_failed(reason: String) -> void:
     feedback.text = reason
@@ -246,6 +264,9 @@ func _on_equipment_purchase_completed(item_name: String, price: int) -> void:
     feedback.text = "%s fue enviado al inventario por %d denarios." % [item_name, price]
     selected_equipment_offer_id = ""
     _refresh_equipment_offers()
+    if active_section == "equipment":
+        content_shell.visible = true
+        equipment_view.visible = true
 
 func _on_equipment_purchase_failed(reason: String) -> void:
     feedback.text = reason
