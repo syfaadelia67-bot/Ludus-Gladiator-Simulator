@@ -35,6 +35,18 @@ window/stretch/aspect="expand"
 
 enabled=PackedStringArray("res://addons/godot_ai/plugin.cfg")
 
+[internationalization]
+
+locale/fallback="es"
+locale/translations=PackedStringArray("res://localization/es.po", "res://localization/shared.es.po", "res://localization/en.po", "res://localization/zh_CN.po", "res://localization/ja.po", "res://localization/pt_BR.po")
+pseudolocalization/use_pseudolocalization=false
+pseudolocalization/replace_with_accents=true
+pseudolocalization/double_vowels=true
+pseudolocalization/fake_bidi=false
+pseudolocalization/override=false
+pseudolocalization/skip_placeholders=true
+pseudolocalization/expansion_ratio=0.3
+
 [rendering]
 
 renderer/rendering_method="gl_compatibility"
@@ -42,6 +54,7 @@ renderer/rendering_method.mobile="gl_compatibility"
 
 [autoload]
 
+LocalizationManager="*res://scripts/core/localization_manager.gd"
 GameState="*res://scripts/core/game_state.gd"
 DataRepository="*res://scripts/core/data_repository.gd"
 Pack000Assets="*res://scripts/ui/pack_000_asset_registry.gd"
