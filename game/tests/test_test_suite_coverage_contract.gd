@@ -1,7 +1,8 @@
-extends SceneTree
+extends Node
 
 const TEST_ROOT := "res://tests"
 const SUPPORTED_SUFFIXES: Array[String] = ["_test.gd", "_contract.gd"]
+const SUPPORTED_PREFIXES: Array[String] = ["test_"]
 const EXCLUDED_FILES := {
     "test_runner.gd": "Autoload test orchestrator; it is infrastructure, not a test case."
 }
@@ -10,7 +11,7 @@ const UI_MARKERS: Array[String] = [
     "arena_scroll", "relationships", "dossier", "localization"
 ]
 
-func _initialize() -> void:
+func _ready() -> void:
     var runner_text := FileAccess.get_file_as_string("res://tests/test_runner.gd")
     var game_root := ProjectSettings.globalize_path("res://").trim_suffix("/").trim_suffix("\\")
     var repository_root := game_root.get_base_dir()
@@ -21,6 +22,7 @@ func _initialize() -> void:
 
     assert(not workflow_text.is_empty(), "Could not read workflow: %s" % workflow_path)
     assert(runner_text.contains("const SUPPORTED_TEST_SUFFIXES: Array[String] = [\"_test.gd\", \"_contract.gd\"]"))
+    assert(runner_text.contains("const SUPPORTED_TEST_PREFIXES: Array[String] = [\"test_\"]"))
     assert(runner_text.contains("func _collect_tests"))
     assert(runner_text.contains("func _requires_script_mode"))
     assert(runner_text.contains("line.begins_with(\"extends SceneTree\")"))
@@ -32,6 +34,8 @@ func _initialize() -> void:
 
     for suffix in SUPPORTED_SUFFIXES:
         assert(runner_text.contains("\"%s\"" % suffix))
+    for prefix in SUPPORTED_PREFIXES:
+        assert(runner_text.contains("\"%s\"" % prefix))
     for marker in UI_MARKERS:
         assert(runner_text.contains("\"%s\"" % marker))
     for file_name in EXCLUDED_FILES.keys():
@@ -55,6 +59,7 @@ func _initialize() -> void:
     assert(project_text.contains("TestRunner=\"*res://tests/test_runner.gd\""))
     assert(documentation_text.contains("*_test.gd"))
     assert(documentation_text.contains("*_contract.gd"))
+    assert(documentation_text.contains("test_*.gd"))
     assert(documentation_text.contains("No existe un estado sin grupo"))
     assert(documentation_text.contains("No se instala ningún plugin"))
 
@@ -99,7 +104,7 @@ func _initialize() -> void:
     assert(node_count > 0)
 
     print("Test discovery, isolation and CI group coverage contract: OK · %d tests (%d core, %d UI)" % [recognized_count, core_count, ui_count])
-    quit(0)
+    get_tree().quit(0)
 
 func _collect_scripts(directory_path: String, result: Array[String]) -> void:
     var directory := DirAccess.open(ProjectSettings.globalize_path(directory_path))
@@ -119,6 +124,9 @@ func _collect_scripts(directory_path: String, result: Array[String]) -> void:
     directory.list_dir_end()
 
 func _is_recognized_test(file_name: String) -> bool:
+    for prefix in SUPPORTED_PREFIXES:
+        if file_name.begins_with(prefix) and file_name.ends_with(".gd"):
+            return true
     for suffix in SUPPORTED_SUFFIXES:
         if file_name.ends_with(suffix):
             return true
