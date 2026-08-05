@@ -1,0 +1,43 @@
+extends GutTest
+
+const SCENE_PATHS := [
+    "res://scenes/Main.tscn",
+    "res://scenes/FincaScreen.tscn",
+    "res://scenes/BarracksScreen.tscn",
+    "res://scenes/MarketScreen.tscn",
+    "res://scenes/ArenaScreen.tscn",
+    "res://scenes/GladiatorDossierPanel.tscn",
+    "res://scenes/CampaignPanel.tscn",
+    "res://scenes/EventsPanel.tscn",
+    "res://scenes/RelationshipsPanel.tscn",
+    "res://scenes/EconomyPanel.tscn",
+    "res://scenes/TournamentsPanel.tscn",
+    "res://scenes/CombatHistoryPanel.tscn"
+]
+
+func test_primary_scenes_load_and_instantiate_without_parse_errors() -> void:
+    for scene_path in SCENE_PATHS:
+        assert_true(ResourceLoader.exists(scene_path), "Debe existir %s." % scene_path)
+        if not ResourceLoader.exists(scene_path):
+            continue
+
+        var packed_scene := load(scene_path) as PackedScene
+        assert_not_null(packed_scene, "%s debe cargar como PackedScene." % scene_path)
+        if packed_scene == null:
+            continue
+
+        var instance := packed_scene.instantiate()
+        assert_not_null(instance, "%s debe poder instanciarse." % scene_path)
+        if instance != null:
+            instance.set_script(null)
+            instance.free()
+
+func test_main_scene_remains_the_configured_entry_point() -> void:
+    assert_eq(str(ProjectSettings.get_setting("application/run/main_scene", "")), "res://scenes/Main.tscn")
+
+func test_every_smoke_scene_uses_a_unique_resource_path() -> void:
+    var unique_paths: Dictionary = {}
+    for scene_path in SCENE_PATHS:
+        assert_false(unique_paths.has(scene_path), "La lista de humo no debe repetir %s." % scene_path)
+        unique_paths[scene_path] = true
+    assert_eq(unique_paths.size(), SCENE_PATHS.size())
