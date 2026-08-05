@@ -1,0 +1,90 @@
+extends GutTest
+
+const ECONOMY_MANAGER_SCRIPT := preload("res://scripts/systems/economy_manager_weekly.gd")
+
+var manager
+
+func before_each() -> void:
+    manager = autofree(ECONOMY_MANAGER_SCRIPT.new())
+
+func test_weekly_projection_combines_income_fixed_costs_and_debt_payments() -> void:
+    manager.active_contracts.assign([
+        {"weekly_income":30, "weeks_remaining":4},
+        {"daily_income":20, "days_remaining":2}
+    ])
+    manager.active_loans.assign([
+        {"installment":25, "remaining":10, "weeks_remaining":3},
+        {"installment":12, "remaining":30, "days_remaining":4}
+    ])
+
+    var fixed_costs: int = manager.get_weekly_fixed_costs()
+    var projection: Dictionary = manager.get_weekly_projection()
+
+    assert_eq(int(projection.get("sponsor_income", -1)), 50)
+    assert_eq(int(projection.get("loan_payments", -1)), 22)
+    assert_eq(int(projection.get("fixed_costs", -1)), fixed_costs)
+    assert_eq(int(projection.get("expenses", -1)), fixed_costs + 22)
+    assert_eq(int(projection.get("net", 999999)), 50 - fixed_costs - 22)
+    assert_eq(int(projection.get("debt", -1)), 40)
+
+func test_import_normalizes_legacy_daily_fields_to_weekly_aliases() -> void:
+    manager.import_state({
+        "active_contracts":[{
+            "sponsor_id":"local_merchant",
+            "days_remaining":3,
+            "daily_income":18
+        }],
+        "active_loans":[{
+            "loan_id":"small",
+            "days_remaining":5,
+            "remaining":100,
+            "installment":20
+        }],
+        "ledger":[{
+            "day":4,
+            "amount":18,
+            "reason":"Ingreso diario de Mercaderes"
+        }],
+        "missed_payments":0,
+        "insolvency_days":0,
+        "serial":2
+    })
+
+    var contract: Dictionary = manager.active_contracts[0]
+    var loan: Dictionary = manager.active_loans[0]
+    var entry: Dictionary = manager.ledger[0]
+
+    assert_eq(int(contract.get("weeks_remaining", -1)), 3)
+    assert_eq(int(contract.get("days_remaining", -1)), 3)
+    assert_eq(int(contract.get("weekly_income", -1)), 18)
+    assert_eq(int(contract.get("daily_income", -1)), 18)
+    assert_eq(int(loan.get("weeks_remaining", -1)), 5)
+    assert_eq(int(loan.get("days_remaining", -1)), 5)
+    assert_eq(int(entry.get("week", -1)), 4)
+    assert_eq(int(entry.get("day", -1)), 4)
+    assert_true(str(entry.get("reason", "")).contains("Ingreso semanal de"))
+
+func test_export_preserves_weekly_insolvency_and_normalized_collections() -> void:
+    manager.insolvency_days = 6
+    manager.active_contracts.assign([{"days_remaining":2, "daily_income":11}])
+    manager.active_loans.assign([{"days_remaining":3, "remaining":44, "installment":9}])
+
+    var exported: Dictionary = manager.export_state()
+    var contract: Dictionary = exported.get("active_contracts", [])[0]
+    var loan: Dictionary = exported.get("active_loans", [])[0]
+
+    assert_eq(int(exported.get("insolvency_weeks", -1)), 6)
+    assert_eq(int(contract.get("weeks_remaining", -1)), 2)
+    assert_eq(int(contract.get("weekly_income", -1)), 11)
+    assert_eq(int(loan.get("weeks_remaining", -1)), 3)
+
+func test_bankruptcy_levels_are_monotonic() -> void:
+    manager.missed_payments = 0
+    manager.insolvency_days = 0
+    assert_eq(manager.get_bankruptcy_level(), 0)
+    manager.missed_payments = 1
+    assert_eq(manager.get_bankruptcy_level(), 1)
+    manager.missed_payments = 3
+    assert_eq(manager.get_bankruptcy_level(), 2)
+    manager.missed_payments = 6
+    assert_eq(manager.get_bankruptcy_level(), 3)
