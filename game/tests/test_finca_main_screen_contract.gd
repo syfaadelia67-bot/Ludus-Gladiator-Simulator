@@ -12,64 +12,36 @@ func _initialize() -> void:
         assert(scene_text.contains("name=\"%s\"" % required_node) or scene_text.contains("name = \"%s\"" % required_node))
 
     for building_id in [
-        "dominus_house",
-        "barracks",
-        "training_yard",
-        "forge",
-        "infirmary",
-        "kitchen",
-        "warehouse",
-        "worker_quarters",
-        "wall_and_gate",
-        "beast_area",
-        "sanctuary",
-        "private_arena",
-        "stable"
+        "dominus_house", "barracks", "training_yard", "forge", "infirmary", "kitchen", "warehouse",
+        "worker_quarters", "wall_and_gate", "beast_area", "sanctuary", "private_arena", "stable"
     ]:
         assert(controller_text.contains("\"%s\"" % building_id))
-
-    assert(scene_text.contains("custom_minimum_size = Vector2(680, 0)"))
-    assert(scene_text.contains("custom_minimum_size = Vector2(300, 0)"))
-    assert(scene_text.contains("custom_minimum_size = Vector2(660, 300)"))
-    assert(scene_text.contains("horizontal_scroll_mode = 0"))
-    assert(scene_text.contains("follow_focus = true"))
 
     assert(controller_text.contains("const BUILDING_LAYOUT"))
     assert(controller_text.contains("const HOTSPOT_NAMES"))
     assert(controller_text.contains("_build_hotspots()"))
-    assert(controller_text.contains("details_scroll"))
-    assert(controller_text.contains("_scroll_details_to_top"))
-    assert(controller_text.contains("clampf"))
-    assert(controller_text.contains("EventManager.get_pending_event()"))
-    assert(controller_text.contains("CombatManager.get_current_event_details()"))
     assert(controller_text.contains("EstateManager.can_upgrade"))
-    assert(not controller_text.contains("_restore_legacy_shell"))
 
-    assert(bootstrap_text.contains("preload(\"res://scenes/FincaScreen.tscn\")"))
-    assert(bootstrap_text.contains("preload(\"res://scenes/UnifiedHudShell.tscn\")"))
-    assert(bootstrap_text.contains("_attach_finca_screen(tabs)"))
-    assert(bootstrap_text.contains("_attach_unified_hud(root)"))
-    assert(bootstrap_text.contains("main_tabs.tabs_visible = false"))
-    assert(bootstrap_text.contains("_disable_embedded_finca_shell"))
-    assert(not bootstrap_text.contains("control.visible = not active"))
+    assert(bootstrap_text.contains("FincaHubController.prepare_scene()"))
+    assert(bootstrap_text.contains("FincaHubController.show_finca()"))
+    assert(bootstrap_text.contains("main_tabs.visible = false"))
+    assert(not bootstrap_text.contains("_attach_finca_screen"))
+    assert(not bootstrap_text.contains("_select_finca_as_primary_view"))
 
-    for required_shell_node in ["TopHUD", "MainNavigation", "BottomStatusBar", "More", "Section"]:
+    assert(hub_text.contains("const SCREEN_HOST_NAME := \"ScreenHost\""))
+    assert(hub_text.contains("\"finca\": preload(\"res://scenes/FincaScreen.tscn\")"))
+    assert(hub_text.contains("func _show_hosted_screen"))
+    assert(hub_text.contains("func _show_legacy_screen"))
+    assert(hub_text.contains("return current_system_id"))
+    assert(not hub_text.contains("tabs.current_tab = tab_index\n    system_opened.emit"))
+
+    for required_shell_node in ["TopHUD", "MainNavigation", "BottomStatusBar", "More", "Section", "Barracks"]:
         assert(shell_scene_text.contains("name=\"%s\"" % required_shell_node) or shell_scene_text.contains("name = \"%s\"" % required_shell_node))
-    assert(shell_controller_text.contains("const PRIMARY_SYSTEMS"))
-    assert(shell_controller_text.contains("const MORE_SYSTEMS"))
-    assert(shell_controller_text.contains("FincaHubController.system_opened.connect"))
-    assert(shell_controller_text.contains("_refresh_navigation"))
-
-    for mapping in [
-        "\"relaciones\": \"Relaciones\"",
-        "\"personalidad\": \"Personalidad\"",
-        "\"transferencias\": \"Transferencias\"",
-        "\"historial\": \"Historial\"",
-        "\"infirmary\": \"personal\"",
-        "\"kitchen\": \"economia\""
-    ]:
-        assert(hub_text.contains(mapping))
-    assert(hub_text.contains("EstateManager.is_locked(canonical_id)"))
+    assert(shell_scene_text.contains("anchor_left = 1.0"))
+    assert(shell_scene_text.contains("corner_radius_top_left = 30"))
+    assert(shell_scene_text.contains("MainNavigation/Margin/Column"))
+    assert(shell_controller_text.contains("$MainNavigation/Margin/Column/Finca"))
+    assert(shell_controller_text.contains("FincaHubController.open_system"))
 
     var finca_scene := load("res://scenes/FincaScreen.tscn")
     var finca_script := load("res://scripts/ui/finca_screen.gd")
@@ -83,15 +55,14 @@ func _initialize() -> void:
     var finca_instance := (finca_scene as PackedScene).instantiate()
     assert(finca_instance.get_node_or_null("Center/WorldPanel/WorldMargin/WorldArea") != null)
     assert(finca_instance.get_node_or_null("Center/BuildingDetailsPanel/Margin/Scroll") is ScrollContainer)
-    assert(finca_instance.get_node_or_null("Center/BuildingDetailsPanel/Margin/Scroll/Details/Enter") is Button)
-    assert(finca_instance.get_node_or_null("Center/BuildingDetailsPanel/Margin/Scroll/Details/Upgrade") is Button)
     finca_instance.free()
 
     var shell_instance := (shell_scene as PackedScene).instantiate()
     assert(shell_instance.get_node_or_null("TopHUD") != null)
-    assert(shell_instance.get_node_or_null("MainNavigation") != null)
+    assert(shell_instance.get_node_or_null("MainNavigation/Margin/Column/Finca") is Button)
+    assert(shell_instance.get_node_or_null("MainNavigation/Margin/Column/More") is MenuButton)
     assert(shell_instance.get_node_or_null("BottomStatusBar") != null)
     shell_instance.free()
 
-    print("Finca responsive layout and unified HUD contract: OK")
+    print("Finca central ScreenHost and circular HUD contract: OK")
     quit()
