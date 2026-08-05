@@ -1,6 +1,16 @@
 class_name LudusPerson
 extends RefCounted
 
+const EQUIPMENT_SLOT_IDS: Array[String] = [
+    "head",
+    "torso",
+    "right_hand",
+    "left_hand",
+    "lower_body",
+    "accessory",
+    "mount"
+]
+
 var id: String
 var display_name: String
 var role: String = "slave"
@@ -18,9 +28,15 @@ var fatigue: int = 0
 var training: int = 0
 var traits: Array[String] = []
 var applied_trait_effects: Array[String] = []
+
+# Legacy equipment fields remain serialized and consumed by older combat/UI
+# code. The canonical seven-slot model mirrors these three fields and extends
+# them without invalidating save version 14.
 var equipped_weapon_id: String = ""
 var equipped_armor_id: String = ""
 var equipped_shield_id: String = ""
+var equipped_slots: Dictionary = {}
+
 # Kept as injury_days for save compatibility. In the weekly campaign it represents recovery weeks.
 var injury_severity: int = 0
 var injury_days: int = 0
@@ -47,9 +63,54 @@ func _init(data: Dictionary = {}) -> void:
     equipped_weapon_id = str(data.get("equipped_weapon_id", ""))
     equipped_armor_id = str(data.get("equipped_armor_id", ""))
     equipped_shield_id = str(data.get("equipped_shield_id", ""))
+    _initialize_equipment_slots(data.get("equipped_slots", {}))
     injury_severity = clampi(int(data.get("injury_severity", 0)), 0, 3)
     injury_days = maxi(0, int(data.get("injury_days", 0)))
     injury_name = str(data.get("injury_name", ""))
+
+func _initialize_equipment_slots(raw_slots: Variant = {}) -> void:
+    equipped_slots.clear()
+    for slot_id in EQUIPMENT_SLOT_IDS:
+        equipped_slots[slot_id] = ""
+    if raw_slots is Dictionary:
+        for slot_id in EQUIPMENT_SLOT_IDS:
+            equipped_slots[slot_id] = str((raw_slots as Dictionary).get(slot_id, ""))
+    if str(equipped_slots.get("right_hand", "")).is_empty():
+        equipped_slots["right_hand"] = equipped_weapon_id
+    if str(equipped_slots.get("torso", "")).is_empty():
+        equipped_slots["torso"] = equipped_armor_id
+    if str(equipped_slots.get("left_hand", "")).is_empty():
+        equipped_slots["left_hand"] = equipped_shield_id
+    _sync_legacy_equipment_fields()
+
+func set_equipped_item_id(slot_id: String, item_id: String) -> bool:
+    if not EQUIPMENT_SLOT_IDS.has(slot_id):
+        return false
+    equipped_slots[slot_id] = item_id
+    _sync_legacy_equipment_fields()
+    return true
+
+func get_equipped_item_id(slot_id: String) -> String:
+    if not EQUIPMENT_SLOT_IDS.has(slot_id):
+        return ""
+    return str(equipped_slots.get(slot_id, ""))
+
+func get_equipped_slots() -> Dictionary:
+    return equipped_slots.duplicate(true)
+
+func synchronize_legacy_equipment() -> void:
+    if str(equipped_slots.get("right_hand", "")).is_empty() and not equipped_weapon_id.is_empty():
+        equipped_slots["right_hand"] = equipped_weapon_id
+    if str(equipped_slots.get("torso", "")).is_empty() and not equipped_armor_id.is_empty():
+        equipped_slots["torso"] = equipped_armor_id
+    if str(equipped_slots.get("left_hand", "")).is_empty() and not equipped_shield_id.is_empty():
+        equipped_slots["left_hand"] = equipped_shield_id
+    _sync_legacy_equipment_fields()
+
+func _sync_legacy_equipment_fields() -> void:
+    equipped_weapon_id = str(equipped_slots.get("right_hand", ""))
+    equipped_armor_id = str(equipped_slots.get("torso", ""))
+    equipped_shield_id = str(equipped_slots.get("left_hand", ""))
 
 func assign_job(new_job: String) -> void:
     if injury_days > 0 and new_job != "idle":
