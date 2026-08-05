@@ -225,9 +225,12 @@ func _replace_button_action(button: Button, action: Callable) -> void:
         if not connection_value is Dictionary:
             continue
         var connection: Dictionary = connection_value
-        var existing = connection.get("callable")
-        if existing is Callable and button.pressed.is_connected(existing):
-            button.pressed.disconnect(existing)
+        var existing_value: Variant = connection.get("callable", null)
+        if typeof(existing_value) != TYPE_CALLABLE:
+            continue
+        var existing_callable: Callable = existing_value
+        if button.pressed.is_connected(existing_callable):
+            button.pressed.disconnect(existing_callable)
     if not button.pressed.is_connected(action):
         button.pressed.connect(action)
 
