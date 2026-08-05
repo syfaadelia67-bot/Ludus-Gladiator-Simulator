@@ -15,6 +15,7 @@ const PANELS := [
 ]
 
 const FINCA_SCREEN = preload("res://scenes/FincaScreen.tscn")
+const MARKET_SCREEN = preload("res://scenes/MarketScreen.tscn")
 const ARENA_SCREEN = preload("res://scenes/ArenaScreen.tscn")
 const UNIFIED_HUD = preload("res://scenes/UnifiedHudShell.tscn")
 const MAX_ATTACH_ATTEMPTS := 30
@@ -43,6 +44,7 @@ func _attach_when_ready() -> void:
         main_tabs = tabs
         _attach_panels(tabs)
         _attach_finca_screen(tabs)
+        _attach_market_screen(tabs)
         _attach_arena_screen(tabs)
         _attach_unified_hud(root)
         _enforce_unified_layout()
@@ -90,6 +92,33 @@ func _attach_finca_screen(tabs: TabContainer) -> void:
 
     _disable_embedded_finca_shell(screen)
     finca.set_meta("primary_finca_screen", true)
+
+func _attach_market_screen(tabs: TabContainer) -> void:
+    var market := tabs.get_node_or_null("Mercado") as VBoxContainer
+    if market == null:
+        push_error("No se encontró la pestaña Mercado para montar MarketScreen.")
+        return
+
+    for child in market.get_children():
+        if child.name == "MarketScreen":
+            continue
+        if child is Control:
+            var legacy_control := child as Control
+            legacy_control.visible = false
+            legacy_control.mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+    var screen := market.get_node_or_null("MarketScreen") as Control
+    if screen == null:
+        screen = MARKET_SCREEN.instantiate() as Control
+        if screen == null:
+            push_error("No se pudo instanciar MarketScreen.")
+            return
+        screen.name = "MarketScreen"
+        screen.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+        screen.size_flags_vertical = Control.SIZE_EXPAND_FILL
+        market.add_child(screen)
+        market.move_child(screen, 0)
+    market.set_meta("primary_market_screen", true)
 
 func _attach_arena_screen(tabs: TabContainer) -> void:
     var arena := tabs.get_node_or_null("Arena") as VBoxContainer
