@@ -6,6 +6,11 @@ game/.godot/
 *.tmp
 *.log
 
+# Bootstrap-managed GUT dependency, generated tests and reports
+game/addons/gut/
+game/tests/gut/
+game/test-results/
+
 # Operating system metadata
 .DS_Store
 Thumbs.db
