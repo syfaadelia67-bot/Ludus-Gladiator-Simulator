@@ -2,10 +2,13 @@
 
 ## Convenciones reconocidas
 
-El ejecutor descubre de forma recursiva archivos con alguno de estos sufijos:
+El ejecutor descubre de forma recursiva archivos que cumplan al menos una de estas convenciones:
 
+- `test_*.gd`
 - `*_test.gd`
 - `*_contract.gd`
+
+La convención `test_*.gd` se mantiene por compatibilidad con pruebas históricas ya existentes. No es necesario renombrarlas para que entren en CI.
 
 Cada archivo se ejecuta en un proceso de Godot aislado para impedir que el estado global de un test contamine al siguiente.
 
@@ -13,7 +16,7 @@ Cada archivo se ejecuta en un proceso de Godot aislado para impedir que el estad
 
 ### Tests que extienden `Node`
 
-Se ejecutan dentro del proyecto mediante el autoload `TestRunner`, con todos los autoloads del juego disponibles.
+Se ejecutan dentro del proyecto mediante el autoload `TestRunner`, con todos los autoloads y la escena principal disponibles.
 
 ```powershell
 godot --headless --path game -- --test=res://tests/example_test.gd
@@ -28,6 +31,8 @@ También pueden ejecutarse directamente:
 ```powershell
 godot --headless --path game --script res://tests/example_contract.gd
 ```
+
+Los contratos que extienden `Node` deben ejecutarse mediante `TestRunner`, no mediante `--script`, para disponer de `Main.tscn` y evitar mensajes falsos de presenters sin escena principal.
 
 ## Suites
 
@@ -69,11 +74,17 @@ Toda exclusión futura debe agregarse a `EXCLUDED_TEST_FILES` dentro de `test_ru
 
 `test_test_suite_coverage_contract.gd` falla cuando:
 
-- aparece un `.gd` en `game/tests/` que no sigue una convención reconocida;
+- aparece un `.gd` de prueba en `game/tests/` que no sigue una convención reconocida;
 - una exclusión no tiene justificación;
 - desaparece alguno de los tres bloques del workflow;
 - el runner deja de reconocer tests o contratos;
 - el CI deja de ejecutar las suites `core` y `ui`.
+
+El propio contrato extiende `Node` y debe ejecutarse así:
+
+```powershell
+godot --headless --path game -- --test=res://tests/test_test_suite_coverage_contract.gd
+```
 
 ## CI
 
