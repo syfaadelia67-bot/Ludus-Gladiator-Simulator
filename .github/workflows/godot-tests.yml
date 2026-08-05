@@ -13,9 +13,12 @@ concurrency:
   group: godot-tests-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  GODOT_VERSION: 4.5.2
+
 jobs:
-  test:
-    name: Validate project and tests
+  compile:
+    name: Compile and smoke test
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
@@ -26,7 +29,7 @@ jobs:
       - name: Set up Godot
         uses: chickensoft-games/setup-godot@v2
         with:
-          version: 4.5.2
+          version: ${{ env.GODOT_VERSION }}
           use-dotnet: false
           include-templates: false
 
@@ -36,31 +39,51 @@ jobs:
       - name: Import and compile project
         run: godot --headless --editor --path game --quit
 
-      - name: Run history integrity tests
-        run: godot --headless --path game --script res://tests/history_integrity_validator_test.gd
-
-      - name: Run combat history persistence tests
-        run: godot --headless --path game --script res://tests/combat_history_persistence_test.gd
-
-      - name: Run data repository tests
-        run: godot --headless --path game --script res://tests/data_repository_test.gd
-
-      - name: Validate start screen and campaign creation contracts
-        run: godot --headless --path game --script res://tests/test_start_screen_campaign_flow.gd
-
-      - name: Validate complete new campaign reset contract
-        run: godot --headless --path game --script res://tests/test_new_campaign_reset_contract.gd
-
-      - name: Validate save compatibility and recovery contracts
-        run: |
-          godot --headless --path game --script res://tests/test_save_compatibility_inspector.gd
-          godot --headless --path game --script res://tests/test_save_recovery_coordinator.gd
-
-      - name: Validate weekly campaign contracts
-        run: |
-          godot --headless --path game --script res://tests/weekly_campaign_calendar_test.gd
-          godot --headless --path game --script res://tests/weekly_campaign_chapters_test.gd
-          godot --headless --path game --script res://tests/weekly_event_catalog_test.gd
-
       - name: Smoke test main scene
         run: godot --headless --path game res://scenes/Main.tscn --quit
+
+  core-systems:
+    name: Core systems suite
+    needs: compile
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Set up Godot
+        uses: chickensoft-games/setup-godot@v2
+        with:
+          version: ${{ env.GODOT_VERSION }}
+          use-dotnet: false
+          include-templates: false
+
+      - name: Import resources
+        run: godot --headless --editor --path game --quit
+
+      - name: Run core systems suite
+        run: godot --headless --path game -- --test=res://tests/... --test-group=core
+
+  ui-contracts:
+    name: UI and integration contracts
+    needs: compile
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Set up Godot
+        uses: chickensoft-games/setup-godot@v2
+        with:
+          version: ${{ env.GODOT_VERSION }}
+          use-dotnet: false
+          include-templates: false
+
+      - name: Import resources
+        run: godot --headless --editor --path game --quit
+
+      - name: Run UI and integration suite
+        run: godot --headless --path game -- --test=res://tests/... --test-group=ui
