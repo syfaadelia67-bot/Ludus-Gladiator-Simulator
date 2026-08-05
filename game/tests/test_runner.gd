@@ -186,8 +186,7 @@ func _run_single_node_test(path: String) -> void:
 	for _frame in FALLBACK_TIMEOUT_FRAMES:
 		await get_tree().process_frame
 
-	print("COMPLETED: %s" % path)
-	get_tree().quit(0)
+	_fail("Test did not complete or call get_tree().quit(): %s" % path)
 
 func _fail(message: String) -> void:
 	push_error(message)
