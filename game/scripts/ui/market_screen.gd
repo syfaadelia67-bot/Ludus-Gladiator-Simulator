@@ -1,8 +1,11 @@
 extends VBoxContainer
 
+const COVER_CARD_SIZE := Vector2(850, 478)
+
 @onready var back_button: Button = $Header/BackToFinca
 @onready var rotation_label: Label = $Header/Rotation
 @onready var landing: VBoxContainer = $Landing
+@onready var cards_row: HBoxContainer = $Landing/Cards
 @onready var fighters_card: TextureButton = $Landing/Cards/FightersCard
 @onready var equipment_card: TextureButton = $Landing/Cards/EquipmentCard
 @onready var content_shell: VBoxContainer = $ContentShell
@@ -46,8 +49,16 @@ func _ready() -> void:
     GameState.resources_changed.connect(_refresh_controls)
     GameState.week_advanced.connect(func(_week: int): _refresh_all())
 
+    _configure_cover_cards()
     _show_market_home()
     _refresh_all()
+
+func _configure_cover_cards() -> void:
+    cards_row.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+    for card in [fighters_card, equipment_card]:
+        card.custom_minimum_size = COVER_CARD_SIZE
+        card.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+        card.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 
 func _unhandled_key_input(event: InputEvent) -> void:
     if not is_visible_in_tree() or not event.is_action_pressed("ui_cancel"):
