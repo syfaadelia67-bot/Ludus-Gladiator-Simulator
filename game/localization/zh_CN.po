@@ -1,0 +1,167 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Ludus Gladiator Simulator\n"
+"Language: zh_CN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+msgid "LANGUAGE_LABEL"
+msgstr "语言"
+
+msgid "LANGUAGE_AUTOMATIC"
+msgstr "自动（系统）"
+
+msgid "LANGUAGE_SPANISH"
+msgstr "Español"
+
+msgid "LANGUAGE_ENGLISH"
+msgstr "English"
+
+msgid "LANGUAGE_CHINESE_SIMPLIFIED"
+msgstr "简体中文"
+
+msgid "LANGUAGE_JAPANESE"
+msgstr "日本語"
+
+msgid "LANGUAGE_PORTUGUESE_BRAZIL"
+msgstr "Português (Brasil)"
+
+msgid "LOCALIZATION_PSEUDO_LABEL"
+msgstr "扩展文本测试"
+
+msgid "LOCALIZATION_PSEUDO_TOOLTIP"
+msgstr "开发模式，用于检测被裁切或未翻译的文本。快捷键：F8。"
+
+msgid "START_GAME_TITLE"
+msgstr "角斗士经营模拟器"
+
+msgid "START_SUBTITLE"
+msgstr "建立你的角斗士之家，坚持十六周。"
+
+msgid "START_VIEW_FINAL_RESULT"
+msgstr "查看最终结果"
+
+msgid "START_CONTINUE_CAMPAIGN"
+msgstr "继续战役"
+
+msgid "START_NEW_CAMPAIGN"
+msgstr "新战役"
+
+msgid "START_EXIT"
+msgstr "退出"
+
+msgid "START_NO_SAVE"
+msgstr "没有可用的存档。"
+
+msgid "START_NO_CAMPAIGN"
+msgstr "没有已保存的战役。"
+
+msgid "START_LOADING"
+msgstr "正在加载战役……"
+
+msgid "START_LOAD_FAILED"
+msgstr "无法加载有效存档。"
+
+msgid "START_NEW_CAMPAIGN_TITLE"
+msgstr "新战役"
+
+msgid "START_OWNER_EXPLANATION"
+msgstr "选择角斗士学校的管理者以及财富来源。该选择将决定战役的初始资源。"
+
+msgid "START_OWNER_NAME_PLACEHOLDER"
+msgstr "管理者姓名"
+
+msgid "START_BEGIN_CAMPAIGN"
+msgstr "开始战役"
+
+msgid "COMMON_BACK"
+msgstr "返回"
+
+msgid "START_SELECT_ORIGIN"
+msgstr "请选择一个出身。"
+
+msgid "START_NAME_MIN_LENGTH"
+msgstr "请输入至少两个字符的姓名。"
+
+msgid "START_RESET_FAILED"
+msgstr "无法重置上一场战役的状态。"
+
+msgid "START_OWNER_CONFIG_FAILED"
+msgstr "无法设置角斗士学校的管理者。"
+
+msgid "START_SAVE_FAILED"
+msgstr "战役已创建，但无法保存。"
+
+msgid "START_BONUSES"
+msgstr "加成"
+
+msgid "START_NO_BONUSES"
+msgstr "无加成。"
+
+msgid "START_ORIGIN_FALLBACK"
+msgstr "出身"
+
+msgid "START_BONUS_DENARII"
+msgstr "初始第纳里乌斯"
+
+msgid "START_BONUS_FOOD"
+msgstr "初始食物"
+
+msgid "START_BONUS_ORE"
+msgstr "初始矿石"
+
+msgid "START_BONUS_REPUTATION"
+msgstr "初始声望"
+
+msgid "START_BONUS_LOYALTY"
+msgstr "人员忠诚"
+
+msgid "START_BONUS_MORALE"
+msgstr "人员士气"
+
+msgid "START_BONUS_GLADIATOR_EXPERIENCE"
+msgstr "角斗士经验"
+
+msgid "START_RESULT_VICTORY"
+msgstr "胜利"
+
+msgid "START_RESULT_DEFEAT"
+msgstr "失败"
+
+msgid "START_CAMPAIGN_FINISHED_SUMMARY"
+msgstr "{owner}\n战役结束 — {result}\n第 {week}/16 周 | 战斗：{wins} 胜，{losses} 负"
+
+msgid "START_ACTIVE_CAMPAIGN_SUMMARY"
+msgstr "{owner}\n第 {week}/16 周 — 第 {chapter} 章：{chapter_name}\n下一场战斗：{battle}"
+
+msgid "OWNER_TITLE_DOMINUS"
+msgstr "男主人"
+
+msgid "OWNER_TITLE_DOMINA"
+msgstr "女主人"
+
+msgid "CHAPTER_1_NAME"
+msgstr "废墟中的角斗士学校"
+
+msgid "CHAPTER_2_NAME"
+msgstr "鲜血与声望"
+
+msgid "CHAPTER_3_NAME"
+msgstr "角斗士学校之名"
+
+msgid "BATTLE_DEMO_FINAL"
+msgstr "试玩版最终战"
+
+msgid "BATTLE_OFFICIAL_TOURNAMENT"
+msgstr "竞技场正式锦标赛"
+
+msgid "BATTLE_BEAST_HUNT"
+msgstr "圆形剧场野兽狩猎"
+
+msgid "BATTLE_UNDERGROUND"
+msgstr "地下世界秘密战斗"
+
+msgid "BATTLE_WEEKLY_EXHIBITION"
+msgstr "角斗士学校每周表演赛"
