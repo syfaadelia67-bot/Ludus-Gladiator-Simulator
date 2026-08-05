@@ -1,0 +1,294 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource path="res://scripts/ui/gladiator_dossier_panel.gd" type="Script" id="1"]
+
+[node name="GladiatorDossierPanel" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1")
+
+[node name="Margin" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 16.0
+offset_top = 12.0
+offset_right = -104.0
+offset_bottom = -86.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 4
+theme_override_constants/margin_top = 4
+theme_override_constants/margin_right = 4
+theme_override_constants/margin_bottom = 4
+
+[node name="Main" type="VBoxContainer" parent="Margin"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 10
+
+[node name="Header" type="PanelContainer" parent="Margin/Main"]
+custom_minimum_size = Vector2(0, 92)
+layout_mode = 2
+
+[node name="Margin" type="MarginContainer" parent="Margin/Main/Header"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 8
+
+[node name="Row" type="HBoxContainer" parent="Margin/Main/Header/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Back" type="Button" parent="Margin/Main/Header/Margin/Row"]
+custom_minimum_size = Vector2(190, 0)
+layout_mode = 2
+text = "← VOLVER"
+
+[node name="Portrait" type="TextureRect" parent="Margin/Main/Header/Margin/Row"]
+custom_minimum_size = Vector2(70, 70)
+layout_mode = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Identity" type="VBoxContainer" parent="Margin/Main/Header/Margin/Row"]
+layout_mode = 2
+size_flags_horizontal = 3
+alignment = 1
+
+[node name="Name" type="Label" parent="Margin/Main/Header/Margin/Row/Identity"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 27
+text = "FICHA DEL GLADIADOR"
+
+[node name="Subtitle" type="Label" parent="Margin/Main/Header/Margin/Row/Identity"]
+layout_mode = 2
+text = "Seleccioná un gladiador"
+
+[node name="QuickStatus" type="GridContainer" parent="Margin/Main/Header/Margin/Row"]
+custom_minimum_size = Vector2(650, 0)
+layout_mode = 2
+columns = 4
+
+[node name="Health" type="Label" parent="Margin/Main/Header/Margin/Row/QuickStatus"]
+layout_mode = 2
+text = "SALUD —"
+horizontal_alignment = 1
+
+[node name="Fatigue" type="Label" parent="Margin/Main/Header/Margin/Row/QuickStatus"]
+layout_mode = 2
+text = "FATIGA —"
+horizontal_alignment = 1
+
+[node name="Morale" type="Label" parent="Margin/Main/Header/Margin/Row/QuickStatus"]
+layout_mode = 2
+text = "MORAL —"
+horizontal_alignment = 1
+
+[node name="Loyalty" type="Label" parent="Margin/Main/Header/Margin/Row/QuickStatus"]
+layout_mode = 2
+text = "LEALTAD —"
+horizontal_alignment = 1
+
+[node name="Tabs" type="PanelContainer" parent="Margin/Main"]
+custom_minimum_size = Vector2(0, 58)
+layout_mode = 2
+
+[node name="Margin" type="MarginContainer" parent="Margin/Main/Tabs"]
+layout_mode = 2
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 5
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 5
+
+[node name="Row" type="HBoxContainer" parent="Margin/Main/Tabs/Margin"]
+layout_mode = 2
+alignment = 1
+theme_override_constants/separation = 8
+
+[node name="Information" type="Button" parent="Margin/Main/Tabs/Margin/Row"]
+custom_minimum_size = Vector2(205, 46)
+layout_mode = 2
+text = "INFORMACIÓN"
+
+[node name="Statistics" type="Button" parent="Margin/Main/Tabs/Margin/Row"]
+custom_minimum_size = Vector2(205, 46)
+layout_mode = 2
+text = "ESTADÍSTICAS"
+
+[node name="Equipment" type="Button" parent="Margin/Main/Tabs/Margin/Row"]
+custom_minimum_size = Vector2(205, 46)
+layout_mode = 2
+text = "EQUIPAMIENTO"
+
+[node name="Skills" type="Button" parent="Margin/Main/Tabs/Margin/Row"]
+custom_minimum_size = Vector2(205, 46)
+layout_mode = 2
+text = "HABILIDADES"
+
+[node name="Specialization" type="Button" parent="Margin/Main/Tabs/Margin/Row"]
+custom_minimum_size = Vector2(205, 46)
+layout_mode = 2
+text = "ESPECIALIZACIÓN"
+
+[node name="Traits" type="Button" parent="Margin/Main/Tabs/Margin/Row"]
+custom_minimum_size = Vector2(205, 46)
+layout_mode = 2
+text = "RASGOS"
+
+[node name="Bonds" type="Button" parent="Margin/Main/Tabs/Margin/Row"]
+custom_minimum_size = Vector2(205, 46)
+layout_mode = 2
+text = "VÍNCULOS"
+
+[node name="Body" type="HBoxContainer" parent="Margin/Main"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 12
+
+[node name="SummaryPanel" type="PanelContainer" parent="Margin/Main/Body"]
+custom_minimum_size = Vector2(360, 0)
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="Margin" type="MarginContainer" parent="Margin/Main/Body/SummaryPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 12
+
+[node name="Scroll" type="ScrollContainer" parent="Margin/Main/Body/SummaryPanel/Margin"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="Content" type="VBoxContainer" parent="Margin/Main/Body/SummaryPanel/Margin/Scroll"]
+custom_minimum_size = Vector2(325, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 9
+
+[node name="Portrait" type="TextureRect" parent="Margin/Main/Body/SummaryPanel/Margin/Scroll/Content"]
+custom_minimum_size = Vector2(315, 280)
+layout_mode = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Name" type="Label" parent="Margin/Main/Body/SummaryPanel/Margin/Scroll/Content"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "GLADIADOR"
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="Role" type="Label" parent="Margin/Main/Body/SummaryPanel/Margin/Scroll/Content"]
+layout_mode = 2
+text = "Especialización"
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="ExperienceLabel" type="Label" parent="Margin/Main/Body/SummaryPanel/Margin/Scroll/Content"]
+layout_mode = 2
+text = "EXPERIENCIA"
+
+[node name="Experience" type="ProgressBar" parent="Margin/Main/Body/SummaryPanel/Margin/Scroll/Content"]
+custom_minimum_size = Vector2(0, 28)
+layout_mode = 2
+max_value = 100.0
+show_percentage = true
+
+[node name="HealthLabel" type="Label" parent="Margin/Main/Body/SummaryPanel/Margin/Scroll/Content"]
+layout_mode = 2
+text = "SALUD"
+
+[node name="Health" type="ProgressBar" parent="Margin/Main/Body/SummaryPanel/Margin/Scroll/Content"]
+custom_minimum_size = Vector2(0, 26)
+layout_mode = 2
+max_value = 100.0
+
+[node name="FatigueLabel" type="Label" parent="Margin/Main/Body/SummaryPanel/Margin/Scroll/Content"]
+layout_mode = 2
+text = "FATIGA"
+
+[node name="Fatigue" type="ProgressBar" parent="Margin/Main/Body/SummaryPanel/Margin/Scroll/Content"]
+custom_minimum_size = Vector2(0, 26)
+layout_mode = 2
+max_value = 100.0
+
+[node name="MoraleLabel" type="Label" parent="Margin/Main/Body/SummaryPanel/Margin/Scroll/Content"]
+layout_mode = 2
+text = "MORAL"
+
+[node name="Morale" type="ProgressBar" parent="Margin/Main/Body/SummaryPanel/Margin/Scroll/Content"]
+custom_minimum_size = Vector2(0, 26)
+layout_mode = 2
+max_value = 100.0
+
+[node name="LoyaltyLabel" type="Label" parent="Margin/Main/Body/SummaryPanel/Margin/Scroll/Content"]
+layout_mode = 2
+text = "LEALTAD"
+
+[node name="Loyalty" type="ProgressBar" parent="Margin/Main/Body/SummaryPanel/Margin/Scroll/Content"]
+custom_minimum_size = Vector2(0, 26)
+layout_mode = 2
+max_value = 100.0
+
+[node name="State" type="Label" parent="Margin/Main/Body/SummaryPanel/Margin/Scroll/Content"]
+custom_minimum_size = Vector2(0, 70)
+layout_mode = 2
+text = "Sin gladiador seleccionado"
+autowrap_mode = 3
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ContentPanel" type="PanelContainer" parent="Margin/Main/Body"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="Margin" type="MarginContainer" parent="Margin/Main/Body/ContentPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 12
+
+[node name="Layout" type="VBoxContainer" parent="Margin/Main/Body/ContentPanel/Margin"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 8
+
+[node name="SectionTitle" type="Label" parent="Margin/Main/Body/ContentPanel/Margin/Layout"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 25
+text = "INFORMACIÓN"
+
+[node name="Feedback" type="Label" parent="Margin/Main/Body/ContentPanel/Margin/Layout"]
+custom_minimum_size = Vector2(0, 38)
+layout_mode = 2
+text = ""
+autowrap_mode = 3
+
+[node name="Scroll" type="ScrollContainer" parent="Margin/Main/Body/ContentPanel/Margin/Layout"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="Content" type="VBoxContainer" parent="Margin/Main/Body/ContentPanel/Margin/Layout/Scroll"]
+custom_minimum_size = Vector2(1200, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 10
