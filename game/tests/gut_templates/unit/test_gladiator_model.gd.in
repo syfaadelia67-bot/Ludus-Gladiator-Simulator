@@ -1,0 +1,92 @@
+extends GutTest
+
+const PERSON_SCRIPT := preload("res://scripts/entities/person.gd")
+
+func test_gladiator_initializes_all_seven_equipment_slots() -> void:
+    var person = PERSON_SCRIPT.new({
+        "id":"gut_slots",
+        "name":"Cassia",
+        "role":"gladiator",
+        "equipped_weapon_id":"legacy_sword",
+        "equipped_armor_id":"legacy_armor",
+        "equipped_shield_id":"legacy_shield"
+    })
+
+    var slots: Dictionary = person.get_equipped_slots()
+    assert_eq(slots.size(), 7)
+    for slot_id in PERSON_SCRIPT.EQUIPMENT_SLOT_IDS:
+        assert_true(slots.has(slot_id), "Debe existir el slot %s." % slot_id)
+    assert_eq(person.get_equipped_item_id("right_hand"), "legacy_sword")
+    assert_eq(person.get_equipped_item_id("torso"), "legacy_armor")
+    assert_eq(person.get_equipped_item_id("left_hand"), "legacy_shield")
+
+func test_canonical_slot_updates_keep_legacy_fields_synchronized() -> void:
+    var person = PERSON_SCRIPT.new({"id":"gut_sync", "name":"Titus", "role":"gladiator"})
+
+    assert_true(person.set_equipped_item_id("right_hand", "item_gladius"))
+    assert_true(person.set_equipped_item_id("torso", "item_lorica"))
+    assert_true(person.set_equipped_item_id("left_hand", "item_scutum"))
+    assert_true(person.set_equipped_item_id("accessory", "item_amulet"))
+    assert_false(person.set_equipped_item_id("invalid_slot", "item_invalid"))
+
+    assert_eq(person.equipped_weapon_id, "item_gladius")
+    assert_eq(person.equipped_armor_id, "item_lorica")
+    assert_eq(person.equipped_shield_id, "item_scutum")
+    assert_eq(person.get_equipped_item_id("accessory"), "item_amulet")
+
+func test_injury_blocks_combat_and_forces_idle_work() -> void:
+    var person = PERSON_SCRIPT.new({
+        "id":"gut_injury",
+        "name":"Marcellus",
+        "role":"gladiator",
+        "job":"training",
+        "fatigue":20
+    })
+
+    assert_true(person.is_available_for_combat())
+    person.apply_injury("Fractura menor", 2, 3)
+
+    assert_false(person.is_available_for_combat())
+    assert_eq(person.job, "idle")
+    assert_eq(person.injury_severity, 2)
+    assert_eq(person.injury_days, 3)
+    assert_true(person.get_injury_summary().contains("Fractura menor"))
+
+func test_fatigue_threshold_controls_combat_availability() -> void:
+    var person = PERSON_SCRIPT.new({"id":"gut_fatigue", "name":"Lucius", "role":"gladiator", "fatigue":89})
+    assert_true(person.is_available_for_combat())
+    person.fatigue = 90
+    assert_false(person.is_available_for_combat())
+
+func test_growth_updates_primary_stats_and_health() -> void:
+    var person = PERSON_SCRIPT.new({
+        "id":"gut_growth",
+        "name":"Aelia",
+        "role":"gladiator",
+        "strength":5,
+        "agility":6,
+        "endurance":7,
+        "intelligence":8,
+        "technique":9,
+        "health":50
+    })
+
+    person.apply_growth({
+        "strength":2,
+        "agility":1,
+        "endurance":3,
+        "intelligence":1,
+        "technique":2,
+        "health":10
+    })
+
+    assert_eq(person.strength, 7)
+    assert_eq(person.agility, 7)
+    assert_eq(person.endurance, 10)
+    assert_eq(person.intelligence, 9)
+    assert_eq(person.technique, 11)
+    assert_eq(person.health, 60)
+    assert_true(person.get_base_attack() > 0)
+    assert_true(person.get_base_defense() > 0)
+    assert_true(person.get_max_health() >= 20)
+    assert_true(person.get_max_energy() >= 20)
