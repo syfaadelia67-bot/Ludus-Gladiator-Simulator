@@ -14,11 +14,7 @@ func _initialize() -> void:
     assert(project.contains("window/stretch/aspect=\"expand\""))
     assert(project.contains("Pack000Assets=\"*res://scripts/ui/pack_000_asset_registry.gd\""))
 
-    for required_node in [
-        "RosterPanel", "CenterPanel", "EncounterPanel", "RosterList", "ArenaVisual", "Battlefield",
-        "PlayerFighter", "EnemyFighter", "EffectIcon", "PreparationView", "ResultView", "StartCombat",
-        "ViewResult", "BackToPreparation", "ResultSummary", "CombatLog", "BackToFinca"
-    ]:
+    for required_node in ["RosterPanel", "CenterPanel", "EncounterPanel", "RosterList", "ArenaVisual", "Battlefield", "PlayerFighter", "EnemyFighter", "EffectIcon", "PreparationView", "ResultView", "StartCombat", "ViewResult", "BackToPreparation", "ResultSummary", "CombatLog", "BackToFinca"]:
         assert(arena_scene_text.contains("name=\"%s\"" % required_node) or arena_scene_text.contains("name = \"%s\"" % required_node))
 
     assert(arena_scene_text.contains("[node name=\"Body\" type=\"HBoxContainer\""))
@@ -43,8 +39,8 @@ func _initialize() -> void:
     assert(registry_text.contains("entry.to_lower().ends_with(\".png\")"))
     assert(registry_text.contains("textures[relative] = texture"))
 
-    assert(hub_text.contains("\"arena\": preload(\"res://scenes/ArenaScreen.tscn\")"))
-    assert(hub_text.contains("_show_hosted_screen"))
+    assert(hub_text.contains("\"arena\": \"res://scenes/ArenaScreen.tscn\""))
+    assert(hub_text.contains("var packed := load(scene_path) as PackedScene"))
     assert(bootstrap_text.contains("FincaHubController.prepare_scene()"))
     assert(bootstrap_text.contains("CombatManager.combat_finished.disconnect"))
     assert(not bootstrap_text.contains("_attach_arena_screen"))
