@@ -263,6 +263,13 @@ layout_mode = 2
 autowrap_mode = 3
 text = "Sin efecto activo."
 
+[node name="Status" type="Label" parent="Margin/Main/Body/DetailPanel/Margin/Scroll/Content"]
+custom_minimum_size = Vector2(0, 72)
+layout_mode = 2
+autowrap_mode = 3
+theme_override_font_sizes/font_size = 16
+text = "Dos intervenciones disponibles por semana."
+
 [node name="ActionsTitle" type="Label" parent="Margin/Main/Body/DetailPanel/Margin/Scroll/Content"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 18
@@ -271,12 +278,6 @@ text = "INTERVENIR"
 [node name="Actions" type="VBoxContainer" parent="Margin/Main/Body/DetailPanel/Margin/Scroll/Content"]
 layout_mode = 2
 theme_override_constants/separation = 7
-
-[node name="Status" type="Label" parent="Margin/Main/Body/DetailPanel/Margin/Scroll/Content"]
-custom_minimum_size = Vector2(0, 56)
-layout_mode = 2
-autowrap_mode = 3
-text = "Dos intervenciones disponibles por semana."
 
 [node name="EventsTitle" type="Label" parent="Margin/Main/Body/DetailPanel/Margin/Scroll/Content"]
 layout_mode = 2
