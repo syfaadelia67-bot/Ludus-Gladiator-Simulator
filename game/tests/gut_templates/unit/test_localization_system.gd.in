@@ -1,0 +1,65 @@
+extends GutTest
+
+const LOCALIZATION_MANAGER_SCRIPT := preload("res://scripts/core/localization_manager.gd")
+const REPRESENTATIVE_KEYS := [
+    "START_GAME_TITLE",
+    "START_CONTINUE_CAMPAIGN",
+    "START_NEW_CAMPAIGN",
+    "START_EXIT"
+]
+
+var manager
+var original_locale: String
+
+func before_each() -> void:
+    original_locale = TranslationServer.get_locale()
+    manager = autofree(LOCALIZATION_MANAGER_SCRIPT.new())
+
+func after_each() -> void:
+    TranslationServer.set_locale(original_locale)
+
+func test_supported_locale_contract_is_stable() -> void:
+    assert_eq(manager.get_supported_locales(), ["es", "en", "zh_CN", "ja", "pt_BR"])
+    assert_eq(manager.get_locale_options(), ["automatic", "es", "en", "zh_CN", "ja", "pt_BR"])
+
+func test_regional_locale_aliases_resolve_to_supported_catalogs() -> void:
+    assert_eq(manager._canonical_supported_locale("es_AR"), "es")
+    assert_eq(manager._canonical_supported_locale("en_US"), "en")
+    assert_eq(manager._canonical_supported_locale("pt_PT"), "pt_BR")
+    assert_eq(manager._canonical_supported_locale("zh_TW"), "zh_CN")
+    assert_eq(manager._canonical_supported_locale("ja_JP"), "ja")
+    assert_eq(manager._canonical_supported_locale("fr_FR"), "")
+
+func test_start_screen_keys_are_translated_in_every_supported_locale() -> void:
+    for locale in manager.get_supported_locales():
+        TranslationServer.set_locale(locale)
+        for key in REPRESENTATIVE_KEYS:
+            var translated := str(TranslationServer.translate(key))
+            assert_false(translated.is_empty(), "%s debe tener texto en %s." % [key, locale])
+            assert_true(translated != key, "%s no debe caer al identificador crudo en %s." % [key, locale])
+
+func test_formatted_translation_replaces_named_placeholders() -> void:
+    TranslationServer.set_locale("es")
+    var translated := manager.translate_key("START_ACTIVE_CAMPAIGN_SUMMARY", {
+        "owner":"Dominus Test",
+        "week":4,
+        "chapter":1,
+        "chapter_name":"Un ludus en ruinas",
+        "battle":"Exhibición semanal"
+    })
+
+    assert_true(translated.contains("Dominus Test"))
+    assert_true(translated.contains("4"))
+    assert_false(translated.contains("{owner}"))
+    assert_false(translated.contains("{week}"))
+
+func test_locale_to_typography_profile_mapping_is_explicit() -> void:
+    manager.active_locale = "es"
+    manager._apply_typography_for_locale()
+    assert_eq(manager.get_typography_profile(), "latin")
+    manager.active_locale = "zh_CN"
+    manager._apply_typography_for_locale()
+    assert_eq(manager.get_typography_profile(), "cjk_sc")
+    manager.active_locale = "ja"
+    manager._apply_typography_for_locale()
+    assert_eq(manager.get_typography_profile(), "cjk_jp")
