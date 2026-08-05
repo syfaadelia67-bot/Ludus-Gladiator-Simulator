@@ -24,13 +24,22 @@ const FAILURE_OUTPUT_MARKERS: Array[String] = [
 	"SCRIPT ERROR: Assertion failed",
 	"SCRIPT ERROR: Parse Error",
 	"SCRIPT ERROR: Compile Error",
-	"ERROR: Test did not complete or call get_tree().quit()"
+	"ERROR: Test did not complete or call get_tree().quit()",
+	"ObjectDB instances leaked at exit",
+	"resources still in use at exit"
 ]
 
 # Every exclusion must include a human-readable reason. The suite contract
 # verifies this dictionary so files cannot silently disappear from CI.
 const EXCLUDED_TEST_FILES := {
 	"test_runner.gd": "Autoload test orchestrator; it is infrastructure, not a test case."
+}
+
+# Exact overrides handle historical names whose purpose cannot be inferred
+# reliably from generic path markers.
+const TEST_GROUP_OVERRIDES := {
+	"demo_campaign_flow_integration_test.gd": "ui",
+	"test_continue_campaign_summary.gd": "ui"
 }
 
 # Tests are classified by path. Every test that exercises a screen, presenter,
@@ -45,6 +54,9 @@ const UI_TEST_MARKERS: Array[String] = [
 
 var _test_path := ""
 var _test_group := "all"
+var _active_legacy_test: Node
+var _legacy_test_completed := false
+var _legacy_test_exit_code := 0
 
 func _ready() -> void:
 	for argument in OS.get_cmdline_user_args():
@@ -131,6 +143,9 @@ func _is_test_file(file_name: String) -> bool:
 	return false
 
 func _classify_test(test_path: String) -> String:
+	var file_name := test_path.get_file().to_lower()
+	if TEST_GROUP_OVERRIDES.has(file_name):
+		return str(TEST_GROUP_OVERRIDES[file_name])
 	var normalized := test_path.to_lower()
 	for marker in UI_TEST_MARKERS:
 		if normalized.contains(marker):
@@ -168,7 +183,7 @@ func _execute_isolated_test(path: String) -> int:
 		if _line_reports_test_failure(line):
 			output_detected_failure = true
 	if exit_code == 0 and output_detected_failure:
-		push_error("Test emitted an assertion, parse or completion failure despite exit code 0: %s" % path)
+		push_error("Test emitted a failure or resource leak despite exit code 0: %s" % path)
 		return 1
 	return exit_code
 
@@ -191,10 +206,17 @@ func _run_single_node_test(path: String) -> void:
 		_fail("Test script not found: %s" % path)
 		return
 
-	var test_script: Script = load(path) as Script
+	var source := FileAccess.get_file_as_string(path)
+	var uses_legacy_adapter := _needs_legacy_quit_adapter(source)
+	var test_script: Script
+	if uses_legacy_adapter:
+		test_script = _build_legacy_compatible_script(path, source)
+	else:
+		test_script = load(path) as Script
 	if test_script == null:
 		_fail("Could not load test script: %s" % path)
 		return
+
 	var test_instance: Variant = test_script.new()
 	if not test_instance is Node:
 		test_instance = null
@@ -203,17 +225,31 @@ func _run_single_node_test(path: String) -> void:
 		return
 
 	var test_node: Node = test_instance as Node
+	_legacy_test_completed = false
+	_legacy_test_exit_code = 0
+	_active_legacy_test = test_node if uses_legacy_adapter else null
 	add_child(test_node)
+
 	if test_node.has_method("run"):
 		test_node.call("run")
 		await get_tree().process_frame
+		await _finish_node_test(path, test_node, test_instance, test_script, 0)
+		return
+
+	if uses_legacy_adapter:
+		for _frame in FALLBACK_TIMEOUT_FRAMES:
+			if _legacy_test_completed:
+				var legacy_exit_code := _legacy_test_exit_code
+				_active_legacy_test = null
+				await _finish_node_test(path, test_node, test_instance, test_script, legacy_exit_code)
+				return
+			await get_tree().process_frame
+		_active_legacy_test = null
 		_dispose_test_node(test_node)
 		test_node = null
 		test_instance = null
 		test_script = null
-		await get_tree().process_frame
-		print("COMPLETED: %s" % path)
-		get_tree().quit(0)
+		_fail("Test did not complete through the legacy compatibility adapter: %s" % path)
 		return
 
 	for _frame in FALLBACK_TIMEOUT_FRAMES:
@@ -221,11 +257,49 @@ func _run_single_node_test(path: String) -> void:
 
 	_fail("Test did not complete or call get_tree().quit(): %s" % path)
 
+func complete_legacy_test(test_node: Node, exit_code: int = 0) -> void:
+	if test_node == null or test_node != _active_legacy_test:
+		push_error("A legacy test attempted to finish outside its active test context.")
+		_legacy_test_exit_code = 1
+	else:
+		_legacy_test_exit_code = exit_code
+	_legacy_test_completed = true
+
+func _needs_legacy_quit_adapter(source: String) -> bool:
+	return not source.contains("func run(") and source.contains("get_tree().quit(")
+
+func _build_legacy_compatible_script(path: String, source: String) -> Script:
+	var adapted_source := source
+	adapted_source = adapted_source.replace("get_tree().quit(0)", "TestRunner.complete_legacy_test(self, 0)")
+	adapted_source = adapted_source.replace("get_tree().quit(1)", "TestRunner.complete_legacy_test(self, 1)")
+	adapted_source = adapted_source.replace("get_tree().quit()", "TestRunner.complete_legacy_test(self, 0)")
+	if adapted_source.contains("get_tree().quit("):
+		push_error("Unsupported legacy quit expression in test: %s" % path)
+		return null
+	var adapted_script := GDScript.new()
+	adapted_script.resource_name = "%s · legacy adapter" % path.get_file()
+	adapted_script.source_code = adapted_source
+	var reload_error := adapted_script.reload()
+	if reload_error != OK:
+		push_error("Could not compile legacy-compatible test %s (error %d)." % [path, reload_error])
+		return null
+	return adapted_script
+
+func _finish_node_test(path: String, test_node: Node, test_instance: Variant, test_script: Script, exit_code: int) -> void:
+	_dispose_test_node(test_node)
+	test_node = null
+	test_instance = null
+	test_script = null
+	await get_tree().process_frame
+	print("COMPLETED: %s" % path)
+	get_tree().quit(exit_code)
+
 func _dispose_test_node(test_node: Node) -> void:
 	if test_node == null or not is_instance_valid(test_node):
 		return
 	if test_node.get_parent() == self:
 		remove_child(test_node)
+	test_node.set_script(null)
 	test_node.free()
 
 func _fail(message: String) -> void:
