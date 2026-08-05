@@ -1,0 +1,10 @@
+{
+  "name": "GUT - Godot Unit Testing",
+  "version": "9.5.0",
+  "commit": "8255c6305761754748f9fd641da5fd8f51c1708a",
+  "repository": "https://github.com/bitwes/Gut",
+  "archive_url": "https://github.com/bitwes/Gut/archive/8255c6305761754748f9fd641da5fd8f51c1708a.zip",
+  "install_path": "res://addons/gut",
+  "template_path": "res://tests/gut_templates",
+  "generated_test_path": "res://tests/gut"
+}
