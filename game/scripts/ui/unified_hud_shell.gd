@@ -24,10 +24,10 @@ const MORE_SYSTEMS := [
 ]
 
 @onready var resource_summary: Label = $TopHUD/Margin/Row/Resources
+@onready var section_label: Label = $TopHUD/Margin/Row/Section
 @onready var week_summary: Label = $TopHUD/Margin/Row/Week
 @onready var advance_week_button: Button = $TopHUD/Margin/Row/AdvanceWeek
-@onready var section_label: Label = $MainNavigation/Margin/Row/Section
-@onready var more_button: MenuButton = $MainNavigation/Margin/Row/More
+@onready var more_button: MenuButton = $MainNavigation/Margin/Column/More
 @onready var injuries_alert: Label = $BottomStatusBar/Margin/Row/Injuries
 @onready var food_alert: Label = $BottomStatusBar/Margin/Row/Food
 @onready var workers_alert: Label = $BottomStatusBar/Margin/Row/Workers
@@ -40,13 +40,13 @@ var more_ids: Array[String] = []
 func _ready() -> void:
     mouse_filter = Control.MOUSE_FILTER_IGNORE
     primary_buttons = {
-        "finca":$MainNavigation/Margin/Row/Finca,
-        "barracks":$MainNavigation/Margin/Row/Personal,
-        "mercado":$MainNavigation/Margin/Row/Mercado,
-        "forja":$MainNavigation/Margin/Row/Forja,
-        "relaciones":$MainNavigation/Margin/Row/Relaciones,
-        "arena":$MainNavigation/Margin/Row/Arena,
-        "campana":$MainNavigation/Margin/Row/Campana
+        "finca":$MainNavigation/Margin/Column/Finca,
+        "barracks":$MainNavigation/Margin/Column/Barracks,
+        "mercado":$MainNavigation/Margin/Column/Mercado,
+        "forja":$MainNavigation/Margin/Column/Forja,
+        "relaciones":$MainNavigation/Margin/Column/Relaciones,
+        "arena":$MainNavigation/Margin/Column/Arena,
+        "campana":$MainNavigation/Margin/Column/Campana
     }
     for system_id in primary_buttons.keys():
         var button := primary_buttons[system_id] as Button
@@ -137,7 +137,7 @@ func _refresh_navigation(system_id: String) -> void:
     if display_name.is_empty():
         display_name = normalized.capitalize()
     section_label.text = "SECCIÓN · %s" % display_name.to_upper()
-    more_button.text = "MÁS · %s" % display_name.to_upper() if not PRIMARY_SYSTEMS.has(normalized) else "MÁS"
+    more_button.tooltip_text = "Más sistemas · %s" % display_name if not PRIMARY_SYSTEMS.has(normalized) else "Más sistemas"
 
 func _refresh_alerts() -> void:
     var injured := 0
