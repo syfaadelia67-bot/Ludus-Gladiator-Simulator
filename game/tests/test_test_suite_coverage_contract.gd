@@ -6,6 +6,10 @@ const SUPPORTED_PREFIXES: Array[String] = ["test_"]
 const EXCLUDED_FILES := {
     "test_runner.gd": "Autoload test orchestrator; it is infrastructure, not a test case."
 }
+const GROUP_OVERRIDES := {
+    "demo_campaign_flow_integration_test.gd": "ui",
+    "test_continue_campaign_summary.gd": "ui"
+}
 const UI_MARKERS: Array[String] = [
     "screen", "router", "hud", "finca", "presenter", "_ui_", "arena",
     "market_hub", "market_roster", "barracks_hub", "relationships", "dossier",
@@ -16,7 +20,9 @@ const FAILURE_MARKERS: Array[String] = [
     "SCRIPT ERROR: Assertion failed",
     "SCRIPT ERROR: Parse Error",
     "SCRIPT ERROR: Compile Error",
-    "ERROR: Test did not complete or call get_tree().quit()"
+    "ERROR: Test did not complete or call get_tree().quit()",
+    "ObjectDB instances leaked at exit",
+    "resources still in use at exit"
 ]
 
 func run() -> void:
@@ -33,10 +39,16 @@ func run() -> void:
     assert(runner_text.contains("const SUPPORTED_TEST_SUFFIXES: Array[String] = [\"_test.gd\", \"_contract.gd\"]"))
     assert(runner_text.contains("const SUPPORTED_TEST_PREFIXES: Array[String] = [\"test_\"]"))
     assert(runner_text.contains("const FAILURE_OUTPUT_MARKERS"))
+    assert(runner_text.contains("const TEST_GROUP_OVERRIDES"))
     assert(runner_text.contains("func _collect_tests"))
     assert(runner_text.contains("func _requires_script_mode"))
     assert(runner_text.contains("func _line_reports_test_failure"))
     assert(runner_text.contains("func _dispose_test_node"))
+    assert(runner_text.contains("func complete_legacy_test"))
+    assert(runner_text.contains("func _needs_legacy_quit_adapter"))
+    assert(runner_text.contains("func _build_legacy_compatible_script"))
+    assert(runner_text.contains("TestRunner.complete_legacy_test(self, 0)"))
+    assert(runner_text.contains("test_node.set_script(null)"))
     assert(runner_text.contains("output_detected_failure"))
     assert(runner_text.contains("line.begins_with(\"extends SceneTree\")"))
     assert(runner_text.contains("--script"))
@@ -53,6 +65,8 @@ func run() -> void:
         assert(runner_text.contains("\"%s\"" % marker))
     for failure_marker in FAILURE_MARKERS:
         assert(runner_text.contains("\"%s\"" % failure_marker))
+    for file_name in GROUP_OVERRIDES.keys():
+        assert(runner_text.contains("\"%s\": \"%s\"" % [file_name, GROUP_OVERRIDES[file_name]]))
     for file_name in EXCLUDED_FILES.keys():
         var reason := str(EXCLUDED_FILES[file_name]).strip_edges()
         assert(not reason.is_empty())
@@ -81,6 +95,8 @@ func run() -> void:
     assert(documentation_text.contains("*_contract.gd"))
     assert(documentation_text.contains("test_*.gd"))
     assert(documentation_text.contains("assertion"))
+    assert(documentation_text.contains("legacy"))
+    assert(documentation_text.contains("ObjectDB"))
     assert(documentation_text.contains("headless"))
     assert(documentation_text.contains("No existe un estado sin grupo"))
     assert(documentation_text.contains("No se instala ningún plugin"))
@@ -154,6 +170,9 @@ func _is_recognized_test(file_name: String) -> bool:
     return false
 
 func _classify(test_path: String) -> String:
+    var file_name := test_path.get_file().to_lower()
+    if GROUP_OVERRIDES.has(file_name):
+        return str(GROUP_OVERRIDES[file_name])
     var normalized := test_path.to_lower()
     for marker in UI_MARKERS:
         if normalized.contains(marker):
