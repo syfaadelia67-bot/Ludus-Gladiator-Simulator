@@ -43,215 +43,293 @@ horizontal_alignment = 2
 vertical_alignment = 1
 text = "RENOVACIÓN GENERAL"
 
-[node name="ModeButtons" type="HBoxContainer" parent="."]
-custom_minimum_size = Vector2(0, 104)
-layout_mode = 2
-theme_override_constants/separation = 16
-
-[node name="Fighters" type="Button" parent="ModeButtons"]
-custom_minimum_size = Vector2(0, 96)
+[node name="Landing" type="VBoxContainer" parent="."]
 layout_mode = 2
 size_flags_horizontal = 3
-icon = ExtResource("3_fighter")
-expand_icon = true
-theme_override_font_sizes/font_size = 23
+size_flags_vertical = 3
+alignment = 1
+theme_override_constants/separation = 18
+
+[node name="Intro" type="Label" parent="Landing"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+text = "ELEGÍ QUÉ SECTOR DEL MERCADO QUERÉS VISITAR"
+horizontal_alignment = 1
+
+[node name="Cards" type="HBoxContainer" parent="Landing"]
+custom_minimum_size = Vector2(0, 500)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+alignment = 1
+theme_override_constants/separation = 24
+
+[node name="FightersCard" type="TextureButton" parent="Landing/Cards"]
+custom_minimum_size = Vector2(0, 480)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+texture_normal = ExtResource("3_fighter")
+ignore_texture_size = true
+stretch_mode = 6
+tooltip_text = "Abrir mercado de luchadores"
+
+[node name="Overlay" type="PanelContainer" parent="Landing/Cards/FightersCard"]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -118.0
+grow_horizontal = 2
+grow_vertical = 0
+mouse_filter = 2
+
+[node name="Label" type="Label" parent="Landing/Cards/FightersCard/Overlay"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 28
 text = "LUCHADORES\nEsclavos, candidatos y gladiadores"
+horizontal_alignment = 1
+vertical_alignment = 1
 
-[node name="Equipment" type="Button" parent="ModeButtons"]
-custom_minimum_size = Vector2(0, 96)
+[node name="EquipmentCard" type="TextureButton" parent="Landing/Cards"]
+custom_minimum_size = Vector2(0, 480)
 layout_mode = 2
 size_flags_horizontal = 3
-icon = ExtResource("4_equipment")
-expand_icon = true
-theme_override_font_sizes/font_size = 23
-text = "EQUIPAMIENTO\nArmas, armaduras y escudos"
+size_flags_vertical = 3
+texture_normal = ExtResource("4_equipment")
+ignore_texture_size = true
+stretch_mode = 6
+tooltip_text = "Abrir mercado de equipamiento"
 
-[node name="Feedback" type="Label" parent="."]
+[node name="Overlay" type="PanelContainer" parent="Landing/Cards/EquipmentCard"]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -118.0
+grow_horizontal = 2
+grow_vertical = 0
+mouse_filter = 2
+
+[node name="Label" type="Label" parent="Landing/Cards/EquipmentCard/Overlay"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 28
+text = "EQUIPAMIENTO\nArmas, armaduras y escudos"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ContentShell" type="VBoxContainer" parent="."]
+visible = false
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 10
+
+[node name="SectionHeader" type="HBoxContainer" parent="ContentShell"]
+custom_minimum_size = Vector2(0, 52)
+layout_mode = 2
+
+[node name="BackToMarketHome" type="Button" parent="ContentShell/SectionHeader"]
+custom_minimum_size = Vector2(240, 0)
+layout_mode = 2
+text = "← VOLVER AL MERCADO"
+
+[node name="SectionTitle" type="Label" parent="ContentShell/SectionHeader"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 24
+text = "SECCIÓN"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Feedback" type="Label" parent="ContentShell"]
 custom_minimum_size = Vector2(0, 34)
 layout_mode = 2
 autowrap_mode = 3
-text = "Seleccioná una sección del mercado."
+text = ""
 
-[node name="FightersView" type="HSplitContainer" parent="."]
+[node name="FightersView" type="HSplitContainer" parent="ContentShell"]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 split_offset = 700
 
-[node name="OffersPanel" type="PanelContainer" parent="FightersView"]
+[node name="OffersPanel" type="PanelContainer" parent="ContentShell/FightersView"]
 custom_minimum_size = Vector2(620, 0)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 
-[node name="Margin" type="MarginContainer" parent="FightersView/OffersPanel"]
+[node name="Margin" type="MarginContainer" parent="ContentShell/FightersView/OffersPanel"]
 layout_mode = 2
 theme_override_constants/margin_left = 14
 theme_override_constants/margin_top = 14
 theme_override_constants/margin_right = 14
 theme_override_constants/margin_bottom = 14
 
-[node name="Content" type="VBoxContainer" parent="FightersView/OffersPanel/Margin"]
+[node name="Content" type="VBoxContainer" parent="ContentShell/FightersView/OffersPanel/Margin"]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 theme_override_constants/separation = 10
 
-[node name="Title" type="Label" parent="FightersView/OffersPanel/Margin/Content"]
+[node name="Title" type="Label" parent="ContentShell/FightersView/OffersPanel/Margin/Content"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 21
 text = "OFERTAS DE LUCHADORES"
 
-[node name="Help" type="Label" parent="FightersView/OffersPanel/Margin/Content"]
+[node name="Help" type="Label" parent="ContentShell/FightersView/OffersPanel/Margin/Content"]
 layout_mode = 2
 autowrap_mode = 3
 text = "Estas ofertas cambian automáticamente junto con todo el mercado cada tres semanas."
 
-[node name="List" type="ItemList" parent="FightersView/OffersPanel/Margin/Content"]
+[node name="List" type="ItemList" parent="ContentShell/FightersView/OffersPanel/Margin/Content"]
 custom_minimum_size = Vector2(0, 420)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 allow_reselect = true
 
-[node name="DetailsPanel" type="PanelContainer" parent="FightersView"]
+[node name="DetailsPanel" type="PanelContainer" parent="ContentShell/FightersView"]
 custom_minimum_size = Vector2(520, 0)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 
-[node name="Margin" type="MarginContainer" parent="FightersView/DetailsPanel"]
+[node name="Margin" type="MarginContainer" parent="ContentShell/FightersView/DetailsPanel"]
 layout_mode = 2
 theme_override_constants/margin_left = 16
 theme_override_constants/margin_top = 14
 theme_override_constants/margin_right = 16
 theme_override_constants/margin_bottom = 14
 
-[node name="Scroll" type="ScrollContainer" parent="FightersView/DetailsPanel/Margin"]
+[node name="Scroll" type="ScrollContainer" parent="ContentShell/FightersView/DetailsPanel/Margin"]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 horizontal_scroll_mode = 0
 
-[node name="Content" type="VBoxContainer" parent="FightersView/DetailsPanel/Margin/Scroll"]
+[node name="Content" type="VBoxContainer" parent="ContentShell/FightersView/DetailsPanel/Margin/Scroll"]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 12
 
-[node name="Portrait" type="TextureRect" parent="FightersView/DetailsPanel/Margin/Scroll/Content"]
+[node name="Portrait" type="TextureRect" parent="ContentShell/FightersView/DetailsPanel/Margin/Scroll/Content"]
 custom_minimum_size = Vector2(0, 150)
 layout_mode = 2
 texture = ExtResource("3_fighter")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="Details" type="RichTextLabel" parent="FightersView/DetailsPanel/Margin/Scroll/Content"]
+[node name="Details" type="RichTextLabel" parent="ContentShell/FightersView/DetailsPanel/Margin/Scroll/Content"]
 custom_minimum_size = Vector2(0, 310)
 layout_mode = 2
 bbcode_enabled = true
 fit_content = true
 text = "Seleccioná una oferta."
 
-[node name="Buy" type="Button" parent="FightersView/DetailsPanel/Margin/Scroll/Content"]
+[node name="Buy" type="Button" parent="ContentShell/FightersView/DetailsPanel/Margin/Scroll/Content"]
 custom_minimum_size = Vector2(0, 58)
 layout_mode = 2
 icon = ExtResource("5_gold")
 expand_icon = true
 text = "COMPRAR LUCHADOR"
 
-[node name="EquipmentView" type="HSplitContainer" parent="."]
+[node name="EquipmentView" type="HSplitContainer" parent="ContentShell"]
 visible = false
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 split_offset = 700
 
-[node name="OffersPanel" type="PanelContainer" parent="EquipmentView"]
+[node name="OffersPanel" type="PanelContainer" parent="ContentShell/EquipmentView"]
 custom_minimum_size = Vector2(620, 0)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 
-[node name="Margin" type="MarginContainer" parent="EquipmentView/OffersPanel"]
+[node name="Margin" type="MarginContainer" parent="ContentShell/EquipmentView/OffersPanel"]
 layout_mode = 2
 theme_override_constants/margin_left = 14
 theme_override_constants/margin_top = 14
 theme_override_constants/margin_right = 14
 theme_override_constants/margin_bottom = 14
 
-[node name="Content" type="VBoxContainer" parent="EquipmentView/OffersPanel/Margin"]
+[node name="Content" type="VBoxContainer" parent="ContentShell/EquipmentView/OffersPanel/Margin"]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 theme_override_constants/separation = 10
 
-[node name="Header" type="HBoxContainer" parent="EquipmentView/OffersPanel/Margin/Content"]
+[node name="Header" type="HBoxContainer" parent="ContentShell/EquipmentView/OffersPanel/Margin/Content"]
 layout_mode = 2
 
-[node name="Title" type="Label" parent="EquipmentView/OffersPanel/Margin/Content/Header"]
+[node name="Title" type="Label" parent="ContentShell/EquipmentView/OffersPanel/Margin/Content/Header"]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 21
 text = "OFERTAS DE EQUIPAMIENTO"
 
-[node name="Refresh" type="Button" parent="EquipmentView/OffersPanel/Margin/Content/Header"]
+[node name="Refresh" type="Button" parent="ContentShell/EquipmentView/OffersPanel/Margin/Content/Header"]
 custom_minimum_size = Vector2(310, 48)
 layout_mode = 2
 icon = ExtResource("5_gold")
 expand_icon = true
 text = "RENOVAR EQUIPAMIENTO · 100"
 
-[node name="Help" type="Label" parent="EquipmentView/OffersPanel/Margin/Content"]
+[node name="Help" type="Label" parent="ContentShell/EquipmentView/OffersPanel/Margin/Content"]
 layout_mode = 2
 autowrap_mode = 3
 text = "La renovación manual cambia únicamente estos objetos. Los luchadores permanecen iguales."
 
-[node name="List" type="ItemList" parent="EquipmentView/OffersPanel/Margin/Content"]
+[node name="List" type="ItemList" parent="ContentShell/EquipmentView/OffersPanel/Margin/Content"]
 custom_minimum_size = Vector2(0, 390)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 allow_reselect = true
 
-[node name="DetailsPanel" type="PanelContainer" parent="EquipmentView"]
+[node name="DetailsPanel" type="PanelContainer" parent="ContentShell/EquipmentView"]
 custom_minimum_size = Vector2(520, 0)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 
-[node name="Margin" type="MarginContainer" parent="EquipmentView/DetailsPanel"]
+[node name="Margin" type="MarginContainer" parent="ContentShell/EquipmentView/DetailsPanel"]
 layout_mode = 2
 theme_override_constants/margin_left = 16
 theme_override_constants/margin_top = 14
 theme_override_constants/margin_right = 16
 theme_override_constants/margin_bottom = 14
 
-[node name="Scroll" type="ScrollContainer" parent="EquipmentView/DetailsPanel/Margin"]
+[node name="Scroll" type="ScrollContainer" parent="ContentShell/EquipmentView/DetailsPanel/Margin"]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 horizontal_scroll_mode = 0
 
-[node name="Content" type="VBoxContainer" parent="EquipmentView/DetailsPanel/Margin/Scroll"]
+[node name="Content" type="VBoxContainer" parent="ContentShell/EquipmentView/DetailsPanel/Margin/Scroll"]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 12
 
-[node name="Portrait" type="TextureRect" parent="EquipmentView/DetailsPanel/Margin/Scroll/Content"]
+[node name="Portrait" type="TextureRect" parent="ContentShell/EquipmentView/DetailsPanel/Margin/Scroll/Content"]
 custom_minimum_size = Vector2(0, 170)
 layout_mode = 2
 texture = ExtResource("4_equipment")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="Details" type="RichTextLabel" parent="EquipmentView/DetailsPanel/Margin/Scroll/Content"]
+[node name="Details" type="RichTextLabel" parent="ContentShell/EquipmentView/DetailsPanel/Margin/Scroll/Content"]
 custom_minimum_size = Vector2(0, 280)
 layout_mode = 2
 bbcode_enabled = true
 fit_content = true
 text = "Seleccioná un objeto."
 
-[node name="Buy" type="Button" parent="EquipmentView/DetailsPanel/Margin/Scroll/Content"]
+[node name="Buy" type="Button" parent="ContentShell/EquipmentView/DetailsPanel/Margin/Scroll/Content"]
 custom_minimum_size = Vector2(0, 58)
 layout_mode = 2
 icon = ExtResource("5_gold")
