@@ -1,8 +1,11 @@
 extends VBoxContainer
 
+const COVER_CARD_SIZE := Vector2(850, 478)
+
 @onready var back_button: Button = $Header/Margin/Row/BackToFinca
 @onready var capacity_label: Label = $Header/Margin/Row/Capacity
 @onready var landing: VBoxContainer = $Landing
+@onready var cards_row: HBoxContainer = $Landing/Cards
 @onready var personal_card: TextureButton = $Landing/Cards/PersonalCard
 @onready var fighters_card: TextureButton = $Landing/Cards/FightersCard
 @onready var content_shell: VBoxContainer = $ContentShell
@@ -58,8 +61,16 @@ func _ready() -> void:
     GladiatorProgressionManager.progression_changed.connect(_refresh_gladiators)
 
     _populate_jobs()
+    _configure_cover_cards()
     _show_barracks_home()
     _refresh_all()
+
+func _configure_cover_cards() -> void:
+    cards_row.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+    for card in [personal_card, fighters_card]:
+        card.custom_minimum_size = COVER_CARD_SIZE
+        card.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+        card.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 
 func _unhandled_key_input(event: InputEvent) -> void:
     if not is_visible_in_tree() or not event.is_action_pressed("ui_cancel"):
