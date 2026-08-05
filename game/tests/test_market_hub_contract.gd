@@ -12,7 +12,6 @@ func _initialize() -> void:
         assert(scene_text.contains("name=\"%s\"" % required_node) or scene_text.contains("name = \"%s\"" % required_node))
 
     assert(scene_text.count("type=\"TextureButton\"") >= 2)
-    assert(scene_text.contains("custom_minimum_size = Vector2(0, 480)"))
     assert(scene_text.contains("LUCHADORES"))
     assert(scene_text.contains("EQUIPAMIENTO"))
     assert(scene_text.contains("RENOVAR EQUIPAMIENTO · 100"))
@@ -25,6 +24,9 @@ func _initialize() -> void:
     assert(market_text.contains("func buy_equipment_offer"))
     assert(equipment_text.contains("func add_market_item"))
 
+    assert(screen_text.contains("const COVER_CARD_SIZE := Vector2(850, 478)"))
+    assert(screen_text.contains("func _configure_cover_cards"))
+    assert(screen_text.contains("card.custom_minimum_size = COVER_CARD_SIZE"))
     assert(screen_text.contains("func _show_market_home"))
     assert(screen_text.contains("func _open_fighters"))
     assert(screen_text.contains("func _open_equipment"))
@@ -52,5 +54,5 @@ func _initialize() -> void:
     assert(instance.get_node_or_null("ContentShell/EquipmentView/OffersPanel/Margin/Content/Header/Refresh") is Button)
     instance.free()
 
-    print("Market cover navigation and purchase stability contract: OK")
+    print("Market 16:9 cover navigation and purchase stability contract: OK")
     quit()
