@@ -12,12 +12,14 @@ func _initialize() -> void:
         assert(scene_text.contains("name=\"%s\"" % required_node) or scene_text.contains("name = \"%s\"" % required_node))
 
     assert(scene_text.count("type=\"TextureButton\"") >= 2)
-    assert(scene_text.contains("custom_minimum_size = Vector2(0, 480)"))
     assert(scene_text.contains("building_worker_quarters.png"))
     assert(scene_text.contains("facility_barracks.png"))
     assert(scene_text.contains("combat_beast.png"))
     assert(not scene_text.contains("TabContainer"))
 
+    assert(controller_text.contains("const COVER_CARD_SIZE := Vector2(850, 478)"))
+    assert(controller_text.contains("func _configure_cover_cards"))
+    assert(controller_text.contains("card.custom_minimum_size = COVER_CARD_SIZE"))
     assert(controller_text.contains("func _show_barracks_home"))
     assert(controller_text.contains("func _open_personal_section"))
     assert(controller_text.contains("func _open_fighters_section"))
@@ -48,5 +50,5 @@ func _initialize() -> void:
     assert(instance.get_node_or_null("ContentShell/FightersView/BeastsView/Content/Icon") is TextureRect)
     instance.free()
 
-    print("Barracks cover navigation without tabs contract: OK")
+    print("Barracks 16:9 cover navigation without tabs contract: OK")
     quit()
