@@ -1,0 +1,167 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Ludus Gladiator Simulator\n"
+"Language: en\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgid "LANGUAGE_LABEL"
+msgstr "LANGUAGE"
+
+msgid "LANGUAGE_AUTOMATIC"
+msgstr "Automatic (system)"
+
+msgid "LANGUAGE_SPANISH"
+msgstr "Español"
+
+msgid "LANGUAGE_ENGLISH"
+msgstr "English"
+
+msgid "LANGUAGE_CHINESE_SIMPLIFIED"
+msgstr "简体中文"
+
+msgid "LANGUAGE_JAPANESE"
+msgstr "日本語"
+
+msgid "LANGUAGE_PORTUGUESE_BRAZIL"
+msgstr "Português (Brasil)"
+
+msgid "LOCALIZATION_PSEUDO_LABEL"
+msgstr "EXPANDED TEXT TEST"
+
+msgid "LOCALIZATION_PSEUDO_TOOLTIP"
+msgstr "Development mode used to detect clipped or untranslated text. Shortcut: F8."
+
+msgid "START_GAME_TITLE"
+msgstr "GLADIATOR SIMULATOR"
+
+msgid "START_SUBTITLE"
+msgstr "Forge a gladiator house. Survive sixteen weeks."
+
+msgid "START_VIEW_FINAL_RESULT"
+msgstr "View final result"
+
+msgid "START_CONTINUE_CAMPAIGN"
+msgstr "Continue campaign"
+
+msgid "START_NEW_CAMPAIGN"
+msgstr "New campaign"
+
+msgid "START_EXIT"
+msgstr "Exit"
+
+msgid "START_NO_SAVE"
+msgstr "No saved game exists."
+
+msgid "START_NO_CAMPAIGN"
+msgstr "There is no saved campaign."
+
+msgid "START_LOADING"
+msgstr "Loading campaign..."
+
+msgid "START_LOAD_FAILED"
+msgstr "A valid saved game could not be loaded."
+
+msgid "START_NEW_CAMPAIGN_TITLE"
+msgstr "NEW CAMPAIGN"
+
+msgid "START_OWNER_EXPLANATION"
+msgstr "Choose who will lead the ludus and the origin of their fortune. This choice defines the campaign's starting resources."
+
+msgid "START_OWNER_NAME_PLACEHOLDER"
+msgstr "Owner's name"
+
+msgid "START_BEGIN_CAMPAIGN"
+msgstr "Begin campaign"
+
+msgid "COMMON_BACK"
+msgstr "Back"
+
+msgid "START_SELECT_ORIGIN"
+msgstr "Select an origin."
+
+msgid "START_NAME_MIN_LENGTH"
+msgstr "Enter a name with at least two characters."
+
+msgid "START_RESET_FAILED"
+msgstr "The previous campaign state could not be reset."
+
+msgid "START_OWNER_CONFIG_FAILED"
+msgstr "The owner of the ludus could not be configured."
+
+msgid "START_SAVE_FAILED"
+msgstr "The campaign was created, but it could not be saved."
+
+msgid "START_BONUSES"
+msgstr "Bonuses"
+
+msgid "START_NO_BONUSES"
+msgstr "No bonuses."
+
+msgid "START_ORIGIN_FALLBACK"
+msgstr "Origin"
+
+msgid "START_BONUS_DENARII"
+msgstr "Starting denarii"
+
+msgid "START_BONUS_FOOD"
+msgstr "Starting food"
+
+msgid "START_BONUS_ORE"
+msgstr "Starting ore"
+
+msgid "START_BONUS_REPUTATION"
+msgstr "Starting reputation"
+
+msgid "START_BONUS_LOYALTY"
+msgstr "Personnel loyalty"
+
+msgid "START_BONUS_MORALE"
+msgstr "Personnel morale"
+
+msgid "START_BONUS_GLADIATOR_EXPERIENCE"
+msgstr "Gladiator experience"
+
+msgid "START_RESULT_VICTORY"
+msgstr "VICTORY"
+
+msgid "START_RESULT_DEFEAT"
+msgstr "DEFEAT"
+
+msgid "START_CAMPAIGN_FINISHED_SUMMARY"
+msgstr "{owner}\nCampaign finished — {result}\nWeek {week} of 16 | Fights: {wins} wins, {losses} losses"
+
+msgid "START_ACTIVE_CAMPAIGN_SUMMARY"
+msgstr "{owner}\nWeek {week} of 16 — Chapter {chapter}: {chapter_name}\nNext fight: {battle}"
+
+msgid "OWNER_TITLE_DOMINUS"
+msgstr "Dominus"
+
+msgid "OWNER_TITLE_DOMINA"
+msgstr "Domina"
+
+msgid "CHAPTER_1_NAME"
+msgstr "A ludus in ruins"
+
+msgid "CHAPTER_2_NAME"
+msgstr "Blood and reputation"
+
+msgid "CHAPTER_3_NAME"
+msgstr "The name of the ludus"
+
+msgid "BATTLE_DEMO_FINAL"
+msgstr "Final demo fight"
+
+msgid "BATTLE_OFFICIAL_TOURNAMENT"
+msgstr "Official arena tournament"
+
+msgid "BATTLE_BEAST_HUNT"
+msgstr "Amphitheater beast hunt"
+
+msgid "BATTLE_UNDERGROUND"
+msgstr "Underground clandestine fight"
+
+msgid "BATTLE_WEEKLY_EXHIBITION"
+msgstr "Weekly ludus exhibition"
