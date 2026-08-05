@@ -191,19 +191,26 @@ func _run_single_node_test(path: String) -> void:
 		_fail("Test script not found: %s" % path)
 		return
 
-	var test_script := load(path) as Script
+	var test_script: Script = load(path) as Script
 	if test_script == null:
 		_fail("Could not load test script: %s" % path)
 		return
 	var test_instance: Variant = test_script.new()
 	if not test_instance is Node:
+		test_instance = null
+		test_script = null
 		_fail("Test script must extend Node or SceneTree: %s" % path)
 		return
 
-	var test_node := test_instance as Node
+	var test_node: Node = test_instance as Node
 	add_child(test_node)
 	if test_node.has_method("run"):
 		test_node.call("run")
+		await get_tree().process_frame
+		_dispose_test_node(test_node)
+		test_node = null
+		test_instance = null
+		test_script = null
 		await get_tree().process_frame
 		print("COMPLETED: %s" % path)
 		get_tree().quit(0)
@@ -213,6 +220,13 @@ func _run_single_node_test(path: String) -> void:
 		await get_tree().process_frame
 
 	_fail("Test did not complete or call get_tree().quit(): %s" % path)
+
+func _dispose_test_node(test_node: Node) -> void:
+	if test_node == null or not is_instance_valid(test_node):
+		return
+	if test_node.get_parent() == self:
+		remove_child(test_node)
+	test_node.free()
 
 func _fail(message: String) -> void:
 	push_error(message)
