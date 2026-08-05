@@ -192,7 +192,7 @@ func equip_item_to_slot(person_id: String, item_id: String, slot_id: String) -> 
     if equipped_person_id == person_id and not previous_slot.is_empty() and previous_slot != canonical:
         person.set_equipped_item_id(previous_slot, "")
 
-    var previous_id := person.get_equipped_item_id(canonical)
+    var previous_id: String = str(person.get_equipped_item_id(canonical))
     if not previous_id.is_empty() and previous_id != item_id:
         var previous := get_item(previous_id)
         if not previous.is_empty():
@@ -223,7 +223,7 @@ func unequip_equipment_slot(person_id: String, slot_id: String) -> bool:
         equipment_failed.emit("Las monturas todavía no están habilitadas.")
         return false
     _rebuild_person_slots(person)
-    var item_id := person.get_equipped_item_id(canonical)
+    var item_id: String = str(person.get_equipped_item_id(canonical))
     person.set_equipped_item_id(canonical, "")
     if not item_id.is_empty():
         var item := get_item(item_id)
@@ -296,7 +296,7 @@ func _rebuild_person_slots(person) -> void:
             item["equipped_slot"] = slot_id
         if slot_id.is_empty() or slot_id == "mount":
             continue
-        var current_id := person.get_equipped_item_id(slot_id)
+        var current_id: String = str(person.get_equipped_item_id(slot_id))
         if current_id.is_empty() or current_id == str(item.get("id", "")):
             person.set_equipped_item_id(slot_id, str(item.get("id", "")))
 
