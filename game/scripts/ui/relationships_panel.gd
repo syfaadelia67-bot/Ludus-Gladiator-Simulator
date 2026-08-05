@@ -27,14 +27,17 @@ extends Control
 var person_ids: Array[String] = []
 var selected_person_id := ""
 var selected_partner_id := ""
+var interaction_in_progress := false
+var refresh_pending := false
+var last_feedback := "Dos intervenciones disponibles por semana."
 
 func _ready() -> void:
     back_button.pressed.connect(_return_to_finca)
     people_list.item_selected.connect(_on_person_selected)
     visibility_changed.connect(_on_visibility_changed)
-    RelationshipManager.relationships_changed.connect(_refresh)
-    RelationshipManager.interventions_changed.connect(func(_remaining: int): _refresh_overview())
-    RosterManager.roster_changed.connect(_refresh)
+    RelationshipManager.relationships_changed.connect(_request_refresh)
+    RelationshipManager.interventions_changed.connect(_on_interventions_changed)
+    RosterManager.roster_changed.connect(_request_refresh)
     _refresh()
 
 func _unhandled_key_input(event: InputEvent) -> void:
@@ -46,6 +49,19 @@ func _on_visibility_changed() -> void:
     if is_visible_in_tree():
         _refresh()
 
+func _request_refresh() -> void:
+    if interaction_in_progress:
+        refresh_pending = true
+        return
+    _refresh()
+
+func _on_interventions_changed(_remaining: int) -> void:
+    if interaction_in_progress:
+        refresh_pending = true
+        return
+    _refresh_overview()
+    _refresh_detail()
+
 func _refresh() -> void:
     if not is_inside_tree():
         return
@@ -55,6 +71,8 @@ func _refresh() -> void:
     _refresh_detail()
     _refresh_incident()
     _refresh_events()
+    status_label.text = last_feedback
+    refresh_pending = false
 
 func _refresh_overview() -> void:
     var overview := RelationshipManager.get_social_overview()
@@ -112,7 +130,7 @@ func _on_person_selected(index: int) -> void:
         return
     selected_person_id = person_ids[index]
     selected_partner_id = ""
-    status_label.text = "Seleccioná uno de sus vínculos para intervenir."
+    last_feedback = "Seleccioná uno de sus vínculos para intervenir."
     _refresh_selected_summary()
     _refresh_bond_cards()
     _refresh_detail()
@@ -181,11 +199,12 @@ func _add_empty_card(text: String) -> void:
 
 func _select_partner(partner_id: String) -> void:
     selected_partner_id = partner_id
-    status_label.text = "Revisá costos y consecuencias antes de intervenir."
+    last_feedback = "Revisá costos y consecuencias antes de intervenir."
     _refresh_detail()
 
 func _refresh_detail() -> void:
     _clear_children(actions)
+    status_label.text = last_feedback
     if selected_person_id.is_empty() or selected_partner_id.is_empty():
         detail_title.text = "SELECCIONÁ UN VÍNCULO"
         tone_label.text = "Sin estado"
@@ -215,18 +234,46 @@ func _refresh_detail() -> void:
 
     for action_data in RelationshipManager.get_available_interactions(selected_person_id, selected_partner_id):
         var action: Dictionary = action_data
+        var action_id := str(action.get("id", ""))
+        var allowed := bool(action.get("allowed", false))
+        var reason := str(action.get("reason", ""))
         var button := Button.new()
-        button.custom_minimum_size = Vector2(0, 52)
+        button.custom_minimum_size = Vector2(0, 58)
         button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-        button.text = "%s\n%s" % [action.get("label", "INTERVENIR"), action.get("cost", "")]
-        button.disabled = not bool(action.get("allowed", false))
-        button.tooltip_text = str(action.get("reason", "")) if button.disabled else "Aplicar intervención"
-        button.pressed.connect(_run_interaction.bind(str(action.get("id", ""))))
+        button.text = "%s%s\n%s%s" % [
+            action.get("label", "INTERVENIR"),
+            " · NO DISPONIBLE" if not allowed else "",
+            action.get("cost", ""),
+            " · %s" % reason if not allowed and not reason.is_empty() else ""
+        ]
+        button.tooltip_text = reason if not allowed else "Aplicar intervención"
+        button.modulate = Color(1, 1, 1, 0.72) if not allowed else Color.WHITE
+        button.pressed.connect(_attempt_interaction.bind(action_id, allowed, reason))
         actions.add_child(button)
 
-func _run_interaction(interaction_id: String) -> void:
+func _attempt_interaction(interaction_id: String, allowed: bool, blocked_reason: String) -> void:
+    if interaction_in_progress:
+        return
+    if not allowed:
+        last_feedback = "NO DISPONIBLE · %s" % (blocked_reason if not blocked_reason.is_empty() else "No se cumplen los requisitos.")
+        status_label.text = last_feedback
+        return
+
+    interaction_in_progress = true
+    refresh_pending = false
     var result := RelationshipManager.register_interaction(selected_person_id, selected_partner_id, interaction_id)
-    status_label.text = str(result.get("description", "No se pudo realizar la intervención."))
+    interaction_in_progress = false
+
+    var success := bool(result.get("success", false))
+    var description := str(result.get("description", "No se pudo realizar la intervención."))
+    if success:
+        last_feedback = "INTERVENCIÓN APLICADA · %s · Restan %d" % [
+            description,
+            int(result.get("interventions_remaining", RelationshipManager.get_interventions_remaining()))
+        ]
+    else:
+        last_feedback = "NO SE PUDO APLICAR · %s" % description
+
     _refresh()
 
 func _refresh_incident() -> void:
@@ -252,7 +299,8 @@ func _refresh_incident() -> void:
 
 func _resolve_incident(choice_id: String) -> void:
     var result := RelationshipManager.resolve_social_incident(choice_id)
-    status_label.text = str(result.get("description", "No se pudo resolver el incidente."))
+    var description := str(result.get("description", "No se pudo resolver el incidente."))
+    last_feedback = "INCIDENTE RESUELTO · %s" % description if not result.is_empty() else description
     _refresh()
 
 func _refresh_events() -> void:
