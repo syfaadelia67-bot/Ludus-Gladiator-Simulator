@@ -23,8 +23,8 @@ func _initialize() -> void:
     assert(tournaments_script_text.contains("FincaHubController.show_finca()"))
     assert(tournaments_script_text.contains("ui_cancel"))
 
-    assert(hub_text.contains("\"torneos\": \"Torneos\""))
-    assert(hub_text.contains("\"progresion\": \"Progresión\""))
+    assert(hub_text.contains("\"torneos\": \"res://scenes/TournamentsPanel.tscn\""))
+    assert(hub_text.contains("\"progresion\": \"res://scenes/ProgressionPanel.tscn\""))
 
     var progression_scene := load("res://scenes/ProgressionPanel.tscn") as PackedScene
     var tournaments_scene := load("res://scenes/TournamentsPanel.tscn") as PackedScene
