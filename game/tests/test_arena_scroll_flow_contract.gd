@@ -5,7 +5,7 @@ func _initialize() -> void:
     var arena_scene_text := FileAccess.get_file_as_string("res://scenes/ArenaScreen.tscn")
     var controller_text := FileAccess.get_file_as_string("res://scripts/ui/arena_screen.gd")
     var registry_text := FileAccess.get_file_as_string("res://scripts/ui/pack_000_asset_registry.gd")
-    var bootstrap_text := FileAccess.get_file_as_string("res://scripts/ui/all_tabs_ui_bootstrap.gd")
+    var bootstrap_text := FileAccess.get_file_as_string("res://scripts/ui/main_ui_bootstrap.gd")
     var hub_text := FileAccess.get_file_as_string("res://scripts/ui/finca_hub_controller.gd")
 
     assert(project.contains("window/size/viewport_width=1920"))
