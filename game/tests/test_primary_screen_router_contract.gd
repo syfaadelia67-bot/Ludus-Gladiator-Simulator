@@ -14,7 +14,9 @@ func _initialize() -> void:
     assert(hub_text.contains("const SCREEN_HOST_NAME := \"ScreenHost\""))
     assert(hub_text.contains("func prepare_scene()"))
     assert(hub_text.contains("func _show_hosted_screen"))
-    assert(hub_text.contains("func _show_legacy_screen"))
+    assert(not hub_text.contains("func _show_legacy_screen"))
+    assert(not hub_text.contains("LEGACY_SYSTEM_TABS"))
+    assert(hub_text.contains("if not SCREEN_SCENES.has(normalized_id):"))
     assert(hub_text.contains("var current_system_id := \"finca\""))
     assert(hub_text.contains("host.visible = true"))
     assert(hub_text.contains("tabs.visible = false"))
@@ -22,6 +24,7 @@ func _initialize() -> void:
 
     for routed_scene in [
         "FincaScreen.tscn", "BarracksScreen.tscn", "MarketScreen.tscn", "ArenaScreen.tscn",
+        "PersonalScreen.tscn", "EquipmentScreen.tscn", "ForgeScreen.tscn",
         "CampaignPanel.tscn", "RelationshipsPanel.tscn", "RivalsPanel.tscn"
     ]:
         assert(hub_text.contains(routed_scene))
