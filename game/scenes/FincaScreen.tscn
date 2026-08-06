@@ -45,22 +45,17 @@ text = "Cerrar semana"
 tooltip_text = "Procesar trabajos, economía, recuperación y eventos de la semana."
 
 [node name="MainNavigation" type="PanelContainer" parent="."]
+visible = false
 layout_mode = 2
 
 [node name="Margin" type="MarginContainer" parent="MainNavigation"]
 layout_mode = 2
-theme_override_constants/margin_left = 8
-theme_override_constants/margin_top = 5
-theme_override_constants/margin_right = 8
-theme_override_constants/margin_bottom = 5
 
 [node name="Row" type="HBoxContainer" parent="MainNavigation/Margin"]
 layout_mode = 2
-alignment = 1
 
 [node name="Finca" type="Button" parent="MainNavigation/Margin/Row"]
 layout_mode = 2
-disabled = true
 text = "FINCA"
 
 [node name="Personal" type="Button" parent="MainNavigation/Margin/Row"]
@@ -91,7 +86,7 @@ text = "CAMPAÑA"
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
-split_offset = 820
+split_offset = 1160
 
 [node name="WorldPanel" type="PanelContainer" parent="Center"]
 custom_minimum_size = Vector2(680, 0)
@@ -107,7 +102,7 @@ theme_override_constants/margin_right = 8
 theme_override_constants/margin_bottom = 8
 
 [node name="WorldArea" type="Control" parent="Center/WorldPanel/WorldMargin"]
-custom_minimum_size = Vector2(660, 300)
+custom_minimum_size = Vector2(900, 430)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
@@ -127,92 +122,111 @@ color = Color(0.12, 0.095, 0.065, 1)
 layout_mode = 0
 offset_left = 16.0
 offset_top = 10.0
-offset_right = 420.0
+offset_right = 620.0
 offset_bottom = 42.0
-theme_override_font_sizes/font_size = 20
-text = "FINCA DEL LUDUS · MAPA DE GESTIÓN"
+theme_override_font_sizes/font_size = 22
+text = "FINCA DEL LUDUS · 6 INSTALACIONES ACTIVAS"
 
 [node name="MapHint" type="Label" parent="Center/WorldPanel/WorldMargin/WorldArea"]
 layout_mode = 0
 offset_left = 16.0
 offset_top = 43.0
-offset_right = 650.0
-offset_bottom = 68.0
-theme_override_font_sizes/font_size = 13
-text = "Seleccioná un edificio. Los espacios oscuros están reservados para contenido posterior."
+offset_right = 860.0
+offset_bottom = 70.0
+theme_override_font_sizes/font_size = 14
+text = "Seleccioná un edificio para consultar su estado, mejorarlo o entrar. Los edificios oscuros pertenecen al juego completo."
 
 [node name="BuildingDetailsPanel" type="PanelContainer" parent="Center"]
+visible = false
 custom_minimum_size = Vector2(300, 0)
 layout_mode = 2
 size_flags_vertical = 3
 
 [node name="Margin" type="MarginContainer" parent="Center/BuildingDetailsPanel"]
 layout_mode = 2
-theme_override_constants/margin_left = 10
-theme_override_constants/margin_top = 10
-theme_override_constants/margin_right = 10
-theme_override_constants/margin_bottom = 10
 
 [node name="Scroll" type="ScrollContainer" parent="Center/BuildingDetailsPanel/Margin"]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
-horizontal_scroll_mode = 0
-follow_focus = true
 
 [node name="Details" type="VBoxContainer" parent="Center/BuildingDetailsPanel/Margin/Scroll"]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_constants/separation = 6
 
 [node name="Title" type="Label" parent="Center/BuildingDetailsPanel/Margin/Scroll/Details"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 21
-autowrap_mode = 3
 text = "INSTALACIÓN"
 
 [node name="Status" type="Label" parent="Center/BuildingDetailsPanel/Margin/Scroll/Details"]
 layout_mode = 2
-autowrap_mode = 3
 text = "Estado"
 
 [node name="Description" type="RichTextLabel" parent="Center/BuildingDetailsPanel/Margin/Scroll/Details"]
-custom_minimum_size = Vector2(0, 90)
 layout_mode = 2
-bbcode_enabled = true
-fit_content = true
-scroll_active = false
 text = "Seleccioná un edificio."
 
 [node name="Effect" type="Label" parent="Center/BuildingDetailsPanel/Margin/Scroll/Details"]
 layout_mode = 2
-autowrap_mode = 3
 text = "Efecto actual"
 
 [node name="NextUpgrade" type="Label" parent="Center/BuildingDetailsPanel/Margin/Scroll/Details"]
 layout_mode = 2
-autowrap_mode = 3
 text = "Próxima mejora"
 
 [node name="Cost" type="Label" parent="Center/BuildingDetailsPanel/Margin/Scroll/Details"]
 layout_mode = 2
-autowrap_mode = 3
 text = "Costo"
 
 [node name="Feedback" type="Label" parent="Center/BuildingDetailsPanel/Margin/Scroll/Details"]
 layout_mode = 2
-autowrap_mode = 3
 text = ""
 
 [node name="Enter" type="Button" parent="Center/BuildingDetailsPanel/Margin/Scroll/Details"]
-custom_minimum_size = Vector2(0, 36)
 layout_mode = 2
 text = "Entrar"
 
 [node name="Upgrade" type="Button" parent="Center/BuildingDetailsPanel/Margin/Scroll/Details"]
-custom_minimum_size = Vector2(0, 36)
 layout_mode = 2
 text = "Mejorar instalación"
+
+[node name="QuickAccess" type="PanelContainer" parent="."]
+layout_mode = 2
+
+[node name="Margin" type="MarginContainer" parent="QuickAccess"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 7
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 7
+
+[node name="Center" type="CenterContainer" parent="QuickAccess/Margin"]
+layout_mode = 2
+
+[node name="Row" type="HBoxContainer" parent="QuickAccess/Margin/Center"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="Market" type="Button" parent="QuickAccess/Margin/Center/Row"]
+custom_minimum_size = Vector2(190, 54)
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "MERCADO"
+tooltip_text = "Comprar gladiadores, equipo y recursos."
+
+[node name="Arena" type="Button" parent="QuickAccess/Margin/Center/Row"]
+custom_minimum_size = Vector2(280, 68)
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "ARENA"
+tooltip_text = "Preparar y disputar el combate de la semana."
+
+[node name="Personal" type="Button" parent="QuickAccess/Margin/Center/Row"]
+custom_minimum_size = Vector2(190, 54)
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "PERSONAL"
+tooltip_text = "Revisar gladiadores, trabajadores, lesiones y entrenamiento."
 
 [node name="BottomStatusBar" type="PanelContainer" parent="."]
 layout_mode = 2
