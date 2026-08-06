@@ -27,6 +27,7 @@ $importStdErr = Join-Path $resultsRoot "gut-import.stderr.log"
 $gutStdOut = Join-Path $resultsRoot "gut.stdout.log"
 $gutStdErr = Join-Path $resultsRoot "gut.stderr.log"
 $combinedLog = Join-Path $resultsRoot "gut-console.log"
+$junitXml = Join-Path $resultsRoot "gut.xml"
 $utf8NoBom = New-Object System.Text.UTF8Encoding($false)
 
 function Initialize-LogFile {
@@ -117,6 +118,45 @@ function Write-CombinedLog {
     $sections | Set-Content -LiteralPath $combinedLog -Encoding UTF8
 }
 
+function Test-GutReportedFailure {
+    $allText = (@(Get-LogLines -Path $gutStdOut) + @(Get-LogLines -Path $gutStdErr)) -join "`n"
+
+    if ($allText -match "(?im)^\s*Failing Tests\s+[1-9][0-9]*\s*$") {
+        return $true
+    }
+    if ($allText -match "(?im)^\s*\[Failed\]:") {
+        return $true
+    }
+    if ($allText -match "(?im)^----\s*[1-9][0-9]*\s+failing tests?\s+----") {
+        return $true
+    }
+
+    if (Test-Path -LiteralPath $junitXml -PathType Leaf) {
+        try {
+            [xml]$document = Get-Content -LiteralPath $junitXml -Raw -ErrorAction Stop
+            $root = $document.DocumentElement
+            if ($null -ne $root) {
+                $failures = 0
+                $errors = 0
+                if ($null -ne $root.Attributes["failures"]) {
+                    $failures = [int]$root.Attributes["failures"].Value
+                }
+                if ($null -ne $root.Attributes["errors"]) {
+                    $errors = [int]$root.Attributes["errors"].Value
+                }
+                if (($failures + $errors) -gt 0) {
+                    return $true
+                }
+            }
+        }
+        catch {
+            Add-Content -LiteralPath $gutStdErr -Value "RUNNER WARNING: No se pudo analizar gut.xml: $($_.Exception.Message)"
+        }
+    }
+
+    return $false
+}
+
 function Show-ConciseResult {
     param([int]$ExitCode)
 
@@ -127,7 +167,7 @@ function Show-ConciseResult {
         $allLines | ForEach-Object { Write-Host $_ }
     }
     else {
-        $importantPattern = "(?i)(SCRIPT ERROR|ERROR:|FAILED|FAIL:|FAILURES|PASSING|PENDING|ORPHAN|TESTS|ASSERT|SUMMARY|TOTALS|PARSE ERROR|COMPILE ERROR|TIMEOUT)"
+        $importantPattern = "(?i)(SCRIPT ERROR|ERROR:|FAILED|FAIL:|FAILURES|PASSING|PENDING|ORPHAN|TESTS|ASSERT|SUMMARY|TOTALS|PARSE ERROR|COMPILE ERROR|TIMEOUT|RUNNER FAILURE)"
         $important = @($allLines | Where-Object { $_ -match $importantPattern })
         if ($important.Count -gt 0) {
             Write-Host ""
@@ -144,7 +184,7 @@ function Show-ConciseResult {
     Write-Host ""
     Write-Host "Código de salida GUT: $ExitCode"
     Write-Host "Log completo: $combinedLog"
-    Write-Host "JUnit XML: $(Join-Path $resultsRoot 'gut.xml')"
+    Write-Host "JUnit XML: $junitXml"
 }
 
 $godotExecutable = Resolve-GodotExecutable -Command $GodotCommand
@@ -195,6 +235,10 @@ try {
         -StandardErrorPath $gutStdErr `
         -TimeoutSeconds $GutTimeoutSeconds
     $exitCode = $gutResult.ExitCode
+    if ($exitCode -eq 0 -and (Test-GutReportedFailure)) {
+        $exitCode = 1
+        Add-Content -LiteralPath $gutStdErr -Value "RUNNER FAILURE: GUT reportó pruebas fallidas aunque Godot devolvió código 0."
+    }
     Show-ConciseResult -ExitCode $exitCode
 }
 finally {
