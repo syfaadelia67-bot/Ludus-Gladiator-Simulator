@@ -13,5 +13,5 @@ func run() -> void:
     assert(arena.contains("event_conditions.text"))
     assert(combat.contains("const DEMO_FINAL_WEEK := 16"))
     assert(combat.contains("Victoria o derrota final de campaña"))
-    assert(scene.contains("name="EventConditions"") or scene.contains("name = "EventConditions""))
+    assert(scene.contains('name="EventConditions"') or scene.contains('name = "EventConditions"'))
     print("Arena hosted finale warning contract: OK")
