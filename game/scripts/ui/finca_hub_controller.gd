@@ -16,6 +16,7 @@ const SCREEN_SCENES := {
     "barracks": "res://scenes/BarracksScreen.tscn",
     "mercado": "res://scenes/MarketScreen.tscn",
     "arena": "res://scenes/ArenaScreen.tscn",
+    "equipamiento": "res://scenes/EquipmentScreen.tscn",
     "gladiator_dossier": "res://scenes/GladiatorDossierPanel.tscn",
     "campana": "res://scenes/CampaignPanel.tscn",
     "eventos": "res://scenes/EventsPanel.tscn",
@@ -33,8 +34,7 @@ const SCREEN_SCENES := {
 # but the player never navigates through visible tabs.
 const LEGACY_SYSTEM_TABS := {
     "personal": "Personal",
-    "forja": "Forja",
-    "equipamiento": "Equipamiento"
+    "forja": "Forja"
 }
 
 const BUILDING_SYSTEMS := {
