@@ -14,5 +14,5 @@ func run() -> void:
     assert(arena.contains("GladiatorRivalryController.rivalry_changed.connect"))
     assert(arena.contains("Marcador personal"))
     assert(arena.contains("Vida estimada"))
-    assert(scene.contains("name="OpponentInfo"") or scene.contains("name = "OpponentInfo""))
+    assert(scene.contains('name="OpponentInfo"') or scene.contains('name = "OpponentInfo"'))
     print("Arena hosted opponent preview contract: OK")
