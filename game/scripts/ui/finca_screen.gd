@@ -21,7 +21,8 @@ const BUILDING_SYSTEMS := {
     "barracks":"barracks",
     "training_yard":"personal",
     "forge":"forja",
-    "infirmary":"personal"
+    "infirmary":"personal",
+    "kitchen":"economia"
 }
 
 const HOTSPOT_NAMES := {
@@ -39,6 +40,15 @@ const HOTSPOT_NAMES := {
     "private_arena":"Arena privada",
     "stable":"Establo"
 }
+
+const BLUR_SHADER_CODE := """
+shader_type canvas_item;
+uniform sampler2D screen_texture : hint_screen_texture, repeat_disable, filter_linear_mipmap;
+void fragment() {
+    vec4 blurred = textureLod(screen_texture, SCREEN_UV, 2.6);
+    COLOR = vec4(blurred.rgb * 0.42, 0.94);
+}
+"""
 
 @onready var resource_summary: Label = $TopHUD/Margin/Row/Resources
 @onready var week_summary: Label = $TopHUD/Margin/Row/Week
@@ -59,20 +69,31 @@ const HOTSPOT_NAMES := {
 @onready var workers_alert: Label = $BottomStatusBar/Margin/Row/Workers
 @onready var event_alert: Label = $BottomStatusBar/Margin/Row/Event
 @onready var combat_alert: Label = $BottomStatusBar/Margin/Row/Combat
+@onready var market_quick_button: Button = $QuickAccess/Margin/Center/Row/Market
+@onready var arena_quick_button: Button = $QuickAccess/Margin/Center/Row/Arena
+@onready var personal_quick_button: Button = $QuickAccess/Margin/Center/Row/Personal
 
 var selected_building_id := "dominus_house"
 var hotspot_buttons: Dictionary = {}
+var modal_layer: CanvasLayer
+var modal_overlay: ColorRect
+var modal_title: Label
+var modal_status: Label
+var modal_description: RichTextLabel
+var modal_effect: Label
+var modal_next_upgrade: Label
+var modal_cost: Label
+var modal_feedback: Label
+var modal_enter_button: Button
+var modal_upgrade_button: Button
 
 func _ready() -> void:
     advance_week_button.pressed.connect(_advance_week)
     enter_button.pressed.connect(_open_selected_building)
     upgrade_button.pressed.connect(_upgrade_selected_building)
-    $MainNavigation/Margin/Row/Personal.pressed.connect(_open_system.bind("barracks"))
-    $MainNavigation/Margin/Row/Mercado.pressed.connect(_open_system.bind("mercado"))
-    $MainNavigation/Margin/Row/Forja.pressed.connect(_open_system.bind("forja"))
-    $MainNavigation/Margin/Row/Relaciones.pressed.connect(_open_system.bind("relaciones"))
-    $MainNavigation/Margin/Row/Arena.pressed.connect(_open_system.bind("arena"))
-    $MainNavigation/Margin/Row/Campana.pressed.connect(_open_system.bind("campana"))
+    market_quick_button.pressed.connect(_open_system.bind("mercado"))
+    arena_quick_button.pressed.connect(_open_system.bind("arena"))
+    personal_quick_button.pressed.connect(_open_system.bind("personal"))
 
     EstateManager.estate_changed.connect(_refresh_all)
     EstateManager.upgrade_completed.connect(_on_upgrade_completed)
@@ -84,14 +105,18 @@ func _ready() -> void:
     CombatManager.combat_finished.connect(func(_result: Dictionary): _refresh_alerts())
     world_area.resized.connect(_layout_hotspots)
 
+    _build_building_modal()
     _build_hotspots()
     _refresh_all()
     _select_building(selected_building_id)
     call_deferred("_layout_hotspots")
 
 func _unhandled_key_input(event: InputEvent) -> void:
-    if is_visible_in_tree() and event.is_action_pressed("ui_cancel"):
-        get_viewport().set_input_as_handled()
+    if not is_visible_in_tree() or not event.is_action_pressed("ui_cancel"):
+        return
+    if modal_overlay != null and modal_overlay.visible:
+        _close_building_modal()
+    get_viewport().set_input_as_handled()
 
 func _build_hotspots() -> void:
     for entry: Dictionary in BUILDING_LAYOUT:
@@ -103,9 +128,13 @@ func _build_hotspots() -> void:
         button.focus_mode = Control.FOCUS_ALL
         button.clip_text = true
         button.add_theme_font_size_override("font_size", 14)
-        button.pressed.connect(_select_building.bind(building_id))
+        button.pressed.connect(_on_hotspot_pressed.bind(building_id))
         world_area.add_child(button)
         hotspot_buttons[building_id] = button
+
+func _on_hotspot_pressed(building_id: String) -> void:
+    _select_building(building_id)
+    _open_building_modal()
 
 func _layout_hotspots() -> void:
     if world_area == null or not is_instance_valid(world_area):
@@ -130,6 +159,104 @@ func _layout_hotspots() -> void:
         desired_position.y = clampf(desired_position.y, 72.0, maxf(72.0, area_size.y - button_size.y - 4.0))
         button.position = desired_position
         button.size = button_size
+
+func _build_building_modal() -> void:
+    modal_layer = CanvasLayer.new()
+    modal_layer.name = "BuildingModalLayer"
+    modal_layer.layer = 220
+    add_child(modal_layer)
+
+    modal_overlay = ColorRect.new()
+    modal_overlay.name = "BuildingModalOverlay"
+    modal_overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+    modal_overlay.mouse_filter = Control.MOUSE_FILTER_STOP
+    modal_overlay.visible = false
+    var shader := Shader.new()
+    shader.code = BLUR_SHADER_CODE
+    var material := ShaderMaterial.new()
+    material.shader = shader
+    modal_overlay.material = material
+    modal_layer.add_child(modal_overlay)
+
+    var center := CenterContainer.new()
+    center.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+    modal_overlay.add_child(center)
+
+    var panel := PanelContainer.new()
+    panel.name = "BuildingModal"
+    panel.custom_minimum_size = Vector2(620, 470)
+    center.add_child(panel)
+
+    var margin := MarginContainer.new()
+    margin.add_theme_constant_override("margin_left", 24)
+    margin.add_theme_constant_override("margin_top", 20)
+    margin.add_theme_constant_override("margin_right", 24)
+    margin.add_theme_constant_override("margin_bottom", 20)
+    panel.add_child(margin)
+
+    var column := VBoxContainer.new()
+    column.add_theme_constant_override("separation", 10)
+    margin.add_child(column)
+
+    var header := HBoxContainer.new()
+    column.add_child(header)
+    modal_title = Label.new()
+    modal_title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+    modal_title.add_theme_font_size_override("font_size", 28)
+    header.add_child(modal_title)
+    var close_button := Button.new()
+    close_button.name = "Close"
+    close_button.text = "✕"
+    close_button.tooltip_text = "Cerrar"
+    close_button.pressed.connect(_close_building_modal)
+    header.add_child(close_button)
+
+    modal_status = Label.new()
+    modal_status.add_theme_font_size_override("font_size", 16)
+    column.add_child(modal_status)
+
+    modal_description = RichTextLabel.new()
+    modal_description.bbcode_enabled = true
+    modal_description.fit_content = true
+    modal_description.scroll_active = false
+    modal_description.custom_minimum_size = Vector2(0, 92)
+    column.add_child(modal_description)
+
+    modal_effect = Label.new()
+    modal_effect.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+    column.add_child(modal_effect)
+    modal_next_upgrade = Label.new()
+    modal_next_upgrade.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+    column.add_child(modal_next_upgrade)
+    modal_cost = Label.new()
+    column.add_child(modal_cost)
+    modal_feedback = Label.new()
+    modal_feedback.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+    column.add_child(modal_feedback)
+
+    var actions := HBoxContainer.new()
+    actions.alignment = BoxContainer.ALIGNMENT_END
+    actions.add_theme_constant_override("separation", 10)
+    column.add_child(actions)
+    modal_upgrade_button = Button.new()
+    modal_upgrade_button.name = "Upgrade"
+    modal_upgrade_button.text = "Mejorar instalación"
+    modal_upgrade_button.pressed.connect(_upgrade_selected_building)
+    actions.add_child(modal_upgrade_button)
+    modal_enter_button = Button.new()
+    modal_enter_button.name = "Enter"
+    modal_enter_button.custom_minimum_size = Vector2(210, 48)
+    modal_enter_button.pressed.connect(_open_selected_building)
+    actions.add_child(modal_enter_button)
+
+func _open_building_modal() -> void:
+    _refresh_modal()
+    modal_overlay.visible = true
+    modal_enter_button.grab_focus()
+
+func _close_building_modal() -> void:
+    if modal_overlay != null:
+        modal_overlay.visible = false
 
 func _refresh_all() -> void:
     _refresh_top_hud()
@@ -165,13 +292,15 @@ func _refresh_hotspots() -> void:
         var locked := bool(data.get("locked", false))
         var level := int(data.get("level", 0))
         var display_name := str(HOTSPOT_NAMES.get(building_id, data.get("name", building_id)))
-        button.text = "%s\n%s" % [display_name, "EN CONSTRUCCIÓN" if locked else "Nivel %d" % level]
+        button.text = "%s\n%s" % [display_name, "JUEGO COMPLETO" if locked else "NIVEL %d/3" % level]
         button.tooltip_text = "%s\n%s" % [str(data.get("name", building_id)), str(data.get("description", ""))]
-        button.self_modulate = Color(0.55, 0.55, 0.55, 0.88) if locked else Color.WHITE
+        button.self_modulate = Color(0.42, 0.42, 0.42, 0.78) if locked else Color.WHITE
 
 func _select_building(building_id: String) -> void:
     selected_building_id = EstateManager.canonicalize_building_id(building_id)
     feedback.text = ""
+    if modal_feedback != null:
+        modal_feedback.text = ""
     _refresh_selected_building()
     call_deferred("_scroll_details_to_top")
 
@@ -187,43 +316,80 @@ func _refresh_selected_building() -> void:
         building_description.text = "Seleccioná un edificio del mapa."
         enter_button.disabled = true
         upgrade_button.disabled = true
+        _refresh_modal()
         return
 
     var locked := bool(data.get("locked", false))
     var level := int(data.get("level", 0))
     var max_level := int(data.get("effective_max_level", 0))
     building_title.text = str(data.get("name", selected_building_id)).to_upper()
-    building_status.text = "BLOQUEADA · CONTENIDO POSTERIOR" if locked else "OPERATIVA · NIVEL %d" % level
+    building_status.text = "BLOQUEADA · JUEGO COMPLETO" if locked else "OPERATIVA · NIVEL %d/%d" % [level, max_level]
     building_description.text = "[b]Descripción[/b]\n%s" % str(data.get("description", "Sin descripción."))
     building_effect.text = "Efecto actual: %s" % _building_effect_text(data)
 
     if locked:
-        building_next_upgrade.text = "Próxima mejora: disponible después de la demo."
+        building_next_upgrade.text = "Disponible en el juego completo · niveles 0 a 10."
         building_cost.text = "Costo: —"
         enter_button.text = "No disponible en la demo"
         enter_button.disabled = true
         upgrade_button.disabled = true
+        _refresh_modal()
         return
 
     if level >= max_level:
-        building_next_upgrade.text = "Próxima mejora: nivel máximo disponible en la demo."
+        building_next_upgrade.text = "Nivel máximo disponible en la demo. En el juego completo llegará a nivel 10."
         building_cost.text = "Costo: —"
     else:
-        building_next_upgrade.text = "Próxima mejora: nivel %d" % (level + 1)
+        building_next_upgrade.text = "Próxima mejora: nivel %d de %d" % [level + 1, max_level]
         building_cost.text = "Costo: %d denarios" % int(data.get("upgrade_cost", 0))
 
-    if selected_building_id == "kitchen":
-        enter_button.text = "Gestionar provisiones"
-        enter_button.disabled = false
-    else:
-        var system_id := str(BUILDING_SYSTEMS.get(selected_building_id, ""))
-        enter_button.text = _entry_button_text(selected_building_id)
-        enter_button.disabled = system_id.is_empty()
+    var system_id := str(BUILDING_SYSTEMS.get(selected_building_id, ""))
+    enter_button.text = _entry_button_text(selected_building_id)
+    enter_button.disabled = system_id.is_empty()
     upgrade_button.disabled = not EstateManager.can_upgrade(selected_building_id)
+    _refresh_modal()
+
+func _refresh_modal() -> void:
+    if modal_title == null:
+        return
+    var data := EstateManager.get_building_data(selected_building_id)
+    if data.is_empty():
+        modal_title.text = "INSTALACIÓN"
+        modal_status.text = "No disponible"
+        modal_description.text = "Seleccioná un edificio."
+        modal_effect.text = ""
+        modal_next_upgrade.text = ""
+        modal_cost.text = ""
+        modal_enter_button.disabled = true
+        modal_upgrade_button.disabled = true
+        return
+    var locked := bool(data.get("locked", false))
+    var level := int(data.get("level", 0))
+    var demo_max := int(data.get("effective_max_level", 0))
+    modal_title.text = str(data.get("name", selected_building_id)).to_upper()
+    modal_status.text = "JUEGO COMPLETO · NIVELES 0–10" if locked else "DEMO · NIVEL %d/%d · JUEGO COMPLETO 0–10" % [level, demo_max]
+    modal_description.text = "[b]Descripción[/b]\n%s" % str(data.get("description", "Sin descripción."))
+    modal_effect.text = "EFECTO ACTUAL · %s" % _building_effect_text(data)
+    if locked:
+        modal_next_upgrade.text = "Esta instalación forma parte de las siete expansiones reservadas para el juego completo."
+        modal_cost.text = ""
+        modal_enter_button.text = "No disponible en la demo"
+        modal_enter_button.disabled = true
+        modal_upgrade_button.disabled = true
+        return
+    if level >= demo_max:
+        modal_next_upgrade.text = "Máximo de demo alcanzado. La progresión completa continuará hasta nivel 10."
+        modal_cost.text = ""
+    else:
+        modal_next_upgrade.text = "PRÓXIMA MEJORA · NIVEL %d/%d" % [level + 1, demo_max]
+        modal_cost.text = "COSTO · %d DENARIOS" % int(data.get("upgrade_cost", 0))
+    modal_enter_button.text = _entry_button_text(selected_building_id)
+    modal_enter_button.disabled = not BUILDING_SYSTEMS.has(selected_building_id)
+    modal_upgrade_button.disabled = not EstateManager.can_upgrade(selected_building_id)
 
 func _building_effect_text(data: Dictionary) -> String:
     if bool(data.get("locked", false)):
-        return "Sin efecto mientras la instalación permanezca bloqueada."
+        return "Sin efecto durante la demo."
     var level := int(data.get("level", 0))
     match str(data.get("effect_type", "")):
         "administration":
@@ -244,7 +410,7 @@ func _building_effect_text(data: Dictionary) -> String:
 func _entry_button_text(building_id: String) -> String:
     match building_id:
         "dominus_house":
-            return "Entrar a administración"
+            return "Abrir campaña"
         "barracks":
             return "Entrar a barracones"
         "training_yard":
@@ -252,39 +418,47 @@ func _entry_button_text(building_id: String) -> String:
         "forge":
             return "Entrar a la forja"
         "infirmary":
-            return "Revisar heridos"
+            return "Revisar personal y heridos"
+        "kitchen":
+            return "Abrir economía y provisiones"
         _:
             return "Entrar"
 
 func _open_selected_building() -> void:
     if EstateManager.is_locked(selected_building_id):
-        feedback.text = "Esta instalación se encuentra bloqueada en la demo."
-        return
-    if selected_building_id == "kitchen":
-        var weekly_need := maxi(1, RosterManager.get_people().size() * GameState.DAYS_PER_WEEK)
-        feedback.text = "Provisiones actuales: %d. Consumo semanal estimado: %d. La gestión detallada de cocina se incorporará en su pantalla propia." % [GameState.food, weekly_need]
+        _set_feedback("Esta instalación estará disponible en el juego completo.")
         return
     var system_id := str(BUILDING_SYSTEMS.get(selected_building_id, ""))
-    if system_id.is_empty() or not FincaHubController.open_system(system_id):
-        feedback.text = "El sistema de esta instalación todavía no está disponible."
+    if system_id.is_empty():
+        _set_feedback("El sistema de esta instalación todavía no está disponible.")
+        return
+    _close_building_modal()
+    if not FincaHubController.open_system(system_id):
+        _set_feedback("No se pudo abrir el sistema de esta instalación.")
 
 func _upgrade_selected_building() -> void:
-    feedback.text = ""
+    _set_feedback("")
     EstateManager.upgrade(selected_building_id)
 
 func _on_upgrade_completed(building_id: String, new_level: int) -> void:
     if EstateManager.canonicalize_building_id(building_id) == selected_building_id:
-        feedback.text = "Instalación mejorada al nivel %d." % new_level
+        _set_feedback("Instalación mejorada al nivel %d." % new_level)
     _refresh_all()
 
 func _on_upgrade_failed(reason: String) -> void:
-    feedback.text = reason
+    _set_feedback(reason)
     _refresh_selected_building()
+
+func _set_feedback(message: String) -> void:
+    feedback.text = message
+    if modal_feedback != null:
+        modal_feedback.text = message
 
 func _advance_week() -> void:
     GameState.advance_week()
 
 func _open_system(system_id: String) -> void:
+    _close_building_modal()
     FincaHubController.open_system(system_id)
 
 func _refresh_alerts() -> void:
