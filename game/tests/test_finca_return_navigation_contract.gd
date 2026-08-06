@@ -14,4 +14,5 @@ func run() -> void:
     assert(market.contains("func _return_to_finca()"))
     assert(market.contains("FincaHubController.show_finca()"))
     assert(not project.contains("FincaReturnNavigationController="))
+    assert(not FileAccess.file_exists("res://scripts/ui/finca_return_navigation_controller.gd"))
     print("Hosted screen return navigation contract: OK")
