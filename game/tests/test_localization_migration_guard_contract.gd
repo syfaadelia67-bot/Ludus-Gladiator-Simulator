@@ -49,6 +49,19 @@ func _is_format_only_literal(line: String, pattern: String) -> bool:
     if finish < 0:
         return false
     var sanitized := line.substr(start, finish - start)
+    sanitized = _strip_bbcode_tags(sanitized)
     for token in ["%s", "%d", "%f", "%+d", "%%", "\\n", "\\t", " ", "·", ":", "-", "—", "/", "(", ")", "[", "]", ",", "."]:
         sanitized = sanitized.replace(token, "")
     return sanitized.is_empty()
+
+func _strip_bbcode_tags(value: String) -> String:
+    var result := value
+    while true:
+        var opening := result.find("[")
+        if opening < 0:
+            return result
+        var closing := result.find("]", opening)
+        if closing < 0:
+            return result
+        result = result.substr(0, opening) + result.substr(closing + 1)
+    return result
