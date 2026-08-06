@@ -23,7 +23,7 @@ func run() -> void:
     assert(not controller.contains("EquipmentManager."))
     assert(not controller.contains("CombatManager."))
 
-    assert(bootstrap.contains('root.get_node_or_null("Margin/VBox/Tabs") as TabContainer'))
+    assert(bootstrap.contains('main_tabs = root.find_child("Tabs", true, false) as TabContainer'))
     assert(bootstrap.contains("if main_tabs != null:"))
     assert(hub.contains("func _get_tabs() -> TabContainer:"))
     assert(hub.contains("if tabs != null:"))
