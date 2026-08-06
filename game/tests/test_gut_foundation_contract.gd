@@ -28,10 +28,10 @@ func run() -> void:
     assert(str(lock_data.get("commit", "")) == EXPECTED_GUT_COMMIT)
     assert(str(lock_data.get("install_path", "")) == "res://addons/gut")
     assert(str(lock_data.get("template_path", "")) == "res://tests/gut_templates")
-    assert(str(lock_data.get("generated_test_path", "")) == "res://tests/gut")
+    assert(str(lock_data.get("generated_test_path", "")) == "res://gut_tests")
     assert(str(lock_data.get("archive_url", "")).contains(EXPECTED_GUT_COMMIT))
 
-    assert(config_data.get("dirs", []) == ["res://tests/gut/unit", "res://tests/gut/integration"])
+    assert(config_data.get("dirs", []) == ["res://gut_tests/unit", "res://gut_tests/integration"])
     assert(bool(config_data.get("include_subdirs", false)))
     assert(str(config_data.get("prefix", "")) == "test_")
     assert(str(config_data.get("suffix", "")) == ".gd")
@@ -45,7 +45,8 @@ func run() -> void:
         assert(installer_text.contains(EXPECTED_GUT_VERSION) or installer_text.contains("gut.lock.json"))
         assert(installer_text.contains("plugin.cfg"))
         assert(installer_text.contains("gut_templates"))
-        assert(installer_text.contains("tests/gut") or installer_text.contains("tests\\gut") or installer_text.contains("generated_test_path"))
+        assert(installer_text.contains("gut_tests"))
+        assert(not installer_text.contains("tests/gut\""), "Los tests generados no deben quedar bajo el árbol legacy res://tests.")
 
     assert(windows_runner.contains("install_gut_9_5.ps1"))
     assert(windows_runner.contains("tools/ludus_gut_cmdln.gd"))
@@ -63,8 +64,9 @@ func run() -> void:
     assert(wrapper.contains("loader.restore_ignore_addons()"))
 
     assert(gitignore.contains("game/addons/gut/"))
-    assert(gitignore.contains("game/tests/gut/"))
+    assert(gitignore.contains("game/gut_tests/"))
     assert(gitignore.contains("game/test-results/"))
+    assert(not gitignore.contains("game/tests/gut/"))
     assert(not project_text.contains("res://addons/gut/plugin.cfg"), "GUT debe mantenerse como herramienta CLI hasta validar la integración.")
 
     for template_path in TEMPLATE_PATHS:
