@@ -15,6 +15,8 @@ func run() -> void:
     assert(panel.contains("FincaHubController.show_finca()"))
     assert(panel.contains('event.is_action_pressed("ui_cancel")'))
     assert(panel.contains("if get_parent() is TabContainer"))
+    assert(panel.contains("visible = false"))
+    assert(panel.contains("mouse_filter = Control.MOUSE_FILTER_IGNORE"))
     assert(main.contains('[node name="Equipamiento" type="VBoxContainer" parent="Margin/VBox/Tabs"]'))
 
     var packed := load("res://scenes/EquipmentScreen.tscn") as PackedScene
@@ -26,6 +28,7 @@ func run() -> void:
     assert(instance.get_node_or_null("WeaponRow/WeaponSelector") != null)
     assert(instance.get_node_or_null("ArmorRow/ArmorSelector") != null)
     assert(instance.get_node_or_null("ShieldRow/ShieldSelector") != null)
+    assert(instance.get_parent() == null)
     instance.free()
 
     print("Equipment ScreenHost migration contract: OK")
