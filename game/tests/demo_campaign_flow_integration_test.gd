@@ -1,6 +1,6 @@
 extends Node
 
-const REQUIRED_SYSTEMS := ["personal", "mercado", "forja", "eventos", "campana", "arena"]
+const REQUIRED_SYSTEMS := ["barracks", "mercado", "forja", "eventos", "campana", "arena"]
 
 func _ready() -> void:
     call_deferred("_run")
@@ -28,26 +28,24 @@ func _run() -> void:
         assert(FincaHubController.open_system(system_id), "La Finca debe navegar a %s." % system_id)
         await _wait_frames(1)
         assert(FincaHubController.get_current_system_id() == system_id, "La navegación debe abrir %s." % system_id)
-        assert(FincaReturnNavigationController.return_button != null and FincaReturnNavigationController.return_button.visible, "El botón de volver debe mostrarse fuera de Finca.")
+        assert(FincaHubController.show_finca(), "Cada sistema debe permitir regresar al hub de Finca.")
+        await _wait_frames(1)
+        assert(FincaHubController.get_current_system_id() == "finca", "Regresar desde %s debe restaurar Finca." % system_id)
 
-    FincaReturnNavigationController._on_return_pressed()
+    var finca_screen := FincaHubController.get_hosted_screen("finca")
+    assert(finca_screen != null, "La Finca debe existir como pantalla alojada en ScreenHost.")
+    var forge_hotspot := finca_screen.get_node_or_null("Center/WorldPanel/WorldMargin/WorldArea/Hotspot_forge") as Button
+    var enter_button := finca_screen.get_node_or_null("Center/BuildingDetailsPanel/Margin/Scroll/Details/Enter") as Button
+    assert(forge_hotspot != null, "La Finca debe exponer la Forja como hotspot navegable.")
+    assert(enter_button != null, "La Finca debe exponer el acceso contextual del edificio seleccionado.")
+    forge_hotspot.pressed.emit()
     await _wait_frames(1)
-    assert(FincaHubController.get_current_system_id() == "finca", "Volver a la finca debe restaurar el hub.")
-
-    var building_list := FincaBuildingNavigationController.building_list
-    assert(building_list != null, "La Finca debe montar la lista de instalaciones.")
-    var forge_index := -1
-    for index in building_list.item_count:
-        if str(building_list.get_item_metadata(index)) == "forge":
-            forge_index = index
-            break
-    assert(forge_index >= 0, "La Finca debe exponer la Forja como instalación navegable.")
-    building_list.item_activated.emit(forge_index)
+    enter_button.pressed.emit()
     await _wait_frames(1)
-    assert(FincaHubController.get_current_system_id() == "forja", "Activar la Forja en Finca debe abrir su sistema.")
-    FincaReturnNavigationController._on_return_pressed()
+    assert(FincaHubController.get_current_system_id() == "forja", "Entrar a la Forja desde su hotspot debe abrir su sistema.")
+    assert(FincaHubController.show_finca(), "El retorno desde una instalación debe volver a Finca.")
     await _wait_frames(1)
-    assert(FincaHubController.get_current_system_id() == "finca", "El retorno desde una instalación debe volver a Finca.")
+    assert(FincaHubController.get_current_system_id() == "finca", "El retorno desde una instalación debe restaurar el hub.")
 
     var main_scene := get_tree().current_scene
     var close_week := main_scene.get_node_or_null("Margin/VBox/TopButtons/AdvanceDay") as Button
@@ -89,7 +87,7 @@ func _run() -> void:
     assert(not StartScreenController.overlay.visible, "Continuar campaña debe cerrar la pantalla de inicio.")
     assert(FincaHubController.get_current_system_id() == "finca", "Continuar campaña debe volver a Finca.")
 
-    print("Demo campaign flow integration test: OK")
+    print("Demo campaign hosted flow integration test: OK")
     get_tree().quit(0)
 
 func _wait_frames(frame_count: int) -> void:
