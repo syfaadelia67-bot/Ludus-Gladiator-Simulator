@@ -18,6 +18,7 @@ const SCREEN_SCENES := {
     "arena": "res://scenes/ArenaScreen.tscn",
     "equipamiento": "res://scenes/EquipmentScreen.tscn",
     "personal": "res://scenes/PersonalScreen.tscn",
+    "forja": "res://scenes/ForgeScreen.tscn",
     "gladiator_dossier": "res://scenes/GladiatorDossierPanel.tscn",
     "campana": "res://scenes/CampaignPanel.tscn",
     "eventos": "res://scenes/EventsPanel.tscn",
@@ -31,11 +32,8 @@ const SCREEN_SCENES := {
     "historial": "res://scenes/CombatHistoryPanel.tscn"
 }
 
-# Compatibility only. This screen still depends on fixed paths in Main.tscn,
-# but the player never navigates through visible tabs.
-const LEGACY_SYSTEM_TABS := {
-    "forja": "Forja"
-}
+# Compatibility registry retained for old route aliases. No visible system depends on tabs.
+const LEGACY_SYSTEM_TABS := {}
 
 const BUILDING_SYSTEMS := {
     "dominus_house": "campana",
