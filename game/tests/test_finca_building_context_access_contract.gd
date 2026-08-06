@@ -13,7 +13,7 @@ func run() -> void:
     assert(screen.contains("Entrar a barracones"))
     assert(screen.contains("Entrar a la forja"))
     assert(screen.contains("enter_button.disabled = system_id.is_empty()"))
-    assert(scene.contains("name="Enter"") or scene.contains("name = "Enter""))
+    assert(scene.contains('name="Enter"') or scene.contains('name = "Enter"'))
     assert(hub.contains("func get_building_system_id"))
     assert(hub.contains("func open_building_system"))
     print("Hosted Finca building contextual access contract: OK")
