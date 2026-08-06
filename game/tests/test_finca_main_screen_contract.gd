@@ -29,7 +29,9 @@ func _initialize() -> void:
     assert(hub_text.contains("\"finca\": \"res://scenes/FincaScreen.tscn\""))
     assert(hub_text.contains("var packed := load(scene_path) as PackedScene"))
     assert(hub_text.contains("func _show_hosted_screen"))
-    assert(hub_text.contains("func _show_legacy_screen"))
+    assert(not hub_text.contains("func _show_legacy_screen"))
+    assert(not hub_text.contains("LEGACY_SYSTEM_TABS"))
+    assert(hub_text.contains("if not SCREEN_SCENES.has(normalized_id):"))
     assert(hub_text.contains("return current_system_id"))
 
     for required_shell_node in ["TopHUD", "MainNavigation", "BottomStatusBar", "More", "Section", "Barracks"]:
