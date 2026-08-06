@@ -179,7 +179,6 @@ try {
     Write-Host "Ejecutando GUT 9.5.0 (timeout: $GutTimeoutSeconds s)..."
     $gutArguments = @(
         "--headless",
-        "-d",
         "--path", $quotedProjectRoot,
         "-s", "tools/ludus_gut_cmdln.gd",
         "-gconfig=res://.gutconfig.json",
