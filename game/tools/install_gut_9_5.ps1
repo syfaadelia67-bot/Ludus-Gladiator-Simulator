@@ -12,7 +12,7 @@ $lock = Get-Content -LiteralPath $lockPath -Raw | ConvertFrom-Json
 $targetPath = Join-Path $projectRoot "addons/gut"
 $markerPath = Join-Path $targetPath ".ludus-gut-lock.json"
 $templateRoot = Join-Path $projectRoot "tests/gut_templates"
-$generatedRoot = Join-Path $projectRoot "tests/gut"
+$generatedRoot = Join-Path $projectRoot "gut_tests"
 $utf8NoBom = New-Object System.Text.UTF8Encoding($false)
 
 function Write-Utf8NoBom([string]$Path, [string]$Content) {
@@ -94,13 +94,13 @@ function Materialize-GutTests {
     }
     New-Item -ItemType Directory -Path $generatedRoot -Force | Out-Null
 
-    $templates = Get-ChildItem -LiteralPath $templateRoot -Filter "*.gd.in" -File -Recurse
+    $templates = @(Get-ChildItem -LiteralPath $templateRoot -Filter "*.gd.in" -File -Recurse)
     if ($templates.Count -eq 0) {
         throw "No se encontraron plantillas GUT en $templateRoot."
     }
 
     foreach ($template in $templates) {
-        $relativePath = $template.FullName.Substring($templateRoot.Length).TrimStart([System.IO.Path]::DirectorySeparatorChar, [System.IO.Path]::AltDirectorySeparatorChar)
+        $relativePath = $template.FullName.Substring($templateRoot.Length).TrimStart([char[]]@([System.IO.Path]::DirectorySeparatorChar, [System.IO.Path]::AltDirectorySeparatorChar))
         $generatedRelativePath = $relativePath.Substring(0, $relativePath.Length - 3)
         $destination = Join-Path $generatedRoot $generatedRelativePath
         New-Item -ItemType Directory -Path (Split-Path $destination -Parent) -Force | Out-Null
