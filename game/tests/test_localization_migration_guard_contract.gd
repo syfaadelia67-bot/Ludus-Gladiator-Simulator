@@ -35,5 +35,20 @@ func _assert_file_uses_translation_keys(path: String, source: String) -> void:
         for pattern in VISIBLE_LITERAL_PATTERNS:
             if not line.contains(pattern):
                 continue
+            if _is_format_only_literal(line, pattern):
+                continue
             push_error("Texto visible directo en %s:%d -> %s" % [path, line_index + 1, line])
             assert(false)
+
+func _is_format_only_literal(line: String, pattern: String) -> bool:
+    var start := line.find(pattern)
+    if start < 0:
+        return false
+    start += pattern.length()
+    var finish := line.find("\"", start)
+    if finish < 0:
+        return false
+    var sanitized := line.substr(start, finish - start)
+    for token in ["%s", "%d", "%f", "%+d", "%%", "\\n", "\\t", " ", "·", ":", "-", "—", "/", "(", ")", "[", "]", ",", "."]:
+        sanitized = sanitized.replace(token, "")
+    return sanitized.is_empty()

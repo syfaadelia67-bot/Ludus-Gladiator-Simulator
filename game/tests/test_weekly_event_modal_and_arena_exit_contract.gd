@@ -1,10 +1,9 @@
 extends Node
 
-func _ready() -> void:
+func run() -> void:
     var modal := FileAccess.get_file_as_string("res://scripts/ui/weekly_event_modal_presenter.gd")
     var arena_scene := FileAccess.get_file_as_string("res://scenes/ArenaScreen.tscn")
-    var arena_controller := FileAccess.get_file_as_string("res://scripts/ui/arena_screen.gd")
-    var bootstrap := FileAccess.get_file_as_string("res://scripts/ui/all_tabs_ui_bootstrap.gd")
+    var arena := FileAccess.get_file_as_string("res://scripts/ui/arena_screen.gd")
     var project := FileAccess.get_file_as_string("res://project.godot")
 
     assert(modal.contains("EventManager.event_started.connect"))
@@ -12,15 +11,11 @@ func _ready() -> void:
     assert(modal.contains("WeeklyEventModal"))
     assert(modal.contains("Control.MOUSE_FILTER_STOP"))
     assert(modal.contains("EventManager.resolve_choice(choice_id)"))
+    assert(modal.contains("FincaHubController.show_finca()"))
     assert(not modal.contains("Cerrar evento"))
-
-    assert(arena_scene.contains("← Volver a la finca"))
-    assert(arena_controller.contains("FincaHubController.show_finca()"))
-    assert(arena_controller.contains("event.is_action_pressed(\"ui_cancel\")"))
-    assert(bootstrap.contains("_attach_arena_screen(tabs)"))
-    assert(not bootstrap.contains("_attach_arena_navigation(tabs)"))
-    assert(not bootstrap.contains("_repair_arena_navigation"))
+    assert(arena_scene.contains("BackToFinca"))
+    assert(arena.contains("func _return_to_finca()"))
+    assert(arena.contains("FincaHubController.show_finca()"))
+    assert(arena.contains('event.is_action_pressed("ui_cancel")'))
     assert(project.contains("WeeklyEventModalPresenter="))
-
-    print("Weekly event modal and arena exit contract: OK")
-    get_tree().quit()
+    print("Weekly event modal and hosted Arena exit contract: OK")

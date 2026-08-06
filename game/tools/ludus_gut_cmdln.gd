@@ -16,8 +16,6 @@ const PRESENTATION_AUTOLOADS: Array[String] = [
     "CampaignResultPresenter",
     "CompletedCampaignReadOnlyPresenter",
     "FincaHubController",
-    "FincaBuildingNavigationController",
-    "FincaReturnNavigationController",
     "GladiatorDossierPresenter",
     "GladiatorCareerJournalPresenter",
     "GladiatorMedicalCarePresenter",

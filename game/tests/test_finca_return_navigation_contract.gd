@@ -1,25 +1,17 @@
 extends Node
 
-func _ready() -> void:
-    var controller := FileAccess.get_file_as_string("res://scripts/ui/finca_return_navigation_controller.gd")
+func run() -> void:
+    var hub := FileAccess.get_file_as_string("res://scripts/ui/finca_hub_controller.gd")
+    var arena := FileAccess.get_file_as_string("res://scripts/ui/arena_screen.gd")
+    var market := FileAccess.get_file_as_string("res://scripts/ui/market_screen.gd")
     var project := FileAccess.get_file_as_string("res://project.godot")
 
-    assert(controller.contains("ReturnToFinca"))
-    assert(controller.contains("Volver a la finca"))
-    assert(controller.contains("FincaHubController.show_finca()"))
-    assert(controller.contains("tabs.tab_changed.connect"))
-    assert(controller.contains("FincaHubController.system_opened.connect"))
-    assert(controller.contains("get_current_system_id() != \"finca\""))
-    assert(controller.contains("TOP_BUTTONS_PATH"))
-
-    var hub_index := project.find("FincaHubController=")
-    var building_index := project.find("FincaBuildingNavigationController=")
-    var return_index := project.find("FincaReturnNavigationController=")
-    var start_index := project.find("StartScreenController=")
-    assert(hub_index >= 0)
-    assert(building_index > hub_index)
-    assert(return_index > building_index)
-    assert(start_index > return_index)
-
-    print("Finca return navigation contract: OK")
-    get_tree().quit()
+    assert(hub.contains("func show_finca()"))
+    assert(hub.contains("func return_from_gladiator_dossier"))
+    assert(arena.contains("func _return_to_finca()"))
+    assert(arena.contains("FincaHubController.show_finca()"))
+    assert(arena.contains('event.is_action_pressed("ui_cancel")'))
+    assert(market.contains("func _return_to_finca()"))
+    assert(market.contains("FincaHubController.show_finca()"))
+    assert(not project.contains("FincaReturnNavigationController="))
+    print("Hosted screen return navigation contract: OK")

@@ -1,22 +1,16 @@
 extends Node
 
-func _ready() -> void:
+func run() -> void:
     var inspector := FileAccess.get_file_as_string("res://scripts/core/save_compatibility_inspector.gd")
     var start_screen := FileAccess.get_file_as_string("res://scripts/ui/start_screen_controller.gd")
 
-    assert(inspector.contains("\"campaign_over\""))
-    assert(inspector.contains("\"victory\""))
-    assert(inspector.contains("\"wins\""))
-    assert(inspector.contains("\"losses\""))
-    assert(inspector.contains("\"defeat_reason\""))
-
-    assert(start_screen.contains("Ver resultado final"))
-    assert(start_screen.contains("Campaña finalizada — %s"))
-    assert(start_screen.contains("VICTORIA"))
-    assert(start_screen.contains("DERROTA"))
-    assert(start_screen.contains("Combates: %d victorias, %d derrotas"))
-    assert(start_screen.contains("if bool(metadata.get(\"campaign_over\", false))"))
-    assert(start_screen.find("if bool(metadata.get(\"campaign_over\", false))") < start_screen.find("Próximo combate: %s"))
-
-    print("Completed campaign continue summary contract: OK")
-    get_tree().quit()
+    for field in ["campaign_over", "victory", "wins", "losses", "defeat_reason"]:
+        assert(inspector.contains('"%s"' % field))
+    assert(start_screen.contains("START_VIEW_FINAL_RESULT"))
+    assert(start_screen.contains("START_CAMPAIGN_FINISHED_SUMMARY"))
+    assert(start_screen.contains("START_RESULT_VICTORY"))
+    assert(start_screen.contains("START_RESULT_DEFEAT"))
+    assert(start_screen.contains('metadata.get("campaign_over", false)'))
+    assert(start_screen.contains('metadata.get("wins", 0)'))
+    assert(start_screen.contains('metadata.get("losses", 0)'))
+    print("Localized completed campaign summary contract: OK")

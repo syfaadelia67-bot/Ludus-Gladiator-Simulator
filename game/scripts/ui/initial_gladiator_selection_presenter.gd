@@ -6,6 +6,8 @@ var market_panel: VBoxContainer
 var market_list: ItemList
 var market_details: RichTextLabel
 var buy_button: Button
+var market_landing: Control
+var market_content_shell: Control
 var selection_root: VBoxContainer
 var feedback_label: Label
 
@@ -14,18 +16,23 @@ func _ready() -> void:
     MarketManager.market_changed.connect(_refresh)
     MarketManager.purchase_failed.connect(_show_feedback)
     UniqueGladiatorManager.unique_gladiators_changed.connect(_refresh)
+    FincaHubController.system_opened.connect(_on_system_opened)
     call_deferred("_bind")
 
+func _on_system_opened(system_id: String) -> void:
+    if system_id == "mercado":
+        call_deferred("_bind")
+
 func _bind() -> void:
-    var scene := get_tree().current_scene
-    if scene == null:
+    var hosted_market := FincaHubController.get_hosted_screen("mercado") as VBoxContainer
+    if hosted_market == null:
         return
-    market_panel = scene.get_node_or_null("Margin/VBox/Tabs/Mercado") as VBoxContainer
-    market_list = scene.get_node_or_null("Margin/VBox/Tabs/Mercado/MarketList") as ItemList
-    market_details = scene.get_node_or_null("Margin/VBox/Tabs/Mercado/MarketDetails") as RichTextLabel
-    buy_button = scene.get_node_or_null("Margin/VBox/Tabs/Mercado/BuyOffer") as Button
-    if market_panel == null:
-        return
+    market_panel = hosted_market
+    market_landing = hosted_market.get_node_or_null("Landing") as Control
+    market_content_shell = hosted_market.get_node_or_null("ContentShell") as Control
+    market_list = hosted_market.get_node_or_null("ContentShell/FightersView/OffersPanel/Margin/Content/List") as ItemList
+    market_details = hosted_market.get_node_or_null("ContentShell/FightersView/DetailsPanel/Margin/Scroll/Content/Details") as RichTextLabel
+    buy_button = hosted_market.get_node_or_null("ContentShell/FightersView/DetailsPanel/Margin/Scroll/Content/Buy") as Button
     _ensure_selection_root()
     _refresh()
 
@@ -39,15 +46,21 @@ func _ensure_selection_root() -> void:
     selection_root.size_flags_vertical = Control.SIZE_EXPAND_FILL
     selection_root.add_theme_constant_override("separation", 8)
     market_panel.add_child(selection_root)
-    market_panel.move_child(selection_root, 0)
+    market_panel.move_child(selection_root, mini(1, market_panel.get_child_count() - 1))
 
 func _refresh() -> void:
     if market_panel == null or not is_instance_valid(market_panel):
-        call_deferred("_bind")
+        _bind()
         return
     var choosing_first: bool = not UniqueGladiatorManager.first_purchase_completed and not RosterManager.has_gladiator()
     selection_root.visible = choosing_first
     _set_tutorial_occluded(choosing_first)
+    if market_landing != null:
+        market_landing.visible = not choosing_first
+        market_landing.mouse_filter = Control.MOUSE_FILTER_PASS if not choosing_first else Control.MOUSE_FILTER_IGNORE
+    if market_content_shell != null:
+        market_content_shell.visible = not choosing_first
+        market_content_shell.mouse_filter = Control.MOUSE_FILTER_PASS if not choosing_first else Control.MOUSE_FILTER_IGNORE
     if market_list != null:
         market_list.visible = not choosing_first
     if market_details != null:

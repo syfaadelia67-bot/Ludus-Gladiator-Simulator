@@ -12,7 +12,7 @@ const STEPS := [
         "id":"advance_week",
         "title":"2. Preparación semanal",
         "text":"Asigná trabajos y entrenamiento antes de cerrar la semana. La producción y recuperación se calculan durante siete días internos.",
-        "system":"personal",
+        "system":"barracks",
         "objective":"Cerrá una semana para procesar trabajos, consumo y recuperación."
     },
     {
@@ -172,13 +172,13 @@ func _focus_system(system_id: String) -> void:
     FincaHubController.open_system(system_id)
 
 func _on_system_opened(system_id: String) -> void:
-    if current_step < STEPS.size() and str(STEPS[current_step].get("id", "")) == "inspect_roster" and system_id == "personal":
+    if current_step < STEPS.size() and str(STEPS[current_step].get("id", "")) == "inspect_roster" and system_id == "barracks":
         _mark_objective("inspect_roster")
 
 func _on_action_pressed() -> void:
     var objective_id := str(STEPS[current_step].get("id", ""))
     if objective_id == "inspect_roster" and not bool(completed_objectives.get(objective_id, false)):
-        FincaHubController.open_system("personal")
+        FincaHubController.open_system("barracks")
         return
     if not bool(completed_objectives.get(objective_id, false)):
         return

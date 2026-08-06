@@ -1,22 +1,18 @@
 extends Node
 
 func run() -> void:
-    var combat_source := FileAccess.get_file_as_string("res://scripts/systems/combat_manager_weekly.gd")
-    var presenter_source := FileAccess.get_file_as_string("res://scripts/ui/arena_opponent_preview_presenter.gd")
-    var project_source := FileAccess.get_file_as_string("res://project.godot")
+    var combat := FileAccess.get_file_as_string("res://scripts/systems/combat_manager_weekly.gd")
+    var arena := FileAccess.get_file_as_string("res://scripts/ui/arena_screen.gd")
+    var scene := FileAccess.get_file_as_string("res://scenes/ArenaScreen.tscn")
 
-    _assert(combat_source.contains("func get_current_opponent_preview"), "CombatManager debe exponer la vista previa semanal.")
-    _assert(combat_source.contains("RivalUniqueGladiatorController.get_opponent_for_week"), "La vista previa debe usar la misma selección determinista que el combate.")
-    _assert(combat_source.contains("Bestia no revelada"), "Las cacerías deben ocultar la bestia antes del combate.")
-    _assert(combat_source.contains("GladiatorRivalryController.get_rivalry"), "La vista previa debe consultar el historial cara a cara.")
-    _assert(presenter_source.contains("OpponentPreview"), "Arena debe montar un panel de próximo oponente.")
-    _assert(presenter_source.contains("Marcador personal"), "La UI debe mostrar el marcador de rivalidad.")
-    _assert(presenter_source.contains("Récord rival"), "La UI debe mostrar el récord del oponente.")
-    _assert(presenter_source.contains("Vida estimada"), "La UI debe distinguir estadísticas estimadas.")
-    _assert(project_source.contains("ArenaOpponentPreviewPresenter=\"*res://scripts/ui/arena_opponent_preview_presenter.gd\""), "El presentador debe estar registrado como autoload.")
-    print("arena_opponent_preview_test: OK")
-
-func _assert(condition: bool, message: String) -> void:
-    if not condition:
-        push_error("arena_opponent_preview_test: %s" % message)
-        assert(condition, message)
+    assert(combat.contains("func get_current_opponent_preview"))
+    assert(combat.contains("RivalUniqueGladiatorController.get_opponent_for_week"))
+    assert(combat.contains("Bestia no revelada"))
+    assert(combat.contains("GladiatorRivalryController.get_rivalry"))
+    assert(arena.contains("func _refresh_encounter()"))
+    assert(arena.contains("CombatManager.get_current_opponent_preview(selected_fighter_id)"))
+    assert(arena.contains("GladiatorRivalryController.rivalry_changed.connect"))
+    assert(arena.contains("Marcador personal"))
+    assert(arena.contains("Vida estimada"))
+    assert(scene.contains("name="OpponentInfo"") or scene.contains("name = "OpponentInfo""))
+    print("Arena hosted opponent preview contract: OK")
