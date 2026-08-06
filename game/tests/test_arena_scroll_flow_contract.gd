@@ -42,7 +42,8 @@ func _initialize() -> void:
     assert(hub_text.contains("\"arena\": \"res://scenes/ArenaScreen.tscn\""))
     assert(hub_text.contains("var packed := load(scene_path) as PackedScene"))
     assert(bootstrap_text.contains("FincaHubController.prepare_scene()"))
-    assert(bootstrap_text.contains("CombatManager.combat_finished.disconnect"))
+    assert(not bootstrap_text.contains("CombatManager."))
+    assert(not bootstrap_text.contains("legacy_combat"))
     assert(not bootstrap_text.contains("_attach_arena_screen"))
 
     var arena_scene := load("res://scenes/ArenaScreen.tscn")
