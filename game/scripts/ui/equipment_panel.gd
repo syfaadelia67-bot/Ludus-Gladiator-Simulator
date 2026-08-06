@@ -1,5 +1,6 @@
 extends VBoxContainer
 
+@onready var back_to_finca: Button = get_node_or_null("Header/BackToFinca") as Button
 @onready var gladiator_selector: OptionButton = $GladiatorSelector
 @onready var status: RichTextLabel = $Status
 @onready var weapon_selector: OptionButton = $WeaponRow/WeaponSelector
@@ -18,6 +19,12 @@ var armor_ids: Array[String] = []
 var shield_ids: Array[String] = []
 
 func _ready() -> void:
+    if get_parent() is TabContainer:
+        visible = false
+        mouse_filter = Control.MOUSE_FILTER_IGNORE
+        return
+    if back_to_finca != null:
+        back_to_finca.pressed.connect(_return_to_finca)
     gladiator_selector.item_selected.connect(_on_gladiator_selected)
     equip_weapon.pressed.connect(func(): _equip_selected("weapon"))
     equip_armor.pressed.connect(func(): _equip_selected("armor"))
@@ -31,6 +38,14 @@ func _ready() -> void:
     EquipmentManager.equipment_changed.connect(func(_person_id): _refresh())
     EquipmentManager.equipment_failed.connect(_show_error)
     _refresh()
+
+func _unhandled_key_input(event: InputEvent) -> void:
+    if is_visible_in_tree() and event.is_action_pressed("ui_cancel"):
+        _return_to_finca()
+        get_viewport().set_input_as_handled()
+
+func _return_to_finca() -> void:
+    FincaHubController.show_finca()
 
 func _refresh() -> void:
     var previous_id: String = _selected_gladiator_id()
