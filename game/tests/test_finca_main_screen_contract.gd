@@ -21,7 +21,10 @@ func _initialize() -> void:
 
     assert(bootstrap_text.contains("FincaHubController.prepare_scene()"))
     assert(bootstrap_text.contains("FincaHubController.show_finca()"))
-    assert(bootstrap_text.contains("main_tabs.visible = false"))
+    assert(bootstrap_text.contains('const MAIN_SCENE_NAME := "Main"'))
+    assert(bootstrap_text.contains("if root.name != MAIN_SCENE_NAME:"))
+    assert(not bootstrap_text.contains("main_tabs"))
+    assert(not bootstrap_text.contains("TabContainer"))
     assert(not bootstrap_text.contains("_attach_finca_screen"))
     assert(not bootstrap_text.contains("_select_finca_as_primary_view"))
 
