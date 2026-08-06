@@ -1,15 +1,18 @@
 extends Node
 
 func _ready() -> void:
-    var arena_bootstrap := FileAccess.get_file_as_string("res://scripts/ui/all_tabs_ui_bootstrap.gd")
+    var hud_bootstrap := FileAccess.get_file_as_string("res://scripts/ui/all_tabs_ui_bootstrap.gd")
+    var hub := FileAccess.get_file_as_string("res://scripts/ui/finca_hub_controller.gd")
     var arena_screen := FileAccess.get_file_as_string("res://scripts/ui/arena_screen.gd")
     var event_modal := FileAccess.get_file_as_string("res://scripts/ui/weekly_event_modal_presenter.gd")
     var mastery := FileAccess.get_file_as_string("res://scripts/systems/specialization_mastery_controller.gd")
     var dossier := FileAccess.get_file_as_string("res://scripts/ui/gladiator_dossier_presenter.gd")
     var project := FileAccess.get_file_as_string("res://project.godot")
 
-    assert(arena_bootstrap.contains("_attach_arena_screen"))
-    assert(arena_bootstrap.contains("preload(\"res://scenes/ArenaScreen.tscn\")"))
+    assert(hud_bootstrap.contains("FincaHubController.prepare_scene()"))
+    assert(hud_bootstrap.contains("_open_finca_as_primary_view"))
+    assert(hub.contains("\"arena\": \"res://scenes/ArenaScreen.tscn\""))
+    assert(hub.contains("func _show_hosted_screen"))
     assert(arena_screen.contains("BackToFinca"))
     assert(arena_screen.contains("FincaHubController.show_finca()"))
     assert(arena_screen.contains("FincaHubController.open_system(\"personal\")"))
@@ -41,5 +44,5 @@ func _ready() -> void:
     assert(not project.contains("ArenaOpponentPreviewPresenter="))
     assert(not project.contains("ArenaFinaleWarningPresenter="))
 
-    print("Visual flow corrections contract: OK")
+    print("Hosted visual flow corrections contract: OK")
     get_tree().quit()
