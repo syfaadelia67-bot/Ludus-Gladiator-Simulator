@@ -17,7 +17,9 @@ func run() -> void:
     assert(panel.contains("if get_parent() is TabContainer"))
     assert(panel.contains("visible = false"))
     assert(panel.contains("mouse_filter = Control.MOUSE_FILTER_IGNORE"))
-    assert(main.contains('[node name="Equipamiento" type="VBoxContainer" parent="Margin/VBox/Tabs"]'))
+    assert(main.contains('[node name="ScreenHost" type="Control" parent="Margin/VBox"]'))
+    assert(not main.contains('[node name="Tabs" type="TabContainer"'))
+    assert(not main.contains('parent="Margin/VBox/Tabs/Equipamiento'))
 
     var packed := load("res://scenes/EquipmentScreen.tscn") as PackedScene
     assert(packed != null)
