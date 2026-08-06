@@ -16,6 +16,9 @@ func before_each() -> void:
     manager = autofree(LOCALIZATION_MANAGER_SCRIPT.new())
 
 func after_each() -> void:
+    var restored_locale: String = manager._canonical_supported_locale(original_locale)
+    manager.active_locale = restored_locale if not restored_locale.is_empty() else manager.DEFAULT_LOCALE
+    manager._apply_typography_for_locale()
     TranslationServer.set_locale(original_locale)
 
 func test_supported_locale_contract_is_stable() -> void:
