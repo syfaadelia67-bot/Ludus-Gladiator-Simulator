@@ -87,3 +87,39 @@ jobs:
 
       - name: Run UI and integration suite
         run: godot --headless --path game -- --test=res://tests/... --test-group=ui
+
+  gut-tests:
+    name: GUT behavior tests
+    needs: compile
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Set up Godot
+        uses: chickensoft-games/setup-godot@v2
+        with:
+          version: ${{ env.GODOT_VERSION }}
+          use-dotnet: false
+          include-templates: false
+
+      - name: Verify GUT runner dependencies
+        run: |
+          command -v curl
+          command -v unzip
+          command -v python3
+          command -v timeout
+
+      - name: Run GUT 9.5.0 behavior suite
+        run: bash game/tools/run_gut.sh
+
+      - name: Upload GUT reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gut-test-results-${{ github.run_attempt }}
+          path: game/test-results/
+          if-no-files-found: warn
+          retention-days: 14
