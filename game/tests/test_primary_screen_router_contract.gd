@@ -16,10 +16,11 @@ func _initialize() -> void:
     assert(hub_text.contains("func _show_hosted_screen"))
     assert(not hub_text.contains("func _show_legacy_screen"))
     assert(not hub_text.contains("LEGACY_SYSTEM_TABS"))
+    assert(not hub_text.contains("TabContainer"))
     assert(hub_text.contains("if not SCREEN_SCENES.has(normalized_id):"))
     assert(hub_text.contains("var current_system_id := \"finca\""))
     assert(hub_text.contains("host.visible = true"))
-    assert(hub_text.contains("tabs.visible = false"))
+    assert(hub_text.contains("host.mouse_filter = Control.MOUSE_FILTER_PASS"))
     assert(hub_text.contains("var packed := load(scene_path) as PackedScene"))
 
     for routed_scene in [
@@ -31,7 +32,10 @@ func _initialize() -> void:
 
     assert(bootstrap_text.contains("FincaHubController.prepare_scene()"))
     assert(bootstrap_text.contains("FincaHubController.show_finca()"))
-    assert(bootstrap_text.contains("main_tabs.visible = false"))
+    assert(bootstrap_text.contains('const MAIN_SCENE_NAME := "Main"'))
+    assert(bootstrap_text.contains("if root.name != MAIN_SCENE_NAME:"))
+    assert(not bootstrap_text.contains("main_tabs"))
+    assert(not bootstrap_text.contains("TabContainer"))
     assert(not bootstrap_text.contains("func _unhandled_key_input"))
     assert(not bootstrap_text.contains("_attach_panels"))
     assert(not bootstrap_text.contains("_attach_finca_screen"))
