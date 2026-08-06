@@ -8,6 +8,7 @@ func _ready() -> void:
 
 func _run() -> void:
     await _wait_frames(8)
+    _assert_main_startup_shell()
     assert(StartScreenController.overlay != null and StartScreenController.overlay.visible, "La pantalla de inicio debe mostrarse al abrir Main.")
 
     StartScreenController._show_owner_creation()
@@ -56,6 +57,7 @@ func _run() -> void:
     var main_scene := get_tree().current_scene
     var close_week := main_scene.get_node_or_null("UnifiedHudShell/TopHUD/Margin/Row/AdvanceWeek") as Button
     assert(close_week != null, "El HUD unificado debe exponer el botón Cerrar semana.")
+    assert(WeeklyClosurePresenter.advance_button == close_week, "El cierre semanal debe estar conectado al botón visible del HUD unificado.")
     var starting_week := GameState.get_week()
 
     close_week.pressed.emit()
@@ -90,12 +92,34 @@ func _run() -> void:
     assert(not StartScreenController.continue_button.disabled, "Una campaña guardada debe habilitar Continuar campaña.")
     StartScreenController._continue_campaign()
     await _wait_frames(8)
+    _assert_main_startup_shell()
     assert(not StartScreenController.overlay.visible, "Continuar campaña debe cerrar la pantalla de inicio.")
     assert(FincaHubController.get_current_system_id() == "finca", "Continuar campaña debe volver a Finca.")
     _assert_navigation_state("finca")
 
-    print("Demo campaign hosted flow integration test: OK")
+    print("Real Main startup, hosted campaign flow and save/continue smoke test: OK")
     get_tree().quit(0)
+
+func _assert_main_startup_shell() -> void:
+    var main_scene := get_tree().current_scene
+    assert(main_scene != null and main_scene.name == "Main", "El proyecto debe arrancar sobre la escena Main real.")
+    assert(main_scene.get_script() == null, "Main debe permanecer como shell sin controlador propio.")
+
+    var host := main_scene.get_node_or_null("Margin/VBox/ScreenHost") as Control
+    var hud := main_scene.get_node_or_null("UnifiedHudShell") as Control
+    assert(host != null and host.is_inside_tree(), "Main debe montar un ScreenHost operativo.")
+    assert(hud != null and hud.is_inside_tree(), "El bootstrap debe montar el HUD unificado durante el arranque real.")
+    assert(main_scene.get_node_or_null("Margin/VBox/Tabs") == null, "El arranque no debe reconstruir pestañas heredadas.")
+    assert(main_scene.get_node_or_null("Margin/VBox/Title") == null, "El arranque no debe reconstruir el título heredado.")
+    assert(main_scene.get_node_or_null("Margin/VBox/Resources") == null, "El arranque no debe reconstruir recursos duplicados.")
+    assert(main_scene.get_node_or_null("Margin/VBox/TopButtons") == null, "El arranque no debe reconstruir botones globales heredados.")
+
+    var hud_row := main_scene.get_node_or_null("UnifiedHudShell/TopHUD/Margin/Row") as HBoxContainer
+    var close_week := main_scene.get_node_or_null("UnifiedHudShell/TopHUD/Margin/Row/AdvanceWeek") as Button
+    var return_menu := main_scene.get_node_or_null("UnifiedHudShell/TopHUD/Margin/Row/ReturnToMainMenu") as Button
+    assert(hud_row != null, "El HUD real debe exponer su fila superior.")
+    assert(close_week != null and close_week.visible, "Cerrar semana debe existir en el HUD visible.")
+    assert(return_menu != null and return_menu.get_parent() == hud_row, "Guardar y menú debe montarse en el HUD visible.")
 
 func _assert_navigation_state(system_id: String) -> void:
     var main_scene := get_tree().current_scene
