@@ -34,11 +34,10 @@ fi
 mkdir -p "$PROJECT_ROOT/test-results"
 cd "$PROJECT_ROOT"
 
-LUDUS_GUT_MODE=1 "$GODOT_COMMAND" --headless --editor --path "$PROJECT_ROOT" --quit
+LUDUS_GUT_MODE=1 "$GODOT_COMMAND" --headless --import --path "$PROJECT_ROOT"
 
 ARGS=(
   --headless
-  -d
   --path "$PROJECT_ROOT"
   -s tools/ludus_gut_cmdln.gd
   -gconfig=res://.gutconfig.json
