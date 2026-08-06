@@ -409,11 +409,11 @@ func _render_traits(fighter) -> void:
     var categories := {"origin": [], "obtainable": [], "other": []}
     for trait_id_value in fighter.traits:
         var trait_id := str(trait_id_value)
-        var trait: Dictionary = TraitManager.get_trait(trait_id)
-        var category := str(trait.get("category", "other"))
+        var trait_data: Dictionary = TraitManager.get_trait(trait_id)
+        var category := str(trait_data.get("category", "other"))
         if not categories.has(category):
             category = "other"
-        categories[category].append({"id":trait_id, "data":trait})
+        categories[category].append({"id":trait_id, "data":trait_data})
     for category_id in ["origin", "obtainable", "other"]:
         var entries: Array = categories[category_id]
         if entries.is_empty():
@@ -422,13 +422,13 @@ func _render_traits(fighter) -> void:
         for entry_value in entries:
             var entry: Dictionary = entry_value
             var trait_id := str(entry.get("id", ""))
-            var trait: Dictionary = entry.get("data", {})
-            var modifiers: Dictionary = trait.get("modifiers", {})
+            var trait_data: Dictionary = entry.get("data", {})
+            var modifiers: Dictionary = trait_data.get("modifiers", {})
             var modifier_lines: Array[String] = []
             for key in modifiers.keys():
                 modifier_lines.append("%s: %s" % [str(key).replace("_", " ").capitalize(), str(modifiers[key])])
             _add_card(TraitManager.get_trait_name(trait_id).to_upper(), "%s%s" % [
-                str(trait.get("description", "Rasgo registrado en la historia del gladiador.")),
+                str(trait_data.get("description", "Rasgo registrado en la historia del gladiador.")),
                 "\n\nEfectos: %s" % ", ".join(modifier_lines) if not modifier_lines.is_empty() else ""
             ])
 
