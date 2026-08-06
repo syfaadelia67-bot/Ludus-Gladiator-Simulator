@@ -3,8 +3,9 @@ extends Node
 func run() -> void:
     var scene := FileAccess.get_file_as_string("res://scenes/Main.tscn")
     var controller := FileAccess.get_file_as_string("res://scripts/ui/main.gd")
-    var bootstrap := FileAccess.get_file_as_string("res://scripts/ui/all_tabs_ui_bootstrap.gd")
+    var bootstrap := FileAccess.get_file_as_string("res://scripts/ui/main_ui_bootstrap.gd")
     var hub := FileAccess.get_file_as_string("res://scripts/ui/finca_hub_controller.gd")
+    var project := FileAccess.get_file_as_string("res://project.godot")
 
     assert(scene.contains('[node name="Main" type="Control"]'))
     assert(scene.contains('[node name="ScreenHost" type="Control" parent="Margin/VBox"]'))
@@ -42,6 +43,8 @@ func run() -> void:
     ]:
         assert(not hub.contains(forbidden_hub_symbol))
 
+    assert(project.contains('AllTabsUIBootstrap="*res://scripts/ui/main_ui_bootstrap.gd"'))
+    assert(not project.contains("all_tabs_ui_bootstrap.gd"))
     assert(bootstrap.contains("FincaHubController.prepare_scene()"))
     assert(hub.contains("return _ensure_screen_host(scene) != null"))
     assert(hub.contains("func _show_hosted_screen(system_id: String, host: Control) -> bool:"))
