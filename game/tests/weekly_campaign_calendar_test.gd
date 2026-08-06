@@ -26,6 +26,6 @@ func run() -> void:
     assert(calendar_source.contains("Entrá en Arena"))
     assert(calendar_source.contains("faltan %d victorias"))
     assert(start_source.contains("if week == 16"))
-    assert(start_source.contains("Combate final de la demo"))
+    assert(start_source.contains("return _t(\"BATTLE_DEMO_FINAL\")"))
 
-    print("weekly_campaign_calendar_test: OK")
+    print("Localized weekly campaign calendar contract: OK")
