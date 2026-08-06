@@ -1,7 +1,7 @@
 extends Node
 
-const REQUIRED_SYSTEMS := ["barracks", "mercado", "equipamiento", "forja", "eventos", "campana", "arena"]
-const HOSTED_SYSTEMS := ["finca", "barracks", "mercado", "equipamiento", "eventos", "campana", "arena"]
+const REQUIRED_SYSTEMS := ["barracks", "mercado", "equipamiento", "personal", "forja", "eventos", "campana", "arena"]
+const HOSTED_SYSTEMS := ["finca", "barracks", "mercado", "equipamiento", "personal", "eventos", "campana", "arena"]
 
 func _ready() -> void:
     call_deferred("_run")
