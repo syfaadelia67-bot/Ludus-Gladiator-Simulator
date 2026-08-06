@@ -37,19 +37,19 @@ func test_start_screen_keys_are_translated_in_every_supported_locale() -> void:
     for locale in manager.get_supported_locales():
         TranslationServer.set_locale(locale)
         for key in REPRESENTATIVE_KEYS:
-            var translated := str(TranslationServer.translate(key))
+            var translated: String = str(TranslationServer.translate(key))
             assert_false(translated.is_empty(), "%s debe tener texto en %s." % [key, locale])
             assert_true(translated != key, "%s no debe caer al identificador crudo en %s." % [key, locale])
 
 func test_formatted_translation_replaces_named_placeholders() -> void:
     TranslationServer.set_locale("es")
-    var translated := manager.translate_key("START_ACTIVE_CAMPAIGN_SUMMARY", {
+    var translated: String = str(manager.translate_key("START_ACTIVE_CAMPAIGN_SUMMARY", {
         "owner":"Dominus Test",
         "week":4,
         "chapter":1,
         "chapter_name":"Un ludus en ruinas",
         "battle":"Exhibición semanal"
-    })
+    }))
 
     assert_true(translated.contains("Dominus Test"))
     assert_true(translated.contains("4"))
