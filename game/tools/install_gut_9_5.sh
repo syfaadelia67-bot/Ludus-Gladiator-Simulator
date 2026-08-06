@@ -15,7 +15,15 @@ LOCK_PATH="$SCRIPT_DIR/gut.lock.json"
 TARGET_PATH="$PROJECT_ROOT/addons/gut"
 MARKER_PATH="$TARGET_PATH/.ludus-gut-lock.json"
 TEMPLATE_ROOT="$PROJECT_ROOT/tests/gut_templates"
-GENERATED_ROOT="$PROJECT_ROOT/tests/gut"
+GENERATED_ROOT="$PROJECT_ROOT/gut_tests"
+TEMPORARY_ROOT=""
+
+cleanup() {
+  if [[ -n "$TEMPORARY_ROOT" && -d "$TEMPORARY_ROOT" ]]; then
+    rm -rf "$TEMPORARY_ROOT"
+  fi
+}
+trap cleanup EXIT
 
 read_lock_value() {
   python3 - "$LOCK_PATH" "$1" <<'PY'
@@ -58,11 +66,10 @@ install_addon() {
     rm -rf "$TARGET_PATH"
   fi
 
-  local temporary_root archive_path extract_path archive_root source_addon
-  temporary_root="$(mktemp -d "${TMPDIR:-/tmp}/ludus-gut.XXXXXX")"
-  archive_path="$temporary_root/gut.zip"
-  extract_path="$temporary_root/extract"
-  trap 'rm -rf "$temporary_root"' RETURN
+  local archive_path extract_path archive_root source_addon
+  TEMPORARY_ROOT="$(mktemp -d "${TMPDIR:-/tmp}/ludus-gut.XXXXXX")"
+  archive_path="$TEMPORARY_ROOT/gut.zip"
+  extract_path="$TEMPORARY_ROOT/extract"
 
   mkdir -p "$extract_path"
   echo "Descargando GUT $VERSION desde el commit inmutable $COMMIT..."
@@ -84,6 +91,9 @@ install_addon() {
   cp -R "$source_addon" "$TARGET_PATH"
   cp "$LOCK_PATH" "$MARKER_PATH"
   echo "GUT $VERSION instalado en $TARGET_PATH."
+
+  cleanup
+  TEMPORARY_ROOT=""
 }
 
 materialize_tests() {
