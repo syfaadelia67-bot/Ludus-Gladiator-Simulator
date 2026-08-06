@@ -17,6 +17,7 @@ const SCREEN_SCENES := {
     "mercado": "res://scenes/MarketScreen.tscn",
     "arena": "res://scenes/ArenaScreen.tscn",
     "equipamiento": "res://scenes/EquipmentScreen.tscn",
+    "personal": "res://scenes/PersonalScreen.tscn",
     "gladiator_dossier": "res://scenes/GladiatorDossierPanel.tscn",
     "campana": "res://scenes/CampaignPanel.tscn",
     "eventos": "res://scenes/EventsPanel.tscn",
@@ -30,10 +31,9 @@ const SCREEN_SCENES := {
     "historial": "res://scenes/CombatHistoryPanel.tscn"
 }
 
-# Compatibility only. These screens still depend on fixed paths in Main.tscn,
+# Compatibility only. This screen still depends on fixed paths in Main.tscn,
 # but the player never navigates through visible tabs.
 const LEGACY_SYSTEM_TABS := {
-    "personal": "Personal",
     "forja": "Forja"
 }
 
