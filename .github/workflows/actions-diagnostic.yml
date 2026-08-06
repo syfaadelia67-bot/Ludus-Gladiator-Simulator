@@ -1,0 +1,22 @@
+name: Actions Diagnostic
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  runner-only:
+    name: Runner without external actions
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Confirm runner execution
+        shell: bash
+        run: |
+          echo "GitHub Actions runner started successfully"
+          echo "Runner OS: $RUNNER_OS"
+          echo "Repository: $GITHUB_REPOSITORY"
+          echo "Ref: $GITHUB_REF"
+          echo "SHA: $GITHUB_SHA"
