@@ -64,12 +64,9 @@ func prepare_scene() -> bool:
     if scene == null:
         return false
     var host := _ensure_screen_host(scene)
-    var tabs := _get_tabs()
-    if host == null or tabs == null:
+    if host == null:
         return false
-    tabs.tabs_visible = false
-    tabs.visible = false
-    tabs.mouse_filter = Control.MOUSE_FILTER_IGNORE
+    _hide_legacy_tabs()
     return true
 
 func show_finca() -> bool:
@@ -84,13 +81,12 @@ func open_system(system_id: String) -> bool:
         return false
 
     var scene := _get_main_scene()
-    var tabs := _get_tabs()
-    if scene == null or tabs == null:
+    if scene == null:
         return false
     var host := _ensure_screen_host(scene)
     if host == null:
         return false
-    if not _show_hosted_screen(normalized_id, host, tabs):
+    if not _show_hosted_screen(normalized_id, host):
         return false
 
     current_system_id = normalized_id
@@ -135,7 +131,7 @@ func get_hosted_screen(system_id: String) -> Control:
     var screen := screen_instances.get(system_id.strip_edges().to_lower()) as Control
     return screen if screen != null and is_instance_valid(screen) else null
 
-func _show_hosted_screen(system_id: String, host: Control, tabs: TabContainer) -> bool:
+func _show_hosted_screen(system_id: String, host: Control) -> bool:
     var screen := screen_instances.get(system_id) as Control
     if screen == null or not is_instance_valid(screen):
         var scene_path := str(SCREEN_SCENES.get(system_id, ""))
@@ -161,12 +157,18 @@ func _show_hosted_screen(system_id: String, host: Control, tabs: TabContainer) -
             control.visible = active
             control.mouse_filter = Control.MOUSE_FILTER_PASS if active else Control.MOUSE_FILTER_IGNORE
 
-    tabs.tabs_visible = false
-    tabs.visible = false
-    tabs.mouse_filter = Control.MOUSE_FILTER_IGNORE
+    _hide_legacy_tabs()
     host.visible = true
     host.mouse_filter = Control.MOUSE_FILTER_PASS
     return true
+
+func _hide_legacy_tabs() -> void:
+    var tabs := _get_tabs()
+    if tabs == null:
+        return
+    tabs.tabs_visible = false
+    tabs.visible = false
+    tabs.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
 func _configure_hosted_screen(system_id: String, screen: Control) -> void:
     if system_id == "finca":
@@ -242,8 +244,7 @@ func get_current_system_id() -> String:
 
 func _ensure_screen_host(scene: Control) -> Control:
     var vbox := scene.get_node_or_null(VBOX_PATH) as VBoxContainer
-    var tabs := _get_tabs()
-    if vbox == null or tabs == null:
+    if vbox == null:
         return null
     var host := vbox.get_node_or_null(SCREEN_HOST_NAME) as Control
     if host == null:
@@ -253,7 +254,9 @@ func _ensure_screen_host(scene: Control) -> Control:
         host.size_flags_vertical = Control.SIZE_EXPAND_FILL
         host.clip_contents = true
         vbox.add_child(host)
-        vbox.move_child(host, tabs.get_index())
+        var tabs := _get_tabs()
+        if tabs != null:
+            vbox.move_child(host, tabs.get_index())
     return host
 
 func _get_main_scene() -> Control:
