@@ -1,7 +1,7 @@
 extends Node
 
 func _ready() -> void:
-    var hud_bootstrap := FileAccess.get_file_as_string("res://scripts/ui/all_tabs_ui_bootstrap.gd")
+    var hud_bootstrap := FileAccess.get_file_as_string("res://scripts/ui/main_ui_bootstrap.gd")
     var hub := FileAccess.get_file_as_string("res://scripts/ui/finca_hub_controller.gd")
     var arena_screen := FileAccess.get_file_as_string("res://scripts/ui/arena_screen.gd")
     var event_modal := FileAccess.get_file_as_string("res://scripts/ui/weekly_event_modal_presenter.gd")
@@ -40,6 +40,8 @@ func _ready() -> void:
     assert(dossier.contains("RETRATO PENDIENTE"))
     assert(dossier.contains("SpecializationMasteryController.get_progress"))
 
+    assert(project.contains('AllTabsUIBootstrap="*res://scripts/ui/main_ui_bootstrap.gd"'))
+    assert(not project.contains("all_tabs_ui_bootstrap.gd"))
     assert(project.contains("SpecializationMasteryController="))
     assert(project.contains("GladiatorDossierPresenter="))
     assert(not project.contains("ArenaOpponentPreviewPresenter="))
