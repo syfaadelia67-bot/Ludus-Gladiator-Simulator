@@ -1,0 +1,57 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource path="res://scripts/ui/forge_screen.gd" type="Script" id="1"]
+
+[node name="ForgeScreen" type="HSplitContainer"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+split_offset = 520
+script = ExtResource("1")
+
+[node name="RecipeList" type="ItemList" parent="."]
+custom_minimum_size = Vector2(430, 400)
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="ForgePanel" type="VBoxContainer" parent="."]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Header" type="HBoxContainer" parent="ForgePanel"]
+layout_mode = 2
+
+[node name="Title" type="Label" parent="ForgePanel/Header"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 24
+text = "FORJA"
+
+[node name="BackToFinca" type="Button" parent="ForgePanel/Header"]
+layout_mode = 2
+text = "Volver a la finca"
+tooltip_text = "Regresar al centro del ludus."
+
+[node name="RecipeDetails" type="RichTextLabel" parent="ForgePanel"]
+custom_minimum_size = Vector2(450, 210)
+layout_mode = 2
+bbcode_enabled = true
+text = "Seleccioná una receta."
+
+[node name="CraftItem" type="Button" parent="ForgePanel"]
+layout_mode = 2
+text = "Fabricar"
+
+[node name="InventoryTitle" type="Label" parent="ForgePanel"]
+layout_mode = 2
+text = "INVENTARIO"
+
+[node name="Inventory" type="RichTextLabel" parent="ForgePanel"]
+custom_minimum_size = Vector2(450, 170)
+layout_mode = 2
+size_flags_vertical = 3
+bbcode_enabled = true
+text = "Vacío"
