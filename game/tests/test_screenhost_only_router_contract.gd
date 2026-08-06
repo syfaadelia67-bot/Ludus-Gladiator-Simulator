@@ -8,18 +8,38 @@ func run() -> void:
     assert(hub.contains('"personal": "res://scenes/PersonalScreen.tscn"'))
     assert(hub.contains('"equipamiento": "res://scenes/EquipmentScreen.tscn"'))
     assert(hub.contains('"forja": "res://scenes/ForgeScreen.tscn"'))
-    assert(not hub.contains("LEGACY_SYSTEM_TABS"))
-    assert(not hub.contains("func _show_legacy_screen"))
     assert(hub.contains("if not SCREEN_SCENES.has(normalized_id):"))
     assert(hub.contains("if not _show_hosted_screen(normalized_id, host):"))
-    assert(hub.contains("func _hide_legacy_tabs()"))
-    assert(hub.contains("if tabs == null:"))
+    assert(hub.contains("func _show_hosted_screen(system_id: String, host: Control) -> bool:"))
+    assert(hub.contains("func _ensure_screen_host(scene: Control) -> Control:"))
     assert(hub.contains("if vbox == null:"))
-    assert(not hub.contains("if scene == null or tabs == null:"))
-    assert(not hub.contains("if vbox == null or tabs == null:"))
+    assert(hub.contains("host.visible = true"))
+    assert(hub.contains("host.mouse_filter = Control.MOUSE_FILTER_PASS"))
 
-    assert(bootstrap.contains('main_tabs = root.find_child("Tabs", true, false) as TabContainer'))
-    assert(bootstrap.contains("if main_tabs != null:"))
-    assert(not bootstrap.contains("if tabs == null:\n            continue"))
+    for forbidden_hub_symbol in [
+        "LEGACY_SYSTEM_TABS",
+        "func _show_legacy_screen",
+        "TAB_PATH",
+        "TabContainer",
+        "_get_tabs",
+        "_hide_legacy_tabs",
+        "tabs_visible",
+        "tabs.mouse_filter"
+    ]:
+        assert(not hub.contains(forbidden_hub_symbol))
 
-    print("ScreenHost-only and tabless router contract: OK")
+    assert(bootstrap.contains("FincaHubController.prepare_scene()"))
+    assert(bootstrap.contains("_attach_unified_hud(root)"))
+    assert(bootstrap.contains("_enforce_primary_hud_layout()"))
+
+    for forbidden_bootstrap_symbol in [
+        "main_tabs",
+        "TabContainer",
+        'find_child("Tabs"',
+        "_disconnect_legacy_combat_handlers",
+        "CombatManager.combat_finished",
+        "CombatManager.combat_failed"
+    ]:
+        assert(not bootstrap.contains(forbidden_bootstrap_symbol))
+
+    print("Native ScreenHost-only router contract: OK")
