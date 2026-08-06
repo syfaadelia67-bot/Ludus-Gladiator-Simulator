@@ -1,7 +1,7 @@
 {
   "dirs": [
-    "res://tests/gut/unit",
-    "res://tests/gut/integration"
+    "res://gut_tests/unit",
+    "res://gut_tests/integration"
   ],
   "include_subdirs": true,
   "prefix": "test_",
