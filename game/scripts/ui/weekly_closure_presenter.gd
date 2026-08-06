@@ -1,6 +1,6 @@
 extends Node
 
-const BUTTON_PATH := "Margin/VBox/TopButtons/AdvanceDay"
+const BUTTON_PATH := "UnifiedHudShell/TopHUD/Margin/Row/AdvanceWeek"
 
 var overlay: ColorRect
 var content_label: RichTextLabel
