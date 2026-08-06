@@ -2,6 +2,8 @@
 set -euo pipefail
 
 GODOT_COMMAND="${GODOT_COMMAND:-godot}"
+IMPORT_TIMEOUT_SECONDS="${IMPORT_TIMEOUT_SECONDS:-180}"
+GUT_TIMEOUT_SECONDS="${GUT_TIMEOUT_SECONDS:-300}"
 SELECT=""
 REINSTALL=0
 
@@ -24,6 +26,13 @@ done
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+RESULTS_ROOT="$PROJECT_ROOT/test-results"
+IMPORT_STDOUT="$RESULTS_ROOT/gut-import.stdout.log"
+IMPORT_STDERR="$RESULTS_ROOT/gut-import.stderr.log"
+GUT_STDOUT="$RESULTS_ROOT/gut.stdout.log"
+GUT_STDERR="$RESULTS_ROOT/gut.stderr.log"
+COMBINED_LOG="$RESULTS_ROOT/gut-console.log"
+JUNIT_XML="$RESULTS_ROOT/gut.xml"
 
 if [[ $REINSTALL -eq 1 ]]; then
   "$SCRIPT_DIR/install_gut_9_5.sh" --force
@@ -31,10 +40,60 @@ else
   "$SCRIPT_DIR/install_gut_9_5.sh"
 fi
 
-mkdir -p "$PROJECT_ROOT/test-results"
+mkdir -p "$RESULTS_ROOT"
+: > "$IMPORT_STDOUT"
+: > "$IMPORT_STDERR"
+: > "$GUT_STDOUT"
+: > "$GUT_STDERR"
+: > "$COMBINED_LOG"
+rm -f "$JUNIT_XML"
 cd "$PROJECT_ROOT"
 
-LUDUS_GUT_MODE=1 "$GODOT_COMMAND" --headless --import --path "$PROJECT_ROOT"
+write_combined_log() {
+  {
+    echo "===== GUT IMPORT STDOUT ====="
+    cat "$IMPORT_STDOUT"
+    echo "===== GUT IMPORT STDERR ====="
+    cat "$IMPORT_STDERR"
+    echo "===== GUT TEST STDOUT ====="
+    cat "$GUT_STDOUT"
+    echo "===== GUT TEST STDERR ====="
+    cat "$GUT_STDERR"
+  } > "$COMBINED_LOG"
+}
+
+show_result() {
+  local exit_code="$1"
+  write_combined_log
+  echo
+  echo "Resumen de GUT (últimas líneas relevantes):"
+  grep -Eai "SCRIPT ERROR|ERROR:|FAILED|FAIL:|FAILURES|PASSING|PENDING|ORPHAN|TESTS|ASSERT|SUMMARY|TOTALS|PARSE ERROR|COMPILE ERROR|TIMEOUT|RUNNER FAILURE" \
+    "$GUT_STDOUT" "$GUT_STDERR" | tail -n 120 || true
+  echo
+  echo "Código de salida GUT: $exit_code"
+  echo "Log completo: $COMBINED_LOG"
+  echo "JUnit XML: $JUNIT_XML"
+}
+
+reported_failure=0
+
+set +e
+LUDUS_GUT_MODE=1 timeout --signal=TERM --kill-after=10s "${IMPORT_TIMEOUT_SECONDS}s" \
+  "$GODOT_COMMAND" --headless --import --path "$PROJECT_ROOT" \
+  > "$IMPORT_STDOUT" 2> "$IMPORT_STDERR"
+import_exit=$?
+set -e
+
+if [[ $import_exit -ne 0 ]]; then
+  if [[ $import_exit -eq 124 ]]; then
+    echo "TIMEOUT: la importación de Godot superó ${IMPORT_TIMEOUT_SECONDS} segundos." >> "$IMPORT_STDERR"
+  fi
+  write_combined_log
+  cat "$IMPORT_STDOUT"
+  cat "$IMPORT_STDERR" >&2
+  echo "La importación de Godot falló con código $import_exit." >&2
+  exit "$import_exit"
+fi
 
 ARGS=(
   --headless
@@ -47,4 +106,64 @@ if [[ -n "$SELECT" ]]; then
   ARGS+=("-gselect=$SELECT")
 fi
 
-LUDUS_GUT_MODE=1 "$GODOT_COMMAND" "${ARGS[@]}"
+set +e
+LUDUS_GUT_MODE=1 timeout --signal=TERM --kill-after=10s "${GUT_TIMEOUT_SECONDS}s" \
+  "$GODOT_COMMAND" "${ARGS[@]}" \
+  > "$GUT_STDOUT" 2> "$GUT_STDERR"
+gut_exit=$?
+set -e
+
+if [[ $gut_exit -eq 124 ]]; then
+  echo "TIMEOUT: GUT superó ${GUT_TIMEOUT_SECONDS} segundos." >> "$GUT_STDERR"
+fi
+
+if grep -Eiq '^[[:space:]]*Failing Tests[[:space:]]+[1-9][0-9]*[[:space:]]*$' "$GUT_STDOUT" "$GUT_STDERR"; then
+  reported_failure=1
+fi
+if grep -Eiq '^[[:space:]]*\[Failed\]:' "$GUT_STDOUT" "$GUT_STDERR"; then
+  reported_failure=1
+fi
+if grep -Eiq '^----[[:space:]]*[1-9][0-9]*[[:space:]]+failing tests?[[:space:]]+----' "$GUT_STDOUT" "$GUT_STDERR"; then
+  reported_failure=1
+fi
+
+if [[ -s "$JUNIT_XML" ]]; then
+  xml_result="$(python3 - "$JUNIT_XML" <<'PY'
+import sys
+import xml.etree.ElementTree as ET
+
+try:
+    root = ET.parse(sys.argv[1]).getroot()
+except Exception as exc:
+    print(f"invalid:{exc}")
+    raise SystemExit(0)
+
+failures = 0
+errors = 0
+for element in root.iter():
+    failures += int(element.attrib.get("failures", 0) or 0)
+    errors += int(element.attrib.get("errors", 0) or 0)
+print("failed" if failures + errors > 0 else "passed")
+PY
+)"
+  case "$xml_result" in
+    failed)
+      reported_failure=1
+      ;;
+    invalid:*)
+      echo "RUNNER WARNING: no se pudo analizar gut.xml: ${xml_result#invalid:}" >> "$GUT_STDERR"
+      ;;
+  esac
+else
+  reported_failure=1
+  echo "RUNNER FAILURE: GUT no generó el informe JUnit esperado en $JUNIT_XML." >> "$GUT_STDERR"
+fi
+
+exit_code=$gut_exit
+if [[ $exit_code -eq 0 && $reported_failure -eq 1 ]]; then
+  exit_code=1
+  echo "RUNNER FAILURE: GUT reportó pruebas fallidas aunque Godot devolvió código 0." >> "$GUT_STDERR"
+fi
+
+show_result "$exit_code"
+exit "$exit_code"
