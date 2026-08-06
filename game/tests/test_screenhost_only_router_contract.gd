@@ -2,7 +2,7 @@ extends Node
 
 func run() -> void:
     var hub := FileAccess.get_file_as_string("res://scripts/ui/finca_hub_controller.gd")
-    var bootstrap := FileAccess.get_file_as_string("res://scripts/ui/all_tabs_ui_bootstrap.gd")
+    var bootstrap := FileAccess.get_file_as_string("res://scripts/ui/main_ui_bootstrap.gd")
 
     assert(hub.contains("const SCREEN_SCENES"))
     assert(hub.contains('"personal": "res://scenes/PersonalScreen.tscn"'))
