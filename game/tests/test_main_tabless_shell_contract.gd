@@ -23,10 +23,28 @@ func run() -> void:
     assert(not controller.contains("EquipmentManager."))
     assert(not controller.contains("CombatManager."))
 
-    assert(bootstrap.contains('main_tabs = root.find_child("Tabs", true, false) as TabContainer'))
-    assert(bootstrap.contains("if main_tabs != null:"))
-    assert(hub.contains("func _get_tabs() -> TabContainer:"))
-    assert(hub.contains("if tabs != null:"))
+    for forbidden_bootstrap_symbol in [
+        "main_tabs",
+        "TabContainer",
+        'find_child("Tabs"',
+        "_disconnect_legacy_combat_handlers",
+        "_on_combat_finished",
+        "_on_action_failed"
+    ]:
+        assert(not bootstrap.contains(forbidden_bootstrap_symbol))
+
+    for forbidden_hub_symbol in [
+        "TAB_PATH",
+        "TabContainer",
+        "_get_tabs",
+        "_hide_legacy_tabs",
+        'get_node_or_null("Margin/VBox/Tabs")'
+    ]:
+        assert(not hub.contains(forbidden_hub_symbol))
+
+    assert(bootstrap.contains("FincaHubController.prepare_scene()"))
+    assert(hub.contains("return _ensure_screen_host(scene) != null"))
+    assert(hub.contains("func _show_hosted_screen(system_id: String, host: Control) -> bool:"))
 
     var packed := load("res://scenes/Main.tscn") as PackedScene
     assert(packed != null)
@@ -37,4 +55,4 @@ func run() -> void:
     assert(instance.get_node_or_null("Margin/VBox/TopButtons/AdvanceDay") is Button)
     instance.free()
 
-    print("Tabless Main shell contract: OK")
+    print("Native tabless Main shell contract: OK")
