@@ -5,7 +5,6 @@ signal system_opened(system_id: String)
 signal building_system_unavailable(building_id: String)
 
 const MAIN_SCENE_NAME := "Main"
-const TAB_PATH := "Margin/VBox/Tabs"
 const VBOX_PATH := "Margin/VBox"
 const SCREEN_HOST_NAME := "ScreenHost"
 const ARENA_MANAGE_PATH := "Body/RosterPanel/Margin/Scroll/Content/ManageGladiators"
@@ -63,11 +62,7 @@ func prepare_scene() -> bool:
     var scene := _get_main_scene()
     if scene == null:
         return false
-    var host := _ensure_screen_host(scene)
-    if host == null:
-        return false
-    _hide_legacy_tabs()
-    return true
+    return _ensure_screen_host(scene) != null
 
 func show_finca() -> bool:
     var opened := open_system("finca")
@@ -157,18 +152,9 @@ func _show_hosted_screen(system_id: String, host: Control) -> bool:
             control.visible = active
             control.mouse_filter = Control.MOUSE_FILTER_PASS if active else Control.MOUSE_FILTER_IGNORE
 
-    _hide_legacy_tabs()
     host.visible = true
     host.mouse_filter = Control.MOUSE_FILTER_PASS
     return true
-
-func _hide_legacy_tabs() -> void:
-    var tabs := _get_tabs()
-    if tabs == null:
-        return
-    tabs.tabs_visible = false
-    tabs.visible = false
-    tabs.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
 func _configure_hosted_screen(system_id: String, screen: Control) -> void:
     if system_id == "finca":
@@ -254,9 +240,6 @@ func _ensure_screen_host(scene: Control) -> Control:
         host.size_flags_vertical = Control.SIZE_EXPAND_FILL
         host.clip_contents = true
         vbox.add_child(host)
-        var tabs := _get_tabs()
-        if tabs != null:
-            vbox.move_child(host, tabs.get_index())
     return host
 
 func _get_main_scene() -> Control:
@@ -269,9 +252,3 @@ func _get_main_scene() -> Control:
     if scene == null or scene.name != MAIN_SCENE_NAME:
         return null
     return scene
-
-func _get_tabs() -> TabContainer:
-    var scene := _get_main_scene()
-    if scene == null:
-        return null
-    return scene.get_node_or_null(TAB_PATH) as TabContainer
