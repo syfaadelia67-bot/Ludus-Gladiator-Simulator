@@ -38,11 +38,13 @@ Para que una copia limpia del repositorio pueda seguir importándose antes de la
 res://tests/gut_templates/**/*.gd.in
 ```
 
-El instalador materializa copias `.gd` en:
+El instalador materializa copias `.gd` en un árbol separado del runner histórico:
 
 ```text
-res://tests/gut/
+res://gut_tests/
 ```
+
+Esta separación evita que `TestRunner`, que descubre recursivamente dentro de `res://tests`, intente ejecutar scripts que extienden `GutTest`.
 
 Las carpetas generadas, el addon y los resultados XML están ignorados por Git. La fuente mantenida y revisable sigue siendo cada archivo `.gd.in`.
 
@@ -82,6 +84,8 @@ Usar un ejecutable de Godot distinto:
 
 ## Linux o macOS
 
+El instalador Unix necesita `python3`, `curl` y `unzip`.
+
 ```bash
 bash tools/install_gut_9_5.sh
 bash tools/run_gut.sh
@@ -100,10 +104,10 @@ GODOT_COMMAND=/ruta/a/godot bash tools/run_gut.sh
 `run_gut` ejecuta esta secuencia:
 
 1. instala o valida GUT 9.5.0;
-2. materializa las siete plantillas;
+2. materializa las siete plantillas en `res://gut_tests`;
 3. importa el proyecto en Godot 4.5.2 para registrar `GutTest` y las clases del addon;
 4. ejecuta `res://tools/ludus_gut_cmdln.gd` en headless;
-5. GUT descubre `res://tests/gut/unit` y `res://tests/gut/integration`;
+5. GUT descubre `res://gut_tests/unit` y `res://gut_tests/integration`;
 6. genera `res://test-results/gut.xml`;
 7. devuelve código `0` cuando la suite pasa y un código distinto de cero cuando falla.
 
@@ -149,4 +153,4 @@ La infraestructura se protege con:
 godot --headless --path . -- --test=res://tests/test_gut_foundation_contract.gd
 ```
 
-Ese contrato no necesita que GUT esté instalado. Verifica la versión fijada, configuración, instaladores, launchers, wrapper, exclusiones de Git y presencia de las siete plantillas.
+Ese contrato no necesita que GUT esté instalado. Verifica la versión fijada, configuración, instaladores, launchers, wrapper, separación respecto del runner legacy, exclusiones de Git y presencia de las siete plantillas.
