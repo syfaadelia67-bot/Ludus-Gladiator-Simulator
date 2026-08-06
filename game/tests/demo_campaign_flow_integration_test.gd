@@ -54,8 +54,8 @@ func _run() -> void:
     _assert_navigation_state("finca")
 
     var main_scene := get_tree().current_scene
-    var close_week := main_scene.get_node_or_null("Margin/VBox/TopButtons/AdvanceDay") as Button
-    assert(close_week != null, "Main debe exponer el botón Cerrar semana.")
+    var close_week := main_scene.get_node_or_null("UnifiedHudShell/TopHUD/Margin/Row/AdvanceWeek") as Button
+    assert(close_week != null, "El HUD unificado debe exponer el botón Cerrar semana.")
     var starting_week := GameState.get_week()
 
     close_week.pressed.emit()
