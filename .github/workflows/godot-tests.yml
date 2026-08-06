@@ -63,7 +63,19 @@ jobs:
         run: godot --headless --editor --path game --quit
 
       - name: Run core systems suite
-        run: godot --headless --path game -- --test=res://tests/... --test-group=core
+        run: bash game/tools/run_test_group.sh core
+
+      - name: Upload core suite diagnostics
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: core-test-results-${{ github.run_attempt }}
+          path: |
+            game/test-results/core-list.log
+            game/test-results/core-suite.log
+            game/test-results/core-tests/
+          if-no-files-found: warn
+          retention-days: 14
 
   ui-contracts:
     name: UI and integration contracts
@@ -86,7 +98,19 @@ jobs:
         run: godot --headless --editor --path game --quit
 
       - name: Run UI and integration suite
-        run: godot --headless --path game -- --test=res://tests/... --test-group=ui
+        run: bash game/tools/run_test_group.sh ui
+
+      - name: Upload UI suite diagnostics
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: ui-test-results-${{ github.run_attempt }}
+          path: |
+            game/test-results/ui-list.log
+            game/test-results/ui-suite.log
+            game/test-results/ui-tests/
+          if-no-files-found: warn
+          retention-days: 14
 
   gut-tests:
     name: GUT behavior tests
