@@ -4,7 +4,6 @@ const UNIFIED_HUD = preload("res://scenes/UnifiedHudShell.tscn")
 const MAX_ATTACH_ATTEMPTS := 30
 
 var main_root: Control
-var main_tabs: TabContainer
 
 func _ready() -> void:
     _attach_when_ready()
@@ -16,8 +15,6 @@ func _attach_when_ready() -> void:
         if root == null or not root.is_inside_tree():
             continue
         main_root = root
-        main_tabs = root.find_child("Tabs", true, false) as TabContainer
-        _disconnect_legacy_combat_handlers(root)
         _attach_unified_hud(root)
         _enforce_primary_hud_layout()
         if not FincaHubController.prepare_scene():
@@ -25,14 +22,6 @@ func _attach_when_ready() -> void:
         call_deferred("_open_finca_as_primary_view")
         return
     push_error("No se pudo preparar el HUD principal y su ScreenHost.")
-
-func _disconnect_legacy_combat_handlers(root: Control) -> void:
-    var legacy_result_handler := Callable(root, "_on_combat_finished")
-    if CombatManager.combat_finished.is_connected(legacy_result_handler):
-        CombatManager.combat_finished.disconnect(legacy_result_handler)
-    var legacy_failure_handler := Callable(root, "_on_action_failed")
-    if CombatManager.combat_failed.is_connected(legacy_failure_handler):
-        CombatManager.combat_failed.disconnect(legacy_failure_handler)
 
 func _attach_unified_hud(root: Control) -> void:
     var shell := root.get_node_or_null("UnifiedHudShell") as Control
@@ -48,10 +37,6 @@ func _attach_unified_hud(root: Control) -> void:
 func _enforce_primary_hud_layout() -> void:
     if main_root == null:
         return
-    if main_tabs != null:
-        main_tabs.tabs_visible = false
-        main_tabs.visible = false
-        main_tabs.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
     for path in ["Margin/VBox/Title", "Margin/VBox/Resources", "Margin/VBox/TopButtons"]:
         var legacy_control := main_root.get_node_or_null(path) as Control
