@@ -25,8 +25,8 @@ func _initialize() -> void:
     assert(economy_script_text.contains("FincaHubController.show_finca()"))
     assert(economy_script_text.contains("ui_cancel"))
 
-    assert(hub_text.contains("\"rivales\": \"Rivales\""))
-    assert(hub_text.contains("\"economia\": \"Economía\""))
+    assert(hub_text.contains("\"rivales\": \"res://scenes/RivalsPanel.tscn\""))
+    assert(hub_text.contains("\"economia\": \"res://scenes/EconomyPanel.tscn\""))
 
     var rivals_scene := load("res://scenes/RivalsPanel.tscn") as PackedScene
     var economy_scene := load("res://scenes/EconomyPanel.tscn") as PackedScene
@@ -42,5 +42,5 @@ func _initialize() -> void:
     rivals_instance.free()
     economy_instance.free()
 
-    print("Rivals and economy scroll flow contract: OK")
+    print("Rivals and economy hosted scroll flow contract: OK")
     quit()
