@@ -8,7 +8,8 @@ func run() -> void:
 
     assert(hub.contains('"forja": "res://scenes/ForgeScreen.tscn"'))
     assert(not hub.contains('"forja": "Forja"'))
-    assert(hub.contains("const LEGACY_SYSTEM_TABS := {}"))
+    assert(not hub.contains("LEGACY_SYSTEM_TABS"))
+    assert(not hub.contains("func _show_legacy_screen"))
     assert(scene.contains('[node name="ForgeScreen" type="HSplitContainer"]'))
     assert(scene.contains('[node name="BackToFinca" type="Button" parent="ForgePanel/Header"]'))
     assert(controller.contains("EquipmentManager.get_recipe_ids()"))
