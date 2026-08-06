@@ -15,11 +15,8 @@ func _attach_when_ready() -> void:
         var root := get_tree().current_scene as Control
         if root == null or not root.is_inside_tree():
             continue
-        var tabs := root.find_child("Tabs", true, false) as TabContainer
-        if tabs == null:
-            continue
         main_root = root
-        main_tabs = tabs
+        main_tabs = root.find_child("Tabs", true, false) as TabContainer
         _disconnect_legacy_combat_handlers(root)
         _attach_unified_hud(root)
         _enforce_primary_hud_layout()
@@ -49,11 +46,12 @@ func _attach_unified_hud(root: Control) -> void:
     root.move_child(shell, root.get_child_count() - 1)
 
 func _enforce_primary_hud_layout() -> void:
-    if main_root == null or main_tabs == null:
+    if main_root == null:
         return
-    main_tabs.tabs_visible = false
-    main_tabs.visible = false
-    main_tabs.mouse_filter = Control.MOUSE_FILTER_IGNORE
+    if main_tabs != null:
+        main_tabs.tabs_visible = false
+        main_tabs.visible = false
+        main_tabs.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
     for path in ["Margin/VBox/Title", "Margin/VBox/Resources", "Margin/VBox/TopButtons"]:
         var legacy_control := main_root.get_node_or_null(path) as Control
