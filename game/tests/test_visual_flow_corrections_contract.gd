@@ -29,7 +29,8 @@ func _ready() -> void:
     assert(mastery.contains("MAX_PROGRESS := 100"))
     assert(mastery.contains("VICTORY_BONUS"))
     assert(mastery.contains("register_training_use"))
-    assert(mastery.contains("_equipped_piece_count"))
+    assert(mastery.contains("func _compatible_equipment_bonus"))
+    assert(mastery.contains("EquipmentManager.get_equipped_tags(person)"))
 
     assert(dossier.contains("Información"))
     assert(dossier.contains("Equipamiento"))
