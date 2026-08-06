@@ -66,10 +66,13 @@ func run() -> void:
     assert(windows_runner.contains("gut.stderr.log"))
     assert(windows_runner.contains("ShowFullOutput"))
     assert(not windows_runner.contains("$LASTEXITCODE"), "El launcher de Windows debe usar el ExitCode del proceso esperado.")
+    assert(not windows_runner.contains("\"-d\""), "GUT no debe abrir el debugger interactivo en automatización.")
+
     assert(unix_runner.contains("install_gut_9_5.sh"))
     assert(unix_runner.contains("tools/ludus_gut_cmdln.gd"))
     assert(unix_runner.contains("--headless"))
-    assert(unix_runner.contains("--editor"))
+    assert(unix_runner.contains("--import"))
+    assert(not unix_runner.contains("\n  -d\n"), "GUT no debe abrir el debugger interactivo en Unix.")
 
     assert(wrapper.begins_with("extends SceneTree"))
     assert(wrapper.contains("PRESENTATION_AUTOLOADS"))
@@ -88,6 +91,7 @@ func run() -> void:
         var source := FileAccess.get_file_as_string(template_path)
         assert(source.begins_with("extends GutTest"), "%s debe extender GutTest." % template_path)
         assert(source.contains("func test_"), "%s debe contener al menos una prueba GUT." % template_path)
+        assert(not source.contains("var translated :="), "%s no debe inferir traducciones desde retornos Variant." % template_path)
 
     print("GUT 9.5.0 foundation contract: OK · 7 suites bootstrap-managed")
 
