@@ -27,6 +27,8 @@ const FAILURE_MARKERS: Array[String] = [
 
 func run() -> void:
     var runner_text := FileAccess.get_file_as_string("res://tests/test_runner.gd")
+    var ci_group_runner_text := FileAccess.get_file_as_string("res://tools/run_test_group.sh")
+    var ci_group_list_text := FileAccess.get_file_as_string("res://tools/list_test_group.gd")
     var helper_guard_text := FileAccess.get_file_as_string("res://scripts/core/mcp_game_helper_guard.gd")
     var game_root := ProjectSettings.globalize_path("res://").trim_suffix("/").trim_suffix("\\")
     var repository_root := game_root.get_base_dir()
@@ -79,11 +81,22 @@ func run() -> void:
     assert(workflow_text.contains("name: Compile and smoke test"))
     assert(workflow_text.contains("name: Core systems suite"))
     assert(workflow_text.contains("name: UI and integration contracts"))
-    assert(workflow_text.contains("--test=res://tests/... --test-group=core"))
-    assert(workflow_text.contains("--test=res://tests/... --test-group=ui"))
+    assert(workflow_text.contains("bash game/tools/run_test_group.sh core"))
+    assert(workflow_text.contains("bash game/tools/run_test_group.sh ui"))
+    assert(workflow_text.contains("Upload core suite diagnostics"))
+    assert(workflow_text.contains("Upload UI suite diagnostics"))
     assert(workflow_text.contains("version: ${{ env.GODOT_VERSION }}"))
     assert(workflow_text.contains("GODOT_VERSION: 4.5.2"))
     assert(not workflow_text.contains("godot --headless --path game --script res://tests/history_integrity_validator_test.gd"))
+
+    assert(ci_group_list_text.contains("runner._discover_tests(\"res://tests\", group)"))
+    assert(ci_group_list_text.contains("TEST_PATH: "))
+    assert(ci_group_runner_text.contains("TEST_TIMEOUT_SECONDS"))
+    assert(ci_group_runner_text.contains("SCENETREE_QUIT_AFTER_ITERATIONS"))
+    assert(ci_group_runner_text.contains("--quit-after"))
+    assert(ci_group_runner_text.contains("SUITE RUN:"))
+    assert(ci_group_runner_text.contains("SUITE TIMEOUT:"))
+    assert(ci_group_runner_text.contains("reported_failure"))
 
     assert(project_text.contains("TestRunner=\"*res://tests/test_runner.gd\""))
     assert(project_text.contains("_mcp_game_helper=\"*res://scripts/core/mcp_game_helper_guard.gd\""))
