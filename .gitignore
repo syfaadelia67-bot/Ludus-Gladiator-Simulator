@@ -8,7 +8,7 @@ game/.godot/
 
 # Bootstrap-managed GUT dependency, generated tests and reports
 game/addons/gut/
-game/tests/gut/
+game/gut_tests/
 game/test-results/
 
 # Operating system metadata
