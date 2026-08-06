@@ -213,8 +213,9 @@ func _run_single_node_test(path: String) -> void:
 		test_script = _build_legacy_compatible_script(path, source)
 	else:
 		test_script = load(path) as Script
-	if test_script == null:
-		_fail("Could not load test script: %s" % path)
+	if test_script == null or not test_script.can_instantiate():
+		test_script = null
+		_fail("Could not compile or instantiate test script: %s" % path)
 		return
 
 	var test_instance: Variant = test_script.new()
