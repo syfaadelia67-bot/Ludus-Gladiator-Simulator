@@ -137,4 +137,4 @@ El workflow `.github/workflows/godot-tests.yml` mantiene:
 2. `core-systems`;
 3. `ui-contracts`.
 
-GUT todavía se valida localmente y no fue agregado al workflow. La integración definitiva con `godot-ci` y la protección de la rama estable se realizará después de ordenar GitHub. GDScript Formatter tampoco forma parte de esta etapa.
+No se instala ningún plugin dentro de estos jobs actuales. GUT todavía se valida localmente y no fue agregado al workflow. La integración definitiva con `godot-ci` y la protección de la rama estable se realizará después de ordenar GitHub. GDScript Formatter tampoco forma parte de esta etapa.
