@@ -27,6 +27,8 @@ done
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 RESULTS_ROOT="$PROJECT_ROOT/test-results"
+INSTALL_STDOUT="$RESULTS_ROOT/gut-install.stdout.log"
+INSTALL_STDERR="$RESULTS_ROOT/gut-install.stderr.log"
 IMPORT_STDOUT="$RESULTS_ROOT/gut-import.stdout.log"
 IMPORT_STDERR="$RESULTS_ROOT/gut-import.stderr.log"
 GUT_STDOUT="$RESULTS_ROOT/gut.stdout.log"
@@ -34,13 +36,9 @@ GUT_STDERR="$RESULTS_ROOT/gut.stderr.log"
 COMBINED_LOG="$RESULTS_ROOT/gut-console.log"
 JUNIT_XML="$RESULTS_ROOT/gut.xml"
 
-if [[ $REINSTALL -eq 1 ]]; then
-  "$SCRIPT_DIR/install_gut_9_5.sh" --force
-else
-  "$SCRIPT_DIR/install_gut_9_5.sh"
-fi
-
 mkdir -p "$RESULTS_ROOT"
+: > "$INSTALL_STDOUT"
+: > "$INSTALL_STDERR"
 : > "$IMPORT_STDOUT"
 : > "$IMPORT_STDERR"
 : > "$GUT_STDOUT"
@@ -51,6 +49,10 @@ cd "$PROJECT_ROOT"
 
 write_combined_log() {
   {
+    echo "===== GUT INSTALL STDOUT ====="
+    cat "$INSTALL_STDOUT"
+    echo "===== GUT INSTALL STDERR ====="
+    cat "$INSTALL_STDERR"
     echo "===== GUT IMPORT STDOUT ====="
     cat "$IMPORT_STDOUT"
     echo "===== GUT IMPORT STDERR ====="
@@ -68,12 +70,31 @@ show_result() {
   echo
   echo "Resumen de GUT (últimas líneas relevantes):"
   grep -Eai "SCRIPT ERROR|ERROR:|FAILED|FAIL:|FAILURES|PASSING|PENDING|ORPHAN|TESTS|ASSERT|SUMMARY|TOTALS|PARSE ERROR|COMPILE ERROR|TIMEOUT|RUNNER FAILURE" \
-    "$GUT_STDOUT" "$GUT_STDERR" | tail -n 120 || true
+    "$INSTALL_STDOUT" "$INSTALL_STDERR" "$IMPORT_STDOUT" "$IMPORT_STDERR" "$GUT_STDOUT" "$GUT_STDERR" | tail -n 120 || true
   echo
   echo "Código de salida GUT: $exit_code"
   echo "Log completo: $COMBINED_LOG"
   echo "JUnit XML: $JUNIT_XML"
 }
+
+INSTALL_ARGS=()
+if [[ $REINSTALL -eq 1 ]]; then
+  INSTALL_ARGS+=(--force)
+fi
+
+set +e
+bash "$SCRIPT_DIR/install_gut_9_5.sh" "${INSTALL_ARGS[@]}" \
+  > "$INSTALL_STDOUT" 2> "$INSTALL_STDERR"
+install_exit=$?
+set -e
+
+if [[ $install_exit -ne 0 ]]; then
+  write_combined_log
+  cat "$INSTALL_STDOUT"
+  cat "$INSTALL_STDERR" >&2
+  echo "La instalación reproducible de GUT falló con código $install_exit." >&2
+  exit "$install_exit"
+fi
 
 reported_failure=0
 
