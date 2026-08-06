@@ -2,6 +2,7 @@ extends Node
 
 func run() -> void:
     var controller_source := FileAccess.get_file_as_string("res://scripts/systems/weekly_planning_controller.gd")
+    var economy_source := FileAccess.get_file_as_string("res://scripts/systems/economy_manager_weekly.gd")
     var presenter_source := FileAccess.get_file_as_string("res://scripts/ui/weekly_closure_presenter.gd")
     var project_source := FileAccess.get_file_as_string("res://project.godot")
 
@@ -11,9 +12,11 @@ func run() -> void:
     _assert(controller_source.contains("injured"), "El resumen debe incluir gladiadores lesionados.")
     _assert(controller_source.contains("food_consumption"), "Debe proyectarse el consumo de comida.")
     _assert(controller_source.contains("denarii_after"), "Debe proyectarse el saldo de denarios.")
-    _assert(controller_source.contains("get_daily_fixed_costs"), "La proyección debe usar los costos económicos reales.")
-    _assert(controller_source.contains("active_loans"), "La proyección debe considerar préstamos.")
-    _assert(controller_source.contains("active_contracts"), "La proyección debe considerar patrocinadores.")
+    _assert(controller_source.contains("EconomyManager.get_weekly_projection()"), "El cierre debe delegar la proyección económica al sistema canónico.")
+    _assert(economy_source.contains("func get_weekly_projection"), "Debe existir una proyección económica semanal canónica.")
+    _assert(economy_source.contains("get_weekly_fixed_costs()"), "La proyección debe usar los costos económicos reales.")
+    _assert(economy_source.contains("active_loans"), "La proyección debe considerar préstamos.")
+    _assert(economy_source.contains("active_contracts"), "La proyección debe considerar patrocinadores.")
     _assert(controller_source.contains("Hay un evento semanal pendiente"), "Un evento sin resolver debe bloquear el cierre.")
     _assert(controller_source.contains("combate obligatorio"), "El combate semanal pendiente debe bloquear el cierre.")
     _assert(controller_source.contains("can_close"), "El resumen debe exponer si la semana puede cerrarse.")
@@ -33,7 +36,7 @@ func run() -> void:
     _assert(project_source.find("GladiatorTrainingController=") < project_source.find("WeeklyPlanningController="), "El entrenamiento debe cargar antes del planificador.")
     _assert(project_source.find("WeeklyPlanningController=") < project_source.find("WeeklyClosurePresenter="), "El planificador debe cargar antes del modal.")
 
-    print("weekly_closure_summary_test: OK")
+    print("Canonical weekly closure summary contract: OK")
 
 func _assert(condition: bool, message: String) -> void:
     if not condition:
