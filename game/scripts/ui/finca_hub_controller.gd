@@ -32,9 +32,6 @@ const SCREEN_SCENES := {
     "historial": "res://scenes/CombatHistoryPanel.tscn"
 }
 
-# Compatibility registry retained for old route aliases. No visible system depends on tabs.
-const LEGACY_SYSTEM_TABS := {}
-
 const BUILDING_SYSTEMS := {
     "dominus_house": "campana",
     "barracks": "barracks",
@@ -72,6 +69,7 @@ func prepare_scene() -> bool:
         return false
     tabs.tabs_visible = false
     tabs.visible = false
+    tabs.mouse_filter = Control.MOUSE_FILTER_IGNORE
     return true
 
 func show_finca() -> bool:
@@ -82,7 +80,7 @@ func show_finca() -> bool:
 
 func open_system(system_id: String) -> bool:
     var normalized_id := system_id.strip_edges().to_lower()
-    if not SCREEN_SCENES.has(normalized_id) and not LEGACY_SYSTEM_TABS.has(normalized_id):
+    if not SCREEN_SCENES.has(normalized_id):
         return false
 
     var scene := _get_main_scene()
@@ -92,13 +90,7 @@ func open_system(system_id: String) -> bool:
     var host := _ensure_screen_host(scene)
     if host == null:
         return false
-
-    var opened := false
-    if SCREEN_SCENES.has(normalized_id):
-        opened = _show_hosted_screen(normalized_id, host, tabs)
-    else:
-        opened = _show_legacy_screen(normalized_id, host, tabs)
-    if not opened:
+    if not _show_hosted_screen(normalized_id, host, tabs):
         return false
 
     current_system_id = normalized_id
@@ -169,27 +161,11 @@ func _show_hosted_screen(system_id: String, host: Control, tabs: TabContainer) -
             control.visible = active
             control.mouse_filter = Control.MOUSE_FILTER_PASS if active else Control.MOUSE_FILTER_IGNORE
 
+    tabs.tabs_visible = false
     tabs.visible = false
     tabs.mouse_filter = Control.MOUSE_FILTER_IGNORE
     host.visible = true
     host.mouse_filter = Control.MOUSE_FILTER_PASS
-    return true
-
-func _show_legacy_screen(system_id: String, host: Control, tabs: TabContainer) -> bool:
-    var tab_name := str(LEGACY_SYSTEM_TABS.get(system_id, ""))
-    var control := tabs.get_node_or_null(tab_name) as Control
-    if control == null:
-        return false
-    var tab_index := tabs.get_tab_idx_from_control(control)
-    if tab_index < 0:
-        return false
-
-    host.visible = false
-    host.mouse_filter = Control.MOUSE_FILTER_IGNORE
-    tabs.tabs_visible = false
-    tabs.visible = true
-    tabs.mouse_filter = Control.MOUSE_FILTER_PASS
-    tabs.current_tab = tab_index
     return true
 
 func _configure_hosted_screen(system_id: String, screen: Control) -> void:
