@@ -1,6 +1,7 @@
 extends Node
 
 const MAIN_SCENE_NAME := "Main"
+const HUD_ROW_PATH := "UnifiedHudShell/TopHUD/Margin/Row"
 const MAX_ATTACH_ATTEMPTS := 60
 
 func _ready() -> void:
@@ -13,11 +14,11 @@ func _attach_when_ready() -> void:
         var scene := get_tree().current_scene
         if scene == null or scene.name != MAIN_SCENE_NAME or not scene.is_inside_tree():
             continue
-        var top_buttons := scene.find_child("TopButtons", true, false) as Container
-        if top_buttons != null:
-            _attach_button(top_buttons)
+        var hud_row := scene.get_node_or_null(HUD_ROW_PATH) as Container
+        if hud_row != null:
+            _attach_button(hud_row)
             return
-    push_warning("No se encontró TopButtons para añadir el acceso al menú principal.")
+    push_warning("No se encontró el HUD unificado para añadir el acceso al menú principal.")
 
 func _attach_button(container: Container) -> void:
     if container.get_node_or_null("ReturnToMainMenu") != null:
