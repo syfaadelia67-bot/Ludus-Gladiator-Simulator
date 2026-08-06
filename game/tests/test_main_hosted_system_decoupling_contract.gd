@@ -8,6 +8,7 @@ func run() -> void:
         "Tabs/Forja",
         "Tabs/Mercado",
         "Tabs/Arena",
+        "Tabs/Finca",
         "RosterList",
         "JobSelector",
         "AssignJob",
@@ -21,7 +22,10 @@ func run() -> void:
         "Setup/GladiatorSelector",
         "Setup/TacticSelector",
         "StartDuel",
-        "CombatLog"
+        "CombatLog",
+        "BuildingList",
+        "BuildingDetails",
+        "UpgradeBuilding"
     ]:
         assert(not main.contains(forbidden_path))
 
@@ -29,6 +33,7 @@ func run() -> void:
         "selected_person_id",
         "selected_recipe_id",
         "selected_offer_id",
+        "selected_building_id",
         "job_ids",
         "gladiator_ids",
         "tactic_ids",
@@ -50,13 +55,19 @@ func run() -> void:
         "_on_start_duel",
         "_on_combat_finished",
         "_refresh_gladiators",
+        "_on_building_selected",
+        "_on_upgrade_building",
+        "_on_upgrade_completed",
+        "_on_upgrade_failed",
+        "_refresh_estate",
+        "_refresh_building_details",
         "EquipmentManager.",
         "MarketManager.",
-        "CombatManager."
+        "CombatManager.",
+        "EstateManager."
     ]:
         assert(not main.contains(forbidden_symbol))
 
-    assert(main.contains("EstateManager.estate_changed.connect(_refresh_estate)"))
     assert(main.contains("RosterManager.roster_changed.connect(_refresh_resources)"))
     assert(main.contains("GameState.resources_changed.connect(_refresh_resources)"))
     assert(main.contains("func _on_advance_week()"))
@@ -65,4 +76,4 @@ func run() -> void:
     assert(main.contains("refresh_market_button.visible = false"))
     assert(main.contains("refresh_market_button.mouse_filter = Control.MOUSE_FILTER_IGNORE"))
 
-    print("Main hosted Personal, Forge, Market and Arena decoupling contract: OK")
+    print("Main hosted systems decoupling contract: OK")
