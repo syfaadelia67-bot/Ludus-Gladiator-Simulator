@@ -3,7 +3,9 @@ param(
     [string]$GodotCommand = "godot",
     [string]$Select = "",
     [switch]$Reinstall,
-    [switch]$ShowFullOutput
+    [switch]$ShowFullOutput,
+    [int]$ImportTimeoutSeconds = 180,
+    [int]$GutTimeoutSeconds = 300
 )
 
 Set-StrictMode -Version Latest
@@ -25,6 +27,16 @@ $importStdErr = Join-Path $resultsRoot "gut-import.stderr.log"
 $gutStdOut = Join-Path $resultsRoot "gut.stdout.log"
 $gutStdErr = Join-Path $resultsRoot "gut.stderr.log"
 $combinedLog = Join-Path $resultsRoot "gut-console.log"
+$utf8NoBom = New-Object System.Text.UTF8Encoding($false)
+
+function Initialize-LogFile {
+    param([string]$Path)
+    [System.IO.File]::WriteAllText($Path, "", $utf8NoBom)
+}
+
+foreach ($logPath in @($importStdOut, $importStdErr, $gutStdOut, $gutStdErr, $combinedLog)) {
+    Initialize-LogFile -Path $logPath
+}
 
 function Resolve-GodotExecutable {
     param([string]$Command)
@@ -45,26 +57,42 @@ function Invoke-GodotProcess {
         [string]$Executable,
         [string[]]$Arguments,
         [string]$StandardOutputPath,
-        [string]$StandardErrorPath
+        [string]$StandardErrorPath,
+        [int]$TimeoutSeconds
     )
 
-    Remove-Item -LiteralPath $StandardOutputPath -Force -ErrorAction SilentlyContinue
-    Remove-Item -LiteralPath $StandardErrorPath -Force -ErrorAction SilentlyContinue
+    Initialize-LogFile -Path $StandardOutputPath
+    Initialize-LogFile -Path $StandardErrorPath
 
-    # Windows PowerShell may return immediately for GUI-subsystem executables
-    # and leave LASTEXITCODE undefined. Start-Process -Wait guarantees strict
-    # ordering, while redirection keeps large Godot/GUT diagnostics out of the
-    # interactive console and preserves them for later inspection.
     $process = Start-Process `
         -FilePath $Executable `
         -ArgumentList $Arguments `
         -WorkingDirectory $projectRoot `
         -NoNewWindow `
-        -Wait `
         -PassThru `
         -RedirectStandardOutput $StandardOutputPath `
         -RedirectStandardError $StandardErrorPath
-    return [int]$process.ExitCode
+
+    $completed = $process.WaitForExit($TimeoutSeconds * 1000)
+    if (-not $completed) {
+        try {
+            $process.Kill()
+            $process.WaitForExit()
+        }
+        catch {
+            Add-Content -LiteralPath $StandardErrorPath -Value "No se pudo terminar el proceso Godot bloqueado: $($_.Exception.Message)"
+        }
+        Add-Content -LiteralPath $StandardErrorPath -Value "TIMEOUT: Godot superó $TimeoutSeconds segundos y fue terminado por run_gut.ps1."
+        return [pscustomobject]@{
+            ExitCode = 124
+            TimedOut = $true
+        }
+    }
+
+    return [pscustomobject]@{
+        ExitCode = [int]$process.ExitCode
+        TimedOut = $false
+    }
 }
 
 function Get-LogLines {
@@ -99,7 +127,7 @@ function Show-ConciseResult {
         $allLines | ForEach-Object { Write-Host $_ }
     }
     else {
-        $importantPattern = "(?i)(SCRIPT ERROR|ERROR:|FAILED|FAIL:|FAILURES|PASSING|PENDING|ORPHAN|TESTS|ASSERT|SUMMARY|TOTALS|PARSE ERROR|COMPILE ERROR)"
+        $importantPattern = "(?i)(SCRIPT ERROR|ERROR:|FAILED|FAIL:|FAILURES|PASSING|PENDING|ORPHAN|TESTS|ASSERT|SUMMARY|TOTALS|PARSE ERROR|COMPILE ERROR|TIMEOUT)"
         $important = @($allLines | Where-Object { $_ -match $importantPattern })
         if ($important.Count -gt 0) {
             Write-Host ""
@@ -126,28 +154,29 @@ $env:LUDUS_GUT_MODE = "1"
 $exitCode = 1
 
 try {
-    Write-Host "Importando clases de GUT..."
+    Write-Host "Importando clases de GUT (timeout: $ImportTimeoutSeconds s)..."
     $importArguments = @(
         "--headless",
         "--import",
         "--path", $quotedProjectRoot
     )
-    $importExitCode = Invoke-GodotProcess `
+    $importResult = Invoke-GodotProcess `
         -Executable $godotExecutable `
         -Arguments $importArguments `
         -StandardOutputPath $importStdOut `
-        -StandardErrorPath $importStdErr
-    if ($importExitCode -ne 0) {
+        -StandardErrorPath $importStdErr `
+        -TimeoutSeconds $ImportTimeoutSeconds
+    if ($importResult.ExitCode -ne 0) {
         Write-CombinedLog
-        Write-Host "La importación de Godot falló con código $importExitCode."
+        Write-Host "La importación de Godot falló con código $($importResult.ExitCode)."
         Write-Host "Log completo: $combinedLog"
         @(Get-LogLines -Path $importStdOut) + @(Get-LogLines -Path $importStdErr) |
             Select-Object -Last 80 |
             ForEach-Object { Write-Host $_ }
-        throw "Godot no pudo importar el proyecto y registrar las clases de GUT (exit $importExitCode)."
+        throw "Godot no pudo importar el proyecto y registrar las clases de GUT (exit $($importResult.ExitCode))."
     }
 
-    Write-Host "Ejecutando GUT 9.5.0..."
+    Write-Host "Ejecutando GUT 9.5.0 (timeout: $GutTimeoutSeconds s)..."
     $gutArguments = @(
         "--headless",
         "-d",
@@ -160,14 +189,17 @@ try {
         $gutArguments += "-gselect=$Select"
     }
 
-    $exitCode = Invoke-GodotProcess `
+    $gutResult = Invoke-GodotProcess `
         -Executable $godotExecutable `
         -Arguments $gutArguments `
         -StandardOutputPath $gutStdOut `
-        -StandardErrorPath $gutStdErr
+        -StandardErrorPath $gutStdErr `
+        -TimeoutSeconds $GutTimeoutSeconds
+    $exitCode = $gutResult.ExitCode
     Show-ConciseResult -ExitCode $exitCode
 }
 finally {
+    Write-CombinedLog
     if ($null -eq $previousTestMode) {
         Remove-Item Env:LUDUS_GUT_MODE -ErrorAction SilentlyContinue
     }
