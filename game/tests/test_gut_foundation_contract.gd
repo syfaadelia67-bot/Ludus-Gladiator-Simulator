@@ -79,6 +79,6 @@ func run() -> void:
 
 func _read_json(path: String) -> Dictionary:
     assert(FileAccess.file_exists(path), "Falta el archivo JSON: %s" % path)
-    var parsed := JSON.parse_string(FileAccess.get_file_as_string(path))
+    var parsed: Variant = JSON.parse_string(FileAccess.get_file_as_string(path))
     assert(parsed is Dictionary, "El archivo debe contener un objeto JSON válido: %s" % path)
     return parsed as Dictionary if parsed is Dictionary else {}
