@@ -65,7 +65,6 @@ func run() -> void:
     assert(windows_runner.contains("gut.stdout.log"))
     assert(windows_runner.contains("gut.stderr.log"))
     assert(windows_runner.contains("ShowFullOutput"))
-    assert(windows_runner.contains("func") == false, "El launcher PowerShell no debe contener sintaxis GDScript accidental.")
     assert(windows_runner.contains("function Test-GutReportedFailure"))
     assert(windows_runner.contains("Failing Tests"))
     assert(windows_runner.contains("RUNNER FAILURE"))
