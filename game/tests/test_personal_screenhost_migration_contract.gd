@@ -17,7 +17,9 @@ func run() -> void:
     assert(controller.contains('"system_id": "personal"'))
     assert(controller.contains('event.is_action_pressed("ui_cancel")'))
     assert(controller.contains("RosterManager.assign_job"))
-    assert(main.contains('[node name="Personal" type="HSplitContainer" parent="Margin/VBox/Tabs"]'))
+    assert(main.contains('[node name="ScreenHost" type="Control" parent="Margin/VBox"]'))
+    assert(not main.contains('[node name="Tabs" type="TabContainer"'))
+    assert(not main.contains('parent="Margin/VBox/Tabs/Personal'))
 
     var packed := load("res://scenes/PersonalScreen.tscn") as PackedScene
     assert(packed != null)
