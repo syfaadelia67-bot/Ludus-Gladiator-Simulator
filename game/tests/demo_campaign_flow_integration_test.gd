@@ -1,6 +1,7 @@
 extends Node
 
 const REQUIRED_SYSTEMS := ["barracks", "mercado", "forja", "eventos", "campana", "arena"]
+const HOSTED_SYSTEMS := ["finca", "barracks", "mercado", "eventos", "campana", "arena"]
 
 func _ready() -> void:
     call_deferred("_run")
@@ -22,15 +23,18 @@ func _run() -> void:
     assert(not StartScreenController.overlay.visible, "Una campaña nueva debe cerrar la pantalla de inicio.")
     assert(LudusOwnerManager.get_title_label() == "Domina", "La campaña debe conservar la elección Domina.")
     assert(FincaHubController.get_current_system_id() == "finca", "Una campaña nueva debe entrar automáticamente a Finca.")
+    _assert_navigation_state("finca")
     assert(TutorialController.panel != null and TutorialController.panel.visible, "La nueva campaña debe mostrar el tutorial.")
 
     for system_id in REQUIRED_SYSTEMS:
         assert(FincaHubController.open_system(system_id), "La Finca debe navegar a %s." % system_id)
         await _wait_frames(1)
         assert(FincaHubController.get_current_system_id() == system_id, "La navegación debe abrir %s." % system_id)
+        _assert_navigation_state(system_id)
         assert(FincaHubController.show_finca(), "Cada sistema debe permitir regresar al hub de Finca.")
         await _wait_frames(1)
         assert(FincaHubController.get_current_system_id() == "finca", "Regresar desde %s debe restaurar Finca." % system_id)
+        _assert_navigation_state("finca")
 
     var finca_screen := FincaHubController.get_hosted_screen("finca")
     assert(finca_screen != null, "La Finca debe existir como pantalla alojada en ScreenHost.")
@@ -43,9 +47,11 @@ func _run() -> void:
     enter_button.pressed.emit()
     await _wait_frames(1)
     assert(FincaHubController.get_current_system_id() == "forja", "Entrar a la Forja desde su hotspot debe abrir su sistema.")
+    _assert_navigation_state("forja")
     assert(FincaHubController.show_finca(), "El retorno desde una instalación debe volver a Finca.")
     await _wait_frames(1)
     assert(FincaHubController.get_current_system_id() == "finca", "El retorno desde una instalación debe restaurar el hub.")
+    _assert_navigation_state("finca")
 
     var main_scene := get_tree().current_scene
     var close_week := main_scene.get_node_or_null("Margin/VBox/TopButtons/AdvanceDay") as Button
@@ -86,9 +92,34 @@ func _run() -> void:
     await _wait_frames(8)
     assert(not StartScreenController.overlay.visible, "Continuar campaña debe cerrar la pantalla de inicio.")
     assert(FincaHubController.get_current_system_id() == "finca", "Continuar campaña debe volver a Finca.")
+    _assert_navigation_state("finca")
 
     print("Demo campaign hosted flow integration test: OK")
     get_tree().quit(0)
+
+func _assert_navigation_state(system_id: String) -> void:
+    var main_scene := get_tree().current_scene
+    assert(main_scene != null and main_scene.name == "Main", "La navegación funcional debe ejecutarse sobre Main.")
+    var host := main_scene.get_node_or_null("Margin/VBox/ScreenHost") as Control
+    var tabs := main_scene.get_node_or_null("Margin/VBox/Tabs") as TabContainer
+    assert(host != null, "Main debe mantener un ScreenHost activo.")
+    assert(tabs != null, "Main debe conservar las pestañas heredadas para compatibilidad.")
+
+    if HOSTED_SYSTEMS.has(system_id):
+        var active_screen := FincaHubController.get_hosted_screen(system_id)
+        assert(active_screen != null, "%s debe estar instanciado dentro de ScreenHost." % system_id)
+        assert(active_screen.get_parent() == host, "%s debe permanecer alojado directamente en ScreenHost." % system_id)
+        assert(active_screen.visible, "%s debe ser la única pantalla hospedada visible." % system_id)
+        assert(active_screen.mouse_filter == Control.MOUSE_FILTER_PASS, "%s debe aceptar interacción." % system_id)
+        assert(host.visible and host.mouse_filter == Control.MOUSE_FILTER_PASS, "ScreenHost debe estar activo para %s." % system_id)
+        assert(not tabs.visible and tabs.mouse_filter == Control.MOUSE_FILTER_IGNORE, "Las pestañas heredadas deben quedar inactivas para %s." % system_id)
+        for child in host.get_children():
+            if child is Control:
+                var hosted_control := child as Control
+                assert(hosted_control.visible == (hosted_control == active_screen), "ScreenHost no debe mostrar dos pantallas simultáneamente.")
+    else:
+        assert(not host.visible and host.mouse_filter == Control.MOUSE_FILTER_IGNORE, "ScreenHost debe ocultarse al abrir el sistema heredado %s." % system_id)
+        assert(tabs.visible and tabs.mouse_filter == Control.MOUSE_FILTER_PASS, "Las pestañas heredadas deben activarse para %s." % system_id)
 
 func _wait_frames(frame_count: int) -> void:
     for _frame in frame_count:
