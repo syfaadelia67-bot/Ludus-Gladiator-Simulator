@@ -79,7 +79,7 @@ Desde `game`, en Windows:
 .\tools\run_gut.ps1
 ```
 
-Las fuentes mantenidas están en `res://tests/gut_templates` como `.gd.in`. El instalador fijado a GUT 9.5.0 genera las pruebas reales en `res://tests/gut`, carpeta ignorada por Git.
+Las fuentes mantenidas están en `res://tests/gut_templates` como `.gd.in`. El instalador fijado a GUT 9.5.0 genera las pruebas reales en `res://gut_tests`, fuera del árbol que descubre el runner legacy y en una carpeta ignorada por Git.
 
 Las siete familias iniciales cubren:
 
