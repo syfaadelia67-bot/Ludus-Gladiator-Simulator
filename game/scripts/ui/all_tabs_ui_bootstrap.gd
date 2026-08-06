@@ -2,6 +2,7 @@ extends Node
 
 const UNIFIED_HUD = preload("res://scenes/UnifiedHudShell.tscn")
 const MAX_ATTACH_ATTEMPTS := 30
+const MAIN_SCENE_NAME := "Main"
 
 var main_root: Control
 
@@ -14,6 +15,8 @@ func _attach_when_ready() -> void:
         var root := get_tree().current_scene as Control
         if root == null or not root.is_inside_tree():
             continue
+        if root.name != MAIN_SCENE_NAME:
+            return
         main_root = root
         _attach_unified_hud(root)
         _enforce_primary_hud_layout()
