@@ -19,4 +19,5 @@ func run() -> void:
     assert(buildings.contains('"id": "barracks"'))
     assert(not buildings.contains('"id": "market"'))
     assert(not project.contains("FincaBuildingNavigationController="))
+    assert(not FileAccess.file_exists("res://scripts/ui/finca_building_navigation_controller.gd"))
     print("Hosted Finca building navigation contract: OK")
