@@ -4,6 +4,7 @@ set -euo pipefail
 GROUP="${1:-}"
 GODOT_COMMAND="${GODOT_COMMAND:-godot}"
 TEST_TIMEOUT_SECONDS="${TEST_TIMEOUT_SECONDS:-90}"
+SCENETREE_QUIT_AFTER_ITERATIONS="${SCENETREE_QUIT_AFTER_ITERATIONS:-600}"
 
 case "$GROUP" in
   core|ui)
@@ -65,7 +66,10 @@ for test_path in "${TEST_PATHS[@]}"; do
 
   arguments=(--headless --path "$PROJECT_ROOT")
   if grep -Eq '^[[:space:]]*extends[[:space:]]+SceneTree([[:space:]]|$)' "$source_path"; then
-    arguments+=(--script "$test_path")
+    # SceneTree assertions abort _initialize() before the script can call quit().
+    # Bound the engine loop so CI can inspect the assertion and fail promptly
+    # instead of waiting for the outer wall-clock timeout.
+    arguments+=(--quit-after "$SCENETREE_QUIT_AFTER_ITERATIONS" --script "$test_path")
   else
     arguments+=(-- "--test=$test_path")
   fi
