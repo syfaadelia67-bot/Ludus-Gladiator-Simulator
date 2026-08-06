@@ -18,7 +18,9 @@ func run() -> void:
     assert(controller.contains("EstateManager.estate_changed.connect(_refresh_recipes)"))
     assert(controller.contains("FincaHubController.show_finca()"))
     assert(controller.contains('event.is_action_pressed("ui_cancel")'))
-    assert(main.contains('[node name="Forja" type="HSplitContainer" parent="Margin/VBox/Tabs"]'))
+    assert(main.contains('[node name="ScreenHost" type="Control" parent="Margin/VBox"]'))
+    assert(not main.contains('[node name="Tabs" type="TabContainer"'))
+    assert(not main.contains('parent="Margin/VBox/Tabs/Forja'))
 
     var packed := load("res://scenes/ForgeScreen.tscn") as PackedScene
     assert(packed != null)
