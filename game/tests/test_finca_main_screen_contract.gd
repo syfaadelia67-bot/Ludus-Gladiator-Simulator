@@ -3,7 +3,7 @@ extends SceneTree
 func _initialize() -> void:
     var scene_text := FileAccess.get_file_as_string("res://scenes/FincaScreen.tscn")
     var controller_text := FileAccess.get_file_as_string("res://scripts/ui/finca_screen.gd")
-    var bootstrap_text := FileAccess.get_file_as_string("res://scripts/ui/all_tabs_ui_bootstrap.gd")
+    var bootstrap_text := FileAccess.get_file_as_string("res://scripts/ui/main_ui_bootstrap.gd")
     var hub_text := FileAccess.get_file_as_string("res://scripts/ui/finca_hub_controller.gd")
     var shell_scene_text := FileAccess.get_file_as_string("res://scenes/UnifiedHudShell.tscn")
     var shell_controller_text := FileAccess.get_file_as_string("res://scripts/ui/unified_hud_shell.gd")
