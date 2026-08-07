@@ -176,9 +176,11 @@ func _initialize() -> void:
         quit(1)
         return
 
-    action.free()
+    # BTAction y BehaviorTree son RefCounted; se liberan soltando la referencia.
+    action = null
+    behavior_tree = null
+    # BTPlayer y LimboHSM son Nodes y sí pueden liberarse explícitamente.
     bt_player.free()
-    behavior_tree.free()
     hsm.free()
     print("LIMBOAI_RUNTIME_PROBE_OK: v${LIMBOAI_VERSION} funciona como GDExtension en runtime headless después del reload requerido.")
     quit(0)
