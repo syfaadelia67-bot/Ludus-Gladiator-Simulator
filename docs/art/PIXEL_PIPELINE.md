@@ -4,20 +4,30 @@ Status: frozen pre-implementation production decision for Ludus Gladiator Simula
 
 ## Decision
 
-Use **Pixelorama 1.2** as the primary pixel-art authoring tool for combat sprites and modular equipment.
+Use **Aseprite 1.3.x** as the primary manual editing/animation and modular sprite authoring tool for combat characters and equipment.
 
-Do **not** make Importality, Aseprite Wizard, or another art importer a runtime or build dependency of Ludus.
+Use **Python** for repeatable preprocessing/postprocessing (background removal, normalization, resizing, validation, batch conversion) and keep AI image-generation tools upstream of the manual pixel-art pass.
+
+Keep **Pixelorama** as a free fallback/secondary editor, not as a required production dependency.
+
+Do **not** make Importality, Aseprite Wizard, Aseprite Spritesheet Importer, or another art importer a runtime/build dependency of Ludus.
 
 The production boundary is:
 
 ```text
-source_assets/pixel/*.pxo
+AI generation / reference art
         |
-        | Pixelorama CLI / local art workstation
         v
-PNG spritesheets + JSON metadata
+Python preprocessing / normalization
         |
-        | validation / conversion tooling
+        v
+source_assets/pixel/*.aseprite
+        |
+        | Aseprite layers + tags + timeline + CLI
+        v
+PNG spritesheets + JSON metadata / split layers
+        |
+        | Python validation / conversion tooling
         v
 game/assets/... standard Godot-ready assets
         |
@@ -25,31 +35,38 @@ game/assets/... standard Godot-ready assets
 Godot 4.5.2
 ```
 
-Godot must be able to import, test, export, and run the game without Pixelorama or any art-editor plugin installed.
+Godot must be able to import, test, export, and run the game without Aseprite, Pixelorama, or any art-editor plugin installed.
 
-## Why this pipeline
+## Why Aseprite is included
 
-Pixelorama provides the features Ludus needs directly:
+Aseprite materially helps Ludus because the expensive part of our art pipeline is not only generating a still image: it is maintaining many aligned animation frames and interchangeable layers across gladiators and equipment.
 
+Its useful production features include:
+
+- animation timeline with per-frame timing;
+- onion skinning for frame-to-frame correction;
 - layers and layer groups;
-- animation timeline and tags;
-- frame durations;
-- palettes;
-- spritesheet export;
-- JSON project/export data;
-- split-layer export;
-- headless/CLI export on desktop platforms.
+- tags for animation families (`idle`, `attack`, `block`, etc.);
+- linked cels/frames for reuse;
+- palette and pixel-art-specific drawing tools;
+- sprite-sheet export;
+- JSON metadata export;
+- CLI/batch export;
+- split-layer and split-tag export;
+- scripting/automation support.
 
-This is a better fit for a modular fighter pipeline than adding an editor importer solely to transform source art into standard textures/resources.
+This makes Aseprite especially valuable for the body/equipment modularity required by Ludus. It does not replace AI generation or Python automation; it is the controlled cleanup, animation, alignment, and export stage between them and Godot.
 
 ## Source-of-truth rule
 
-- Editable art source: `source_assets/pixel/`.
+- Editable art masters: `source_assets/pixel/`.
+- Preferred master format for manually maintained combat sprites: `.aseprite` / `.ase`.
+- Pixelorama `.pxo` masters are permitted only when intentionally used as fallback/editor-specific sources.
 - Runtime art source of truth: committed standard outputs under `game/assets/`.
-- `.pxo` files are production masters, not runtime dependencies.
+- Art-editor project files are production masters, not runtime dependencies.
 - Generated `.godot/imported/` data is never a source of truth and is never committed.
 
-Only project-owned or explicitly redistributable `.pxo` masters may enter `source_assets/`; the repository asset-provenance policy still applies.
+Only project-owned or explicitly redistributable masters may enter `source_assets/`; the repository asset-provenance policy still applies.
 
 ## Modular character contract
 
@@ -81,17 +98,17 @@ The goal is to reuse body animation while allowing equipment, hair, skin details
 
 ## Export contract
 
-Pixelorama CLI supports headless export, spritesheet export, JSON export, and split-layer export. Production automation should use those built-in capabilities rather than screen automation.
+Aseprite CLI supports batch/headless export, spritesheets, JSON metadata, layer filtering, split-layer export, split-tag export, and texture-atlas generation.
 
 Representative command shape:
 
 ```text
-Pixelorama --headless --quit -- --spritesheet --json --split-layers --output <output.png> <source.pxo>
+aseprite -b --split-layers --list-tags fighter.aseprite --sheet fighter.png --data fighter.json
 ```
 
-The exact executable path is local-machine configuration and must not be hard-coded into gameplay code.
+The exact executable path is local-machine configuration and must never be hard-coded into gameplay code.
 
-Exports must be deterministic enough for production. Before adding automated bulk generation, validate the same unchanged source twice and compare SHA-256 hashes for produced PNG/JSON outputs.
+Exports must be deterministic enough for production. Before bulk generation, validate the same unchanged source twice and compare SHA-256 hashes for produced PNG/JSON outputs.
 
 ## Godot import policy
 
@@ -105,37 +122,52 @@ For combat pixel art:
 
 Runtime scenes/resources may use standard `Texture2D`, `AtlasTexture`, `SpriteFrames`, `AnimationPlayer`, or project-owned metadata generated from the exported PNG/JSON.
 
-## Tool evaluation
+## Tool roles
 
-### Pixelorama 1.2 + built-in CLI — ADOPT
+### Aseprite 1.3.x — ADOPT FOR PRODUCTION
 
-Reasons:
+Role:
 
-- open-source and suitable for local production;
-- active project;
-- native layers/timeline/tags;
-- native spritesheet + JSON export;
-- native split-layer export;
-- CLI/headless automation;
-- avoids a Godot plugin dependency.
+- manual pixel cleanup;
+- frame-by-frame animation;
+- onion-skin correction;
+- modular body/equipment layers;
+- animation tags/timing;
+- controlled sprite-sheet/JSON export;
+- optional CLI/script automation.
 
-### Importality 0.4.x — OPTIONAL WORKBENCH / WATCHLIST
+Aseprite is a production workstation tool only. It must not become a Godot runtime/build dependency.
 
-Importality remains useful if an artist wants direct `.pxo`, Aseprite, Krita, Piskel, or Pencil2D preview/import inside a separate Godot art workbench. Its 0.4.x line fixed Godot 4.5-related SpriteFrames issues and supports split layers/per-layer offsets.
+### Python — ADOPT FOR AUTOMATION
 
-Do not make it part of the game's required import/build path unless the native Pixelorama CLI pipeline proves insufficient.
+Role:
 
-### Aseprite Spritesheet Importer — SECONDARY / WATCHLIST
+- remove/clean backgrounds;
+- normalize canvas and alpha;
+- resize/crop/pad consistently;
+- batch rename/validate outputs;
+- verify frame dimensions/counts;
+- compare hashes;
+- generate reports/manifests;
+- perform repetitive transformations that do not benefit from manual pixel editing.
 
-This is the strongest Aseprite-specific alternative found because it is resource-oriented and explicitly supports multiple layers/groups/slices, including body + equipment organization. It is MIT and targets Godot 4.4.1+.
+Python should handle repetitive deterministic work; Aseprite should handle visual judgment and animation correction.
 
-It is currently young and marked unstable in the Godot Asset Store, so it does not replace the primary pipeline today.
+### Pixelorama — SECONDARY / FREE FALLBACK
+
+Pixelorama remains useful as an open-source alternative for manual pixel work and can export standard assets. It is not required if Aseprite is available and should not duplicate the same production step by default.
+
+### Importality — OPTIONAL WORKBENCH / WATCHLIST
+
+Importality can be useful in a separate art workbench, but the selected pipeline does not need it to build or run Ludus.
+
+### Aseprite Spritesheet Importer — WATCHLIST
+
+Potentially useful if we later want direct Aseprite-resource workflows inside a dedicated art project, but not needed in the main game repository.
 
 ### Aseprite Wizard — DO NOT ADOPT AS PRIMARY
 
-It is feature-rich, MIT, and active, but it is also marked unstable and is more Aseprite-specific/node-oriented than Ludus currently needs. It adds dependency and editor state without solving a problem the selected Pixelorama CLI workflow cannot already solve.
-
-Aseprite itself remains a valid artist-side tool if a future collaborator prefers it. Source art can be exported to standard PNG/JSON or converted through a controlled art pipeline without making Aseprite a Ludus runtime/build requirement.
+It adds Godot-editor coupling without providing enough value over Aseprite's own export + our Python/Godot pipeline.
 
 ## Dependency rule
 
@@ -150,10 +182,15 @@ Before producing the full gladiator/equipment library:
 1. Create one adult base gladiator at 64x64.
 2. Create at least `idle`, `light_attack`, `heavy_attack`, `block`, `dodge`, `hit`, and `defeat` animation families.
 3. Create at least two helmets, two weapons, one shield, two hair variants, and two cloth/color variants.
-4. Export body/equipment layers twice from the same unchanged `.pxo` source.
-5. Verify matching alignment, frame counts, tags, frame timing, origin, and ground line.
-6. Compare export hashes and investigate any nondeterministic output.
-7. Load the exported standard assets into a Godot 4.5.2 dev scene with no art importer enabled.
-8. Swap equipment during animation without per-item positional fixes.
-9. Verify crisp presentation at integer scales.
-10. Only after this passes, bulk-produce the remaining character/equipment assets.
+4. Keep body/equipment in modular Aseprite layers/groups with shared origin and ground line.
+5. Export body/equipment layers twice from the same unchanged source.
+6. Verify matching alignment, frame counts, tags, frame timing, origin, and ground line.
+7. Compare export hashes and investigate any nondeterministic output.
+8. Load the exported standard assets into a Godot 4.5.2 dev scene with no art importer enabled.
+9. Swap equipment during animation without per-item positional fixes.
+10. Verify crisp presentation at integer scales.
+11. Only after this passes, bulk-produce the remaining character/equipment assets.
+
+## Cost/usage note
+
+Aseprite is a paid workstation tool rather than a game dependency. The official minimum purchase price is currently USD 19.99 for the 1.x series, with commercial use of created assets allowed. The trial can be used to evaluate the workflow but cannot save files.
