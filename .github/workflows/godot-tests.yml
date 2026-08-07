@@ -2,15 +2,17 @@ name: Godot Tests
 
 on:
   push:
+    branches:
+      - main
+      - feature/demo-data-foundation
   pull_request:
-    branches: [main]
   workflow_dispatch:
 
 permissions:
   contents: read
 
 concurrency:
-  group: godot-tests-${{ github.ref }}
+  group: godot-tests-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 env:
@@ -19,41 +21,108 @@ env:
 jobs:
   compile:
     name: Compile and smoke test
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
 
     steps:
       - name: Check out repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          fetch-depth: 1
+          persist-credentials: false
 
       - name: Set up Godot
-        uses: chickensoft-games/setup-godot@v2
+        uses: chickensoft-games/setup-godot@f166999204a4f2722c6fe042fbaa3b3ea0d9c789 # v2
         with:
           version: ${{ env.GODOT_VERSION }}
           use-dotnet: false
           include-templates: false
 
-      - name: Show Godot version
-        run: godot --version
+      - name: Verify locked technical contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(godot --version)" = "4.5.2.stable.official.6ce3de25a"
+          grep -Eq '^config/features=PackedStringArray\("4\.5"\)$' game/project.godot
+          grep -Eq '^const SAVE_VERSION := 14$' game/scripts/core/save_manager.gd
 
       - name: Import and compile project
-        run: godot --headless --editor --path game --quit
+        shell: bash
+        run: |
+          set -euo pipefail
+          set +e
+          godot --headless --editor --path game --quit 2>&1 | tee godot-import.log
+          GODOT_STATUS=${PIPESTATUS[0]}
+          set -e
+          PATTERN='Parse Error|Compile Error|SCRIPT ERROR|Failed to load script|Failed to create an autoload'
+          if grep -Ein "$PATTERN" godot-import.log; then
+            echo '### Godot import/compile errors' >> "$GITHUB_STEP_SUMMARY"
+            grep -Ein "$PATTERN" godot-import.log >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+          if [ "$GODOT_STATUS" -ne 0 ]; then
+            echo "Godot editor exited with status $GODOT_STATUS."
+            tail -n 100 godot-import.log
+            exit "$GODOT_STATUS"
+          fi
+
+      - name: Ensure import did not mutate tracked files
+        shell: bash
+        run: |
+          set -euo pipefail
+          if ! git diff --quiet; then
+            echo 'Godot import modified tracked repository files:'
+            git status --short
+            git diff --check
+            exit 1
+          fi
 
       - name: Smoke test main scene
-        run: godot --headless --path game res://scenes/Main.tscn --quit
+        shell: bash
+        run: |
+          set -euo pipefail
+          set +e
+          godot --headless --path game res://scenes/Main.tscn --quit 2>&1 | tee godot-smoke.log
+          GODOT_STATUS=${PIPESTATUS[0]}
+          set -e
+          PATTERN='Parse Error|Compile Error|SCRIPT ERROR|Invalid call|Node not found|Can.t use get_node|Failed to load script|Failed to create an autoload'
+          if grep -Ein "$PATTERN" godot-smoke.log; then
+            echo '### Godot smoke errors' >> "$GITHUB_STEP_SUMMARY"
+            grep -Ein "$PATTERN" godot-smoke.log >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+          if [ "$GODOT_STATUS" -ne 0 ]; then
+            echo "Godot runtime exited with status $GODOT_STATUS."
+            tail -n 100 godot-smoke.log
+            exit "$GODOT_STATUS"
+          fi
+
+      - name: Upload compile diagnostics
+        if: always()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        with:
+          name: compile-smoke-results-${{ github.run_attempt }}
+          path: |
+            godot-import.log
+            godot-smoke.log
+          if-no-files-found: ignore
+          retention-days: 14
 
   core-systems:
     name: Core systems suite
     needs: compile
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 20
 
     steps:
       - name: Check out repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          fetch-depth: 1
+          persist-credentials: false
 
       - name: Set up Godot
-        uses: chickensoft-games/setup-godot@v2
+        uses: chickensoft-games/setup-godot@f166999204a4f2722c6fe042fbaa3b3ea0d9c789 # v2
         with:
           version: ${{ env.GODOT_VERSION }}
           use-dotnet: false
@@ -67,7 +136,7 @@ jobs:
 
       - name: Upload core suite diagnostics
         if: always()
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
         with:
           name: core-test-results-${{ github.run_attempt }}
           path: |
@@ -80,15 +149,18 @@ jobs:
   ui-contracts:
     name: UI and integration contracts
     needs: compile
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 20
 
     steps:
       - name: Check out repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          fetch-depth: 1
+          persist-credentials: false
 
       - name: Set up Godot
-        uses: chickensoft-games/setup-godot@v2
+        uses: chickensoft-games/setup-godot@f166999204a4f2722c6fe042fbaa3b3ea0d9c789 # v2
         with:
           version: ${{ env.GODOT_VERSION }}
           use-dotnet: false
@@ -102,7 +174,7 @@ jobs:
 
       - name: Upload UI suite diagnostics
         if: always()
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
         with:
           name: ui-test-results-${{ github.run_attempt }}
           path: |
@@ -115,15 +187,18 @@ jobs:
   gut-tests:
     name: GUT behavior tests
     needs: compile
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 20
 
     steps:
       - name: Check out repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          fetch-depth: 1
+          persist-credentials: false
 
       - name: Set up Godot
-        uses: chickensoft-games/setup-godot@v2
+        uses: chickensoft-games/setup-godot@f166999204a4f2722c6fe042fbaa3b3ea0d9c789 # v2
         with:
           version: ${{ env.GODOT_VERSION }}
           use-dotnet: false
@@ -141,9 +216,37 @@ jobs:
 
       - name: Upload GUT reports
         if: always()
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
         with:
           name: gut-test-results-${{ github.run_attempt }}
           path: game/test-results/
           if-no-files-found: warn
           retention-days: 14
+
+  ci-gate:
+    name: CI Gate
+    if: always()
+    needs:
+      - compile
+      - core-systems
+      - ui-contracts
+      - gut-tests
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+
+    steps:
+      - name: Require every validation job to pass
+        shell: bash
+        env:
+          COMPILE_RESULT: ${{ needs.compile.result }}
+          CORE_RESULT: ${{ needs.core-systems.result }}
+          UI_RESULT: ${{ needs.ui-contracts.result }}
+          GUT_RESULT: ${{ needs.gut-tests.result }}
+        run: |
+          set -euo pipefail
+          printf 'compile=%s\ncore=%s\nui=%s\ngut=%s\n' \
+            "$COMPILE_RESULT" "$CORE_RESULT" "$UI_RESULT" "$GUT_RESULT"
+          test "$COMPILE_RESULT" = success
+          test "$CORE_RESULT" = success
+          test "$UI_RESULT" = success
+          test "$GUT_RESULT" = success
