@@ -11,12 +11,14 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 RESULTS_ROOT="$PROJECT_ROOT/test-results"
 LOG_PATH="$RESULTS_ROOT/limboai-probe.log"
-EDITOR_LOG_PATH="$RESULTS_ROOT/limboai-editor-lifecycle.log"
+BOOTSTRAP_LOG_PATH="$RESULTS_ROOT/limboai-editor-bootstrap.log"
+RELOAD_LOG_PATH="$RESULTS_ROOT/limboai-editor-reload.log"
 TMP_ROOT=""
 
 mkdir -p "$RESULTS_ROOT"
 : > "$LOG_PATH"
-: > "$EDITOR_LOG_PATH"
+: > "$BOOTSTRAP_LOG_PATH"
+: > "$RELOAD_LOG_PATH"
 exec > >(tee "$LOG_PATH") 2>&1
 
 cleanup() {
@@ -118,13 +120,6 @@ if [[ ! -d "$ADDON_SOURCE" ]]; then
 fi
 cp -R "$ADDON_SOURCE" "$PROBE_PROJECT/addons/limboai"
 
-GDEXT_INSTALLED="$(find "$PROBE_PROJECT/addons/limboai" -type f -name '*.gdextension' -print -quit)"
-if [[ -z "$GDEXT_INSTALLED" ]]; then
-  echo "ERROR: no se pudo materializar la GDExtension en el proyecto aislado." >&2
-  exit 1
-fi
-GDEXT_RELATIVE="${GDEXT_INSTALLED#"$PROBE_PROJECT/"}"
-
 cat > "$PROBE_PROJECT/project.godot" <<'EOF'
 config_version=5
 
@@ -156,21 +151,15 @@ const REQUIRED_CLASSES := [
 ]
 
 func _initialize() -> void:
-    var extension_resource = load("res://${GDEXT_RELATIVE}")
-    if extension_resource == null:
-        push_error("No se pudo cargar la GDExtension de LimboAI en runtime.")
-        quit(1)
-        return
-
     for required_class in REQUIRED_CLASSES:
         if not ClassDB.class_exists(required_class):
-            push_error("LimboAI no registró la clase requerida: %s" % required_class)
+            push_error("LimboAI no registró la clase requerida después del reload: %s" % required_class)
             quit(1)
             return
 
     var action_script = load("res://probe_action.gd")
     if action_script == null or not action_script.can_instantiate():
-        push_error("No se pudo compilar una BTAction personalizada en GDScript.")
+        push_error("No se pudo compilar una BTAction personalizada en GDScript después del reload.")
         quit(1)
         return
     var action = action_script.new()
@@ -191,28 +180,52 @@ func _initialize() -> void:
     bt_player.free()
     behavior_tree.free()
     hsm.free()
-    print("LIMBOAI_RUNTIME_PROBE_OK: v${LIMBOAI_VERSION} funciona como GDExtension en runtime headless.")
+    print("LIMBOAI_RUNTIME_PROBE_OK: v${LIMBOAI_VERSION} funciona como GDExtension en runtime headless después del reload requerido.")
     quit(0)
 EOF
 
-echo "LimboAI probe: ejecutando runtime headless SIN abrir el editor"
+# LimboAI documenta que una GDExtension recién instalada requiere recargar el proyecto.
+# En headless, el primer ciclo puede terminar de forma no limpia mientras Godot genera
+# .godot y registra la extensión. No lo consideramos PASS; solo bootstrap.
+echo "LimboAI probe: bootstrap inicial del editor para registrar la GDExtension"
+set +e
+timeout --signal=TERM --kill-after=10s 60s \
+  "$GODOT_COMMAND" --headless --editor --path "$PROBE_PROJECT" --quit \
+  > "$BOOTSTRAP_LOG_PATH" 2>&1
+bootstrap_exit=$?
+set -e
+if [[ $bootstrap_exit -eq 0 ]]; then
+  echo "LimboAI probe: bootstrap inicial terminó limpio"
+else
+  echo "LimboAI probe: bootstrap inicial terminó con exit $bootstrap_exit; se permite solo porque ahora validaremos el proyecto tras el reload."
+fi
+
+if [[ ! -d "$PROBE_PROJECT/.godot" ]]; then
+  echo "ERROR: Godot no generó .godot durante el bootstrap de la GDExtension." >&2
+  tail -n 80 "$BOOTSTRAP_LOG_PATH" || true
+  exit 1
+fi
+
+echo "LimboAI probe: ejecutando runtime headless DESPUÉS del reload requerido"
 timeout --signal=TERM --kill-after=10s 60s \
   "$GODOT_COMMAND" --headless --path "$PROBE_PROJECT" --script res://smoke.gd
 
 echo "LimboAI probe: RUNTIME PASS"
 
-echo "LimboAI probe: diagnóstico separado del ciclo headless-editor (no bloqueante)"
+# Segundo ciclo del editor: diagnóstico adicional. El runtime anterior es la condición
+# bloqueante para Ludus; este ciclo nos dice si además el editor headless queda estable.
+echo "LimboAI probe: segundo ciclo headless-editor después del reload (diagnóstico)"
 set +e
 timeout --signal=TERM --kill-after=10s 60s \
   "$GODOT_COMMAND" --headless --editor --path "$PROBE_PROJECT" --quit \
-  > "$EDITOR_LOG_PATH" 2>&1
-editor_exit=$?
+  > "$RELOAD_LOG_PATH" 2>&1
+reload_exit=$?
 set -e
-if [[ $editor_exit -eq 0 ]]; then
-  echo "LimboAI probe: EDITOR LIFECYCLE PASS"
+if [[ $reload_exit -eq 0 ]]; then
+  echo "LimboAI probe: EDITOR RELOAD PASS"
 else
-  echo "LimboAI probe: EDITOR LIFECYCLE WARNING (exit $editor_exit). Runtime ya fue validado; revisar log separado."
-  tail -n 40 "$EDITOR_LOG_PATH" || true
+  echo "LimboAI probe: EDITOR RELOAD WARNING (exit $reload_exit). Runtime ya fue validado; revisar log separado."
+  tail -n 80 "$RELOAD_LOG_PATH" || true
 fi
 
 echo "LimboAI probe: PASS"
