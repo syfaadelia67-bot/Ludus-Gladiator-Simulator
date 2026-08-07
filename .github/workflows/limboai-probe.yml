@@ -47,11 +47,13 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
         run: bash game/tools/run_limboai_probe.sh
 
-      - name: Upload probe log
+      - name: Upload probe logs
         if: always()
         uses: actions/upload-artifact@v6
         with:
           name: limboai-probe-${{ github.run_attempt }}
-          path: game/test-results/limboai-probe.log
+          path: |
+            game/test-results/limboai-probe.log
+            game/test-results/limboai-editor-lifecycle.log
           if-no-files-found: warn
           retention-days: 14
