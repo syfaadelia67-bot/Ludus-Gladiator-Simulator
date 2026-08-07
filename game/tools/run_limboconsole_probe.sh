@@ -39,6 +39,7 @@ cp -R "$SOURCE/res" "$PROBE/addons/limbo_console/res"
 
 cat > "$PROBE/addons/limbo_console.cfg" <<'EOF'
 [main]
+aliases={}
 disable_in_release_build=true
 print_to_stdout=true
 pause_when_open=false
@@ -174,6 +175,10 @@ grep -q "LIMBOCONSOLE_RELEASE_OK" "$RELEASE_OUT" || { echo "ERROR: release marke
 
 if grep -q "LIMBOCONSOLE_PROBE_FAIL" "$DEBUG_OUT" "$RELEASE_OUT"; then
   echo "ERROR: probe reportó fallo"
+  exit 1
+fi
+if grep -q '^ERROR:' "$RELEASE_OUT"; then
+  echo "ERROR: la release produjo errores conocidos"
   exit 1
 fi
 
