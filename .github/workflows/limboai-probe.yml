@@ -1,0 +1,51 @@
+name: LimboAI 1.6 Compatibility Probe
+
+on:
+  push:
+    branches:
+      - integration/limboai-1.6-probe
+    paths:
+      - .github/workflows/limboai-probe.yml
+      - game/tools/run_limboai_probe.sh
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  GODOT_VERSION: 4.5.2
+  LIMBOAI_VERSION: 1.6.0
+
+jobs:
+  limboai-probe:
+    name: LimboAI GDExtension on Godot 4.5.2
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Set up Godot
+        uses: chickensoft-games/setup-godot@v2
+        with:
+          version: ${{ env.GODOT_VERSION }}
+          use-dotnet: false
+          include-templates: false
+
+      - name: Show Godot version
+        run: godot --version
+
+      - name: Run isolated LimboAI probe
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: bash game/tools/run_limboai_probe.sh
+
+      - name: Upload probe log
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: limboai-probe-${{ github.run_attempt }}
+          path: game/test-results/limboai-probe.log
+          if-no-files-found: warn
+          retention-days: 14
