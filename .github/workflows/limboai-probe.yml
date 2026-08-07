@@ -1,12 +1,6 @@
 name: LimboAI 1.6 Compatibility Probe
 
 on:
-  push:
-    branches:
-      - integration/limboai-1.6-probe
-    paths:
-      - .github/workflows/limboai-probe.yml
-      - game/tools/run_limboai_probe.sh
   pull_request:
     branches:
       - feature/demo-data-foundation
@@ -17,6 +11,10 @@ on:
 
 permissions:
   contents: read
+
+concurrency:
+  group: limboai-probe-${{ github.ref }}
+  cancel-in-progress: true
 
 env:
   GODOT_VERSION: 4.5.2
