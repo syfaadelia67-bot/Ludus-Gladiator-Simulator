@@ -52,6 +52,7 @@ jobs:
           name: limboai-probe-${{ github.run_attempt }}
           path: |
             game/test-results/limboai-probe.log
-            game/test-results/limboai-editor-lifecycle.log
+            game/test-results/limboai-editor-bootstrap.log
+            game/test-results/limboai-editor-reload.log
           if-no-files-found: warn
           retention-days: 14
