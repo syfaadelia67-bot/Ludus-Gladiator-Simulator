@@ -4,6 +4,8 @@ set -euo pipefail
 GODOT_COMMAND="${GODOT_COMMAND:-godot}"
 LIMBOAI_VERSION="${LIMBOAI_VERSION:-1.6.0}"
 TAG="v${LIMBOAI_VERSION}"
+EXPECTED_ASSET="limboai+v1.6.0.gdextension-4.4.zip"
+EXPECTED_SHA256="20e2559d4000efee4495a2e361b0c3cc1d0c51d38a9cc062d335e020de1a405f"
 RELEASE_API="https://api.github.com/repos/limbonaut/limboai/releases/tags/${TAG}"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
@@ -33,6 +35,11 @@ command -v "$GODOT_COMMAND" >/dev/null 2>&1 || {
   exit 2
 }
 
+if [[ "$LIMBOAI_VERSION" != "1.6.0" ]]; then
+  echo "ERROR: este probe está deliberadamente bloqueado a LimboAI 1.6.0." >&2
+  exit 2
+fi
+
 TMP_ROOT="$(mktemp -d "${TMPDIR:-/tmp}/ludus-limboai-probe.XXXXXX")"
 RELEASE_JSON="$TMP_ROOT/release.json"
 ARCHIVE_PATH="$TMP_ROOT/limboai.zip"
@@ -58,51 +65,40 @@ printf 'LimboAI probe: release=%s\n' "$TAG"
 
 curl "${curl_args[@]}" "$RELEASE_API" --output "$RELEASE_JSON"
 
-asset_record="$(python3 - "$RELEASE_JSON" "$LIMBOAI_VERSION" <<'PY'
+asset_url="$(python3 - "$RELEASE_JSON" "$TAG" "$EXPECTED_ASSET" "$EXPECTED_SHA256" <<'PY'
 import json
-import re
 import sys
 
-path, version = sys.argv[1], sys.argv[2]
+path, expected_tag, expected_name, expected_sha = sys.argv[1:]
 with open(path, encoding="utf-8") as handle:
     release = json.load(handle)
 
-expected_tag = f"v{version}"
 if release.get("tag_name") != expected_tag:
     raise SystemExit(f"release tag inesperado: {release.get('tag_name')!r}")
 if release.get("draft") or release.get("prerelease"):
     raise SystemExit("la release seleccionada no puede ser draft/prerelease")
 
-assets = {asset.get("name", ""): asset for asset in release.get("assets", [])}
-preferred = [
-    f"limboai+v{version}.gdextension-4.5.zip",
-    f"limboai+v{version}.gdextension-4.4.zip",
-]
-selected = next((assets[name] for name in preferred if name in assets), None)
+selected = next((asset for asset in release.get("assets", []) if asset.get("name") == expected_name), None)
 if selected is None:
-    candidates = sorted(name for name in assets if re.search(r"\.gdextension-4\.[45]\.zip$", name))
-    raise SystemExit(
-        "no se encontró un GDExtension compatible con Godot 4.5; candidatos=" + repr(candidates)
-    )
+    raise SystemExit(f"no existe el asset fijado: {expected_name}")
 
-digest = selected.get("digest") or ""
-if not re.fullmatch(r"sha256:[0-9a-fA-F]{64}", digest):
-    raise SystemExit(f"GitHub no publicó un digest SHA-256 utilizable para {selected.get('name')}: {digest!r}")
+digest = (selected.get("digest") or "").lower()
+if digest != f"sha256:{expected_sha.lower()}":
+    raise SystemExit(f"digest inesperado para {expected_name}: {digest!r}")
+
 url = selected.get("browser_download_url") or ""
 if not url.startswith("https://github.com/limbonaut/limboai/releases/download/"):
     raise SystemExit(f"URL de asset inesperada: {url!r}")
-
-print("\t".join([selected["name"], url, digest.lower()]))
+print(url)
 PY
 )"
 
-IFS=$'\t' read -r ASSET_NAME ASSET_URL ASSET_DIGEST <<< "$asset_record"
-echo "LimboAI probe: asset=$ASSET_NAME"
-echo "LimboAI probe: digest=$ASSET_DIGEST"
+echo "LimboAI probe: asset=$EXPECTED_ASSET"
+echo "LimboAI probe: SHA-256 fijado=$EXPECTED_SHA256"
 
-curl --fail --location --silent --show-error "$ASSET_URL" --output "$ARCHIVE_PATH"
-echo "${ASSET_DIGEST#sha256:}  $ARCHIVE_PATH" | sha256sum --check --status || {
-  echo "ERROR: el SHA-256 del asset de LimboAI no coincide con el digest publicado por GitHub." >&2
+curl --fail --location --silent --show-error "$asset_url" --output "$ARCHIVE_PATH"
+echo "$EXPECTED_SHA256  $ARCHIVE_PATH" | sha256sum --check --status || {
+  echo "ERROR: el SHA-256 del asset de LimboAI no coincide con el valor fijado." >&2
   exit 1
 }
 echo "LimboAI probe: SHA-256 verificado"
@@ -164,9 +160,9 @@ func _initialize() -> void:
         quit(1)
         return
 
-    for class_name in REQUIRED_CLASSES:
-        if not ClassDB.class_exists(class_name):
-            push_error("LimboAI no registró la clase requerida: %s" % class_name)
+    for required_class in REQUIRED_CLASSES:
+        if not ClassDB.class_exists(required_class):
+            push_error("LimboAI no registró la clase requerida: %s" % required_class)
             quit(1)
             return
 
