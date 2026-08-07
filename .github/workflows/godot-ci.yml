@@ -60,12 +60,12 @@ jobs:
             exit "$GODOT_STATUS"
           fi
 
-      - name: Validate main scene startup
+      - name: Validate explicit main scene startup
         shell: bash
         run: |
           set -euo pipefail
           set +e
-          godot --headless --path game --quit-after 5 2>&1 | tee godot-startup.log
+          godot --headless --path game res://scenes/Main.tscn --quit 2>&1 | tee godot-startup.log
           GODOT_STATUS=${PIPESTATUS[0]}
           set -e
           PATTERN='Parse Error|Compile Error|SCRIPT ERROR|Invalid call|Node not found|Can.t use get_node|Failed to load script|Failed to create an autoload'
