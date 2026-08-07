@@ -10,6 +10,7 @@ on:
 
 permissions:
   contents: read
+  pull-requests: read
 
 concurrency:
   group: godot-tests-${{ github.workflow }}-${{ github.ref }}
@@ -107,6 +108,95 @@ jobs:
             godot-smoke.log
           if-no-files-found: ignore
           retention-days: 14
+
+  gdscript-quality:
+    name: GDScript format and lint
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+
+    steps:
+      - name: Check out repository history
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Install pinned gdtoolkit
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m venv .ci-venv
+          .ci-venv/bin/python -m pip install --disable-pip-version-check --no-input 'gdtoolkit==4.5.0'
+          .ci-venv/bin/gdformat --help >/dev/null
+          .ci-venv/bin/gdlint --help >/dev/null
+
+      - name: Select changed GDScript files
+        id: changed-gdscript
+        shell: bash
+        env:
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          PUSH_BEFORE_SHA: ${{ github.event.before }}
+        run: |
+          set -euo pipefail
+          : > changed-gdscript.bin
+
+          if [ "$GITHUB_EVENT_NAME" = "pull_request" ]; then
+            git diff --name-only -z --diff-filter=ACMR "$PR_BASE_SHA" "$PR_HEAD_SHA" -- '*.gd' > changed-gdscript.bin
+          elif [ "$GITHUB_EVENT_NAME" = "push" ]; then
+            if [ -n "$PUSH_BEFORE_SHA" ] && [ "$PUSH_BEFORE_SHA" != "0000000000000000000000000000000000000000" ]; then
+              git diff --name-only -z --diff-filter=ACMR "$PUSH_BEFORE_SHA" "$GITHUB_SHA" -- '*.gd' > changed-gdscript.bin
+            else
+              git show --pretty='' --name-only -z --diff-filter=ACMR "$GITHUB_SHA" -- '*.gd' > changed-gdscript.bin
+            fi
+          else
+            git ls-files -z '*.gd' > changed-gdscript.bin
+          fi
+
+          if [ -s changed-gdscript.bin ]; then
+            echo 'has_files=true' >> "$GITHUB_OUTPUT"
+            echo 'GDScript files selected for quality checks:'
+            tr '\0' '\n' < changed-gdscript.bin
+          else
+            echo 'has_files=false' >> "$GITHUB_OUTPUT"
+            echo 'No changed GDScript files; gdtoolkit gate has nothing to evaluate.'
+          fi
+
+      - name: Check GDScript formatting
+        if: steps.changed-gdscript.outputs.has_files == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -d '' FILES < changed-gdscript.bin
+          .ci-venv/bin/gdformat --check "${FILES[@]}"
+
+      - name: Lint GDScript
+        if: steps.changed-gdscript.outputs.has_files == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -d '' FILES < changed-gdscript.bin
+          .ci-venv/bin/gdlint "${FILES[@]}"
+
+  secret-scan:
+    name: Secret scan
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+
+    steps:
+      - name: Check out full history
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Scan changed history with Gitleaks
+        uses: gitleaks/gitleaks-action@e0c47f4f8be36e29cdc102c57e68cb5cbf0e8d1e # v3.0.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_VERSION: 8.24.3
+          GITLEAKS_ENABLE_COMMENTS: false
+          GITLEAKS_ENABLE_UPLOAD_ARTIFACT: false
 
   core-systems:
     name: Core systems suite
@@ -228,6 +318,8 @@ jobs:
     if: always()
     needs:
       - compile
+      - gdscript-quality
+      - secret-scan
       - core-systems
       - ui-contracts
       - gut-tests
@@ -239,14 +331,18 @@ jobs:
         shell: bash
         env:
           COMPILE_RESULT: ${{ needs.compile.result }}
+          GDSCRIPT_RESULT: ${{ needs.gdscript-quality.result }}
+          SECRETS_RESULT: ${{ needs.secret-scan.result }}
           CORE_RESULT: ${{ needs.core-systems.result }}
           UI_RESULT: ${{ needs.ui-contracts.result }}
           GUT_RESULT: ${{ needs.gut-tests.result }}
         run: |
           set -euo pipefail
-          printf 'compile=%s\ncore=%s\nui=%s\ngut=%s\n' \
-            "$COMPILE_RESULT" "$CORE_RESULT" "$UI_RESULT" "$GUT_RESULT"
+          printf 'compile=%s\ngdscript=%s\nsecrets=%s\ncore=%s\nui=%s\ngut=%s\n' \
+            "$COMPILE_RESULT" "$GDSCRIPT_RESULT" "$SECRETS_RESULT" "$CORE_RESULT" "$UI_RESULT" "$GUT_RESULT"
           test "$COMPILE_RESULT" = success
+          test "$GDSCRIPT_RESULT" = success
+          test "$SECRETS_RESULT" = success
           test "$CORE_RESULT" = success
           test "$UI_RESULT" = success
           test "$GUT_RESULT" = success
