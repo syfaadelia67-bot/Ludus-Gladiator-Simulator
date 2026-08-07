@@ -22,7 +22,7 @@ cleanup() {
 }
 trap cleanup EXIT
 
-for command_name in curl unzip python3 sha256sum; do
+for command_name in curl unzip python3 sha256sum timeout; do
   command -v "$command_name" >/dev/null 2>&1 || {
     echo "ERROR: falta la dependencia requerida: $command_name" >&2
     exit 2
@@ -52,7 +52,7 @@ if [[ -n "${GITHUB_TOKEN:-}" ]]; then
   curl_args+=( -H "Authorization: Bearer ${GITHUB_TOKEN}" )
 fi
 
-printf 'LimboAI probe: Godot=' 
+printf 'LimboAI probe: Godot='
 "$GODOT_COMMAND" --version
 printf 'LimboAI probe: release=%s\n' "$TAG"
 
@@ -113,9 +113,10 @@ if [[ -z "$GDEXT_SOURCE" ]]; then
   echo "ERROR: el asset no contiene addons/limboai/*.gdextension" >&2
   exit 1
 fi
-ADDON_SOURCE="$(dirname "$(dirname "$GDEXT_SOURCE")")/limboai"
+ADDON_SOURCE="${GDEXT_SOURCE%%/addons/limboai/*}/addons/limboai"
 if [[ ! -d "$ADDON_SOURCE" ]]; then
-  ADDON_SOURCE="$(dirname "$GDEXT_SOURCE")"
+  echo "ERROR: no se pudo localizar la raíz addons/limboai dentro del asset." >&2
+  exit 1
 fi
 cp -R "$ADDON_SOURCE" "$PROBE_PROJECT/addons/limboai"
 
