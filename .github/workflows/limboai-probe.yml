@@ -7,6 +7,12 @@ on:
     paths:
       - .github/workflows/limboai-probe.yml
       - game/tools/run_limboai_probe.sh
+  pull_request:
+    branches:
+      - feature/demo-data-foundation
+    paths:
+      - .github/workflows/limboai-probe.yml
+      - game/tools/run_limboai_probe.sh
   workflow_dispatch:
 
 permissions:
