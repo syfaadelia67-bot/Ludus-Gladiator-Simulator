@@ -124,7 +124,9 @@ func _assert_action_contracts(value: Variant) -> void:
 	if value is not Array:
 		return
 	var contracts := value as Array
-	_assert_eq(contracts.size(), EXPECTED_ACTION_IDS.size(), "context must expose six action contracts")
+	_assert_eq(
+		contracts.size(), EXPECTED_ACTION_IDS.size(), "context must expose six action contracts"
+	)
 	for index in range(contracts.size()):
 		var action_contract := contracts[index] as Dictionary
 		_assert_eq(
