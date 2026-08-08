@@ -57,16 +57,22 @@ func run() -> void:
 	assert(controller_text.contains("func _build_building_modal()"))
 	assert(controller_text.contains("func _open_building_modal()"))
 	assert(controller_text.contains("func _close_building_modal()"))
-	assert(controller_text.contains("button.pressed.connect(_on_hotspot_pressed.bind(building_id))"))
+	assert(
+		controller_text.contains("button.pressed.connect(_on_hotspot_pressed.bind(building_id))")
+	)
 	assert(controller_text.contains("modal_overlay.mouse_filter = Control.MOUSE_FILTER_STOP"))
 	assert(controller_text.contains("DEMO · NIVEL %d/%d · JUEGO COMPLETO 0–10"))
 
 	assert(scene_text.contains('[node name="QuickAccess" type="PanelContainer" parent="."]'))
 	assert(
-		scene_text.contains('[node name="Market" type="Button" parent="QuickAccess/Margin/Center/Row"]')
+		scene_text.contains(
+			'[node name="Market" type="Button" parent="QuickAccess/Margin/Center/Row"]'
+		)
 	)
 	assert(
-		scene_text.contains('[node name="Arena" type="Button" parent="QuickAccess/Margin/Center/Row"]')
+		scene_text.contains(
+			'[node name="Arena" type="Button" parent="QuickAccess/Margin/Center/Row"]'
+		)
 	)
 	assert(
 		scene_text.contains(
@@ -74,12 +80,22 @@ func run() -> void:
 		)
 	)
 	assert(scene_text.contains("custom_minimum_size = Vector2(280, 68)"))
-	assert(scene_text.contains("text = \"MERCADO\""))
-	assert(scene_text.contains("text = \"ARENA\""))
-	assert(scene_text.contains("text = \"PERSONAL\""))
-	assert(controller_text.contains('market_quick_button.pressed.connect(_open_system.bind("mercado"))'))
-	assert(controller_text.contains('arena_quick_button.pressed.connect(_open_system.bind("arena"))'))
-	assert(controller_text.contains('personal_quick_button.pressed.connect(_open_system.bind("personal"))'))
+	assert(scene_text.contains('text = "MERCADO"'))
+	assert(scene_text.contains('text = "ARENA"'))
+	assert(scene_text.contains('text = "PERSONAL"'))
+	assert(
+		controller_text.contains(
+			'market_quick_button.pressed.connect(_open_system.bind("mercado"))'
+		)
+	)
+	assert(
+		controller_text.contains('arena_quick_button.pressed.connect(_open_system.bind("arena"))')
+	)
+	assert(
+		controller_text.contains(
+			'personal_quick_button.pressed.connect(_open_system.bind("personal"))'
+		)
+	)
 
 	var packed := load("res://scenes/FincaScreen.tscn") as PackedScene
 	assert(packed != null)

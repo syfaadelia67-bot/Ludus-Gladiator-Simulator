@@ -71,9 +71,7 @@ func validate_snapshot(snapshot: Dictionary) -> Array[String]:
 	_validate_buildings(snapshot.get("buildings", []), errors)
 	_validate_traits(snapshot.get("traits", []), errors)
 	_validate_beasts(snapshot.get("beasts", []), errors)
-	_validate_abilities(
-		snapshot.get("abilities", []), snapshot.get("specializations", []), errors
-	)
+	_validate_abilities(snapshot.get("abilities", []), snapshot.get("specializations", []), errors)
 	_validate_specializations(
 		snapshot.get("specializations", []), snapshot.get("abilities", []), errors
 	)
@@ -136,9 +134,7 @@ func _validate_buildings(entries: Variant, errors: Array[String]) -> void:
 
 	demo_ids.sort()
 	if demo_ids != DEMO_BUILDING_IDS:
-		errors.append(
-			"Demo must expose exactly seven frozen facilities: %s" % [DEMO_BUILDING_IDS]
-		)
+		errors.append("Demo must expose exactly seven frozen facilities: %s" % [DEMO_BUILDING_IDS])
 	for building_id in REQUIRED_FULL_GAME_BUILDING_IDS:
 		if not by_id.has(building_id):
 			errors.append("Missing required full-game facility: %s" % building_id)
@@ -165,11 +161,15 @@ func _validate_traits(entries: Variant, errors: Array[String]) -> void:
 		for raw_other in entry.get("incompatible_with", []):
 			var other_id := str(raw_other)
 			if not by_id.has(other_id):
-				errors.append("Trait %s references unknown incompatibility: %s" % [trait_id, other_id])
+				errors.append(
+					"Trait %s references unknown incompatibility: %s" % [trait_id, other_id]
+				)
 				continue
 			var other: Dictionary = by_id[other_id]
 			if not other.get("incompatible_with", []).has(trait_id):
-				errors.append("Trait incompatibility must be symmetric: %s <-> %s" % [trait_id, other_id])
+				errors.append(
+					"Trait incompatibility must be symmetric: %s <-> %s" % [trait_id, other_id]
+				)
 
 
 func _validate_beasts(entries: Variant, errors: Array[String]) -> void:
@@ -234,8 +234,10 @@ func _validate_abilities(
 			var specialization_id := str(entry.get("specialization", ""))
 			if not specialization_ids.has(specialization_id):
 				errors.append(
-					"Ability %s references unknown specialization: %s"
-					% [ability_id, specialization_id]
+					(
+						"Ability %s references unknown specialization: %s"
+						% [ability_id, specialization_id]
+					)
 				)
 
 
@@ -255,8 +257,10 @@ func _validate_specializations(
 		var class_ability := str(entry.get("class_ability", ""))
 		if not class_ability.is_empty() and not ability_ids.has(class_ability):
 			errors.append(
-				"Specialization %s references unknown class ability: %s"
-				% [specialization_id, class_ability]
+				(
+					"Specialization %s references unknown class ability: %s"
+					% [specialization_id, class_ability]
+				)
 			)
 
 

@@ -24,8 +24,10 @@ func _ready() -> void:
 	assert(repository.beasts.size() == 3, "DataRepository must load the three frozen demo beasts")
 	assert(
 		repository.is_frozen_contract_valid(),
-		"Canonical data must satisfy the frozen Part 3 contract: %s"
-		% [repository.get_frozen_contract_errors()]
+		(
+			"Canonical data must satisfy the frozen Part 3 contract: %s"
+			% [repository.get_frozen_contract_errors()]
+		)
 	)
 
 	_remove_user_file(MISSING_PATH)

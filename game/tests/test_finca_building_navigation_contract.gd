@@ -38,16 +38,18 @@ func run() -> void:
 			full_game_ids.append(building_id)
 	demo_ids.sort()
 	assert(
-		demo_ids
-		== [
-			"barracks",
-			"beast_area",
-			"dominus_house",
-			"forge",
-			"infirmary",
-			"mine",
-			"training_yard",
-		]
+		(
+			demo_ids
+			== [
+				"barracks",
+				"beast_area",
+				"dominus_house",
+				"forge",
+				"infirmary",
+				"mine",
+				"training_yard",
+			]
+		)
 	)
 	for full_game_id in ["kitchen", "private_arena", "sanctuary", "stable", "wall_and_gate"]:
 		assert(full_game_ids.has(full_game_id))

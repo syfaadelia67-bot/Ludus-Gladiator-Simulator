@@ -8,10 +8,7 @@ func _ready() -> void:
 	DataRepository.load_all()
 
 	var errors := validator.validate_repository(DataRepository)
-	assert(
-		errors.is_empty(),
-		"Frozen Part 3 data contract must validate cleanly: %s" % [errors]
-	)
+	assert(errors.is_empty(), "Frozen Part 3 data contract must validate cleanly: %s" % [errors])
 
 	_assert_eighth_demo_building_is_rejected(validator)
 	_assert_seventeenth_trait_is_rejected(validator)
@@ -36,16 +33,19 @@ func _snapshot() -> Dictionary:
 func _assert_eighth_demo_building_is_rejected(validator) -> void:
 	var snapshot := _snapshot()
 	var buildings := snapshot["buildings"] as Array
-	buildings.append(
-		{
-			"id": "invalid_demo_facility",
-			"name": "Invalid Demo Facility",
-			"legacy_ids": [],
-			"starting_level": 0,
-			"max_level": 10,
-			"demo_available": true,
-			"demo_max_level": 3,
-		}
+	(
+		buildings
+		. append(
+			{
+				"id": "invalid_demo_facility",
+				"name": "Invalid Demo Facility",
+				"legacy_ids": [],
+				"starting_level": 0,
+				"max_level": 10,
+				"demo_available": true,
+				"demo_max_level": 3,
+			}
+		)
 	)
 	var errors := validator.validate_snapshot(snapshot)
 	assert(
@@ -57,13 +57,16 @@ func _assert_eighth_demo_building_is_rejected(validator) -> void:
 func _assert_seventeenth_trait_is_rejected(validator) -> void:
 	var snapshot := _snapshot()
 	var traits := snapshot["traits"] as Array
-	traits.append(
-		{
-			"id": "invalid_trait_17",
-			"name": "Invalid Trait 17",
-			"category": "normal",
-			"incompatible_with": [],
-		}
+	(
+		traits
+		. append(
+			{
+				"id": "invalid_trait_17",
+				"name": "Invalid Trait 17",
+				"category": "normal",
+				"incompatible_with": [],
+			}
+		)
 	)
 	var errors := validator.validate_snapshot(snapshot)
 	assert(
@@ -79,8 +82,7 @@ func _assert_duplicate_ids_are_rejected(validator) -> void:
 	beasts.append(duplicate_beast)
 	var errors := validator.validate_snapshot(snapshot)
 	assert(
-		_contains_error(errors, "duplicate id"),
-		"Duplicate data ids must fail the frozen contract"
+		_contains_error(errors, "duplicate id"), "Duplicate data ids must fail the frozen contract"
 	)
 
 

@@ -99,15 +99,23 @@ func _ready() -> void:
 	assert(estate.is_demo_available("forge"), "Forge must be available in the demo")
 	assert(estate.is_demo_available("mine"), "Mine must be part of the frozen demo facility set")
 	assert(not estate.is_demo_available("stable"), "Stable must be reserved for the full game")
-	assert(not estate.is_demo_available("sanctuary"), "Sanctuary must be reserved for the full game")
-	assert(not estate.is_demo_available("private_arena"), "Private arena must be reserved for the full game")
+	assert(
+		not estate.is_demo_available("sanctuary"), "Sanctuary must be reserved for the full game"
+	)
+	assert(
+		not estate.is_demo_available("private_arena"),
+		"Private arena must be reserved for the full game"
+	)
 	assert(not estate.is_demo_available("wall_and_gate"), "Wall must be reserved for the full game")
 	assert(
 		estate.get_effective_max_level("forge") == 3,
 		"Demo buildings must allow progression through level III"
 	)
 	assert(estate.get_effective_max_level("mine") == 3, "Mine must use the same demo level cap")
-	assert(estate.get_effective_max_level("stable") == 0, "Locked full-game facilities must cap at 0 in demo")
+	assert(
+		estate.get_effective_max_level("stable") == 0,
+		"Locked full-game facilities must cap at 0 in demo"
+	)
 	assert(
 		not estate.can_upgrade("mine"),
 		"Mine upgrades must remain blocked until its frozen monthly cost is recovered"
@@ -124,11 +132,25 @@ func _ready() -> void:
 		estate.get_effective_max_level("beast_area") == 10,
 		"Beast area must preserve level X progression"
 	)
-	assert(estate.get_effective_max_level("stable") == 10, "Stable must remain available for full-game progression")
-	assert(estate.get_effective_max_level("sanctuary") == 10, "Sanctuary must remain available for full-game progression")
-	assert(estate.get_effective_max_level("private_arena") == 10, "Private arena must remain available for full-game progression")
-	assert(estate.get_effective_max_level("wall_and_gate") == 10, "Wall must remain available for full-game progression")
-	assert(estate.get_security_bonus() == 9, "Full-game wall security effect must remain functional")
+	assert(
+		estate.get_effective_max_level("stable") == 10,
+		"Stable must remain available for full-game progression"
+	)
+	assert(
+		estate.get_effective_max_level("sanctuary") == 10,
+		"Sanctuary must remain available for full-game progression"
+	)
+	assert(
+		estate.get_effective_max_level("private_arena") == 10,
+		"Private arena must remain available for full-game progression"
+	)
+	assert(
+		estate.get_effective_max_level("wall_and_gate") == 10,
+		"Wall must remain available for full-game progression"
+	)
+	assert(
+		estate.get_security_bonus() == 9, "Full-game wall security effect must remain functional"
+	)
 
 	estate.free()
 	print("Estate catalog tests passed")
