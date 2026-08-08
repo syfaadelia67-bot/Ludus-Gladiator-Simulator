@@ -2,6 +2,15 @@ extends SceneTree
 
 const LimboAIPolicyAdapterScript = preload("res://scripts/combat/limboai_policy_adapter.gd")
 
+const EXPECTED_ACTION_IDS: Array[String] = [
+	"light",
+	"heavy",
+	"block",
+	"parry",
+	"dodge",
+	"reposition",
+]
+
 var _failures: Array[String] = []
 
 
@@ -53,6 +62,12 @@ func _initialize() -> void:
 			context.get("available_action_ids") is Array,
 			"policy context must expose canonical actions",
 		)
+		_assert_eq(
+			context.get("available_action_ids"),
+			EXPECTED_ACTION_IDS,
+			"policy context action ids must stay canonical",
+		)
+		_assert_action_contracts(context.get("action_contracts", []))
 		_assert_true(
 			context.get("desired_action") is Dictionary, "policy context needs output slot"
 		)
@@ -102,6 +117,10 @@ func _test_blackboard_bridge(
 	_assert_eq(write_result.get("status"), "ready", "policy context must seed LimboAI Blackboard")
 	var blackboard: Object = objects.get("blackboard") as Object
 	_assert_true(bool(blackboard.call("has_var", &"actor_id")), "Blackboard must contain actor_id")
+	_assert_true(
+		bool(blackboard.call("has_var", &"action_contracts")),
+		"Blackboard must contain action contracts",
+	)
 	_assert_eq(
 		blackboard.call("get_var", &"actor_id", ""),
 		"a",
@@ -111,6 +130,23 @@ func _test_blackboard_bridge(
 	var stored_state := blackboard.call("get_var", &"combat_state", {}) as Dictionary
 	(policy_context.get("combat_state") as Dictionary)["format"] = "2v2"
 	_assert_eq(stored_state.get("format"), "1v1", "Blackboard state must be isolated from context")
+
+	var stored_contracts := blackboard.call("get_var", &"action_contracts", []) as Array
+	_assert_action_contracts(stored_contracts)
+	var context_contracts := policy_context.get("action_contracts") as Array
+	(context_contracts[0] as Dictionary)["target_rule_status"] = "invented"
+	_assert_eq(
+		(stored_contracts[0] as Dictionary).get("target_rule_status"),
+		"pending",
+		"Blackboard action contracts must be isolated from policy context",
+	)
+	(stored_contracts[0] as Dictionary)["target_rule_status"] = "blackboard_mutation"
+	var context_after_mutation := policy_context.get("action_contracts") as Array
+	_assert_eq(
+		(context_after_mutation[0] as Dictionary).get("target_rule_status"),
+		"invented",
+		"Blackboard action contract mutation must not flow back into context",
+	)
 
 	(
 		blackboard
@@ -128,6 +164,31 @@ func _test_blackboard_bridge(
 		"light",
 		"Blackboard output must be isolated when returned",
 	)
+
+
+func _assert_action_contracts(value: Variant) -> void:
+	_assert_true(value is Array, "policy surface must expose action contracts")
+	if value is not Array:
+		return
+	var contracts := value as Array
+	_assert_eq(contracts.size(), EXPECTED_ACTION_IDS.size(), "six action contracts must be exposed")
+	for index in range(contracts.size()):
+		var action_contract := contracts[index] as Dictionary
+		_assert_eq(
+			action_contract.get("id"),
+			EXPECTED_ACTION_IDS[index],
+			"action contract order must match canonical ids",
+		)
+		_assert_eq(
+			action_contract.get("target_rule_status"),
+			"pending",
+			"target rules must stay pending in policy metadata",
+		)
+		_assert_eq(
+			action_contract.get("stamina_cost_status"),
+			"pending",
+			"Stamina costs must stay pending in policy metadata",
+		)
 
 
 func _valid_state() -> Dictionary:
