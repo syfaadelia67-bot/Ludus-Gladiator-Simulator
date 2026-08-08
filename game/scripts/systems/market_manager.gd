@@ -23,7 +23,6 @@ var _serial: int = 0
 var _equipment_offer_serial: int = 0
 var names := ["Aelia", "Brutus", "Caio", "Drusa", "Eira", "Felix", "Galla", "Hanno", "Iunia", "Kaeso", "Livia", "Nero"]
 var origins := ["Tracia", "Numidia", "Galia", "Hispania", "Britania", "Germania", "Siria", "Grecia", "Italia"]
-var trait_pool := ["beast_hunter", "arena_lover", "freedom_seeker", "protector", "vengeful", "popular", "superstitious", "mentor"]
 
 func _ready() -> void:
     if not GameState.week_advanced.is_connected(_on_week_advanced):
@@ -102,10 +101,6 @@ func _generate_offer(index: int) -> Dictionary:
     var rng := RandomNumberGenerator.new()
     rng.seed = int(Time.get_unix_time_from_system()) + _serial * 7919 + index * 131
     var role := "gladiator" if rng.randf() < 0.28 else "slave"
-    var first_trait: String = trait_pool[rng.randi_range(0, trait_pool.size() - 1)]
-    var second_trait := first_trait
-    while second_trait == first_trait:
-        second_trait = trait_pool[rng.randi_range(0, trait_pool.size() - 1)]
     var offer := {
         "id":"offer_%d" % _serial,
         "name":names[rng.randi_range(0, names.size() - 1)],
@@ -118,10 +113,46 @@ func _generate_offer(index: int) -> Dictionary:
         "technique":rng.randi_range(3, 9),
         "health":rng.randi_range(45, 65) if role == "gladiator" else rng.randi_range(40, 58),
         "loyalty":rng.randi_range(35, 75),
-        "traits":[first_trait, second_trait]
+        "traits":_generate_offer_traits(rng)
     }
     offer["price"] = MarketValuation.offer_value(offer)
     return offer
+
+func _generate_offer_traits(rng: RandomNumberGenerator) -> Array[String]:
+    var candidates: Array[String] = []
+    var trait_data_by_id: Dictionary = {}
+    for raw_entry in DataRepository.traits:
+        if not raw_entry is Dictionary:
+            continue
+        var entry: Dictionary = raw_entry
+        if str(entry.get("category", "")) != "normal":
+            continue
+        var trait_id := str(entry.get("id", ""))
+        if trait_id.is_empty():
+            continue
+        candidates.append(trait_id)
+        trait_data_by_id[trait_id] = entry
+    candidates.sort()
+
+    var selected: Array[String] = []
+    while not candidates.is_empty() and selected.size() < 2:
+        var candidate_index := rng.randi_range(0, candidates.size() - 1)
+        var candidate_id := candidates[candidate_index]
+        candidates.remove_at(candidate_index)
+        if _traits_are_compatible(candidate_id, selected, trait_data_by_id):
+            selected.append(candidate_id)
+    return selected
+
+func _traits_are_compatible(candidate_id: String, selected: Array[String], trait_data_by_id: Dictionary) -> bool:
+    var candidate: Dictionary = trait_data_by_id.get(candidate_id, {})
+    var candidate_incompatibilities: Array = candidate.get("incompatible_with", [])
+    for selected_id in selected:
+        if candidate_incompatibilities.has(selected_id):
+            return false
+        var existing: Dictionary = trait_data_by_id.get(selected_id, {})
+        if existing.get("incompatible_with", []).has(candidate_id):
+            return false
+    return true
 
 func _generate_equipment_offer(recipe_id: String, index: int) -> Dictionary:
     _equipment_offer_serial += 1
