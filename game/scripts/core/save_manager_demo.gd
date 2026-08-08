@@ -26,8 +26,7 @@ func get_save_metadata() -> Dictionary:
 	var game_data: Dictionary = data.get("game_state", {})
 	var owner_profile: Dictionary = data.get("owner", {}).get("profile", {})
 	var month := maxi(
-		1,
-		int(game_data.get("month", game_data.get("week", game_data.get("day", 1))))
+		1, int(game_data.get("month", game_data.get("week", game_data.get("day", 1))))
 	)
 	return {
 		"version": int(data.get("version", 0)),
@@ -60,8 +59,7 @@ func _apply_payload(data: Dictionary) -> bool:
 
 	var game_data: Dictionary = data.get("game_state", {})
 	GameState.day = maxi(
-		1,
-		int(game_data.get("month", game_data.get("week", game_data.get("day", 1))))
+		1, int(game_data.get("month", game_data.get("week", game_data.get("day", 1))))
 	)
 
 	var unique_data: Variant = data.get("unique_gladiators", null)
