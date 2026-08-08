@@ -17,7 +17,9 @@ func evaluate_proposal(
 	instance_owner: Node
 ) -> Dictionary:
 	if agent == null or instance_owner == null:
-		return _rejected("invalid_runtime_owner", ["Policy runner requires agent and instance_owner"])
+		return _rejected(
+			"invalid_runtime_owner", ["Policy runner requires agent and instance_owner"]
+		)
 
 	var context_result: Dictionary = _adapter.build_policy_context(state, actor_id)
 	if context_result.get("status") != "ready":
@@ -29,8 +31,7 @@ func evaluate_proposal(
 	var runtime: Dictionary = _adapter.prepare_runtime_objects()
 	if runtime.get("status") != "ready":
 		return _rejected(
-			str(runtime.get("status", "runtime_unavailable")),
-			["LimboAI runtime is not ready"]
+			str(runtime.get("status", "runtime_unavailable")), ["LimboAI runtime is not ready"]
 		)
 
 	var context := context_result.get("context", {}) as Dictionary

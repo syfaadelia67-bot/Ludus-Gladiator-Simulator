@@ -34,14 +34,18 @@ func _test_valid_proposal_returns_isolated_desired_action() -> void:
 	_assert_eq(result.get("status"), "ready", "valid proposal must be ready")
 	_assert_eq(result.get("provider"), "limboai", "runner must identify LimboAI provider")
 	_assert_eq(
-		result.get("desired_action", {}), proposal_before, "valid proposal must become desired action"
+		result.get("desired_action", {}),
+		proposal_before,
+		"valid proposal must become desired action"
 	)
 	_assert_eq(state, state_before, "runner must not mutate CombatState")
 	_assert_eq(proposal, proposal_before, "runner must not mutate the proposal")
 
 	var desired_action := result.get("desired_action", {}) as Dictionary
 	desired_action["action_id"] = "heavy"
-	_assert_eq(proposal, proposal_before, "returned desired action must be isolated from caller proposal")
+	_assert_eq(
+		proposal, proposal_before, "returned desired action must be isolated from caller proposal"
+	)
 	fixture.owner.free()
 
 
@@ -57,7 +61,9 @@ func _test_invalid_proposal_fails_closed() -> void:
 	)
 
 	_assert_eq(result.get("status"), "proposal_rejected", "invalid proposal must fail closed")
-	_assert_eq(result.get("desired_action", {}), {}, "invalid proposal must not expose desired action")
+	_assert_eq(
+		result.get("desired_action", {}), {}, "invalid proposal must not expose desired action"
+	)
 	_assert_true(
 		result.get("errors", []) is Array and not (result.get("errors", []) as Array).is_empty(),
 		"invalid proposal must preserve policy diagnostics"
@@ -73,7 +79,9 @@ func _test_invalid_runtime_owner_is_rejected() -> void:
 	_assert_eq(
 		result.get("status"), "invalid_runtime_owner", "runner must reject missing runtime owners"
 	)
-	_assert_eq(result.get("desired_action", {}), {}, "runtime rejection must not expose desired action")
+	_assert_eq(
+		result.get("desired_action", {}), {}, "runtime rejection must not expose desired action"
+	)
 
 
 func _test_unknown_actor_is_rejected() -> void:
