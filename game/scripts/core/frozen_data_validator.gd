@@ -108,7 +108,7 @@ func _validate_buildings(entries: Variant, errors: Array[String]) -> void:
 	if not entries is Array:
 		return
 	var typed_entries: Array = entries as Array
-	var by_id := _index_by_id(typed_entries)
+	var by_id: Dictionary = _index_by_id(typed_entries)
 	var demo_ids: Array[String] = []
 	var legacy_ids: Dictionary = {}
 	for raw_entry in typed_entries:
@@ -150,8 +150,8 @@ func _validate_traits(entries: Variant, errors: Array[String]) -> void:
 	if not entries is Array:
 		return
 	var typed_entries: Array = entries as Array
-	var by_id := _index_by_id(typed_entries)
-	var ids := _sorted_ids(typed_entries)
+	var by_id: Dictionary = _index_by_id(typed_entries)
+	var ids: Array[String] = _sorted_ids(typed_entries)
 	if ids != NORMAL_TRAIT_IDS:
 		errors.append("Frozen normal trait catalog must contain exactly sixteen canonical traits")
 	for trait_id in ids:
@@ -176,7 +176,7 @@ func _validate_beasts(entries: Variant, errors: Array[String]) -> void:
 	if not entries is Array:
 		return
 	var typed_entries: Array = entries as Array
-	var ids := _sorted_ids(typed_entries)
+	var ids: Array[String] = _sorted_ids(typed_entries)
 	if ids != DEMO_BEAST_IDS:
 		errors.append("Frozen demo beast catalog must contain exactly Jabalí, León and Oso")
 	for raw_entry in typed_entries:
@@ -207,10 +207,10 @@ func _validate_abilities(
 		return
 	var typed_entries: Array = entries as Array
 	var typed_specializations: Array = specialization_entries as Array
-	var ids := _sorted_ids(typed_entries)
+	var ids: Array[String] = _sorted_ids(typed_entries)
 	if ids != ABILITY_IDS:
 		errors.append("Frozen ability catalog must contain exactly eight canonical abilities")
-	var specialization_ids := _id_set(typed_specializations)
+	var specialization_ids: Dictionary = _id_set(typed_specializations)
 	for raw_entry in typed_entries:
 		if not raw_entry is Dictionary:
 			continue
@@ -248,7 +248,7 @@ func _validate_specializations(
 		return
 	var typed_entries: Array = entries as Array
 	var typed_abilities: Array = ability_entries as Array
-	var ability_ids := _id_set(typed_abilities)
+	var ability_ids: Dictionary = _id_set(typed_abilities)
 	for raw_entry in typed_entries:
 		if not raw_entry is Dictionary:
 			continue
