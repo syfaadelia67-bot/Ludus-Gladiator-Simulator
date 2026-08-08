@@ -103,11 +103,14 @@ func _refresh_contracts() -> void:
 	contract_ids.clear()
 	for contract in TournamentManager.get_active_contracts():
 		contract_ids.append(str(contract.get("id", "")))
-		var contract_text := "Mes %d — %s — %s" % [
-			_scheduled_month(contract),
-			contract.get("name", "Combate"),
-			contract.get("fighter_name", "Gladiador"),
-		]
+		var contract_text := (
+			"Mes %d — %s — %s"
+			% [
+				_scheduled_month(contract),
+				contract.get("name", "Combate"),
+				contract.get("fighter_name", "Gladiador"),
+			]
+		)
 		contracts.add_item(contract_text)
 	if contract_ids.is_empty():
 		selected_contract_id = ""
