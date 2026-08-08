@@ -27,10 +27,13 @@ func _test_valid_proposal_publishes() -> void:
 	var fixture := _runtime_fixture()
 	var blackboard: Object = fixture.get("blackboard")
 	blackboard.call("set_var", &"combat_state", _valid_state())
-	blackboard.call(
-		"set_var",
-		&"policy_proposal",
-		{"actor_id": "a", "action_id": "light", "target_id": "b"},
+	(
+		blackboard
+		. call(
+			"set_var",
+			&"policy_proposal",
+			{"actor_id": "a", "action_id": "light", "target_id": "b"},
+		)
 	)
 
 	var bt_instance: Object = fixture.get("bt_instance")
@@ -49,10 +52,13 @@ func _test_invalid_proposal_fails_closed() -> void:
 	var fixture := _runtime_fixture()
 	var blackboard: Object = fixture.get("blackboard")
 	blackboard.call("set_var", &"combat_state", _valid_state())
-	blackboard.call(
-		"set_var",
-		&"policy_proposal",
-		{"actor_id": "a", "action_id": "invented_action", "target_id": "b"},
+	(
+		blackboard
+		. call(
+			"set_var",
+			&"policy_proposal",
+			{"actor_id": "a", "action_id": "invented_action", "target_id": "b"},
+		)
 	)
 	blackboard.call("set_var", &"desired_action", {"actor_id": "stale", "action_id": "heavy"})
 
@@ -64,7 +70,10 @@ func _test_invalid_proposal_fails_closed() -> void:
 		"invalid proposal must clear any stale desired action",
 	)
 	var errors_value: Variant = blackboard.call("get_var", &"policy_errors", [])
-	_assert_true(errors_value is Array and not (errors_value as Array).is_empty(), "invalid proposal must report policy errors")
+	_assert_true(
+		errors_value is Array and not (errors_value as Array).is_empty(),
+		"invalid proposal must report policy errors"
+	)
 	_release_fixture(fixture)
 
 
@@ -77,7 +86,9 @@ func _runtime_fixture() -> Dictionary:
 	var scene_root := Node.new()
 	var agent := Node.new()
 	scene_root.add_child(agent)
-	var bt_instance: Object = behavior_tree.call("instantiate", agent, blackboard, scene_root, scene_root)
+	var bt_instance: Object = behavior_tree.call(
+		"instantiate", agent, blackboard, scene_root, scene_root
+	)
 	return {
 		"behavior_tree": behavior_tree,
 		"blackboard": blackboard,
