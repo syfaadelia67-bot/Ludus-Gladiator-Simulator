@@ -1,0 +1,37 @@
+name: LimboAI Context Autofmt Once
+
+on:
+  push:
+    branches:
+      - feature/monthly-campaign-foundation
+    paths:
+      - .github/workflows/limboai-context-autofmt-once.yml
+      - game/scripts/combat/limboai_policy_adapter.gd
+      - game/tests/limboai_policy_adapter_contract_test.gd
+
+permissions:
+  contents: write
+
+jobs:
+  format:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          ref: feature/monthly-campaign-foundation
+          persist-credentials: true
+      - name: Format pinned files
+        run: |
+          python3 -m pip install --disable-pip-version-check --no-input 'gdtoolkit==4.5.0'
+          gdformat game/scripts/combat/limboai_policy_adapter.gd game/tests/limboai_policy_adapter_contract_test.gd
+      - name: Commit formatting
+        run: |
+          if git diff --quiet -- game/scripts/combat/limboai_policy_adapter.gd game/tests/limboai_policy_adapter_contract_test.gd; then
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add game/scripts/combat/limboai_policy_adapter.gd game/tests/limboai_policy_adapter_contract_test.gd
+          git commit -m 'style(combat): format LimboAI policy context bridge'
+          git push origin HEAD:feature/monthly-campaign-foundation
