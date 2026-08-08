@@ -47,4 +47,6 @@ func _assert_legacy_authority_absent(path: String) -> void:
 	var source := file.get_as_text()
 	for fragment in FORBIDDEN_AUTHORITY_FRAGMENTS:
 		if source.contains(fragment):
-			_failures.append("Combat V1 authority must not depend on legacy fragment '%s': %s" % [fragment, path])
+			_failures.append(
+				"Combat V1 authority must not depend on legacy fragment '%s': %s" % [fragment, path]
+			)
