@@ -4,6 +4,22 @@ const CombatPolicyContextBuilderScript = preload(
 	"res://scripts/combat/combat_policy_context_builder.gd"
 )
 
+const EXPECTED_ACTION_IDS: Array[String] = [
+	"light",
+	"heavy",
+	"block",
+	"parry",
+	"dodge",
+	"reposition",
+]
+const PENDING_ACTION_FIELDS: Array[String] = [
+	"target_rule_status",
+	"stamina_cost_status",
+	"resolution_timing_status",
+	"stat_scaling_status",
+	"effect_status",
+]
+
 var _failures: Array[String] = []
 
 
@@ -34,9 +50,10 @@ func _test_1v1_context(builder) -> void:
 	_assert_eq((context.get("enemies") as Array).size(), 1, "1v1 actor has one enemy")
 	_assert_eq(
 		context.get("available_action_ids"),
-		["light", "heavy", "block", "parry", "dodge", "reposition"],
+		EXPECTED_ACTION_IDS,
 		"context must expose the canonical action catalog",
 	)
+	_assert_action_contracts(context.get("action_contracts", []))
 	var candidates := context.get("target_candidates") as Dictionary
 	_assert_eq(candidates.get("allies"), [], "1v1 ally candidates must be empty")
 	_assert_eq(candidates.get("enemies"), ["b"], "1v1 enemy candidates must expose opponent")
@@ -44,6 +61,16 @@ func _test_1v1_context(builder) -> void:
 	isolated_actor["stamina"] = 0
 	_assert_eq(
 		(state.get("fighters") as Array)[0].get("stamina"), 100, "actor view must be isolated"
+	)
+	var action_contracts := context.get("action_contracts") as Array
+	var first_contract := action_contracts[0] as Dictionary
+	first_contract["target_rule_status"] = "invented"
+	var rebuilt := builder.build_context(state, "a").get("context", {}) as Dictionary
+	var rebuilt_contracts := rebuilt.get("action_contracts") as Array
+	_assert_eq(
+		(rebuilt_contracts[0] as Dictionary).get("target_rule_status"),
+		"pending",
+		"mutating policy action metadata must not alter canonical catalog",
 	)
 
 
@@ -92,6 +119,27 @@ func _test_invalid_inputs(builder) -> void:
 	)
 
 
+func _assert_action_contracts(value: Variant) -> void:
+	_assert_true(value is Array, "context must expose action contracts")
+	if value is not Array:
+		return
+	var contracts := value as Array
+	_assert_eq(contracts.size(), EXPECTED_ACTION_IDS.size(), "context must expose six action contracts")
+	for index in range(contracts.size()):
+		var action_contract := contracts[index] as Dictionary
+		_assert_eq(
+			action_contract.get("id"),
+			EXPECTED_ACTION_IDS[index],
+			"action contract order must match canonical ids",
+		)
+		for field in PENDING_ACTION_FIELDS:
+			_assert_eq(
+				action_contract.get(field),
+				"pending",
+				"unfrozen action contract fields must stay pending",
+			)
+
+
 func _state(format_id: String, fighters: Array) -> Dictionary:
 	return {"format": format_id, "fighters": fighters}
 
@@ -110,6 +158,11 @@ func _ids(fighters: Array) -> Array[String]:
 	for fighter in fighters:
 		result.append(str((fighter as Dictionary).get("id", "")))
 	return result
+
+
+func _assert_true(condition: bool, message: String) -> void:
+	if not condition:
+		_failures.append(message)
 
 
 func _assert_eq(actual: Variant, expected: Variant, message: String) -> void:
