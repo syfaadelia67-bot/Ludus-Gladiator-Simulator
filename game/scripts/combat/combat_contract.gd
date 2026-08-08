@@ -1,13 +1,7 @@
 extends RefCounted
 
-const ACTION_IDS: Array[String] = [
-	"light",
-	"heavy",
-	"block",
-	"parry",
-	"dodge",
-	"reposition",
-]
+const CombatActionCatalogScript = preload("res://scripts/combat/combat_action_catalog.gd")
+const ACTION_IDS := CombatActionCatalogScript.ACTION_IDS
 const FORMAT_TEAM_SIZES := {
 	"1v1": [1, 1],
 	"2v2": [2, 2],
@@ -15,9 +9,15 @@ const FORMAT_TEAM_SIZES := {
 }
 const CANONICAL_STAT_IDS: Array[String] = ["FUE", "AGI", "TEC", "RES", "PV"]
 
+var _action_catalog = CombatActionCatalogScript.new()
+
 
 func is_action_id_valid(action_id: String) -> bool:
-	return ACTION_IDS.has(action_id)
+	return _action_catalog.is_action_id_valid(action_id)
+
+
+func get_action_ids() -> Array[String]:
+	return _action_catalog.get_action_ids()
 
 
 func validate_state(state: Dictionary) -> Array[String]:
