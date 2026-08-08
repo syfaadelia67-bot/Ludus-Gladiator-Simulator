@@ -14,7 +14,9 @@ func resolve_intent(state: Dictionary, desired_action: Dictionary) -> Dictionary
 	if not state_errors.is_empty():
 		return _rejected_result("invalid_state", state_errors, state, desired_action)
 
-	var policy_errors: Array[String] = _policy_contract.validate_desired_action(state, desired_action)
+	var policy_errors: Array[String] = _policy_contract.validate_desired_action(
+		state, desired_action
+	)
 	if not policy_errors.is_empty():
 		return _rejected_result("invalid_desired_action", policy_errors, state, desired_action)
 
@@ -29,10 +31,7 @@ func resolve_intent(state: Dictionary, desired_action: Dictionary) -> Dictionary
 
 
 func _rejected_result(
-	reason: String,
-	errors: Array[String],
-	state: Dictionary,
-	desired_action: Dictionary
+	reason: String, errors: Array[String], state: Dictionary, desired_action: Dictionary
 ) -> Dictionary:
 	return {
 		"ok": false,
