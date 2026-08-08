@@ -31,11 +31,20 @@ func _assert_complete_mapping(adapter) -> void:
 	assert(stats.get("TEC") == 13, "TEC must read legacy technique")
 	assert(stats.get("RES") == 14, "RES must read explicit legacy resistance")
 	assert(stats.get("PV") == 15, "PV must read legacy health")
-	assert(adapter.is_complete(adapted), "Explicit canonical sources must produce a complete view")
+	assert(
+		adapter.is_complete(adapted),
+		"Explicit canonical sources must produce a complete view"
+	)
 	assert(source == before, "The adapter must never mutate Save v14 legacy input")
 	var unmapped: Dictionary = adapted.get("legacy_unmapped", {})
-	assert(unmapped.get("endurance") == 16, "Legacy endurance must remain visible but unmapped")
-	assert(unmapped.get("intelligence") == 17, "Legacy intelligence must remain visible but unmapped")
+	assert(
+		unmapped.get("endurance") == 16,
+		"Legacy endurance must remain visible but unmapped"
+	)
+	assert(
+		unmapped.get("intelligence") == 17,
+		"Legacy intelligence must remain visible but unmapped"
+	)
 
 
 func _assert_resistance_is_not_invented(adapter) -> void:
@@ -55,7 +64,10 @@ func _assert_resistance_is_not_invented(adapter) -> void:
 		adapter.get_pending_stat_ids(adapted) == ["RES"],
 		"Missing resistance must be explicit instead of falling back to endurance"
 	)
-	assert(not adapter.is_complete(adapted), "An unresolved RES mapping must keep the view incomplete")
+	assert(
+		not adapter.is_complete(adapted),
+		"An unresolved RES mapping must keep the view incomplete"
+	)
 
 
 func _assert_missing_sources_are_explicit(adapter) -> void:
@@ -64,4 +76,7 @@ func _assert_missing_sources_are_explicit(adapter) -> void:
 	assert(pending == ["AGI", "TEC", "RES", "PV"])
 	var stats: Dictionary = adapted.get("stats", {})
 	for stat_id in adapter.CANONICAL_STAT_IDS:
-		assert(stats.has(stat_id), "Canonical stat view must expose %s even when unresolved" % stat_id)
+		assert(
+			stats.has(stat_id),
+			"Canonical stat view must expose %s even when unresolved" % stat_id
+		)
