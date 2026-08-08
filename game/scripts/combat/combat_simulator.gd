@@ -2,11 +2,15 @@ extends RefCounted
 
 const CombatContractScript = preload("res://scripts/combat/combat_contract.gd")
 const CombatPolicyContractScript = preload("res://scripts/combat/combat_policy_contract.gd")
+const CombatResolutionReadinessScript = preload(
+	"res://scripts/combat/combat_resolution_readiness.gd"
+)
 
 const PENDING_REASON := "combat_resolution_rules_not_frozen"
 
 var _combat_contract = CombatContractScript.new()
 var _policy_contract = CombatPolicyContractScript.new()
+var _resolution_readiness = CombatResolutionReadinessScript.new()
 
 
 func resolve_intent(state: Dictionary, desired_action: Dictionary) -> Dictionary:
@@ -25,6 +29,8 @@ func resolve_intent(state: Dictionary, desired_action: Dictionary) -> Dictionary
 		"pending": true,
 		"reason": PENDING_REASON,
 		"errors": [],
+		"pending_requirements": _resolution_readiness.get_pending_requirements(),
+		"conditional_requirements": _resolution_readiness.get_conditional_requirements(),
 		"state": state.duplicate(true),
 		"desired_action": desired_action.duplicate(true),
 	}
@@ -38,6 +44,8 @@ func _rejected_result(
 		"pending": false,
 		"reason": reason,
 		"errors": errors.duplicate(),
+		"pending_requirements": [],
+		"conditional_requirements": [],
 		"state": state.duplicate(true),
 		"desired_action": desired_action.duplicate(true),
 	}
