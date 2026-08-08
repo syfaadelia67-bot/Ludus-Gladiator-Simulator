@@ -31,7 +31,7 @@ func _initialize() -> void:
 
     assert(hub_text.contains("\"barracks\": \"res://scenes/BarracksScreen.tscn\""))
     assert(hub_text.contains("\"barracks\": \"barracks\""))
-    assert(finca_text.contains("\"barracks\":\"barracks\""))
+    assert(finca_text.contains("\"barracks\": \"barracks\""))
     assert(finca_text.contains("Entrar a barracones"))
     assert(shell_scene_text.contains("name=\"Barracks\" type=\"Button\""))
     assert(shell_controller_text.contains("\"barracks\":$MainNavigation/Margin/Column/Barracks"))
