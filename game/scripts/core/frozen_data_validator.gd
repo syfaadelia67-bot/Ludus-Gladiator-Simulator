@@ -84,11 +84,12 @@ func _validate_named_collection(name: String, entries: Variant, errors: Array[St
 	if not entries is Array:
 		errors.append("%s must be an Array" % name)
 		return
-	if entries.is_empty():
+	var typed_entries: Array = entries as Array
+	if typed_entries.is_empty():
 		errors.append("%s must not be empty" % name)
 		return
 	var ids: Dictionary = {}
-	for raw_entry in entries:
+	for raw_entry in typed_entries:
 		if not raw_entry is Dictionary:
 			errors.append("%s contains a non-Dictionary entry" % name)
 			continue
@@ -108,10 +109,11 @@ func _validate_named_collection(name: String, entries: Variant, errors: Array[St
 func _validate_buildings(entries: Variant, errors: Array[String]) -> void:
 	if not entries is Array:
 		return
-	var by_id := _index_by_id(entries)
+	var typed_entries: Array = entries as Array
+	var by_id := _index_by_id(typed_entries)
 	var demo_ids: Array[String] = []
 	var legacy_ids: Dictionary = {}
-	for raw_entry in entries:
+	for raw_entry in typed_entries:
 		if not raw_entry is Dictionary:
 			continue
 		var entry: Dictionary = raw_entry
@@ -151,8 +153,9 @@ func _validate_buildings(entries: Variant, errors: Array[String]) -> void:
 func _validate_traits(entries: Variant, errors: Array[String]) -> void:
 	if not entries is Array:
 		return
-	var by_id := _index_by_id(entries)
-	var ids := _sorted_ids(entries)
+	var typed_entries: Array = entries as Array
+	var by_id := _index_by_id(typed_entries)
+	var ids := _sorted_ids(typed_entries)
 	if ids != NORMAL_TRAIT_IDS:
 		errors.append("Frozen normal trait catalog must contain exactly sixteen canonical traits")
 	for trait_id in ids:
@@ -172,10 +175,11 @@ func _validate_traits(entries: Variant, errors: Array[String]) -> void:
 func _validate_beasts(entries: Variant, errors: Array[String]) -> void:
 	if not entries is Array:
 		return
-	var ids := _sorted_ids(entries)
+	var typed_entries: Array = entries as Array
+	var ids := _sorted_ids(typed_entries)
 	if ids != DEMO_BEAST_IDS:
 		errors.append("Frozen demo beast catalog must contain exactly Jabalí, León and Oso")
-	for raw_entry in entries:
+	for raw_entry in typed_entries:
 		if not raw_entry is Dictionary:
 			continue
 		var entry: Dictionary = raw_entry
@@ -201,11 +205,13 @@ func _validate_abilities(
 ) -> void:
 	if not entries is Array or not specialization_entries is Array:
 		return
-	var ids := _sorted_ids(entries)
+	var typed_entries: Array = entries as Array
+	var typed_specializations: Array = specialization_entries as Array
+	var ids := _sorted_ids(typed_entries)
 	if ids != ABILITY_IDS:
 		errors.append("Frozen ability catalog must contain exactly eight canonical abilities")
-	var specialization_ids := _id_set(specialization_entries)
-	for raw_entry in entries:
+	var specialization_ids := _id_set(typed_specializations)
+	for raw_entry in typed_entries:
 		if not raw_entry is Dictionary:
 			continue
 		var entry: Dictionary = raw_entry
@@ -238,8 +244,10 @@ func _validate_specializations(
 ) -> void:
 	if not entries is Array or not ability_entries is Array:
 		return
-	var ability_ids := _id_set(ability_entries)
-	for raw_entry in entries:
+	var typed_entries: Array = entries as Array
+	var typed_abilities: Array = ability_entries as Array
+	var ability_ids := _id_set(typed_abilities)
+	for raw_entry in typed_entries:
 		if not raw_entry is Dictionary:
 			continue
 		var entry: Dictionary = raw_entry
