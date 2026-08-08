@@ -1,7 +1,9 @@
 extends SceneTree
 
 const LimboAIPolicyAdapterScript = preload("res://scripts/combat/limboai_policy_adapter.gd")
-const LimboAIPolicyTreeFactoryScript = preload("res://scripts/combat/limboai_policy_tree_factory.gd")
+const LimboAIPolicyTreeFactoryScript = preload(
+	"res://scripts/combat/limboai_policy_tree_factory.gd"
+)
 const CombatSimulatorScript = preload("res://scripts/combat/combat_simulator.gd")
 
 var _failures: Array[String] = []
@@ -34,10 +36,13 @@ func _test_valid_proposal_reaches_simulator() -> void:
 	_assert_eq(write_result.get("status"), "ready", "context must seed Blackboard")
 
 	var blackboard: Object = (runtime.get("objects") as Dictionary).get("blackboard") as Object
-	blackboard.call(
-		"set_var",
-		&"policy_proposal",
-		{"actor_id": "a", "action_id": "light", "target_id": "b"},
+	(
+		blackboard
+		. call(
+			"set_var",
+			&"policy_proposal",
+			{"actor_id": "a", "action_id": "light", "target_id": "b"},
+		)
 	)
 	(fixture.get("bt_instance") as Object).call("update", 0.0)
 	var desired_action: Dictionary = adapter.read_desired_action_from_blackboard(runtime)
@@ -65,14 +70,17 @@ func _test_invalid_proposal_never_reaches_simulator() -> void:
 	var state := _valid_state()
 	var adapter = fixture.get("adapter")
 	var runtime := fixture.get("runtime") as Dictionary
-	var context := (adapter.build_policy_context(state, "a").get("context", {}) as Dictionary)
+	var context := adapter.build_policy_context(state, "a").get("context", {}) as Dictionary
 	adapter.write_policy_context_to_blackboard(runtime, context)
 
 	var blackboard: Object = (runtime.get("objects") as Dictionary).get("blackboard") as Object
-	blackboard.call(
-		"set_var",
-		&"policy_proposal",
-		{"actor_id": "a", "action_id": "invented_action", "target_id": "b"},
+	(
+		blackboard
+		. call(
+			"set_var",
+			&"policy_proposal",
+			{"actor_id": "a", "action_id": "invented_action", "target_id": "b"},
+		)
 	)
 	(fixture.get("bt_instance") as Object).call("update", 0.0)
 	_assert_eq(
@@ -110,7 +118,9 @@ func _pipeline_fixture() -> Dictionary:
 	var scene_root := Node.new()
 	var agent := Node.new()
 	scene_root.add_child(agent)
-	var bt_instance: Object = behavior_tree.call("instantiate", agent, blackboard, scene_root, scene_root)
+	var bt_instance: Object = behavior_tree.call(
+		"instantiate", agent, blackboard, scene_root, scene_root
+	)
 	if bt_instance == null:
 		_failures.append("Policy tree must instantiate a BTInstance")
 		scene_root.free()
