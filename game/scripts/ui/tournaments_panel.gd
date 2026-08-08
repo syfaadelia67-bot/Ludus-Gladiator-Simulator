@@ -68,8 +68,7 @@ func _refresh_events() -> void:
 		event_ids.append(str(event.get("id", "")))
 		var format := str(event.get("format", "1v1"))
 		event_list.add_item(
-			"Mes %d — %s — %s"
-			% [_scheduled_month(event), event.get("name", "Evento"), format]
+			"Mes %d — %s — %s" % [_scheduled_month(event), event.get("name", "Evento"), format]
 		)
 	if event_ids.is_empty():
 		selected_event_id = ""
@@ -104,14 +103,12 @@ func _refresh_contracts() -> void:
 	contract_ids.clear()
 	for contract in TournamentManager.get_active_contracts():
 		contract_ids.append(str(contract.get("id", "")))
-		contracts.add_item(
-			"Mes %d — %s — %s"
-			% [
-				_scheduled_month(contract),
-				contract.get("name", "Combate"),
-				contract.get("fighter_name", "Gladiador"),
-			]
-		)
+		var contract_text := "Mes %d — %s — %s" % [
+			_scheduled_month(contract),
+			contract.get("name", "Combate"),
+			contract.get("fighter_name", "Gladiador"),
+		]
+		contracts.add_item(contract_text)
 	if contract_ids.is_empty():
 		selected_contract_id = ""
 		cancel_button.disabled = true
@@ -150,12 +147,8 @@ func _refresh_details() -> void:
 	else:
 		lines.append("Dificultad: %d" % int(selected.get("difficulty", 1)))
 		lines.append("Premio campeón: %d denarios" % int(selected.get("champion_reward", 0)))
-		lines.append(
-			"Premio eliminado: %d denarios" % int(selected.get("eliminated_reward", 0))
-		)
-		lines.append(
-			"REP campeón: +%d" % int(selected.get("champion_reputation", 0))
-		)
+		lines.append("Premio eliminado: %d denarios" % int(selected.get("eliminated_reward", 0)))
+		lines.append("REP campeón: +%d" % int(selected.get("champion_reputation", 0)))
 	if bool(selected.get("requires_team_selection", false)):
 		lines.append("[i]Este formato requiere selección de equipo antes de competir.[/i]")
 	details.text = "\n".join(lines)
@@ -191,17 +184,20 @@ func _on_cancel() -> void:
 
 
 func _on_accepted(contract: Dictionary) -> void:
-	status.text = "%s quedó inscripto en %s para el mes %d." % [
-		contract.get("fighter_name", "El gladiador"),
-		contract.get("name", "el evento"),
-		_scheduled_month(contract),
-	]
+	status.text = (
+		"%s quedó inscripto en %s para el mes %d."
+		% [
+			contract.get("fighter_name", "El gladiador"),
+			contract.get("name", "el evento"),
+			_scheduled_month(contract),
+		]
+	)
 	call_deferred("_scroll_to_contracts")
 
 
 func _on_cancelled(contract: Dictionary) -> void:
-	status.text = "Contrato cancelado. Penalización: %d denarios." % int(
-		contract.get("cancel_penalty", 0)
+	status.text = (
+		"Contrato cancelado. Penalización: %d denarios." % int(contract.get("cancel_penalty", 0))
 	)
 	call_deferred("_scroll_to_contracts")
 
