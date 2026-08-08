@@ -46,7 +46,8 @@ func build_policy_context(state: Dictionary, actor_id: String) -> Dictionary:
 	return {
 		"status": "ready",
 		"errors": [],
-		"context": {
+		"context":
+		{
 			"combat_state": state.duplicate(true),
 			"actor_id": actor_id,
 			"desired_action": {},
@@ -114,6 +115,9 @@ func _fighter_exists(state: Dictionary, fighter_id: String) -> bool:
 	if fighters_value is not Array:
 		return false
 	for raw_fighter in fighters_value as Array:
-		if raw_fighter is Dictionary and str((raw_fighter as Dictionary).get("id", "")) == fighter_id:
+		if (
+			raw_fighter is Dictionary
+			and str((raw_fighter as Dictionary).get("id", "")) == fighter_id
+		):
 			return true
 	return false

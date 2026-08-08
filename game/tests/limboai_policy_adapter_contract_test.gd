@@ -44,7 +44,9 @@ func _initialize() -> void:
 		var context := context_value as Dictionary
 		_assert_eq(context.get("actor_id"), "a", "policy context must preserve actor id")
 		_assert_true(context.get("combat_state") is Dictionary, "policy context must expose state")
-		_assert_true(context.get("desired_action") is Dictionary, "policy context needs output slot")
+		_assert_true(
+			context.get("desired_action") is Dictionary, "policy context needs output slot"
+		)
 		var isolated_state := context.get("combat_state") as Dictionary
 		isolated_state["format"] = "2v2"
 		_assert_eq(state.get("format"), "1v1", "policy context must not mutate authoritative state")
