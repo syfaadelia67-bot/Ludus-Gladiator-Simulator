@@ -304,15 +304,12 @@ func _objective_progress(objective: Dictionary) -> int:
 			for building_id in EstateManager.get_building_ids():
 				progress += EstateManager.get_level(building_id)
 		"demo_finale":
-			progress = (
-				1
-				if (
-					final_combat_resolved
-					and GameState.get_month() >= DEMO_FINAL_MONTH
-					and total_wins >= LEGACY_DEMO_WIN_TARGET
-				)
-				else 0
-			)
+			if (
+				final_combat_resolved
+				and GameState.get_month() >= DEMO_FINAL_MONTH
+				and total_wins >= LEGACY_DEMO_WIN_TARGET
+			):
+				progress = 1
 	return progress
 
 
