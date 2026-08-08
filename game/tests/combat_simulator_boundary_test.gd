@@ -24,6 +24,21 @@ func _assert_valid_intent_stays_pending(simulator) -> void:
 		"Pending resolution must expose the frozen reason code"
 	)
 	assert((result.get("errors", []) as Array).is_empty())
+	var pending_requirements := result.get("pending_requirements", []) as Array
+	assert(not pending_requirements.is_empty(), "Pending combat must expose unresolved decisions")
+	assert(pending_requirements.has("target_rules"), "Target rules must remain explicitly pending")
+	assert(
+		pending_requirements.has("damage_and_mitigation"),
+		"Damage and mitigation must remain explicitly pending"
+	)
+	assert(
+		pending_requirements.has("stamina_costs"), "Stamina costs must remain explicitly pending"
+	)
+	var conditional_requirements := result.get("conditional_requirements", []) as Array
+	assert(
+		conditional_requirements.has("position_and_distance_model"),
+		"Position/distance must remain conditional until design decides whether Combat V1 needs it"
+	)
 
 
 func _assert_invalid_state_is_rejected(simulator) -> void:
@@ -36,6 +51,7 @@ func _assert_invalid_state_is_rejected(simulator) -> void:
 	assert(not bool(result.get("pending", true)))
 	assert(str(result.get("reason", "")) == "invalid_state")
 	assert(_contains_error(result.get("errors", []), "unresolved stat RES"))
+	assert((result.get("pending_requirements", []) as Array).is_empty())
 
 
 func _assert_invalid_intent_is_rejected(simulator) -> void:
@@ -45,6 +61,7 @@ func _assert_invalid_intent_is_rejected(simulator) -> void:
 	assert(not bool(result.get("pending", true)))
 	assert(str(result.get("reason", "")) == "invalid_desired_action")
 	assert(_contains_error(result.get("errors", []), "unsupported action"))
+	assert((result.get("pending_requirements", []) as Array).is_empty())
 
 
 func _assert_inputs_are_not_mutated(simulator) -> void:
