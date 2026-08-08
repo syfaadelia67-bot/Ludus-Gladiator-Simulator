@@ -71,14 +71,14 @@ func _test_unfrozen_fields_stay_explicitly_pending(catalog) -> void:
 
 
 func _test_catalog_reads_are_isolated(catalog) -> void:
-	var ids := catalog.get_action_ids()
+	var ids: Array[String] = catalog.get_action_ids()
 	ids.clear()
 	_assert_eq(
 		catalog.get_action_ids(),
 		EXPECTED_ACTION_IDS,
 		"mutating returned ids must not alter catalog"
 	)
-	var light := catalog.get_action_contract("light")
+	var light: Dictionary = catalog.get_action_contract("light")
 	light["target_rule_status"] = "invented"
 	_assert_eq(
 		catalog.get_action_contract("light").get("target_rule_status"),
