@@ -44,8 +44,12 @@ func run() -> void:
 		"Economía debe resolver una vez por mes aunque el método legado conserve su nombre."
 	)
 	_assert(
-		game_state_source.contains("TournamentManager.process_week()"),
-		"Torneos deben resolver una vez por mes aunque el método legado conserve su nombre."
+		game_state_source.contains("TournamentManager.process_month()"),
+		"Torneos deben resolver mediante el método mensual canónico."
+	)
+	_assert(
+		not game_state_source.contains("TournamentManager.process_day()"),
+		"Torneos no deben conservar una resolución diaria dentro del cierre mensual."
 	)
 
 	# Presentation is migrated in a later UI slice. It may still carry weekly
