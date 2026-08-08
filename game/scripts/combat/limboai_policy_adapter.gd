@@ -1,6 +1,7 @@
 extends RefCounted
 
 const CombatPolicyContractScript = preload("res://scripts/combat/combat_policy_contract.gd")
+const CombatPolicyContextBuilderScript = preload("res://scripts/combat/combat_policy_context_builder.gd")
 
 const REQUIRED_LIMBOAI_CLASSES := [
 	"BehaviorTree",
@@ -10,9 +11,20 @@ const REQUIRED_LIMBOAI_CLASSES := [
 	"LimboHSM",
 	"LimboState",
 ]
-const POLICY_CONTEXT_KEYS := ["combat_state", "actor_id", "desired_action"]
+const POLICY_CONTEXT_KEYS := [
+	"format",
+	"actor",
+	"actor_id",
+	"allies",
+	"enemies",
+	"available_action_ids",
+	"target_candidates",
+	"combat_state",
+	"desired_action",
+]
 
 var _policy_contract = CombatPolicyContractScript.new()
+var _context_builder = CombatPolicyContextBuilderScript.new()
 
 
 func is_limboai_available() -> bool:
@@ -36,23 +48,7 @@ func get_runtime_status() -> Dictionary:
 
 
 func build_policy_context(state: Dictionary, actor_id: String) -> Dictionary:
-	if actor_id.is_empty() or not _fighter_exists(state, actor_id):
-		return {
-			"status": "invalid_actor",
-			"errors": ["Policy context references unknown actor: %s" % actor_id],
-			"context": {},
-		}
-
-	return {
-		"status": "ready",
-		"errors": [],
-		"context":
-		{
-			"combat_state": state.duplicate(true),
-			"actor_id": actor_id,
-			"desired_action": {},
-		},
-	}
+	return _context_builder.build_context(state, actor_id)
 
 
 func extract_desired_action(policy_context: Dictionary) -> Dictionary:
@@ -108,16 +104,3 @@ func release_runtime_objects(runtime_objects: Dictionary) -> void:
 		(bt_player as Node).free()
 	# BehaviorTree and Blackboard are RefCounted in the GDExtension contract.
 	objects.clear()
-
-
-func _fighter_exists(state: Dictionary, fighter_id: String) -> bool:
-	var fighters_value: Variant = state.get("fighters", [])
-	if fighters_value is not Array:
-		return false
-	for raw_fighter in fighters_value as Array:
-		if (
-			raw_fighter is Dictionary
-			and str((raw_fighter as Dictionary).get("id", "")) == fighter_id
-		):
-			return true
-	return false
