@@ -3,25 +3,26 @@ extends GutTest
 const CAMPAIGN_MANAGER_SCRIPT := preload("res://scripts/systems/campaign_manager.gd")
 
 var manager
-var original_week: int
+var original_month: int
 
 func before_each() -> void:
-    original_week = GameState.day
+    original_month = GameState.day
     manager = autofree(CAMPAIGN_MANAGER_SCRIPT.new())
 
 func after_each() -> void:
-    GameState.day = original_week
+    GameState.day = original_month
 
-func test_campaign_catalog_has_three_chapters_and_a_week_sixteen_finale() -> void:
+func test_campaign_catalog_has_three_chapters_and_a_month_twenty_finale() -> void:
     assert_eq(manager.CHAPTERS.size(), 3)
-    assert_eq(manager.DEMO_FINAL_WEEK, 16)
+    assert_eq(manager.DEMO_FINAL_MONTH, 20)
+    assert_eq(manager.DEMO_FINAL_WEEK, manager.DEMO_FINAL_MONTH)
     assert_eq(str(manager.CHAPTERS[0].get("id", "")), "ruins")
     assert_eq(str(manager.CHAPTERS[1].get("id", "")), "blood_reputation")
     assert_eq(str(manager.CHAPTERS[2].get("id", "")), "name_of_ludus")
-    assert_eq(int(manager.CHAPTERS[2].get("week_end", 0)), 16)
+    assert_eq(int(manager.CHAPTERS[2].get("month_end", 0)), 20)
 
-func test_finale_becomes_victory_with_six_wins() -> void:
-    GameState.day = 16
+func test_transitional_finale_becomes_victory_with_six_wins() -> void:
+    GameState.day = 20
     manager.total_wins = 6
     manager.final_combat_resolved = true
 
@@ -31,8 +32,8 @@ func test_finale_becomes_victory_with_six_wins() -> void:
     assert_true(manager.victory_achieved)
     assert_eq(manager.defeat_reason, "")
 
-func test_finale_becomes_defeat_with_fewer_than_six_wins() -> void:
-    GameState.day = 16
+func test_transitional_finale_becomes_defeat_with_fewer_than_six_wins() -> void:
+    GameState.day = 20
     manager.total_wins = 5
     manager.final_combat_resolved = true
 
@@ -42,8 +43,8 @@ func test_finale_becomes_defeat_with_fewer_than_six_wins() -> void:
     assert_false(manager.victory_achieved)
     assert_false(manager.defeat_reason.is_empty())
 
-func test_unresolved_finale_does_not_end_campaign() -> void:
-    GameState.day = 16
+func test_unresolved_month_twenty_finale_does_not_end_campaign() -> void:
+    GameState.day = 20
     manager.total_wins = 6
     manager.final_combat_resolved = false
 
@@ -53,7 +54,7 @@ func test_unresolved_finale_does_not_end_campaign() -> void:
     assert_false(manager.victory_achieved)
 
 func test_campaign_state_round_trip_preserves_results_and_objectives() -> void:
-    GameState.day = 12
+    GameState.day = 13
     manager.current_rank_index = 2
     manager.total_wins = 7
     manager.total_losses = 3
