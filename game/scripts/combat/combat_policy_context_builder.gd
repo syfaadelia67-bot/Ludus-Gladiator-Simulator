@@ -1,8 +1,10 @@
 extends RefCounted
 
 const CombatContractScript = preload("res://scripts/combat/combat_contract.gd")
+const CombatTargetResolverScript = preload("res://scripts/combat/combat_target_resolver.gd")
 
 var _combat_contract = CombatContractScript.new()
+var _target_resolver = CombatTargetResolverScript.new()
 
 
 func build_context(state: Dictionary, actor_id: String) -> Dictionary:
@@ -38,6 +40,14 @@ func build_context(state: Dictionary, actor_id: String) -> Dictionary:
 		else:
 			enemies.append(fighter_copy)
 
+	var target_result := _target_resolver.get_candidate_groups(state, actor_id)
+	if target_result.get("status") != "ready":
+		return {
+			"status": str(target_result.get("status", "invalid_target_context")),
+			"errors": (target_result.get("errors", []) as Array).duplicate(),
+			"context": {},
+		}
+
 	return {
 		"status": "ready",
 		"errors": [],
@@ -50,11 +60,9 @@ func build_context(state: Dictionary, actor_id: String) -> Dictionary:
 			"enemies": enemies,
 			"available_action_ids": _combat_contract.get_action_ids(),
 			"action_contracts": _combat_contract.get_action_contracts(),
-			"target_candidates":
-			{
-				"allies": _fighter_ids(allies),
-				"enemies": _fighter_ids(enemies),
-			},
+			"target_candidates": (
+				(target_result.get("candidates", {}) as Dictionary).duplicate(true)
+			),
 			"combat_state": state.duplicate(true),
 			"desired_action": {},
 		},
@@ -71,10 +79,3 @@ func _find_fighter(state: Dictionary, fighter_id: String) -> Dictionary:
 		):
 			return raw_fighter as Dictionary
 	return {}
-
-
-func _fighter_ids(fighters: Array[Dictionary]) -> Array[String]:
-	var ids: Array[String] = []
-	for fighter in fighters:
-		ids.append(str(fighter.get("id", "")))
-	return ids
