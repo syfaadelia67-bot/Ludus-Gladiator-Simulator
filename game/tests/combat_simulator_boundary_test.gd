@@ -24,6 +24,25 @@ func _assert_valid_intent_stays_pending(simulator) -> void:
 		"Pending resolution must expose the frozen reason code"
 	)
 	assert((result.get("errors", []) as Array).is_empty())
+	assert(
+		str(result.get("blocking_requirement", "")) == "target_rules",
+		"D1 target rules must be the first explicit blocking requirement",
+	)
+	var blocking_context := result.get("blocking_context", {}) as Dictionary
+	assert(
+		blocking_context.get("status") == "pending_design_freeze",
+		"D1 blocker must come from the target resolver pending boundary",
+	)
+	assert(
+		blocking_context.get("reason") == "target_rules_not_frozen",
+		"D1 blocker must expose the target resolver reason",
+	)
+	assert(
+		not blocking_context.has("legal_targets"),
+		"Simulator must not invent legal targets while D1 is pending",
+	)
+	var candidates := blocking_context.get("candidates", {}) as Dictionary
+	assert(candidates.get("enemies") == ["b1"], "D1 blocker must expose enemy candidates")
 	var pending_requirements := result.get("pending_requirements", []) as Array
 	assert(not pending_requirements.is_empty(), "Pending combat must expose unresolved decisions")
 	assert(pending_requirements.has("target_rules"), "Target rules must remain explicitly pending")
@@ -39,6 +58,14 @@ func _assert_valid_intent_stays_pending(simulator) -> void:
 		conditional_requirements.has("position_and_distance_model"),
 		"Position/distance must remain conditional until design decides whether Combat V1 needs it"
 	)
+	(blocking_context.get("candidates", {}) as Dictionary)["enemies"] = []
+	assert(
+		((result.get("blocking_context", {}) as Dictionary).get("candidates", {}) as Dictionary).get(
+			"enemies", []
+		)
+		== [],
+		"caller may mutate its returned blocking context copy",
+	)
 
 
 func _assert_invalid_state_is_rejected(simulator) -> void:
@@ -52,6 +79,8 @@ func _assert_invalid_state_is_rejected(simulator) -> void:
 	assert(str(result.get("reason", "")) == "invalid_state")
 	assert(_contains_error(result.get("errors", []), "unresolved stat RES"))
 	assert((result.get("pending_requirements", []) as Array).is_empty())
+	assert(str(result.get("blocking_requirement", "")).is_empty())
+	assert((result.get("blocking_context", {}) as Dictionary).is_empty())
 
 
 func _assert_invalid_intent_is_rejected(simulator) -> void:
@@ -62,6 +91,8 @@ func _assert_invalid_intent_is_rejected(simulator) -> void:
 	assert(str(result.get("reason", "")) == "invalid_desired_action")
 	assert(_contains_error(result.get("errors", []), "unsupported action"))
 	assert((result.get("pending_requirements", []) as Array).is_empty())
+	assert(str(result.get("blocking_requirement", "")).is_empty())
+	assert((result.get("blocking_context", {}) as Dictionary).is_empty())
 
 
 func _assert_inputs_are_not_mutated(simulator) -> void:
