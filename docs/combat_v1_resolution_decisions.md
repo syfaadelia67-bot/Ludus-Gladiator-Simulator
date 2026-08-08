@@ -63,8 +63,22 @@ Question:
 - Does Combat V1 require authoritative distance/position, or is `reposition` an abstract combat-state action?
 
 Current evidence:
-- `relentless_pursuit` historically says it closes distance, but there is no authoritative spatial state in the new CombatState.
-- The legacy simulator does not provide a reusable V1 spatial model.
+- `relentless_pursuit` historically says it “closes distance”, but its stored mechanics are damage/evasion/initiative modifiers rather than coordinates or range bands.
+- `cast_net` historically reduces mobility through an entangled status, again without an authoritative position field.
+- The legacy combatant state contains health, energy, attack, defense, accuracy and statuses such as `entangled`, `evasion_penalty`, `vulnerable` and `opened`, but no authoritative `position`, `distance`, `range`, lane or arena coordinate.
+- The legacy combat loop alternates actions without movement or range validation.
+- Current CombatState intentionally has no authoritative spatial state.
+- Presentation coordinates, if any are later used by animation/UI, are not valid evidence for simulation authority.
+
+Evidence-based recommendation, not frozen:
+- prefer an abstract `reposition` action for Combat V1;
+- do not add authoritative coordinates/range bands unless a later combat rule demonstrably requires them;
+- express pursuit, entangle and mobility effects as simulator states/modifiers rather than presentation-space movement where possible.
+
+Why this remains conditional:
+- the exact effect of `reposition` is still pending;
+- weapon reach/range rules have not been frozen;
+- no rule yet requires spatial state to distinguish legal from illegal actions.
 
 Freeze acceptance criteria if included:
 - define the minimal authoritative spatial state;
@@ -73,7 +87,9 @@ Freeze acceptance criteria if included:
 - define legal ranges without relying on presentation coordinates.
 
 If excluded from V1:
-- explicitly mark `reposition` as abstract and remove this item from conditional readiness.
+- explicitly mark `reposition` as abstract;
+- define its non-spatial effect under the normal action-effect freeze;
+- remove `position_and_distance_model` from conditional readiness.
 
 ### D3 — Resolution order
 
