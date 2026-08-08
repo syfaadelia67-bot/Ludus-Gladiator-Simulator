@@ -1,0 +1,91 @@
+extends SceneTree
+
+const CombatActionCatalogScript = preload("res://scripts/combat/combat_action_catalog.gd")
+const CombatContractScript = preload("res://scripts/combat/combat_contract.gd")
+
+const EXPECTED_ACTION_IDS: Array[String] = [
+	"light",
+	"heavy",
+	"block",
+	"parry",
+	"dodge",
+	"reposition",
+]
+const PENDING_FIELDS: Array[String] = [
+	"target_rule_status",
+	"stamina_cost_status",
+	"resolution_timing_status",
+	"stat_scaling_status",
+	"effect_status",
+]
+
+var _failures: Array[String] = []
+
+
+func _initialize() -> void:
+	var catalog = CombatActionCatalogScript.new()
+	var contract = CombatContractScript.new()
+	_test_exact_action_ids(catalog, contract)
+	_test_unfrozen_fields_stay_explicitly_pending(catalog)
+	_test_catalog_reads_are_isolated(catalog)
+	_test_unknown_action_is_rejected(catalog, contract)
+
+	if _failures.is_empty():
+		print("Combat action catalog contract: OK")
+		quit(0)
+		return
+	for failure in _failures:
+		push_error(failure)
+	quit(1)
+
+
+func _test_exact_action_ids(catalog, contract) -> void:
+	_assert_eq(catalog.get_action_ids(), EXPECTED_ACTION_IDS, "catalog must expose six canonical actions")
+	_assert_eq(contract.get_action_ids(), EXPECTED_ACTION_IDS, "CombatContract must source catalog actions")
+	for action_id in EXPECTED_ACTION_IDS:
+		_assert_true(contract.is_action_id_valid(action_id), "CombatContract must accept %s" % action_id)
+
+
+func _test_unfrozen_fields_stay_explicitly_pending(catalog) -> void:
+	var contracts: Array[Dictionary] = catalog.get_action_contracts()
+	_assert_eq(contracts.size(), EXPECTED_ACTION_IDS.size(), "every action needs one catalog contract")
+	for action_contract in contracts:
+		var action_id := str(action_contract.get("id", ""))
+		_assert_true(EXPECTED_ACTION_IDS.has(action_id), "catalog contract must use canonical action id")
+		for field in PENDING_FIELDS:
+			_assert_eq(
+				action_contract.get(field),
+				"pending",
+				"%s must keep %s pending until design freeze" % [action_id, field],
+			)
+
+
+func _test_catalog_reads_are_isolated(catalog) -> void:
+	var ids := catalog.get_action_ids()
+	ids.clear()
+	_assert_eq(
+		catalog.get_action_ids(), EXPECTED_ACTION_IDS, "mutating returned ids must not alter catalog"
+	)
+	var light := catalog.get_action_contract("light")
+	light["target_rule_status"] = "invented"
+	_assert_eq(
+		catalog.get_action_contract("light").get("target_rule_status"),
+		"pending",
+		"mutating returned action contract must not alter catalog",
+	)
+
+
+func _test_unknown_action_is_rejected(catalog, contract) -> void:
+	_assert_eq(catalog.get_action_contract("invented"), {}, "unknown action has no catalog contract")
+	_assert_true(not catalog.is_action_id_valid("invented"), "catalog must reject unknown action")
+	_assert_true(not contract.is_action_id_valid("invented"), "CombatContract must reject unknown action")
+
+
+func _assert_true(condition: bool, message: String) -> void:
+	if not condition:
+		_failures.append(message)
+
+
+func _assert_eq(actual: Variant, expected: Variant, message: String) -> void:
+	if actual != expected:
+		_failures.append("%s (expected=%s actual=%s)" % [message, str(expected), str(actual)])
