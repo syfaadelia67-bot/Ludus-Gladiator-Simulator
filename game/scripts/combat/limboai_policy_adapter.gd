@@ -20,6 +20,7 @@ const POLICY_CONTEXT_KEYS := [
 	"allies",
 	"enemies",
 	"available_action_ids",
+	"action_contracts",
 	"target_candidates",
 	"combat_state",
 	"desired_action",
