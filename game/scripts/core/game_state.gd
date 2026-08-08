@@ -71,12 +71,13 @@ func advance_month() -> void:
 
 	var rival_events: Array = RivalManager.process_week()
 	var economy_report: Dictionary = EconomyManager.process_week()
-	var tournament_events: Array = TournamentManager.process_week()
+	var tournament_events: Array = TournamentManager.process_month()
 	report["rival_events"] = rival_events
 	report["economy"] = economy_report
 	report["tournament_events"] = tournament_events
 
 	day += 1
+	TournamentManager.prepare_month(get_month())
 
 	# Preserve existing event ordering while the event system is migrated: the
 	# narrative event is generated once, after the new campaign month begins.
