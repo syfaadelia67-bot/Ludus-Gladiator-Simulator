@@ -79,10 +79,7 @@ func _test_demo_calendar_uses_month_xx() -> void:
 		int(final_chapter.get("month_start", 0)) == 13,
 		"Final demo chapter must begin in month XIII"
 	)
-	assert(
-		int(final_chapter.get("month_end", 0)) == 20,
-		"Final demo chapter must end in month XX"
-	)
+	assert(int(final_chapter.get("month_end", 0)) == 20, "Final demo chapter must end in month XX")
 
 
 func _on_month_advanced(month: int) -> void:
