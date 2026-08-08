@@ -11,7 +11,8 @@ const ACTION_IDS: Array[String] = [
 ]
 
 const ACTION_CONTRACTS := {
-	"light": {
+	"light":
+	{
 		"id": "light",
 		"target_rule_status": PENDING_STATUS,
 		"stamina_cost_status": PENDING_STATUS,
@@ -19,7 +20,8 @@ const ACTION_CONTRACTS := {
 		"stat_scaling_status": PENDING_STATUS,
 		"effect_status": PENDING_STATUS,
 	},
-	"heavy": {
+	"heavy":
+	{
 		"id": "heavy",
 		"target_rule_status": PENDING_STATUS,
 		"stamina_cost_status": PENDING_STATUS,
@@ -27,7 +29,8 @@ const ACTION_CONTRACTS := {
 		"stat_scaling_status": PENDING_STATUS,
 		"effect_status": PENDING_STATUS,
 	},
-	"block": {
+	"block":
+	{
 		"id": "block",
 		"target_rule_status": PENDING_STATUS,
 		"stamina_cost_status": PENDING_STATUS,
@@ -35,7 +38,8 @@ const ACTION_CONTRACTS := {
 		"stat_scaling_status": PENDING_STATUS,
 		"effect_status": PENDING_STATUS,
 	},
-	"parry": {
+	"parry":
+	{
 		"id": "parry",
 		"target_rule_status": PENDING_STATUS,
 		"stamina_cost_status": PENDING_STATUS,
@@ -43,7 +47,8 @@ const ACTION_CONTRACTS := {
 		"stat_scaling_status": PENDING_STATUS,
 		"effect_status": PENDING_STATUS,
 	},
-	"dodge": {
+	"dodge":
+	{
 		"id": "dodge",
 		"target_rule_status": PENDING_STATUS,
 		"stamina_cost_status": PENDING_STATUS,
@@ -51,7 +56,8 @@ const ACTION_CONTRACTS := {
 		"stat_scaling_status": PENDING_STATUS,
 		"effect_status": PENDING_STATUS,
 	},
-	"reposition": {
+	"reposition":
+	{
 		"id": "reposition",
 		"target_rule_status": PENDING_STATUS,
 		"stamina_cost_status": PENDING_STATUS,
