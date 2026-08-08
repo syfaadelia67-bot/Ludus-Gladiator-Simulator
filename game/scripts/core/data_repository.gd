@@ -5,6 +5,7 @@ var buildings: Array = []
 var weapons: Array = []
 var abilities: Array = []
 var specializations: Array = []
+var beasts: Array = []
 var unique_gladiators: Array = []
 
 func _ready() -> void:
@@ -16,6 +17,7 @@ func load_all() -> void:
     weapons = _load_json_array("res://data/weapons.json")
     abilities = _load_json_array("res://data/abilities.json")
     specializations = _load_json_array("res://data/specializations.json")
+    beasts = _load_json_array("res://data/beasts.json")
     unique_gladiators = _load_json_array("res://data/unique_gladiators.json")
 
 func get_unique_gladiator(gladiator_id: String) -> Dictionary:
