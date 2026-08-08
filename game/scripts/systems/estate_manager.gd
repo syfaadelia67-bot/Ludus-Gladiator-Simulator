@@ -90,9 +90,7 @@ func migrate_levels(raw_levels: Dictionary) -> Dictionary:
 		var data: Dictionary = BUILDINGS[building_id]
 		var default_level := int(data.get("starting_level", 0))
 		var max_level := int(data.get("max_level", 10))
-		migrated[building_id] = clampi(
-			int(migrated.get(building_id, default_level)), 0, max_level
-		)
+		migrated[building_id] = clampi(int(migrated.get(building_id, default_level)), 0, max_level)
 	return migrated
 
 
@@ -120,8 +118,8 @@ func get_level(building_id: String) -> int:
 func is_demo_available(building_id: String) -> bool:
 	_ensure_catalog_loaded()
 	var canonical_id := canonicalize_building_id(building_id)
-	return BUILDINGS.has(canonical_id) and bool(
-		BUILDINGS[canonical_id].get("demo_available", false)
+	return (
+		BUILDINGS.has(canonical_id) and bool(BUILDINGS[canonical_id].get("demo_available", false))
 	)
 
 
