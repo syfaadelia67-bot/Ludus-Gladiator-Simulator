@@ -1,0 +1,28 @@
+# Keep text files stable across Windows/Linux and avoid noisy CRLF diffs.
+* text=auto eol=lf
+
+# Godot and project data are text and should remain diffable.
+*.gd text eol=lf
+*.tscn text eol=lf
+*.tres text eol=lf
+*.godot text eol=lf
+*.json text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.md text eol=lf
+*.sh text eol=lf
+
+# Runtime binary assets stay in regular Git while they remain reasonably small.
+*.png -text
+*.jpg -text
+*.jpeg -text
+*.webp -text
+*.ogg -text
+*.mp3 -text
+*.ttf -text
+*.otf -text
+
+# Editable production masters intentionally committed under source_assets/
+# are stored with Git LFS. Restricted/licensed raw packs do NOT belong here;
+# they must remain outside the public repository (see docs/ASSET_PROVENANCE.md).
+source_assets/** filter=lfs diff=lfs merge=lfs -text

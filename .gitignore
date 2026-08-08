@@ -11,6 +11,11 @@ game/addons/gut/
 game/gut_tests/
 game/test-results/
 
+# Restricted/licensed raw assets that must never be pushed to the public repository.
+# Use these locations only as local staging areas; game code must not reference them.
+private_assets/
+licensed_assets_raw/
+
 # Operating system metadata
 .DS_Store
 Thumbs.db

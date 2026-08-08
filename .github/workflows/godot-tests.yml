@@ -2,15 +2,18 @@ name: Godot Tests
 
 on:
   push:
+    branches:
+      - main
+      - feature/demo-data-foundation
   pull_request:
-    branches: [main]
   workflow_dispatch:
 
 permissions:
   contents: read
+  pull-requests: read
 
 concurrency:
-  group: godot-tests-${{ github.ref }}
+  group: godot-tests-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 env:
@@ -19,41 +22,197 @@ env:
 jobs:
   compile:
     name: Compile and smoke test
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
 
     steps:
       - name: Check out repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          fetch-depth: 1
+          persist-credentials: false
 
       - name: Set up Godot
-        uses: chickensoft-games/setup-godot@v2
+        uses: chickensoft-games/setup-godot@f166999204a4f2722c6fe042fbaa3b3ea0d9c789 # v2
         with:
           version: ${{ env.GODOT_VERSION }}
           use-dotnet: false
           include-templates: false
 
-      - name: Show Godot version
-        run: godot --version
+      - name: Verify locked technical contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(godot --version)" = "4.5.2.stable.official.6ce3de25a"
+          grep -Eq '^config/features=PackedStringArray\("4\.5"\)$' game/project.godot
+          grep -Eq '^const SAVE_VERSION := 14$' game/scripts/core/save_manager.gd
 
       - name: Import and compile project
-        run: godot --headless --editor --path game --quit
+        shell: bash
+        run: |
+          set -euo pipefail
+          set +e
+          godot --headless --editor --path game --quit 2>&1 | tee godot-import.log
+          GODOT_STATUS=${PIPESTATUS[0]}
+          set -e
+          PATTERN='Parse Error|Compile Error|SCRIPT ERROR|Failed to load script|Failed to create an autoload'
+          if grep -Ein "$PATTERN" godot-import.log; then
+            echo '### Godot import/compile errors' >> "$GITHUB_STEP_SUMMARY"
+            grep -Ein "$PATTERN" godot-import.log >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+          if [ "$GODOT_STATUS" -ne 0 ]; then
+            echo "Godot editor exited with status $GODOT_STATUS."
+            tail -n 100 godot-import.log
+            exit "$GODOT_STATUS"
+          fi
+
+      - name: Ensure import did not mutate tracked files
+        shell: bash
+        run: |
+          set -euo pipefail
+          if ! git diff --quiet; then
+            echo 'Godot import modified tracked repository files:'
+            git status --short
+            git diff --check
+            exit 1
+          fi
 
       - name: Smoke test main scene
-        run: godot --headless --path game res://scenes/Main.tscn --quit
+        shell: bash
+        run: |
+          set -euo pipefail
+          set +e
+          godot --headless --path game res://scenes/Main.tscn --quit 2>&1 | tee godot-smoke.log
+          GODOT_STATUS=${PIPESTATUS[0]}
+          set -e
+          PATTERN='Parse Error|Compile Error|SCRIPT ERROR|Invalid call|Node not found|Can.t use get_node|Failed to load script|Failed to create an autoload'
+          if grep -Ein "$PATTERN" godot-smoke.log; then
+            echo '### Godot smoke errors' >> "$GITHUB_STEP_SUMMARY"
+            grep -Ein "$PATTERN" godot-smoke.log >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+          if [ "$GODOT_STATUS" -ne 0 ]; then
+            echo "Godot runtime exited with status $GODOT_STATUS."
+            tail -n 100 godot-smoke.log
+            exit "$GODOT_STATUS"
+          fi
+
+      - name: Upload compile diagnostics
+        if: always()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        with:
+          name: compile-smoke-results-${{ github.run_attempt }}
+          path: |
+            godot-import.log
+            godot-smoke.log
+          if-no-files-found: ignore
+          retention-days: 14
+
+  gdscript-quality:
+    name: GDScript format and lint
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+
+    steps:
+      - name: Check out repository history
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Install pinned gdtoolkit
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m venv .ci-venv
+          .ci-venv/bin/python -m pip install --disable-pip-version-check --no-input 'gdtoolkit==4.5.0'
+          .ci-venv/bin/gdformat --help >/dev/null
+          .ci-venv/bin/gdlint --help >/dev/null
+
+      - name: Select changed GDScript files
+        id: changed-gdscript
+        shell: bash
+        env:
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          PUSH_BEFORE_SHA: ${{ github.event.before }}
+        run: |
+          set -euo pipefail
+          : > changed-gdscript.bin
+
+          if [ "$GITHUB_EVENT_NAME" = "pull_request" ]; then
+            git diff --name-only -z --diff-filter=ACMR "$PR_BASE_SHA" "$PR_HEAD_SHA" -- '*.gd' > changed-gdscript.bin
+          elif [ "$GITHUB_EVENT_NAME" = "push" ]; then
+            if [ -n "$PUSH_BEFORE_SHA" ] && [ "$PUSH_BEFORE_SHA" != "0000000000000000000000000000000000000000" ]; then
+              git diff --name-only -z --diff-filter=ACMR "$PUSH_BEFORE_SHA" "$GITHUB_SHA" -- '*.gd' > changed-gdscript.bin
+            else
+              git show --pretty='' --name-only -z --diff-filter=ACMR "$GITHUB_SHA" -- '*.gd' > changed-gdscript.bin
+            fi
+          else
+            git ls-files -z '*.gd' > changed-gdscript.bin
+          fi
+
+          if [ -s changed-gdscript.bin ]; then
+            echo 'has_files=true' >> "$GITHUB_OUTPUT"
+            echo 'GDScript files selected for quality checks:'
+            tr '\0' '\n' < changed-gdscript.bin
+          else
+            echo 'has_files=false' >> "$GITHUB_OUTPUT"
+            echo 'No changed GDScript files; gdtoolkit gate has nothing to evaluate.'
+          fi
+
+      - name: Check GDScript formatting
+        if: steps.changed-gdscript.outputs.has_files == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -d '' FILES < changed-gdscript.bin
+          .ci-venv/bin/gdformat --check "${FILES[@]}"
+
+      - name: Lint GDScript
+        if: steps.changed-gdscript.outputs.has_files == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -d '' FILES < changed-gdscript.bin
+          .ci-venv/bin/gdlint "${FILES[@]}"
+
+  secret-scan:
+    name: Secret scan
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+
+    steps:
+      - name: Check out full history
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Scan changed history with Gitleaks
+        uses: gitleaks/gitleaks-action@e0c47f4f8be36e29cdc102c57e68cb5cbf0e8d1e # v3.0.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_VERSION: 8.24.3
+          GITLEAKS_ENABLE_COMMENTS: false
+          GITLEAKS_ENABLE_UPLOAD_ARTIFACT: false
 
   core-systems:
     name: Core systems suite
     needs: compile
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 20
 
     steps:
       - name: Check out repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          fetch-depth: 1
+          persist-credentials: false
 
       - name: Set up Godot
-        uses: chickensoft-games/setup-godot@v2
+        uses: chickensoft-games/setup-godot@f166999204a4f2722c6fe042fbaa3b3ea0d9c789 # v2
         with:
           version: ${{ env.GODOT_VERSION }}
           use-dotnet: false
@@ -67,7 +226,7 @@ jobs:
 
       - name: Upload core suite diagnostics
         if: always()
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
         with:
           name: core-test-results-${{ github.run_attempt }}
           path: |
@@ -80,15 +239,18 @@ jobs:
   ui-contracts:
     name: UI and integration contracts
     needs: compile
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 20
 
     steps:
       - name: Check out repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          fetch-depth: 1
+          persist-credentials: false
 
       - name: Set up Godot
-        uses: chickensoft-games/setup-godot@v2
+        uses: chickensoft-games/setup-godot@f166999204a4f2722c6fe042fbaa3b3ea0d9c789 # v2
         with:
           version: ${{ env.GODOT_VERSION }}
           use-dotnet: false
@@ -102,7 +264,7 @@ jobs:
 
       - name: Upload UI suite diagnostics
         if: always()
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
         with:
           name: ui-test-results-${{ github.run_attempt }}
           path: |
@@ -115,15 +277,18 @@ jobs:
   gut-tests:
     name: GUT behavior tests
     needs: compile
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 20
 
     steps:
       - name: Check out repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          fetch-depth: 1
+          persist-credentials: false
 
       - name: Set up Godot
-        uses: chickensoft-games/setup-godot@v2
+        uses: chickensoft-games/setup-godot@f166999204a4f2722c6fe042fbaa3b3ea0d9c789 # v2
         with:
           version: ${{ env.GODOT_VERSION }}
           use-dotnet: false
@@ -141,9 +306,43 @@ jobs:
 
       - name: Upload GUT reports
         if: always()
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
         with:
           name: gut-test-results-${{ github.run_attempt }}
           path: game/test-results/
           if-no-files-found: warn
           retention-days: 14
+
+  ci-gate:
+    name: CI Gate
+    if: always()
+    needs:
+      - compile
+      - gdscript-quality
+      - secret-scan
+      - core-systems
+      - ui-contracts
+      - gut-tests
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+
+    steps:
+      - name: Require every validation job to pass
+        shell: bash
+        env:
+          COMPILE_RESULT: ${{ needs.compile.result }}
+          GDSCRIPT_RESULT: ${{ needs.gdscript-quality.result }}
+          SECRETS_RESULT: ${{ needs.secret-scan.result }}
+          CORE_RESULT: ${{ needs.core-systems.result }}
+          UI_RESULT: ${{ needs.ui-contracts.result }}
+          GUT_RESULT: ${{ needs.gut-tests.result }}
+        run: |
+          set -euo pipefail
+          printf 'compile=%s\ngdscript=%s\nsecrets=%s\ncore=%s\nui=%s\ngut=%s\n' \
+            "$COMPILE_RESULT" "$GDSCRIPT_RESULT" "$SECRETS_RESULT" "$CORE_RESULT" "$UI_RESULT" "$GUT_RESULT"
+          test "$COMPILE_RESULT" = success
+          test "$GDSCRIPT_RESULT" = success
+          test "$SECRETS_RESULT" = success
+          test "$CORE_RESULT" = success
+          test "$UI_RESULT" = success
+          test "$GUT_RESULT" = success
