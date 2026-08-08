@@ -5,17 +5,6 @@ signal upgrade_completed(building_id: String, new_level: int)
 signal upgrade_failed(reason: String)
 
 const CATALOG_PATH := "res://data/buildings.json"
-const REMOVED_LEGACY_IDS: Array[String] = [
-	"kitchen",
-	"warehouse",
-	"worker_quarters",
-	"wall_and_gate",
-	"guard_post",
-	"security",
-	"sanctuary",
-	"private_arena",
-	"stable",
-]
 
 var BUILDINGS: Dictionary = {}
 var LEGACY_ID_ALIASES: Dictionary = {}
@@ -72,8 +61,6 @@ func canonicalize_building_id(building_id: String) -> String:
 		return building_id
 	if LEGACY_ID_ALIASES.has(building_id):
 		return str(LEGACY_ID_ALIASES[building_id])
-	if REMOVED_LEGACY_IDS.has(building_id):
-		return ""
 	return building_id
 
 
@@ -107,6 +94,7 @@ func export_levels() -> Dictionary:
 
 func set_demo_mode(enabled: bool) -> void:
 	demo_mode = enabled
+	_apply_global_effects()
 	estate_changed.emit()
 
 
@@ -202,7 +190,9 @@ func get_recovery_bonus() -> int:
 
 
 func get_security_bonus() -> int:
-	return 0
+	if demo_mode:
+		return 0
+	return get_level("wall_and_gate") * 3
 
 
 func get_forge_level() -> int:
@@ -214,6 +204,16 @@ func get_building_ids() -> Array[String]:
 	var result: Array[String] = []
 	for building_id in BUILDINGS.keys():
 		result.append(str(building_id))
+	result.sort()
+	return result
+
+
+func get_demo_building_ids() -> Array[String]:
+	_ensure_catalog_loaded()
+	var result: Array[String] = []
+	for building_id in BUILDINGS.keys():
+		if bool(BUILDINGS[building_id].get("demo_available", false)):
+			result.append(str(building_id))
 	result.sort()
 	return result
 
