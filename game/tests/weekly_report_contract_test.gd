@@ -8,19 +8,19 @@ func run() -> void:
 	)
 
 	_assert(
-		game_state_source.contains("\"period\": \"month\""),
+		game_state_source.contains('"period": "month"'),
 		"El reporte canónico debe identificarse como mensual."
 	)
 	_assert(
-		game_state_source.contains("\"internal_work_ticks\": 1"),
+		game_state_source.contains('"internal_work_ticks": 1'),
 		"Un cierre mensual debe resolver exactamente un tick interno."
 	)
 	_assert(
-		game_state_source.contains("\"work_results\": work_results"),
+		game_state_source.contains('"work_results": work_results'),
 		"Los resultados de trabajo deben tener una clave mensual canónica."
 	)
 	_assert(
-		game_state_source.contains("\"daily_results\": work_results"),
+		game_state_source.contains('"daily_results": work_results'),
 		"El alias daily_results debe conservarse para compatibilidad v14."
 	)
 	_assert(
