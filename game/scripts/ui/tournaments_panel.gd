@@ -1,20 +1,22 @@
 extends VBoxContainer
 
-@onready var back_button: Button = $Navigation/BackToFinca
-@onready var status: Label = $Navigation/Status
-@onready var scroll: ScrollContainer = $Scroll
-@onready var event_list: ItemList = $Scroll/Content/TournamentContent/EventList
-@onready var details: RichTextLabel = $Scroll/Content/TournamentContent/Right/Details
-@onready var fighter_selector: OptionButton = $Scroll/Content/TournamentContent/Right/FighterSelector
-@onready var accept_button: Button = $Scroll/Content/TournamentContent/Right/Accept
-@onready var contracts: ItemList = $Scroll/Content/TournamentContent/Right/Contracts
-@onready var cancel_button: Button = $Scroll/Content/TournamentContent/Right/Cancel
-
 var event_ids: Array[String] = []
 var fighter_ids: Array[String] = []
 var contract_ids: Array[String] = []
 var selected_event_id := ""
 var selected_contract_id := ""
+
+@onready var back_button: Button = $Navigation/BackToFinca
+@onready var status: Label = $Navigation/Status
+@onready var scroll: ScrollContainer = $Scroll
+@onready var event_list: ItemList = $Scroll/Content/TournamentContent/EventList
+@onready var details: RichTextLabel = $Scroll/Content/TournamentContent/Right/Details
+@onready var fighter_selector: OptionButton = (
+	$Scroll/Content/TournamentContent/Right/FighterSelector
+)
+@onready var accept_button: Button = $Scroll/Content/TournamentContent/Right/Accept
+@onready var contracts: ItemList = $Scroll/Content/TournamentContent/Right/Contracts
+@onready var cancel_button: Button = $Scroll/Content/TournamentContent/Right/Cancel
 
 
 func _ready() -> void:
