@@ -31,8 +31,18 @@ Question:
 Current evidence:
 - `CombatPolicy` only validates that a non-empty `target_id` exists.
 - Policy Context exposes allies and enemies separately but deliberately calls them target candidates, not legal targets.
+- `CombatTargetResolver` now owns candidate classification for `1v1`, `1v2`, and `2v2`.
+- `CombatTargetResolver.inspect_action_targets()` deliberately returns `pending_design_freeze` with reason `target_rules_not_frozen` for all six base actions and never exposes `legal_targets` while D1 is pending.
+- `CombatSimulator` surfaces D1 as `blocking_requirement = target_rules` and attaches the resolver result as isolated `blocking_context` without resolving combat.
+- `CombatDecisionGateway` propagates the same blocker to its caller with an independent deep copy; policy rejection exposes no simulator blocker.
 - Canonical abilities mostly describe effects on a rival, but `abilities.json` has no formal `target_type` field.
 - No recovered repository evidence defines target semantics for the six V1 base actions.
+
+Structural implementation status:
+- candidate discovery: `IMPLEMENTED / NON-AUTHORITATIVE`;
+- D1 pending boundary: `IMPLEMENTED`;
+- legal-target semantics: `NOT FROZEN`;
+- target relationship enforcement: `NOT IMPLEMENTED` by design until freeze.
 
 Must not be inferred automatically:
 - `block/parry/dodge/reposition` being self-only;
