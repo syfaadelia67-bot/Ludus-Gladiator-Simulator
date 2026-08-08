@@ -48,7 +48,7 @@ func build_context(state: Dictionary, actor_id: String) -> Dictionary:
 			"actor_id": actor_id,
 			"allies": allies,
 			"enemies": enemies,
-			"available_action_ids": _combat_contract.ACTION_IDS.duplicate(),
+			"available_action_ids": _combat_contract.get_action_ids(),
 			"target_candidates":
 			{
 				"allies": _fighter_ids(allies),
