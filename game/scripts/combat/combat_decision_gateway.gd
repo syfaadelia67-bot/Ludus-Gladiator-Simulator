@@ -31,6 +31,8 @@ func _policy_rejected(policy_result: Dictionary) -> Dictionary:
 		"pending": false,
 		"provider": "limboai",
 		"reason": str(policy_result.get("status", "policy_rejected")),
+		"blocking_requirement": "",
+		"blocking_context": {},
 		"pending_requirements": [],
 		"conditional_requirements": [],
 		"desired_action": {},
@@ -52,6 +54,8 @@ func _simulation_result(
 		"pending": bool(simulation_result.get("pending", false)),
 		"provider": "limboai",
 		"reason": str(simulation_result.get("reason", "")),
+		"blocking_requirement": str(simulation_result.get("blocking_requirement", "")),
+		"blocking_context": _duplicate_dictionary(simulation_result.get("blocking_context", {})),
 		"pending_requirements": _duplicate_array(simulation_result.get("pending_requirements", [])),
 		"conditional_requirements":
 		_duplicate_array(simulation_result.get("conditional_requirements", [])),
@@ -65,3 +69,9 @@ func _duplicate_array(value: Variant) -> Array:
 	if value is not Array:
 		return []
 	return (value as Array).duplicate(true)
+
+
+func _duplicate_dictionary(value: Variant) -> Dictionary:
+	if value is not Dictionary:
+		return {}
+	return (value as Dictionary).duplicate(true)
