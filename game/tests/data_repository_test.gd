@@ -5,7 +5,8 @@ const DataRepositoryScript = preload("res://scripts/core/data_repository.gd")
 const COLLECTION_PATHS: Dictionary = {
     "traits": "res://data/traits.json",
     "buildings": "res://data/buildings.json",
-    "weapons": "res://data/weapons.json"
+    "weapons": "res://data/weapons.json",
+    "beasts": "res://data/beasts.json"
 }
 const MISSING_PATH: String = "user://data_repository_missing_test.json"
 const INVALID_PATH: String = "user://data_repository_invalid_test.json"
@@ -17,6 +18,9 @@ func _ready() -> void:
         var path: String = str(COLLECTION_PATHS[collection_name])
         var collection: Array = repository._load_json_array(path)
         _assert_valid_collection(collection_name, collection)
+
+    repository.load_all()
+    assert(repository.beasts.size() == 3, "DataRepository must load the three frozen demo beasts")
 
     _remove_user_file(MISSING_PATH)
     var missing_collection: Array = repository._load_json_array(MISSING_PATH)
