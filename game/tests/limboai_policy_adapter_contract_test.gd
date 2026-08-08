@@ -36,6 +36,31 @@ func _initialize() -> void:
 		)
 
 	var state := _valid_state()
+	var policy_bridge: Dictionary = adapter.build_policy_context(state, "a")
+	_assert_eq(policy_bridge.get("status"), "ready", "known actor must build policy context")
+	var context_value: Variant = policy_bridge.get("context", {})
+	_assert_true(context_value is Dictionary, "ready policy bridge must expose context")
+	if context_value is Dictionary:
+		var context := context_value as Dictionary
+		_assert_eq(context.get("actor_id"), "a", "policy context must preserve actor id")
+		_assert_true(context.get("combat_state") is Dictionary, "policy context must expose state")
+		_assert_true(context.get("desired_action") is Dictionary, "policy context needs output slot")
+		var isolated_state := context.get("combat_state") as Dictionary
+		isolated_state["format"] = "2v2"
+		_assert_eq(state.get("format"), "1v1", "policy context must not mutate authoritative state")
+		context["desired_action"] = {"actor_id": "a", "action_id": "light", "target_id": "b"}
+		var extracted: Dictionary = adapter.extract_desired_action(context)
+		_assert_eq(extracted.get("action_id"), "light", "adapter must extract policy output")
+		extracted["action_id"] = "heavy"
+		_assert_eq(
+			(context.get("desired_action") as Dictionary).get("action_id"),
+			"light",
+			"extracted policy output must be isolated from context",
+		)
+
+	var invalid_context: Dictionary = adapter.build_policy_context(state, "missing")
+	_assert_eq(invalid_context.get("status"), "invalid_actor", "unknown actor must be rejected")
+
 	var desired_action := {"actor_id": "a", "action_id": "light", "target_id": "b"}
 	_assert_true(
 		adapter.validate_policy_output(state, desired_action).is_empty(),
