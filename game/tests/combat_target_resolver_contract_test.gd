@@ -31,7 +31,9 @@ func _test_1v1_candidates(resolver) -> void:
 	var candidates := result.get("candidates", {}) as Dictionary
 	_assert_eq(candidates.get("allies"), [], "1v1 actor has no ally candidates")
 	_assert_eq(candidates.get("enemies"), ["b"], "1v1 actor sees opposing candidate")
-	_assert_true(not result.has("legal_targets"), "candidate boundary must not invent legal targets")
+	_assert_true(
+		not result.has("legal_targets"), "candidate boundary must not invent legal targets"
+	)
 
 
 func _test_2v2_candidates(resolver) -> void:
@@ -81,7 +83,9 @@ func _test_action_target_rules_stay_pending(resolver) -> void:
 			"target_rules_not_frozen",
 			"%s must expose D1 pending reason" % action_id,
 		)
-		_assert_true(not result.has("legal_targets"), "%s must not expose legal targets yet" % action_id)
+		_assert_true(
+			not result.has("legal_targets"), "%s must not expose legal targets yet" % action_id
+		)
 
 
 func _test_invalid_inputs_fail_closed(resolver) -> void:
@@ -115,7 +119,7 @@ func _test_results_are_isolated(resolver) -> void:
 	_assert_eq(state, state_before, "target inspection must never mutate CombatState")
 	var rebuilt: Dictionary = resolver.inspect_action_targets(state, "a", "light")
 	_assert_eq(
-		((rebuilt.get("candidates", {}) as Dictionary).get("enemies", [])),
+		(rebuilt.get("candidates", {}) as Dictionary).get("enemies", []),
 		["b"],
 		"mutating returned candidates must not affect later inspections",
 	)
