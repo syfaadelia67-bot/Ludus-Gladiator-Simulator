@@ -7,7 +7,7 @@ func _ready() -> void:
 	var validator = FrozenDataValidatorScript.new()
 	DataRepository.load_all()
 
-	var errors := validator.validate_repository(DataRepository)
+	var errors: Array[String] = validator.validate_repository(DataRepository)
 	assert(errors.is_empty(), "Frozen Part 3 data contract must validate cleanly: %s" % [errors])
 
 	_assert_eighth_demo_building_is_rejected(validator)
@@ -47,7 +47,7 @@ func _assert_eighth_demo_building_is_rejected(validator) -> void:
 			}
 		)
 	)
-	var errors := validator.validate_snapshot(snapshot)
+	var errors: Array[String] = validator.validate_snapshot(snapshot)
 	assert(
 		_contains_error(errors, "exactly seven frozen facilities"),
 		"An eighth demo facility must fail the frozen contract"
@@ -68,7 +68,7 @@ func _assert_seventeenth_trait_is_rejected(validator) -> void:
 			}
 		)
 	)
-	var errors := validator.validate_snapshot(snapshot)
+	var errors: Array[String] = validator.validate_snapshot(snapshot)
 	assert(
 		_contains_error(errors, "exactly sixteen canonical traits"),
 		"A seventeenth normal trait must fail the frozen contract"
@@ -80,7 +80,7 @@ func _assert_duplicate_ids_are_rejected(validator) -> void:
 	var beasts := snapshot["beasts"] as Array
 	var duplicate_beast: Dictionary = (beasts[0] as Dictionary).duplicate(true)
 	beasts.append(duplicate_beast)
-	var errors := validator.validate_snapshot(snapshot)
+	var errors: Array[String] = validator.validate_snapshot(snapshot)
 	assert(
 		_contains_error(errors, "duplicate id"), "Duplicate data ids must fail the frozen contract"
 	)
@@ -91,7 +91,7 @@ func _assert_broken_references_are_rejected(validator) -> void:
 	var specializations := snapshot["specializations"] as Array
 	var broken_specialization := specializations[1] as Dictionary
 	broken_specialization["class_ability"] = "missing_ability"
-	var errors := validator.validate_snapshot(snapshot)
+	var errors: Array[String] = validator.validate_snapshot(snapshot)
 	assert(
 		_contains_error(errors, "unknown class ability"),
 		"Broken cross-catalog references must fail the frozen contract"
