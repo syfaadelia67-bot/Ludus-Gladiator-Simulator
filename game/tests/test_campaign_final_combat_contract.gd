@@ -14,12 +14,8 @@ func _ready() -> void:
 	assert(source.contains("_evaluate_campaign_finale()"))
 	assert(source.contains("cierre competitivo del mes XX"))
 	assert(source.contains("GameState.get_month() >= DEMO_FINAL_MONTH"))
-	assert(source.contains("\"final_combat_resolved\": final_combat_resolved"))
-	assert(
-		source.contains(
-			"final_combat_resolved = bool(data.get(\"final_combat_resolved\", false))"
-		)
-	)
+	assert(source.contains('"final_combat_resolved": final_combat_resolved'))
+	assert(source.contains('final_combat_resolved = bool(data.get("final_combat_resolved", false))'))
 	assert(source.contains("LEGACY_DEMO_WIN_TARGET"))
 	assert(source.contains("next tournament migration replaces this"))
 	assert(not source.contains("GameState.get_week() > DEMO_FINAL_WEEK and total_wins < 6"))
