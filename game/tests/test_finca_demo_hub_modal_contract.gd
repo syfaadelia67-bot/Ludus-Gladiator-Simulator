@@ -48,9 +48,9 @@ func run() -> void:
 		"stable",
 	]:
 		assert(catalog_text.contains('"id": "%s"' % full_game_id))
-		assert(not controller_text.contains('"id":"%s"' % full_game_id))
+		assert(not controller_text.contains('"id": "%s"' % full_game_id))
 
-	assert(controller_text.contains('"mine":"economia"'))
+	assert(controller_text.contains('"mine": "economia"'))
 	assert(controller_text.contains("BLUR_SHADER_CODE"))
 	assert(controller_text.contains("hint_screen_texture"))
 	assert(controller_text.contains("textureLod"))
