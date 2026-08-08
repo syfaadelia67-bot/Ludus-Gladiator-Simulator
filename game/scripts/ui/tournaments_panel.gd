@@ -1,5 +1,7 @@
 extends VBoxContainer
 
+const FIGHTER_SELECTOR_PATH := NodePath("Scroll/Content/TournamentContent/Right/FighterSelector")
+
 var event_ids: Array[String] = []
 var fighter_ids: Array[String] = []
 var contract_ids: Array[String] = []
@@ -11,9 +13,7 @@ var selected_contract_id := ""
 @onready var scroll: ScrollContainer = $Scroll
 @onready var event_list: ItemList = $Scroll/Content/TournamentContent/EventList
 @onready var details: RichTextLabel = $Scroll/Content/TournamentContent/Right/Details
-@onready var fighter_selector: OptionButton = (
-	$Scroll/Content/TournamentContent/Right/FighterSelector
-)
+@onready var fighter_selector: OptionButton = get_node(FIGHTER_SELECTOR_PATH)
 @onready var accept_button: Button = $Scroll/Content/TournamentContent/Right/Accept
 @onready var contracts: ItemList = $Scroll/Content/TournamentContent/Right/Contracts
 @onready var cancel_button: Button = $Scroll/Content/TournamentContent/Right/Cancel
