@@ -1,7 +1,9 @@
 extends RefCounted
 
 const CombatPolicyContractScript = preload("res://scripts/combat/combat_policy_contract.gd")
-const CombatPolicyContextBuilderScript = preload("res://scripts/combat/combat_policy_context_builder.gd")
+const CombatPolicyContextBuilderScript = preload(
+	"res://scripts/combat/combat_policy_context_builder.gd"
+)
 
 const REQUIRED_LIMBOAI_CLASSES := [
 	"BehaviorTree",

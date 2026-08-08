@@ -1,6 +1,8 @@
 extends SceneTree
 
-const CombatPolicyContextBuilderScript = preload("res://scripts/combat/combat_policy_context_builder.gd")
+const CombatPolicyContextBuilderScript = preload(
+	"res://scripts/combat/combat_policy_context_builder.gd"
+)
 
 var _failures: Array[String] = []
 
@@ -40,7 +42,9 @@ func _test_1v1_context(builder) -> void:
 	_assert_eq(candidates.get("enemies"), ["b"], "1v1 enemy candidates must expose opponent")
 	var isolated_actor := context.get("actor") as Dictionary
 	isolated_actor["stamina"] = 0
-	_assert_eq((state.get("fighters") as Array)[0].get("stamina"), 100, "actor view must be isolated")
+	_assert_eq(
+		(state.get("fighters") as Array)[0].get("stamina"), 100, "actor view must be isolated"
+	)
 
 
 func _test_2v2_relationships(builder) -> void:
@@ -53,7 +57,7 @@ func _test_2v2_relationships(builder) -> void:
 			_fighter("b2", "beta"),
 		],
 	)
-	var context := (builder.build_context(state, "a").get("context", {}) as Dictionary)
+	var context := builder.build_context(state, "a").get("context", {}) as Dictionary
 	_assert_eq(_ids(context.get("allies") as Array), ["a2"], "2v2 must classify ally")
 	_assert_eq(_ids(context.get("enemies") as Array), ["b", "b2"], "2v2 must classify enemies")
 
@@ -67,7 +71,7 @@ func _test_1v2_relationships(builder) -> void:
 			_fighter("b2", "beta"),
 		],
 	)
-	var context := (builder.build_context(state, "b").get("context", {}) as Dictionary)
+	var context := builder.build_context(state, "b").get("context", {}) as Dictionary
 	_assert_eq(_ids(context.get("allies") as Array), ["b2"], "1v2 larger team must expose ally")
 	_assert_eq(_ids(context.get("enemies") as Array), ["a"], "1v2 larger team must expose enemy")
 

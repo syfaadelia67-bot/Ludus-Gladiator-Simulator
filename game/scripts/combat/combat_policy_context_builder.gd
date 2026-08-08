@@ -64,7 +64,10 @@ func _find_fighter(state: Dictionary, fighter_id: String) -> Dictionary:
 	if fighter_id.is_empty():
 		return {}
 	for raw_fighter in state.get("fighters", []) as Array:
-		if raw_fighter is Dictionary and str((raw_fighter as Dictionary).get("id", "")) == fighter_id:
+		if (
+			raw_fighter is Dictionary
+			and str((raw_fighter as Dictionary).get("id", "")) == fighter_id
+		):
 			return raw_fighter as Dictionary
 	return {}
 
