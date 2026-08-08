@@ -32,10 +32,7 @@ func evaluate_proposal(
 
 
 func _evaluate_ready_context(
-	context_result: Dictionary,
-	policy_proposal: Dictionary,
-	agent: Node,
-	instance_owner: Node
+	context_result: Dictionary, policy_proposal: Dictionary, agent: Node, instance_owner: Node
 ) -> Dictionary:
 	var runtime: Dictionary = _adapter.prepare_runtime_objects()
 	if runtime.get("status") != "ready":
