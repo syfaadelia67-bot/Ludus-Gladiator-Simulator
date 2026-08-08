@@ -37,10 +37,14 @@ func _test_valid_proposal_reaches_simulator_as_pending() -> void:
 		"combat_resolution_rules_not_frozen",
 		"gateway must preserve simulator pending reason"
 	)
-	_assert_eq(result.get("desired_action", {}), proposal_before, "gateway must expose validated intent")
+	_assert_eq(
+		result.get("desired_action", {}), proposal_before, "gateway must expose validated intent"
+	)
 	_assert_true(
-		result.get("simulation", {}) is Dictionary
-		and not (result.get("simulation", {}) as Dictionary).is_empty(),
+		(
+			result.get("simulation", {}) is Dictionary
+			and not (result.get("simulation", {}) as Dictionary).is_empty()
+		),
 		"valid proposal must include simulator result"
 	)
 	_assert_eq(state, state_before, "gateway must not mutate CombatState")
@@ -65,7 +69,9 @@ func _test_invalid_proposal_stops_before_simulator() -> void:
 
 	_assert_eq(result.get("status"), "policy_rejected", "invalid proposal must stop at policy")
 	_assert_eq(result.get("pending"), false, "policy rejection must not be marked pending")
-	_assert_eq(result.get("desired_action", {}), {}, "invalid proposal must expose no desired action")
+	_assert_eq(
+		result.get("desired_action", {}), {}, "invalid proposal must expose no desired action"
+	)
 	_assert_eq(result.get("simulation", {}), {}, "invalid proposal must never reach simulator")
 	fixture.owner.free()
 
@@ -81,8 +87,12 @@ func _test_unknown_actor_stops_before_simulator() -> void:
 		fixture.owner
 	)
 
-	_assert_eq(result.get("status"), "policy_rejected", "unknown actor must stop at policy boundary")
-	_assert_eq(result.get("reason"), "invalid_actor", "gateway must preserve policy rejection reason")
+	_assert_eq(
+		result.get("status"), "policy_rejected", "unknown actor must stop at policy boundary"
+	)
+	_assert_eq(
+		result.get("reason"), "invalid_actor", "gateway must preserve policy rejection reason"
+	)
 	_assert_eq(result.get("simulation", {}), {}, "unknown actor must never reach simulator")
 	fixture.owner.free()
 
