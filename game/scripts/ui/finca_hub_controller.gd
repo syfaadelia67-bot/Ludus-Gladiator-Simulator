@@ -37,8 +37,7 @@ const BUILDING_SYSTEMS := {
     "training_yard": "personal",
     "forge": "forja",
     "infirmary": "personal",
-    "kitchen": "economia",
-    "private_arena": "arena"
+    "mine": "economia"
 }
 
 var current_system_id := "finca"
@@ -179,7 +178,7 @@ func _configure_arena_dossier_actions(screen: Control) -> void:
         manage_button.tooltip_text = "Abrir el panel individual del gladiador seleccionado."
         _replace_button_action(manage_button, Callable(self, "_open_arena_dossier").bind(screen, "information"))
     if equipment_button != null:
-        equipment_button.tooltip_text = "Abrir las siete ranuras de equipamiento del gladiador seleccionado."
+        equipment_button.tooltip_text = "Abrir las seis ranuras de equipamiento del gladiador seleccionado."
         _replace_button_action(equipment_button, Callable(self, "_open_arena_dossier").bind(screen, "equipment"))
 
 func _replace_button_action(button: Button, action: Callable) -> void:
