@@ -2,53 +2,71 @@ extends Node
 
 const PERSON_SCRIPT = preload("res://scripts/entities/person.gd")
 
+const NORMAL_TRAIT_IDS: Array[String] = [
+	"beast_hunter",
+	"calculating",
+	"colossus",
+	"disciplined",
+	"impulsive",
+	"intimidating",
+	"lone_fighter",
+	"loyal",
+	"natural_talent",
+	"opportunist",
+	"protector",
+	"prudent",
+	"reckless",
+	"showman",
+	"tenacious",
+	"vigilant",
+]
+
+
 func _ready() -> void:
-    var origin_ids := TraitManager.get_origin_trait_ids()
-    var obtainable_ids := TraitManager.get_obtainable_trait_ids()
-    assert(origin_ids.size() == 8)
-    assert(obtainable_ids.size() == 14)
-    assert(obtainable_ids.has("dreamer"))
-    assert(obtainable_ids.has("encouraging"))
+	var normal_ids := TraitManager.get_normal_trait_ids()
+	assert(normal_ids == NORMAL_TRAIT_IDS)
+	assert(TraitManager.get_origin_trait_ids().is_empty())
+	assert(TraitManager.get_obtainable_trait_ids().is_empty())
 
-    var gladiator = PERSON_SCRIPT.new({
-        "id": "trait_contract_gladiator",
-        "name": "Gladiador de contrato",
-        "origin": "Roma",
-        "role": "gladiator",
-        "strength": 7,
-        "agility": 6,
-        "endurance": 8,
-        "intelligence": 5,
-        "technique": 6,
-        "health": 50,
-        "traits": []
-    })
-    assert(RosterManager.add_person(gladiator))
-    TraitManager.ensure_gladiator_origin_traits(gladiator)
+	var gladiator = PERSON_SCRIPT.new(
+		{
+			"id": "trait_contract_gladiator",
+			"name": "Gladiador de contrato",
+			"origin": "Roma",
+			"role": "gladiator",
+			"strength": 7,
+			"agility": 6,
+			"endurance": 8,
+			"intelligence": 5,
+			"technique": 6,
+			"health": 50,
+			"traits": [],
+		}
+	)
+	assert(RosterManager.add_person(gladiator))
+	TraitManager.ensure_gladiator_origin_traits(gladiator)
+	assert(gladiator.traits.is_empty(), "The frozen trait model must not auto-assign origin traits")
 
-    var origin_count := 0
-    for trait_id in gladiator.traits:
-        if str(TraitManager.get_trait(trait_id).get("category", "")) == "origin":
-            origin_count += 1
-    assert(origin_count == 2)
+	assert(TraitManager.award_trait(gladiator.id, "disciplined"))
+	assert(not TraitManager.award_trait(gladiator.id, "disciplined"), "Duplicate traits must be rejected")
+	assert(
+		not TraitManager.award_trait(gladiator.id, "impulsive"),
+		"Disciplinado and Impulsivo must be mutually exclusive"
+	)
 
-    var previous_strength: int = gladiator.strength
-    var previous_health: int = gladiator.health
-    assert(TraitManager.award_trait(gladiator.id, "encouraging"))
-    assert(gladiator.strength == previous_strength + 1)
-    assert(gladiator.health == previous_health + 5)
-    assert(not TraitManager.award_trait(gladiator.id, "encouraging"))
-    assert(gladiator.strength == previous_strength + 1)
-    assert(gladiator.health == previous_health + 5)
+	assert(TraitManager.award_trait(gladiator.id, "reckless"))
+	assert(
+		not TraitManager.award_trait(gladiator.id, "prudent"),
+		"Temerario and Prudente must be mutually exclusive"
+	)
 
-    var before_stats := [gladiator.strength, gladiator.agility, gladiator.endurance, gladiator.intelligence, gladiator.technique]
-    assert(TraitManager.award_trait(gladiator.id, "dreamer"))
-    assert(gladiator.strength == before_stats[0] + 1)
-    assert(gladiator.agility == before_stats[1] + 1)
-    assert(gladiator.endurance == before_stats[2] + 1)
-    assert(gladiator.intelligence == before_stats[3] + 1)
-    assert(gladiator.technique == before_stats[4] + 1)
-    assert(not TraitManager.award_trait(gladiator.id, origin_ids[0]))
+	assert(TraitManager.award_trait(gladiator.id, "protector"))
+	assert(gladiator.traits.size() == 3)
+	assert(
+		not TraitManager.award_trait(gladiator.id, "vigilant"),
+		"A gladiator must not exceed three normal traits"
+	)
+	assert(not TraitManager.award_trait(gladiator.id, "dreamer"), "Removed legacy traits must be inert")
 
-    print("Trait catalog and deterministic awards contract: OK")
-    get_tree().quit()
+	print("Frozen normal trait catalog and award contract: OK")
+	get_tree().quit()
