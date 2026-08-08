@@ -47,12 +47,31 @@ func _test_valid_proposal_reaches_simulator_as_pending() -> void:
 		),
 		"valid proposal must include simulator result"
 	)
+	var pending_requirements := result.get("pending_requirements", []) as Array
+	_assert_true(
+		pending_requirements.has("target_rules"),
+		"gateway must surface unresolved target rules"
+	)
+	_assert_true(
+		pending_requirements.has("damage_and_mitigation"),
+		"gateway must surface unresolved combat math"
+	)
+	var conditional_requirements := result.get("conditional_requirements", []) as Array
+	_assert_true(
+		conditional_requirements.has("position_and_distance_model"),
+		"gateway must surface conditional position/distance decision"
+	)
 	_assert_eq(state, state_before, "gateway must not mutate CombatState")
 	_assert_eq(proposal, proposal_before, "gateway must not mutate policy proposal")
 
 	var desired_action := result.get("desired_action", {}) as Dictionary
 	desired_action["action_id"] = "heavy"
 	_assert_eq(proposal, proposal_before, "gateway result must be isolated from caller proposal")
+	pending_requirements.clear()
+	_assert_true(
+		not ((result.get("simulation", {}) as Dictionary).get("pending_requirements", []) as Array).is_empty(),
+		"gateway readiness arrays must be isolated from nested simulator result"
+	)
 	fixture.owner.free()
 
 
@@ -73,6 +92,16 @@ func _test_invalid_proposal_stops_before_simulator() -> void:
 		result.get("desired_action", {}), {}, "invalid proposal must expose no desired action"
 	)
 	_assert_eq(result.get("simulation", {}), {}, "invalid proposal must never reach simulator")
+	_assert_eq(
+		result.get("pending_requirements", []),
+		[],
+		"policy rejection must not expose simulator readiness"
+	)
+	_assert_eq(
+		result.get("conditional_requirements", []),
+		[],
+		"policy rejection must not expose conditional simulator readiness"
+	)
 	fixture.owner.free()
 
 
@@ -94,6 +123,11 @@ func _test_unknown_actor_stops_before_simulator() -> void:
 		result.get("reason"), "invalid_actor", "gateway must preserve policy rejection reason"
 	)
 	_assert_eq(result.get("simulation", {}), {}, "unknown actor must never reach simulator")
+	_assert_eq(
+		result.get("pending_requirements", []),
+		[],
+		"unknown actor must not expose simulator readiness"
+	)
 	fixture.owner.free()
 
 
