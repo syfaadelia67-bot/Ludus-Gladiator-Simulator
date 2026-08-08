@@ -33,8 +33,9 @@ func get_objectives(chapter_id: String = "") -> Array:
 		var deadline := _deadline_for_objective(objective)
 		data["progress"] = _objective_progress(objective)
 		data["completed"] = completed_objectives.has(objective_id)
-		data["failed"] = failed_objectives.has(objective_id) or (
-			GameState.get_month() > deadline and not bool(data["completed"])
+		data["failed"] = (
+			failed_objectives.has(objective_id)
+			or (GameState.get_month() > deadline and not bool(data["completed"]))
 		)
 		data["deadline_month"] = deadline
 		data["months_remaining"] = maxi(0, deadline - GameState.get_month() + 1)
