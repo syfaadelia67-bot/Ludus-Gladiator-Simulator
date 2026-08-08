@@ -24,6 +24,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          # Production vendoring uses the exact asset and digest validated by the probe branch.
           asset='limboai+v1.6.0.gdextension-4.4.zip'
           sha='20e2559d4000efee4495a2e361b0c3cc1d0c51d38a9cc062d335e020de1a405f'
           url="https://github.com/limbonaut/limboai/releases/download/v1.6.0/${asset}"
