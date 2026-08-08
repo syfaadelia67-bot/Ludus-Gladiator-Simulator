@@ -5,6 +5,17 @@ signal upgrade_completed(building_id: String, new_level: int)
 signal upgrade_failed(reason: String)
 
 const CATALOG_PATH := "res://data/buildings.json"
+const REMOVED_LEGACY_IDS: Array[String] = [
+    "kitchen",
+    "warehouse",
+    "worker_quarters",
+    "wall_and_gate",
+    "guard_post",
+    "security",
+    "sanctuary",
+    "private_arena",
+    "stable"
+]
 
 var BUILDINGS: Dictionary = {}
 var LEGACY_ID_ALIASES: Dictionary = {}
@@ -49,13 +60,17 @@ func _ensure_level_entries() -> void:
         if levels.has(building_id):
             continue
         var data: Dictionary = BUILDINGS[building_id]
-        levels[building_id] = 1 if bool(data.get("demo_available", false)) else 0
+        levels[building_id] = int(data.get("starting_level", 0))
 
 func canonicalize_building_id(building_id: String) -> String:
     _ensure_catalog_loaded()
     if BUILDINGS.has(building_id):
         return building_id
-    return str(LEGACY_ID_ALIASES.get(building_id, building_id))
+    if LEGACY_ID_ALIASES.has(building_id):
+        return str(LEGACY_ID_ALIASES[building_id])
+    if REMOVED_LEGACY_IDS.has(building_id):
+        return ""
+    return building_id
 
 func migrate_levels(raw_levels: Dictionary) -> Dictionary:
     _ensure_catalog_loaded()
@@ -68,8 +83,8 @@ func migrate_levels(raw_levels: Dictionary) -> Dictionary:
         migrated[canonical_id] = maxi(int(migrated.get(canonical_id, 0)), incoming_level)
     for building_id in BUILDINGS.keys():
         var data: Dictionary = BUILDINGS[building_id]
-        var default_level := 1 if bool(data.get("demo_available", false)) else 0
-        var max_level := int(data.get("max_level", 3))
+        var default_level := int(data.get("starting_level", 0))
+        var max_level := int(data.get("max_level", 10))
         migrated[building_id] = clampi(int(migrated.get(building_id, default_level)), 0, max_level)
     return migrated
 
@@ -106,19 +121,24 @@ func get_effective_max_level(building_id: String) -> int:
     var data: Dictionary = BUILDINGS[canonical_id]
     if demo_mode:
         return int(data.get("demo_max_level", 0))
-    return int(data.get("max_level", 3))
+    return int(data.get("max_level", 10))
 
 func get_upgrade_cost(building_id: String) -> int:
     _ensure_catalog_loaded()
     var canonical_id := canonicalize_building_id(building_id)
     if not BUILDINGS.has(canonical_id):
         return 0
+    var data: Dictionary = BUILDINGS[canonical_id]
+    if bool(data.get("upgrade_cost_pending", false)):
+        return 0
     var level := get_level(canonical_id)
-    return int(float(BUILDINGS[canonical_id].get("base_cost", 0)) * pow(1.65, level))
+    return int(float(data.get("base_cost", 0)) * pow(1.65, level))
 
 func can_upgrade(building_id: String) -> bool:
     var canonical_id := canonicalize_building_id(building_id)
     if not BUILDINGS.has(canonical_id) or is_locked(canonical_id):
+        return false
+    if bool(BUILDINGS[canonical_id].get("upgrade_cost_pending", false)):
         return false
     return get_level(canonical_id) < get_effective_max_level(canonical_id)
 
@@ -129,6 +149,9 @@ func upgrade(building_id: String) -> bool:
         return false
     if is_locked(canonical_id):
         upgrade_failed.emit("Esta instalación no está disponible en la demo.")
+        return false
+    if bool(BUILDINGS[canonical_id].get("upgrade_cost_pending", false)):
+        upgrade_failed.emit("El coste de mejora de esta instalación aún no está migrado al balance mensual.")
         return false
     var level := get_level(canonical_id)
     if level >= get_effective_max_level(canonical_id):
@@ -156,7 +179,7 @@ func get_recovery_bonus() -> int:
     return get_level("infirmary") * 3
 
 func get_security_bonus() -> int:
-    return get_level("wall_and_gate") * 3
+    return 0
 
 func get_forge_level() -> int:
     return get_level("forge")
@@ -166,6 +189,7 @@ func get_building_ids() -> Array[String]:
     var result: Array[String] = []
     for building_id in BUILDINGS.keys():
         result.append(str(building_id))
+    result.sort()
     return result
 
 func get_building_data(building_id: String) -> Dictionary:
