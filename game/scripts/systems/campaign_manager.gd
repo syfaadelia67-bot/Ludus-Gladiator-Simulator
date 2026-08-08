@@ -9,7 +9,6 @@ signal campaign_finished(victory: bool, reason: String)
 const DEMO_FINAL_MONTH := 20
 # Save/UI compatibility alias while weekly consumers are migrated.
 const DEMO_FINAL_WEEK := DEMO_FINAL_MONTH
-const LEGACY_DEMO_WIN_TARGET := 6
 
 const CHAPTERS := [
 	{
@@ -44,8 +43,8 @@ const CHAPTERS := [
 		"month_end": 20,
 		"week_start": 13,
 		"week_end": 20,
-		"description": "Prepará el primer Gran Torneo y cerrá la demo en el mes XX.",
-		"objectives": ["six_victories", "provincial_house", "demo_finale"],
+		"description": "Disputá el Gran Torneo de Roma y cerrá la demo en el mes XX.",
+		"objectives": ["gt1_medal", "provincial_house", "demo_finale"],
 	},
 ]
 
@@ -154,12 +153,12 @@ const OBJECTIVES := [
 		"reward_reputation": 4,
 	},
 	{
-		"id": "six_victories",
+		"id": "gt1_medal",
 		"chapter": "name_of_ludus",
-		"title": "Nombre en la arena",
-		"description": "Ganá 6 combates durante la demo.",
-		"type": "wins",
-		"target": 6,
+		"title": "Medalla de Roma",
+		"description": "Subí al podio del Gran Torneo de Roma.",
+		"type": "gt1_medal",
+		"target": 1,
 		"reward_denarii": 300,
 		"reward_reputation": 5,
 	},
@@ -177,7 +176,7 @@ const OBJECTIVES := [
 		"id": "demo_finale",
 		"chapter": "name_of_ludus",
 		"title": "Final de campaña",
-		"description": "Resolvé el cierre competitivo del mes XX.",
+		"description": "Completá la clasificación del Gran Torneo de Roma.",
 		"type": "demo_finale",
 		"target": 1,
 		"reward_denarii": 500,
@@ -193,12 +192,17 @@ var completed_objectives: Array[String] = []
 var campaign_over: bool = false
 var victory_achieved: bool = false
 var defeat_reason: String = ""
+# Save-v14 compatibility field. It now mirrors a resolved GT I classification.
 var final_combat_resolved: bool = false
 
 
 func _ready() -> void:
 	CombatManager.combat_finished.connect(_on_combat_finished)
 	GameState.month_advanced.connect(_on_month_advanced)
+	if TournamentManager.has_signal("grand_tournament_changed"):
+		TournamentManager.connect(
+			"grand_tournament_changed", Callable(self, "_on_grand_tournament_changed")
+		)
 	evaluate_progress()
 
 
@@ -207,15 +211,19 @@ func _on_combat_finished(result: Dictionary) -> void:
 		total_wins += 1
 	else:
 		total_losses += 1
-	if GameState.get_month() >= DEMO_FINAL_MONTH:
-		final_combat_resolved = true
 	evaluate_progress()
 	_evaluate_campaign_finale()
 
 
 func _on_month_advanced(_month: int) -> void:
 	evaluate_progress()
+	_evaluate_campaign_finale()
 	_evaluate_defeat()
+
+
+func _on_grand_tournament_changed(_summary: Dictionary) -> void:
+	evaluate_progress()
+	_evaluate_campaign_finale()
 
 
 func evaluate_progress() -> void:
@@ -228,21 +236,27 @@ func evaluate_progress() -> void:
 
 
 func _evaluate_campaign_finale() -> void:
-	if campaign_over or not final_combat_resolved or GameState.get_month() < DEMO_FINAL_MONTH:
+	if campaign_over or GameState.get_month() < DEMO_FINAL_MONTH:
+		return
+	if not TournamentManager.is_gt1_complete():
 		return
 
-	# Compatibility bridge only. The next tournament migration replaces this
-	# legacy six-win gate with GT I placement (Gold/Silver/Bronze/no medal).
-	if total_wins >= LEGACY_DEMO_WIN_TARGET:
-		campaign_over = true
-		victory_achieved = true
+	var gt_summary: Dictionary = TournamentManager.get_gt1_summary()
+	var placement := int(gt_summary.get("placement", 0))
+	var medal := str(gt_summary.get("medal", ""))
+	final_combat_resolved = true
+	campaign_over = true
+	victory_achieved = placement >= 1 and placement <= 3
+	if victory_achieved:
 		defeat_reason = ""
 		campaign_finished.emit(
-			true, "El ludus completó el cierre competitivo del mes XX de la demo."
+			true,
+			"El ludus terminó %d.º en Roma y obtuvo medalla %s." % [placement, medal],
 		)
-		campaign_changed.emit()
-		return
-	_set_defeat("La casa cerró el mes XX sin alcanzar el objetivo competitivo de transición.")
+	else:
+		defeat_reason = "El ludus completó el Gran Torneo de Roma sin subir al podio."
+		campaign_finished.emit(false, defeat_reason)
+	campaign_changed.emit()
 
 
 func _evaluate_chapter() -> void:
@@ -303,13 +317,10 @@ func _objective_progress(objective: Dictionary) -> int:
 		"building_levels":
 			for building_id in EstateManager.get_building_ids():
 				progress += EstateManager.get_level(building_id)
+		"gt1_medal":
+			progress = 1 if not TournamentManager.get_gt1_medal().is_empty() else 0
 		"demo_finale":
-			if (
-				final_combat_resolved
-				and GameState.get_month() >= DEMO_FINAL_MONTH
-				and total_wins >= LEGACY_DEMO_WIN_TARGET
-			):
-				progress = 1
+			progress = 1 if TournamentManager.is_gt1_complete() else 0
 	return progress
 
 
@@ -387,6 +398,7 @@ func get_summary() -> Dictionary:
 		# Compatibility alias for presenters/tests not migrated yet.
 		"final_week": DEMO_FINAL_MONTH,
 		"final_combat_resolved": final_combat_resolved,
+		"grand_tournament": TournamentManager.get_gt1_summary(),
 	}
 
 
@@ -415,4 +427,5 @@ func import_state(data: Dictionary) -> void:
 	defeat_reason = str(data.get("defeat_reason", ""))
 	final_combat_resolved = bool(data.get("final_combat_resolved", false))
 	_evaluate_chapter()
+	_evaluate_campaign_finale()
 	campaign_changed.emit()
