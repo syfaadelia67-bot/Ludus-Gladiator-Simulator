@@ -31,16 +31,19 @@ func _ready() -> void:
 			not EquipmentManager.canonical_slot_id(str(entry.get("slot", ""))).is_empty(),
 			"%s must use a valid equipment slot" % equipment_id
 		)
-		assert(int(entry.get("forge_level", 0)) >= 1, "%s must require a forge level" % equipment_id)
-		assert(int(entry.get("ore", -1)) >= 0, "%s must have a non-negative ore cost" % equipment_id)
+		assert(
+			int(entry.get("forge_level", 0)) >= 1, "%s must require a forge level" % equipment_id
+		)
+		assert(
+			int(entry.get("ore", -1)) >= 0, "%s must have a non-negative ore cost" % equipment_id
+		)
 		assert(
 			int(entry.get("denarii", -1)) >= 0,
 			"%s must have a non-negative denarii cost" % equipment_id
 		)
 		assert(int(entry.get("power", -1)) >= 0, "%s must define non-negative power" % equipment_id)
 		assert(
-			int(entry.get("defense", -1)) >= 0,
-			"%s must define non-negative defense" % equipment_id
+			int(entry.get("defense", -1)) >= 0, "%s must define non-negative defense" % equipment_id
 		)
 		assert(entry.get("tags", null) is Array, "%s must define equipment tags" % equipment_id)
 		for raw_tag in entry.get("tags", []):
@@ -73,8 +76,10 @@ func _ready() -> void:
 			var required_tag := str(raw_required_tag)
 			assert(
 				available_tags.has(required_tag),
-				"Ability %s requires equipment tag with no canonical provider: %s"
-				% [str(ability.get("id", "")), required_tag]
+				(
+					"Ability %s requires equipment tag with no canonical provider: %s"
+					% [str(ability.get("id", "")), required_tag]
+				)
 			)
 
 	print("Canonical equipment catalog contract: OK")
