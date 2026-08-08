@@ -20,9 +20,8 @@ const CHAPTERS := [
 		"month_end": 6,
 		"week_start": 1,
 		"week_end": 6,
-		"description": (
-			"Estabilizá la casa, prepará a tu primer gladiador y sobreviví a los primeros meses."
-		),
+		"description":
+		"Estabilizá la casa, prepará a tu primer gladiador y sobreviví a los primeros meses.",
 		"objectives": ["first_fight", "first_victory", "basic_preparation"],
 	},
 	{
@@ -33,9 +32,8 @@ const CHAPTERS := [
 		"month_end": 12,
 		"week_start": 7,
 		"week_end": 12,
-		"description": (
-			"Convertí al ludus en una casa reconocida y construí una plantilla competitiva."
-		),
+		"description":
+		"Convertí al ludus en una casa reconocida y construí una plantilla competitiva.",
 		"objectives": ["three_victories", "recognized_house", "trained_roster"],
 	},
 	{
@@ -46,9 +44,7 @@ const CHAPTERS := [
 		"month_end": 20,
 		"week_start": 13,
 		"week_end": 20,
-		"description": (
-			"Prepará el primer Gran Torneo y cerrá la demo en el mes XX."
-		),
+		"description": "Prepará el primer Gran Torneo y cerrá la demo en el mes XX.",
 		"objectives": ["six_victories", "provincial_house", "demo_finale"],
 	},
 ]
@@ -242,8 +238,7 @@ func _evaluate_campaign_finale() -> void:
 		victory_achieved = true
 		defeat_reason = ""
 		campaign_finished.emit(
-			true,
-			"El ludus completó el cierre competitivo del mes XX de la demo."
+			true, "El ludus completó el cierre competitivo del mes XX de la demo."
 		)
 		campaign_changed.emit()
 		return
@@ -314,9 +309,11 @@ func _objective_progress(objective: Dictionary) -> int:
 		"demo_finale":
 			return (
 				1
-				if final_combat_resolved
-				and GameState.get_month() >= DEMO_FINAL_MONTH
-				and total_wins >= LEGACY_DEMO_WIN_TARGET
+				if (
+					final_combat_resolved
+					and GameState.get_month() >= DEMO_FINAL_MONTH
+					and total_wins >= LEGACY_DEMO_WIN_TARGET
+				)
 				else 0
 			)
 		_:
