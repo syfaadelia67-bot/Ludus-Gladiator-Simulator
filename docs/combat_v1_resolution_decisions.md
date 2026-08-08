@@ -101,11 +101,23 @@ Question:
 - How do defensive reactions interact with attacks?
 
 Current evidence:
-- Legacy combat simply alternates player attack then enemy attack; that is not suitable evidence for `2v2`, `1v2`, parry, or simultaneous intent resolution.
+- Legacy combat simply alternates player attack and then enemy attack each round.
+- The legacy order is side-biased and cannot represent `2v2` or `1v2` fairly without additional rules.
+- Historical `relentless_pursuit` includes `retain_initiative_on_hit`, showing that initiative was contemplated as an effect, but the legacy simulator has no reusable initiative state for Combat V1.
+- Historical feint/stun/action-loss mechanics can suppress an action, but they do not define a general V1 ordering model.
+- `parry`, `block`, and `dodge` are first-class V1 actions, so the final ordering model must define how defensive intent interacts with an opposing offensive intent.
+- LimboAI execution order cannot be allowed to decide simulator resolution order.
+
+Evidence-based constraint, not frozen:
+- resolution should be exchange-based and deterministic from CombatState/intents;
+- node order, frame timing, BehaviorTree tick timing, and dictionary/array insertion order must never decide priority;
+- any initiative/tie-break rule must be owned by `CombatSimulator` and explicitly reproducible.
 
 Freeze acceptance criteria:
 - deterministic order for all supported formats;
 - deterministic tie handling;
+- explicit attack/defense interaction timing;
+- explicit handling of multiple intents in `1v2` and `2v2`;
 - no hidden dependence on node order, array insertion order, frame timing, or LimboAI execution order.
 
 ### D4 — Damage and mitigation
