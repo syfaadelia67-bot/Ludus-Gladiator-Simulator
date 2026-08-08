@@ -22,6 +22,7 @@ jobs:
           gdformat \
             game/scripts/core/data_repository.gd \
             game/scripts/systems/estate_manager.gd \
+            game/scripts/systems/market_manager.gd \
             game/scripts/systems/trait_manager.gd \
             game/scripts/ui/finca_hub_controller.gd \
             game/scripts/ui/finca_screen.gd \
@@ -30,12 +31,14 @@ jobs:
             game/tests/demo_readiness_integration_test.gd \
             game/tests/estate_catalog_test.gd \
             game/tests/test_finca_building_context_access_contract.gd \
+            game/tests/test_finca_building_navigation_contract.gd \
             game/tests/test_finca_demo_hub_modal_contract.gd \
             game/tests/test_finca_main_screen_contract.gd \
             game/tests/test_trait_catalog_and_awards.gd
           git diff -- \
             game/scripts/core/data_repository.gd \
             game/scripts/systems/estate_manager.gd \
+            game/scripts/systems/market_manager.gd \
             game/scripts/systems/trait_manager.gd \
             game/scripts/ui/finca_hub_controller.gd \
             game/scripts/ui/finca_screen.gd \
@@ -44,6 +47,7 @@ jobs:
             game/tests/demo_readiness_integration_test.gd \
             game/tests/estate_catalog_test.gd \
             game/tests/test_finca_building_context_access_contract.gd \
+            game/tests/test_finca_building_navigation_contract.gd \
             game/tests/test_finca_demo_hub_modal_contract.gd \
             game/tests/test_finca_main_screen_contract.gd \
             game/tests/test_trait_catalog_and_awards.gd
