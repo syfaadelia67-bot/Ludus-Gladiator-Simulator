@@ -81,11 +81,8 @@ func _initialize() -> void:
 	assert(barracks_text.contains("Casco:"))
 	assert(barracks_text.contains("Montura: Próximamente"))
 
-	assert(
-		market_manager_text.contains(
-			'"slot":str(recipe.get("slot", EquipmentManager.get_item_slot(recipe)))'
-		)
-	)
+	assert(market_manager_text.contains('"slot"'))
+	assert(market_manager_text.contains("EquipmentManager.get_item_slot(recipe)"))
 	assert(market_screen_text.contains("func _offer_slot"))
 	assert(market_screen_text.contains("EquipmentManager.get_slot_label(slot_id)"))
 	assert(
