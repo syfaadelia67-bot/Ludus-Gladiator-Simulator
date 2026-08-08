@@ -49,7 +49,9 @@ func run() -> void:
 		"La interfaz debe usar el estado oficial del manager."
 	)
 	_assert(
-		project_source.contains('CampaignManager="*res://scripts/systems/campaign_manager_demo.gd"'),
+		project_source.contains(
+			'CampaignManager="*res://scripts/systems/campaign_manager_demo.gd"'
+		),
 		"La extensión de campaña debe estar activa."
 	)
 
