@@ -35,8 +35,7 @@ func run() -> void:
 		"mine",
 		"beast_area",
 	]:
-		assert(controller_text.contains('"%s"' % building_id))
-		assert(controller_text.contains('"%s":' % building_id))
+		assert(controller_text.contains('"id": "%s"' % building_id))
 
 	for full_game_id in [
 		"kitchen",
