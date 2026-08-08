@@ -10,6 +10,7 @@ const REQUIRED_LIMBOAI_CLASSES := [
 	"LimboHSM",
 	"LimboState",
 ]
+const POLICY_CONTEXT_KEYS := ["combat_state", "actor_id", "desired_action"]
 
 var _policy_contract = CombatPolicyContractScript.new()
 
@@ -32,6 +33,32 @@ func get_runtime_status() -> Dictionary:
 		"available": missing_classes.is_empty(),
 		"missing_classes": missing_classes,
 	}
+
+
+func build_policy_context(state: Dictionary, actor_id: String) -> Dictionary:
+	if actor_id.is_empty() or not _fighter_exists(state, actor_id):
+		return {
+			"status": "invalid_actor",
+			"errors": ["Policy context references unknown actor: %s" % actor_id],
+			"context": {},
+		}
+
+	return {
+		"status": "ready",
+		"errors": [],
+		"context": {
+			"combat_state": state.duplicate(true),
+			"actor_id": actor_id,
+			"desired_action": {},
+		},
+	}
+
+
+func extract_desired_action(policy_context: Dictionary) -> Dictionary:
+	var desired_action_value: Variant = policy_context.get("desired_action", {})
+	if desired_action_value is not Dictionary:
+		return {}
+	return (desired_action_value as Dictionary).duplicate(true)
 
 
 func validate_policy_output(state: Dictionary, desired_action: Dictionary) -> Array[String]:
@@ -80,3 +107,13 @@ func release_runtime_objects(runtime_objects: Dictionary) -> void:
 		(bt_player as Node).free()
 	# BehaviorTree and Blackboard are RefCounted in the GDExtension contract.
 	objects.clear()
+
+
+func _fighter_exists(state: Dictionary, fighter_id: String) -> bool:
+	var fighters_value: Variant = state.get("fighters", [])
+	if fighters_value is not Array:
+		return false
+	for raw_fighter in fighters_value as Array:
+		if raw_fighter is Dictionary and str((raw_fighter as Dictionary).get("id", "")) == fighter_id:
+			return true
+	return false
