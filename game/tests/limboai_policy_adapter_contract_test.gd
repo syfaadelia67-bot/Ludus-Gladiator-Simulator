@@ -9,7 +9,9 @@ func _initialize() -> void:
 	var adapter = LimboAIPolicyAdapterScript.new()
 	var status: Dictionary = adapter.get_runtime_status()
 	_assert_eq(status.get("provider"), "limboai", "adapter provider must stay LimboAI")
-	_assert_eq(status.get("version_contract"), "1.6.0", "LimboAI integration must stay pinned to 1.6.0")
+	_assert_eq(
+		status.get("version_contract"), "1.6.0", "LimboAI integration must stay pinned to 1.6.0"
+	)
 
 	var available := bool(status.get("available", false))
 	_assert_eq(adapter.is_limboai_available(), available, "runtime availability APIs must agree")
@@ -28,14 +30,23 @@ func _initialize() -> void:
 	else:
 		_assert_eq(runtime.get("status"), "unavailable", "missing extension must degrade safely")
 		var missing_value: Variant = status.get("missing_classes", [])
-		_assert_true(missing_value is Array and not (missing_value as Array).is_empty(), "unavailable runtime must report missing classes")
+		_assert_true(
+			missing_value is Array and not (missing_value as Array).is_empty(),
+			"unavailable runtime must report missing classes"
+		)
 
 	var state := _valid_state()
 	var desired_action := {"actor_id": "a", "action_id": "light", "target_id": "b"}
-	_assert_true(adapter.validate_policy_output(state, desired_action).is_empty(), "LimboAI output must pass canonical policy validation")
+	_assert_true(
+		adapter.validate_policy_output(state, desired_action).is_empty(),
+		"LimboAI output must pass canonical policy validation"
+	)
 
 	var invalid_action := {"actor_id": "a", "action_id": "invented_action", "target_id": "b"}
-	_assert_true(not adapter.validate_policy_output(state, invalid_action).is_empty(), "LimboAI cannot bypass canonical action validation")
+	_assert_true(
+		not adapter.validate_policy_output(state, invalid_action).is_empty(),
+		"LimboAI cannot bypass canonical action validation"
+	)
 
 	if _failures.is_empty():
 		print("LimboAI policy adapter contract: OK")
@@ -49,7 +60,8 @@ func _initialize() -> void:
 func _valid_state() -> Dictionary:
 	return {
 		"format": "1v1",
-		"fighters": [
+		"fighters":
+		[
 			_fighter("a", "alpha"),
 			_fighter("b", "beta"),
 		],

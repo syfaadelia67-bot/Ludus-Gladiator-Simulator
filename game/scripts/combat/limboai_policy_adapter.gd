@@ -61,7 +61,8 @@ func prepare_runtime_objects() -> Dictionary:
 	return {
 		"status": "ready",
 		"provider": "limboai",
-		"objects": {
+		"objects":
+		{
 			"bt_player": bt_player,
 			"behavior_tree": behavior_tree,
 			"blackboard": blackboard,
