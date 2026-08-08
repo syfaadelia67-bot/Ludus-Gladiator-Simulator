@@ -9,8 +9,9 @@ func run() -> void:
 
     _assert(DataRepository.abilities.size() == 8, "La demo debe tener ocho habilidades canónicas.")
     _assert(DataRepository.specializations.size() == 5, "Deben existir gladiador y cuatro especializaciones.")
-    _assert(TraitManager.get_origin_trait_ids().size() == 8, "Deben existir ocho rasgos de origen.")
-    _assert(TraitManager.get_obtainable_trait_ids().size() == 14, "Deben existir catorce rasgos obtenibles.")
+    _assert(TraitManager.get_normal_trait_ids().size() == 16, "Deben existir dieciséis rasgos normales canónicos.")
+    _assert(TraitManager.get_origin_trait_ids().is_empty(), "Los rasgos de origen legacy deben permanecer inactivos.")
+    _assert(TraitManager.get_obtainable_trait_ids().is_empty(), "Los rasgos obtenibles legacy deben permanecer inactivos.")
     _assert(SaveManager.SAVE_VERSION == 14, "El guardado activo debe ser versión 14.")
 
     var previous_people: Array = RosterManager.people.duplicate()
@@ -92,9 +93,12 @@ func run() -> void:
 
     var offer: Dictionary = MarketManager._generate_offer(0)
     var offer_traits: Array = offer.get("traits", [])
+    var canonical_traits := TraitManager.get_normal_trait_ids()
     _assert(offer.has("technique"), "Las ofertas deben incluir Técnica.")
     _assert(offer.has("health"), "Las ofertas deben incluir Vida.")
-    _assert(offer_traits.size() == 2, "Las ofertas deben incluir dos rasgos de origen.")
+    _assert(offer_traits.size() <= 3, "Una oferta no debe exceder tres rasgos normales.")
+    for trait_id in offer_traits:
+        _assert(canonical_traits.has(str(trait_id)), "Las ofertas nuevas solo pueden usar rasgos normales canónicos.")
 
     RosterManager.people = previous_people
     GladiatorProgressionManager.records = previous_records
