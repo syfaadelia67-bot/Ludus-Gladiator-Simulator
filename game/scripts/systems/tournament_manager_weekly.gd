@@ -21,7 +21,8 @@ const MINOR_PRIZES := {
 }
 
 const GT1_ENCOUNTERS := {
-	13: {
+	13:
+	{
 		"encounter": 1,
 		"format": "1v1",
 		"team_size": 1,
@@ -33,7 +34,8 @@ const GT1_ENCOUNTERS := {
 		"substitutions": 0,
 		"description": "Tres 1v1 consecutivos con el mismo gladiador.",
 	},
-	16: {
+	16:
+	{
 		"encounter": 2,
 		"format": "1v1",
 		"team_size": 1,
@@ -45,7 +47,8 @@ const GT1_ENCOUNTERS := {
 		"substitutions": 0,
 		"description": "Tres 1v1 independientes; se permiten gladiadores y bestias.",
 	},
-	20: {
+	20:
+	{
 		"encounter": 3,
 		"format": "2v2",
 		"team_size": 2,
@@ -210,7 +213,9 @@ func register_combat_result(fighter_id: String, victory: bool) -> Dictionary:
 	else:
 		var tier := clampi(int(matching.get("tournament_tier", 1)), 1, 3)
 		var prizes: Dictionary = MINOR_PRIZES[tier]
-		var reward := int(prizes.get("champion", 0)) if victory else int(prizes.get("eliminated", 0))
+		var reward := (
+			int(prizes.get("champion", 0)) if victory else int(prizes.get("eliminated", 0))
+		)
 		var reputation_change := int(prizes.get("reputation", 0)) if victory else 0
 		GameState.denarii += reward
 		GameState.reputation += reputation_change
@@ -268,7 +273,9 @@ func register_grand_tournament_fight_result(
 	return result
 
 
-func register_gt1_rival_result(rival_id: String, rival_name: String, points: int, wins: int) -> bool:
+func register_gt1_rival_result(
+	rival_id: String, rival_name: String, points: int, wins: int
+) -> bool:
 	if rival_id.is_empty() or rival_id == "player":
 		return false
 	gt1_rival_scores[rival_id] = {
