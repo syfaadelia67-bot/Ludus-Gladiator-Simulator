@@ -16,6 +16,12 @@ func _initialize() -> void:
 	var available := bool(status.get("available", false))
 	_assert_eq(adapter.is_limboai_available(), available, "runtime availability APIs must agree")
 
+	var state := _valid_state()
+	var policy_bridge: Dictionary = adapter.build_policy_context(state, "a")
+	_assert_eq(policy_bridge.get("status"), "ready", "known actor must build policy context")
+	var context_value: Variant = policy_bridge.get("context", {})
+	_assert_true(context_value is Dictionary, "ready policy bridge must expose context")
+
 	var runtime: Dictionary = adapter.prepare_runtime_objects()
 	if available:
 		_assert_eq(runtime.get("status"), "ready", "available LimboAI runtime must initialize")
@@ -26,6 +32,8 @@ func _initialize() -> void:
 			_assert_true(objects.get("bt_player") != null, "BTPlayer must initialize")
 			_assert_true(objects.get("behavior_tree") != null, "BehaviorTree must initialize")
 			_assert_true(objects.get("blackboard") != null, "Blackboard must initialize")
+			if context_value is Dictionary:
+				_test_blackboard_bridge(adapter, runtime, objects, context_value as Dictionary)
 		adapter.release_runtime_objects(runtime)
 	else:
 		_assert_eq(runtime.get("status"), "unavailable", "missing extension must degrade safely")
@@ -35,15 +43,16 @@ func _initialize() -> void:
 			"unavailable runtime must report missing classes"
 		)
 
-	var state := _valid_state()
-	var policy_bridge: Dictionary = adapter.build_policy_context(state, "a")
-	_assert_eq(policy_bridge.get("status"), "ready", "known actor must build policy context")
-	var context_value: Variant = policy_bridge.get("context", {})
-	_assert_true(context_value is Dictionary, "ready policy bridge must expose context")
 	if context_value is Dictionary:
 		var context := context_value as Dictionary
 		_assert_eq(context.get("actor_id"), "a", "policy context must preserve actor id")
 		_assert_true(context.get("combat_state") is Dictionary, "policy context must expose state")
+		_assert_true(context.get("actor") is Dictionary, "policy context must expose actor view")
+		_assert_true(context.get("enemies") is Array, "policy context must expose enemies")
+		_assert_true(
+			context.get("available_action_ids") is Array,
+			"policy context must expose canonical actions",
+		)
 		_assert_true(
 			context.get("desired_action") is Dictionary, "policy context needs output slot"
 		)
@@ -82,6 +91,38 @@ func _initialize() -> void:
 		for failure in _failures:
 			push_error(failure)
 		quit(1)
+
+
+func _test_blackboard_bridge(
+	adapter, runtime: Dictionary, objects: Dictionary, policy_context: Dictionary
+) -> void:
+	var write_result: Dictionary = adapter.write_policy_context_to_blackboard(runtime, policy_context)
+	_assert_eq(write_result.get("status"), "ready", "policy context must seed LimboAI Blackboard")
+	var blackboard: Object = objects.get("blackboard") as Object
+	_assert_true(bool(blackboard.call("has_var", &"actor_id")), "Blackboard must contain actor_id")
+	_assert_eq(
+		blackboard.call("get_var", &"actor_id", ""),
+		"a",
+		"Blackboard must preserve policy actor id",
+	)
+
+	var stored_state := blackboard.call("get_var", &"combat_state", {}) as Dictionary
+	(policy_context.get("combat_state") as Dictionary)["format"] = "2v2"
+	_assert_eq(stored_state.get("format"), "1v1", "Blackboard state must be isolated from context")
+
+	blackboard.call(
+		"set_var",
+		&"desired_action",
+		{"actor_id": "a", "action_id": "light", "target_id": "b"},
+	)
+	var desired_action: Dictionary = adapter.read_desired_action_from_blackboard(runtime)
+	_assert_eq(desired_action.get("action_id"), "light", "adapter must read Blackboard output")
+	desired_action["action_id"] = "heavy"
+	_assert_eq(
+		(adapter.read_desired_action_from_blackboard(runtime)).get("action_id"),
+		"light",
+		"Blackboard output must be isolated when returned",
+	)
 
 
 func _valid_state() -> Dictionary:
