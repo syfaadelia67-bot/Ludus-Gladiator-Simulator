@@ -60,9 +60,8 @@ func build_context(state: Dictionary, actor_id: String) -> Dictionary:
 			"enemies": enemies,
 			"available_action_ids": _combat_contract.get_action_ids(),
 			"action_contracts": _combat_contract.get_action_contracts(),
-			"target_candidates": (
-				(target_result.get("candidates", {}) as Dictionary).duplicate(true)
-			),
+			"target_candidates":
+			(target_result.get("candidates", {}) as Dictionary).duplicate(true),
 			"combat_state": state.duplicate(true),
 			"desired_action": {},
 		},
