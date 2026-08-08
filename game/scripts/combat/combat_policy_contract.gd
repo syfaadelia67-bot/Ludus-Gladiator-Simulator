@@ -38,6 +38,9 @@ func _fighter_exists(state: Dictionary, fighter_id: String) -> bool:
 	if not fighters_value is Array:
 		return false
 	for raw_fighter in fighters_value as Array:
-		if raw_fighter is Dictionary and str((raw_fighter as Dictionary).get("id", "")) == fighter_id:
+		if (
+			raw_fighter is Dictionary
+			and str((raw_fighter as Dictionary).get("id", "")) == fighter_id
+		):
 			return true
 	return false

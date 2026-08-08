@@ -70,7 +70,8 @@ func _assert_inputs_are_not_mutated(policy) -> void:
 func _state() -> Dictionary:
 	return {
 		"format": "1v1",
-		"fighters": [
+		"fighters":
+		[
 			_fighter("a1", "a"),
 			_fighter("b1", "b"),
 		],
