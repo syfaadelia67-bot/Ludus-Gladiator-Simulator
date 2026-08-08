@@ -96,7 +96,9 @@ func _initialize() -> void:
 func _test_blackboard_bridge(
 	adapter, runtime: Dictionary, objects: Dictionary, policy_context: Dictionary
 ) -> void:
-	var write_result: Dictionary = adapter.write_policy_context_to_blackboard(runtime, policy_context)
+	var write_result: Dictionary = adapter.write_policy_context_to_blackboard(
+		runtime, policy_context
+	)
 	_assert_eq(write_result.get("status"), "ready", "policy context must seed LimboAI Blackboard")
 	var blackboard: Object = objects.get("blackboard") as Object
 	_assert_true(bool(blackboard.call("has_var", &"actor_id")), "Blackboard must contain actor_id")
@@ -110,10 +112,13 @@ func _test_blackboard_bridge(
 	(policy_context.get("combat_state") as Dictionary)["format"] = "2v2"
 	_assert_eq(stored_state.get("format"), "1v1", "Blackboard state must be isolated from context")
 
-	blackboard.call(
-		"set_var",
-		&"desired_action",
-		{"actor_id": "a", "action_id": "light", "target_id": "b"},
+	(
+		blackboard
+		. call(
+			"set_var",
+			&"desired_action",
+			{"actor_id": "a", "action_id": "light", "target_id": "b"},
+		)
 	)
 	var desired_action: Dictionary = adapter.read_desired_action_from_blackboard(runtime)
 	_assert_eq(desired_action.get("action_id"), "light", "adapter must read Blackboard output")
