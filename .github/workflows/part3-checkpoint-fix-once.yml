@@ -1,0 +1,54 @@
+name: Part 3 Checkpoint Fix Once
+
+on:
+  push:
+    branches:
+      - feature/monthly-campaign-foundation
+    paths:
+      - .github/workflows/part3-checkpoint-fix-once.yml
+
+permissions:
+  contents: write
+
+jobs:
+  fix-and-format:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          ref: feature/monthly-campaign-foundation
+          fetch-depth: 0
+      - name: Fix structural Finca assertion
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path('game/tests/test_finca_demo_hub_modal_contract.gd')
+          text = path.read_text(encoding='utf-8')
+          old = '''\t\tassert(controller_text.contains('\"%s\"' % building_id))\n\t\tassert(controller_text.contains('\"%s\":' % building_id))'''
+          new = '''\t\tassert(controller_text.contains('\"id\": \"%s\"' % building_id))'''
+          if old not in text:
+              raise SystemExit('Expected stale Finca assertions were not found')
+          path.write_text(text.replace(old, new, 1), encoding='utf-8')
+          PY
+      - name: Apply canonical gdformat
+        run: |
+          python3 -m pip install --disable-pip-version-check --no-input 'gdtoolkit==4.5.0'
+          gdformat \
+            game/scripts/core/frozen_data_validator.gd \
+            game/tests/test_finca_building_navigation_contract.gd \
+            game/tests/test_finca_demo_hub_modal_contract.gd \
+            game/tests/test_barracks_hub_contract.gd \
+            game/tests/test_gladiator_dossier_integration_contract.gd
+      - name: Commit checkpoint fixes
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add \
+            game/scripts/core/frozen_data_validator.gd \
+            game/tests/test_finca_building_navigation_contract.gd \
+            game/tests/test_finca_demo_hub_modal_contract.gd \
+            game/tests/test_barracks_hub_contract.gd \
+            game/tests/test_gladiator_dossier_integration_contract.gd
+          git diff --cached --quiet && exit 0
+          git commit -m 'fix(part3): stabilize frozen data checkpoint contracts'
+          git push origin HEAD:feature/monthly-campaign-foundation
