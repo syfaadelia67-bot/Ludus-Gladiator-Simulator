@@ -11,8 +11,10 @@ func _initialize() -> void:
     for required_node in ["TopHUD", "MainNavigation", "WorldArea", "BuildingDetailsPanel", "Scroll", "BottomStatusBar"]:
         assert(scene_text.contains("name=\"%s\"" % required_node) or scene_text.contains("name = \"%s\"" % required_node))
 
-    for building_id in ["dominus_house", "barracks", "training_yard", "forge", "infirmary", "kitchen", "warehouse", "worker_quarters", "wall_and_gate", "beast_area", "sanctuary", "private_arena", "stable"]:
+    for building_id in ["dominus_house", "barracks", "training_yard", "forge", "infirmary", "mine", "beast_area"]:
         assert(controller_text.contains("\"%s\"" % building_id))
+    for removed_id in ["kitchen", "warehouse", "worker_quarters", "wall_and_gate", "sanctuary", "private_arena", "stable"]:
+        assert(not controller_text.contains('"id":"%s"' % removed_id))
 
     assert(controller_text.contains("const BUILDING_LAYOUT"))
     assert(controller_text.contains("const HOTSPOT_NAMES"))
@@ -36,6 +38,7 @@ func _initialize() -> void:
     assert(not hub_text.contains("LEGACY_SYSTEM_TABS"))
     assert(hub_text.contains("if not SCREEN_SCENES.has(normalized_id):"))
     assert(hub_text.contains("return current_system_id"))
+    assert(hub_text.contains('"mine": "economia"'))
 
     for required_shell_node in ["TopHUD", "MainNavigation", "BottomStatusBar", "More", "Section", "Barracks"]:
         assert(shell_scene_text.contains("name=\"%s\"" % required_shell_node) or shell_scene_text.contains("name = \"%s\"" % required_shell_node))
@@ -66,5 +69,5 @@ func _initialize() -> void:
     assert(shell_instance.get_node_or_null("BottomStatusBar") != null)
     shell_instance.free()
 
-    print("Finca central ScreenHost and circular HUD contract: OK")
+    print("Finca central ScreenHost and seven-facility HUD contract: OK")
     quit()
