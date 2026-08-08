@@ -147,6 +147,7 @@ func _test_blackboard_bridge(
 		"invented",
 		"Blackboard action contract mutation must not flow back into context",
 	)
+	(context_after_mutation[0] as Dictionary)["target_rule_status"] = "pending"
 
 	(
 		blackboard
