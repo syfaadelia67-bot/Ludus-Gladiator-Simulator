@@ -3,8 +3,8 @@ extends Node
 const EstateManagerScript = preload("res://scripts/systems/estate_manager.gd")
 
 const CANONICAL_BUILDINGS: Array[String] = [
-	"beast_area",
 	"barracks",
+	"beast_area",
 	"dominus_house",
 	"forge",
 	"infirmary",
