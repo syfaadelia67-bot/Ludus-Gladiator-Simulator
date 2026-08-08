@@ -28,6 +28,15 @@ func evaluate_proposal(
 			_to_string_array(context_result.get("errors", []))
 		)
 
+	return _evaluate_ready_context(context_result, policy_proposal, agent, instance_owner)
+
+
+func _evaluate_ready_context(
+	context_result: Dictionary,
+	policy_proposal: Dictionary,
+	agent: Node,
+	instance_owner: Node
+) -> Dictionary:
 	var runtime: Dictionary = _adapter.prepare_runtime_objects()
 	if runtime.get("status") != "ready":
 		return _rejected(
@@ -43,6 +52,12 @@ func evaluate_proposal(
 			_to_string_array(write_result.get("errors", []))
 		)
 
+	return _execute_tree(runtime, policy_proposal, agent, instance_owner)
+
+
+func _execute_tree(
+	runtime: Dictionary, policy_proposal: Dictionary, agent: Node, instance_owner: Node
+) -> Dictionary:
 	var objects := runtime.get("objects", {}) as Dictionary
 	var blackboard: Object = objects.get("blackboard") as Object
 	blackboard.call("set_var", &"policy_proposal", policy_proposal.duplicate(true))
