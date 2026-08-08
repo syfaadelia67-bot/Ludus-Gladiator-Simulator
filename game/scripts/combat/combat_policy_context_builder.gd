@@ -49,6 +49,7 @@ func build_context(state: Dictionary, actor_id: String) -> Dictionary:
 			"allies": allies,
 			"enemies": enemies,
 			"available_action_ids": _combat_contract.get_action_ids(),
+			"action_contracts": _combat_contract.get_action_contracts(),
 			"target_candidates":
 			{
 				"allies": _fighter_ids(allies),
