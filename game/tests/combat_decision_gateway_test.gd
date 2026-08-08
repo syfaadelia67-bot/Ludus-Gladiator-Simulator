@@ -49,8 +49,7 @@ func _test_valid_proposal_reaches_simulator_as_pending() -> void:
 	)
 	var pending_requirements := result.get("pending_requirements", []) as Array
 	_assert_true(
-		pending_requirements.has("target_rules"),
-		"gateway must surface unresolved target rules"
+		pending_requirements.has("target_rules"), "gateway must surface unresolved target rules"
 	)
 	_assert_true(
 		pending_requirements.has("damage_and_mitigation"),
@@ -69,7 +68,10 @@ func _test_valid_proposal_reaches_simulator_as_pending() -> void:
 	_assert_eq(proposal, proposal_before, "gateway result must be isolated from caller proposal")
 	pending_requirements.clear()
 	_assert_true(
-		not ((result.get("simulation", {}) as Dictionary).get("pending_requirements", []) as Array).is_empty(),
+		not (
+			((result.get("simulation", {}) as Dictionary).get("pending_requirements", []) as Array)
+			. is_empty()
+		),
 		"gateway readiness arrays must be isolated from nested simulator result"
 	)
 	fixture.owner.free()

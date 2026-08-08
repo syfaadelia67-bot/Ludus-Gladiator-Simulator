@@ -52,12 +52,9 @@ func _simulation_result(
 		"pending": bool(simulation_result.get("pending", false)),
 		"provider": "limboai",
 		"reason": str(simulation_result.get("reason", "")),
-		"pending_requirements": _duplicate_array(
-			simulation_result.get("pending_requirements", [])
-		),
-		"conditional_requirements": _duplicate_array(
-			simulation_result.get("conditional_requirements", [])
-		),
+		"pending_requirements": _duplicate_array(simulation_result.get("pending_requirements", [])),
+		"conditional_requirements":
+		_duplicate_array(simulation_result.get("conditional_requirements", [])),
 		"desired_action": desired_action.duplicate(true),
 		"policy": policy_result.duplicate(true),
 		"simulation": simulation_result.duplicate(true),
