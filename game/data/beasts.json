@@ -1,0 +1,47 @@
+[
+  {
+    "id": "boar",
+    "name": "Jabalí",
+    "technique_label": "Instinto",
+    "can_block": false,
+    "can_parry": false,
+    "has_skills": false,
+    "has_traits": false,
+    "has_specialization": false,
+    "uses_equipment": false,
+    "uses_routines": false,
+    "uses_loyalty": false,
+    "uses_fame": false,
+    "can_train": false
+  },
+  {
+    "id": "lion",
+    "name": "León",
+    "technique_label": "Instinto",
+    "can_block": false,
+    "can_parry": false,
+    "has_skills": false,
+    "has_traits": false,
+    "has_specialization": false,
+    "uses_equipment": false,
+    "uses_routines": false,
+    "uses_loyalty": false,
+    "uses_fame": false,
+    "can_train": false
+  },
+  {
+    "id": "bear",
+    "name": "Oso",
+    "technique_label": "Instinto",
+    "can_block": false,
+    "can_parry": false,
+    "has_skills": false,
+    "has_traits": false,
+    "has_specialization": false,
+    "uses_equipment": false,
+    "uses_routines": false,
+    "uses_loyalty": false,
+    "uses_fame": false,
+    "can_train": false
+  }
+]
