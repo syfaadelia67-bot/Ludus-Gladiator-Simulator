@@ -1,25 +1,114 @@
 [
-  {"id":"beast_hunter","name":"Cazador de bestias","category":"origin","description":"Rinde mejor contra animales, pero se confía demasiado al enfrentarlos.","modifiers":{"damage_vs_beasts":0.15,"defense_vs_beasts":-0.05},"behaviors":["requests_beast_fights"]},
-  {"id":"arena_lover","name":"Amante de la arena","category":"origin","description":"Gana moral al combatir y la pierde cuando permanece inactivo.","modifiers":{"morale_after_fight":8,"idle_morale_loss":2},"behaviors":["requests_fights"]},
-  {"id":"freedom_seeker","name":"Busca la libertad","category":"origin","description":"Lucha con intensidad si cree que puede obtener su libertad.","modifiers":{"motivation_when_promised_freedom":0.20},"behaviors":["asks_for_freedom","may_escape_if_betrayed"]},
-  {"id":"protector","name":"Protector","category":"origin","description":"Prioriza defender aliados heridos o vulnerables.","modifiers":{"guard_effectiveness":0.15},"behaviors":["protects_allies"]},
-  {"id":"vengeful","name":"Rencoroso","category":"origin","description":"Recuerda derrotas y obtiene concentración contra antiguos rivales.","modifiers":{"focus_vs_rival":0.10},"behaviors":["creates_rivalries"]},
-  {"id":"popular","name":"Favorito del público","category":"origin","description":"Aumenta ingresos y reputación, pero exige protagonismo.","modifiers":{"arena_income":0.12,"reputation_gain":0.08},"behaviors":["demands_high_profile_fights"]},
-  {"id":"superstitious","name":"Supersticioso","category":"origin","description":"Su rendimiento cambia según eventos, augurios y rumores.","modifiers":{},"behaviors":["reacts_to_omens"]},
-  {"id":"mentor","name":"Mentor","category":"origin","description":"Mejora el progreso de entrenamiento de compañeros menos experimentados.","modifiers":{"trainee_xp_bonus":0.10},"behaviors":["trains_recruits"]},
-
-  {"id":"undefeated","name":"Invicto","category":"obtainable","description":"La confianza de una racha perfecta fortalece su presencia en la arena.","trigger":{"type":"consecutive_wins","value":8},"modifiers":{"reputation_gain":0.10}},
-  {"id":"battle_hardened","name":"Curtido en batalla","category":"obtainable","description":"La experiencia de muchos combates reduce el impacto de la fatiga.","trigger":{"type":"fights","value":12},"modifiers":{"combat_fatigue_multiplier":0.90}},
-  {"id":"executioner","name":"Verdugo","category":"obtainable","description":"Se vuelve especialmente peligroso contra enemigos al borde de la derrota.","trigger":{"type":"finishing_wins","value":3},"modifiers":{"damage_vs_low_health":0.12}},
-  {"id":"survivor","name":"Superviviente","category":"obtainable","description":"Haber escapado de una derrota casi segura fortalece su voluntad.","trigger":{"type":"survive_critical_health","value":1},"modifiers":{"morale_after_survival":8}},
-  {"id":"reckless","name":"Temerario","category":"obtainable","description":"Acepta riesgos mayores a cambio de una ofensiva más intensa.","trigger":{"type":"decision","value":"embrace_risk"},"modifiers":{"attack":0.08,"injury_chance":0.10}},
-  {"id":"prudent","name":"Prudente","category":"obtainable","description":"Aprende a protegerse y evita exponerse innecesariamente.","trigger":{"type":"decision","value":"choose_caution"},"modifiers":{"defense":0.08,"injury_chance":-0.08}},
-  {"id":"loyal_to_dominus","name":"Leal al Dominus","category":"obtainable","description":"Su compromiso con el ludus estabiliza la lealtad y la moral.","trigger":{"type":"loyalty","value":90},"modifiers":{"daily_loyalty_floor":70}},
-  {"id":"betrayed","name":"Traicionado","category":"obtainable","description":"Una promesa rota deja una marca permanente en su relación con el ludus.","trigger":{"type":"decision","value":"break_promise"},"modifiers":{"loyalty":-15,"morale":-10}},
-  {"id":"freedom_promised","name":"Liberación prometida","category":"obtainable","description":"Combate con una meta clara, pero la promesa deberá cumplirse.","trigger":{"type":"decision","value":"promise_freedom"},"modifiers":{"morale":10,"motivation_when_promised_freedom":0.15}},
-  {"id":"hardened_body","name":"Cuerpo endurecido","category":"obtainable","description":"El entrenamiento físico constante le permite soportar mejor los golpes.","trigger":{"type":"training_days","value":20},"modifiers":{"health":10,"injury_chance":-0.05},"permanent_effects":{"health":10}},
-  {"id":"old_injury","name":"Vieja lesión","category":"obtainable","description":"Una herida grave deja secuelas que nunca desaparecen por completo.","trigger":{"type":"severe_injury","value":1},"modifiers":{"injury_chance":0.08,"energy":-5}},
-  {"id":"fast_healing","name":"Cicatrización rápida","category":"obtainable","description":"Su cuerpo se recupera de las heridas con una velocidad excepcional.","trigger":{"type":"recoveries","value":3},"modifiers":{"recovery_days":-1}},
-  {"id":"encouraging","name":"Alentador","category":"obtainable","description":"Una racha de victorias lo convierte en ejemplo para el resto del ludus.","trigger":{"type":"consecutive_wins","value":5},"modifiers":{"health":5,"strength":1},"permanent_effects":{"health":5,"strength":1}},
-  {"id":"dreamer","name":"Soñador","category":"obtainable","description":"Sueña con ganar su libertad y exigirá que las promesas se conviertan en hechos.","trigger":{"type":"event_or_decision","value":"freedom_dream"},"modifiers":{"strength":1,"agility":1,"endurance":1,"intelligence":1,"technique":1,"freedom_demand_speed":0.25},"permanent_effects":{"strength":1,"agility":1,"endurance":1,"intelligence":1,"technique":1},"behaviors":["asks_for_freedom_earlier","may_betray_if_promises_break"]}
+  {
+    "id": "disciplined",
+    "name": "Disciplinado",
+    "category": "normal",
+    "description": "Mantiene una conducta de combate estable y controlada.",
+    "incompatible_with": ["impulsive"]
+  },
+  {
+    "id": "reckless",
+    "name": "Temerario",
+    "category": "normal",
+    "description": "Acepta riesgos elevados y favorece decisiones ofensivas.",
+    "incompatible_with": ["prudent"]
+  },
+  {
+    "id": "opportunist",
+    "name": "Oportunista",
+    "category": "normal",
+    "description": "Busca aprovechar enemigos expuestos o vulnerables.",
+    "incompatible_with": []
+  },
+  {
+    "id": "protector",
+    "name": "Protector",
+    "category": "normal",
+    "description": "Tiende a proteger aliados que están bajo presión.",
+    "incompatible_with": []
+  },
+  {
+    "id": "calculating",
+    "name": "Calculador",
+    "category": "normal",
+    "description": "Favorece decisiones medidas antes de comprometerse.",
+    "incompatible_with": []
+  },
+  {
+    "id": "tenacious",
+    "name": "Tenaz",
+    "category": "normal",
+    "description": "Mantiene su intención de combate aun bajo presión.",
+    "incompatible_with": []
+  },
+  {
+    "id": "beast_hunter",
+    "name": "Cazador de Bestias",
+    "category": "normal",
+    "description": "Está especialmente habituado a combatir contra bestias.",
+    "incompatible_with": []
+  },
+  {
+    "id": "intimidating",
+    "name": "Intimidador",
+    "category": "normal",
+    "description": "Su presencia condiciona las decisiones de rivales cercanos.",
+    "incompatible_with": []
+  },
+  {
+    "id": "impulsive",
+    "name": "Impulsivo",
+    "category": "normal",
+    "description": "Actúa con rapidez y menor cautela ante oportunidades inmediatas.",
+    "incompatible_with": ["disciplined"]
+  },
+  {
+    "id": "loyal",
+    "name": "Leal",
+    "category": "normal",
+    "description": "Tiene una disposición favorable a permanecer junto a su ludus.",
+    "incompatible_with": []
+  },
+  {
+    "id": "prudent",
+    "name": "Prudente",
+    "category": "normal",
+    "description": "Evita exponerse innecesariamente cuando puede preservar ventaja.",
+    "incompatible_with": ["reckless"]
+  },
+  {
+    "id": "colossus",
+    "name": "Coloso",
+    "category": "normal",
+    "description": "Su presencia física condiciona su forma de combatir.",
+    "incompatible_with": []
+  },
+  {
+    "id": "lone_fighter",
+    "name": "Luchador Solitario",
+    "category": "normal",
+    "description": "Se siente especialmente cómodo cuando depende de sí mismo.",
+    "incompatible_with": []
+  },
+  {
+    "id": "showman",
+    "name": "Exhibicionista",
+    "category": "normal",
+    "description": "Busca destacar ante el público durante sus combates.",
+    "incompatible_with": []
+  },
+  {
+    "id": "vigilant",
+    "name": "Vigilante",
+    "category": "normal",
+    "description": "Mantiene atención constante sobre amenazas y cambios del combate.",
+    "incompatible_with": []
+  },
+  {
+    "id": "natural_talent",
+    "name": "Talento Natural",
+    "category": "normal",
+    "description": "Posee una facilidad excepcional para desarrollar su potencial.",
+    "incompatible_with": []
+  }
 ]
