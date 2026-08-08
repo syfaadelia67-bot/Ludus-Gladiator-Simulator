@@ -18,10 +18,22 @@ const DAYS_PER_WEEK := LEGACY_DAYS_PER_WEEK
 # Save-v14 compatibility storage. `day` is retained as the serialized legacy
 # field, but its value is now the canonical campaign turn/month index.
 var day: int = 1
-var denarii: int = 500
+var denarii: int = 0
 var food: int = 100
 var ore: int = 20
 var reputation: int = 0
+
+
+func _ready() -> void:
+	call_deferred("_apply_starting_resources_from_data")
+
+
+func _apply_starting_resources_from_data() -> void:
+	var starting_resources := DataRepository.get_economy_rule("demo_starting_resources")
+	if starting_resources.is_empty():
+		push_error("No se encontró la regla canónica de recursos iniciales de la demo.")
+		return
+	denarii = int(starting_resources.get("denarii", 0))
 
 
 func get_month() -> int:

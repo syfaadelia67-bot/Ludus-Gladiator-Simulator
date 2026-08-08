@@ -19,8 +19,6 @@ var refresh_cost: int = EQUIPMENT_REFRESH_COST
 var offer_count: int = 4
 var equipment_offers: Array[Dictionary] = []
 var last_auto_refresh_week: int = 1
-var _serial: int = 0
-var _equipment_offer_serial: int = 0
 var names := [
 	"Aelia",
 	"Brutus",
@@ -38,6 +36,8 @@ var names := [
 var origins := [
 	"Tracia", "Numidia", "Galia", "Hispania", "Britania", "Germania", "Siria", "Grecia", "Italia"
 ]
+var _serial: int = 0
+var _equipment_offer_serial: int = 0
 
 
 func _ready() -> void:
@@ -231,15 +231,10 @@ func recalculate_offer_price(offer_id: String) -> int:
 
 
 func buy_offer(offer_id: String) -> bool:
-	if CampaignManager.campaign_over:
-		purchase_failed.emit("La campaña terminó. No se pueden realizar nuevas compras.")
-		return false
 	var offer := get_offer(offer_id)
-	if offer.is_empty():
-		purchase_failed.emit("La oferta ya no está disponible.")
-		return false
-	if not RosterManager.has_capacity():
-		purchase_failed.emit("Los barracones están completos.")
+	var validation_error := _get_offer_purchase_error(offer)
+	if not validation_error.is_empty():
+		purchase_failed.emit(validation_error)
 		return false
 	var unique_id := str(offer.get("unique_gladiator_id", ""))
 	var unique_status := (
@@ -286,6 +281,16 @@ func buy_offer(offer_id: String) -> bool:
 	purchase_completed.emit(person.display_name, price)
 	market_changed.emit()
 	return true
+
+
+func _get_offer_purchase_error(offer: Dictionary) -> String:
+	if CampaignManager.campaign_over:
+		return "La campaña terminó. No se pueden realizar nuevas compras."
+	if offer.is_empty():
+		return "La oferta ya no está disponible."
+	if not RosterManager.has_capacity():
+		return "Los barracones están completos."
+	return ""
 
 
 func buy_equipment_offer(offer_id: String) -> bool:

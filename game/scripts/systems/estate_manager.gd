@@ -4,10 +4,8 @@ signal estate_changed
 signal upgrade_completed(building_id: String, new_level: int)
 signal upgrade_failed(reason: String)
 
-const CATALOG_PATH := "res://data/buildings.json"
-
-var BUILDINGS: Dictionary = {}
-var LEGACY_ID_ALIASES: Dictionary = {}
+var buildings: Dictionary = {}
+var legacy_id_aliases: Dictionary = {}
 var levels: Dictionary = {}
 var demo_mode: bool = true
 
@@ -19,48 +17,36 @@ func _ready() -> void:
 
 
 func _ensure_catalog_loaded() -> void:
-	if not BUILDINGS.is_empty():
+	if not buildings.is_empty():
 		return
-	if not FileAccess.file_exists(CATALOG_PATH):
-		push_error("No se encontró el catálogo de edificios: %s" % CATALOG_PATH)
-		return
-	var file := FileAccess.open(CATALOG_PATH, FileAccess.READ)
-	if file == null:
-		push_error("No se pudo abrir el catálogo de edificios: %s" % CATALOG_PATH)
-		return
-	var parsed: Variant = JSON.parse_string(file.get_as_text())
-	file.close()
-	if not parsed is Array:
-		push_error("El catálogo de edificios debe contener un Array JSON.")
-		return
-	for entry in parsed:
+	for entry in DataRepository.get_buildings():
 		if not entry is Dictionary:
 			continue
 		var building_id := str(entry.get("id", ""))
-		if building_id.is_empty() or BUILDINGS.has(building_id):
+		if building_id.is_empty() or buildings.has(building_id):
 			continue
-		BUILDINGS[building_id] = entry.duplicate(true)
+		buildings[building_id] = entry.duplicate(true)
 		for legacy_id in entry.get("legacy_ids", []):
 			var legacy_key := str(legacy_id)
 			if not legacy_key.is_empty():
-				LEGACY_ID_ALIASES[legacy_key] = building_id
+				legacy_id_aliases[legacy_key] = building_id
 
 
 func _ensure_level_entries() -> void:
 	_ensure_catalog_loaded()
-	for building_id in BUILDINGS.keys():
+	for building_id in buildings.keys():
 		if levels.has(building_id):
 			continue
-		var data: Dictionary = BUILDINGS[building_id]
+		var data: Dictionary = buildings[building_id]
 		levels[building_id] = int(data.get("starting_level", 0))
 
 
 func canonicalize_building_id(building_id: String) -> String:
 	_ensure_catalog_loaded()
-	if BUILDINGS.has(building_id):
+	if buildings.has(building_id):
 		return building_id
-	if LEGACY_ID_ALIASES.has(building_id):
-		return str(LEGACY_ID_ALIASES[building_id])
+	if legacy_id_aliases.has(building_id):
+		return str(legacy_id_aliases[building_id])
 	return building_id
 
 
@@ -69,12 +55,12 @@ func migrate_levels(raw_levels: Dictionary) -> Dictionary:
 	var migrated: Dictionary = {}
 	for raw_id in raw_levels.keys():
 		var canonical_id := canonicalize_building_id(str(raw_id))
-		if not BUILDINGS.has(canonical_id):
+		if not buildings.has(canonical_id):
 			continue
 		var incoming_level := int(raw_levels[raw_id])
 		migrated[canonical_id] = maxi(int(migrated.get(canonical_id, 0)), incoming_level)
-	for building_id in BUILDINGS.keys():
-		var data: Dictionary = BUILDINGS[building_id]
+	for building_id in buildings.keys():
+		var data: Dictionary = buildings[building_id]
 		var default_level := int(data.get("starting_level", 0))
 		var max_level := int(data.get("max_level", 10))
 		migrated[building_id] = clampi(int(migrated.get(building_id, default_level)), 0, max_level)
@@ -107,7 +93,7 @@ func is_demo_available(building_id: String) -> bool:
 	_ensure_catalog_loaded()
 	var canonical_id := canonicalize_building_id(building_id)
 	return (
-		BUILDINGS.has(canonical_id) and bool(BUILDINGS[canonical_id].get("demo_available", false))
+		buildings.has(canonical_id) and bool(buildings[canonical_id].get("demo_available", false))
 	)
 
 
@@ -118,9 +104,9 @@ func is_locked(building_id: String) -> bool:
 func get_effective_max_level(building_id: String) -> int:
 	_ensure_catalog_loaded()
 	var canonical_id := canonicalize_building_id(building_id)
-	if not BUILDINGS.has(canonical_id):
+	if not buildings.has(canonical_id):
 		return 0
-	var data: Dictionary = BUILDINGS[canonical_id]
+	var data: Dictionary = buildings[canonical_id]
 	if demo_mode:
 		return int(data.get("demo_max_level", 0))
 	return int(data.get("max_level", 10))
@@ -129,9 +115,9 @@ func get_effective_max_level(building_id: String) -> int:
 func get_upgrade_cost(building_id: String) -> int:
 	_ensure_catalog_loaded()
 	var canonical_id := canonicalize_building_id(building_id)
-	if not BUILDINGS.has(canonical_id):
+	if not buildings.has(canonical_id):
 		return 0
-	var data: Dictionary = BUILDINGS[canonical_id]
+	var data: Dictionary = buildings[canonical_id]
 	if bool(data.get("upgrade_cost_pending", false)):
 		return 0
 	var level := get_level(canonical_id)
@@ -140,22 +126,22 @@ func get_upgrade_cost(building_id: String) -> int:
 
 func can_upgrade(building_id: String) -> bool:
 	var canonical_id := canonicalize_building_id(building_id)
-	if not BUILDINGS.has(canonical_id) or is_locked(canonical_id):
+	if not buildings.has(canonical_id) or is_locked(canonical_id):
 		return false
-	if bool(BUILDINGS[canonical_id].get("upgrade_cost_pending", false)):
+	if bool(buildings[canonical_id].get("upgrade_cost_pending", false)):
 		return false
 	return get_level(canonical_id) < get_effective_max_level(canonical_id)
 
 
 func upgrade(building_id: String) -> bool:
 	var canonical_id := canonicalize_building_id(building_id)
-	if not BUILDINGS.has(canonical_id):
+	if not buildings.has(canonical_id):
 		upgrade_failed.emit("Instalación desconocida.")
 		return false
 	if is_locked(canonical_id):
 		upgrade_failed.emit("Esta instalación no está disponible en la demo.")
 		return false
-	if bool(BUILDINGS[canonical_id].get("upgrade_cost_pending", false)):
+	if bool(buildings[canonical_id].get("upgrade_cost_pending", false)):
 		upgrade_failed.emit(
 			"El coste de mejora de esta instalación aún no está migrado al balance mensual."
 		)
@@ -202,7 +188,7 @@ func get_forge_level() -> int:
 func get_building_ids() -> Array[String]:
 	_ensure_catalog_loaded()
 	var result: Array[String] = []
-	for building_id in BUILDINGS.keys():
+	for building_id in buildings.keys():
 		result.append(str(building_id))
 	result.sort()
 	return result
@@ -211,8 +197,8 @@ func get_building_ids() -> Array[String]:
 func get_demo_building_ids() -> Array[String]:
 	_ensure_catalog_loaded()
 	var result: Array[String] = []
-	for building_id in BUILDINGS.keys():
-		if bool(BUILDINGS[building_id].get("demo_available", false)):
+	for building_id in buildings.keys():
+		if bool(buildings[building_id].get("demo_available", false)):
 			result.append(str(building_id))
 	result.sort()
 	return result
@@ -221,9 +207,9 @@ func get_demo_building_ids() -> Array[String]:
 func get_building_data(building_id: String) -> Dictionary:
 	_ensure_catalog_loaded()
 	var canonical_id := canonicalize_building_id(building_id)
-	if not BUILDINGS.has(canonical_id):
+	if not buildings.has(canonical_id):
 		return {}
-	var data: Dictionary = BUILDINGS[canonical_id].duplicate(true)
+	var data: Dictionary = buildings[canonical_id].duplicate(true)
 	data["id"] = canonical_id
 	data["level"] = get_level(canonical_id)
 	data["upgrade_cost"] = get_upgrade_cost(canonical_id)

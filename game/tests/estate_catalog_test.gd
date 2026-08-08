@@ -23,6 +23,15 @@ const REQUIRED_FULL_GAME_BUILDINGS: Array[String] = [
 
 
 func _ready() -> void:
+	var manager_source := FileAccess.get_file_as_string("res://scripts/systems/estate_manager.gd")
+	assert(
+		manager_source.contains("DataRepository.get_buildings()"),
+		"EstateManager must consume the canonical DataRepository building catalog"
+	)
+	assert(
+		not manager_source.contains("res://data/buildings.json"),
+		"EstateManager must not load a second building source directly"
+	)
 	var estate = EstateManagerScript.new()
 	estate._ensure_catalog_loaded()
 
@@ -31,12 +40,12 @@ func _ready() -> void:
 		"The demo must expose exactly the seven frozen facilities"
 	)
 	assert(
-		estate.BUILDINGS.size() > DEMO_BUILDINGS.size(),
+		estate.buildings.size() > DEMO_BUILDINGS.size(),
 		"The full-game estate catalog must preserve facilities beyond the demo scope"
 	)
 	for building_id in REQUIRED_FULL_GAME_BUILDINGS:
 		assert(
-			estate.BUILDINGS.has(building_id),
+			estate.buildings.has(building_id),
 			"Full-game facility must remain in the canonical catalog: %s" % building_id
 		)
 		assert(
@@ -82,7 +91,7 @@ func _ready() -> void:
 		not migrated.has("unknown_building"), "Unknown legacy ids must not enter canonical saves"
 	)
 	assert(
-		migrated.size() == estate.BUILDINGS.size(),
+		migrated.size() == estate.buildings.size(),
 		"Migrated estate state must contain every canonical full-game facility"
 	)
 

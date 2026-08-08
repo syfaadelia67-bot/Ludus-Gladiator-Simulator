@@ -1,3 +1,4 @@
+# gdlint: disable=max-public-methods
 extends Node
 
 signal inventory_changed
@@ -19,13 +20,11 @@ const EQUIPMENT_SLOT_ORDER: Array[String] = [
 	"head", "torso", "right_hand", "left_hand", "lower_body", "accessory", "mount"
 ]
 const LEGACY_SLOT_ALIASES := {"weapon": "right_hand", "armor": "torso", "shield": "left_hand"}
-
-var RECIPES: Dictionary = {}
-
 const UNIVERSAL_TECHNIQUES: Array[String] = [
 	"basic_attack", "precise_strike", "feint", "opportunity_strike", "throw_sand"
 ]
 
+var recipes: Dictionary = {}
 var inventory: Array[Dictionary] = []
 var serial: int = 0
 
@@ -35,24 +34,24 @@ func _ready() -> void:
 
 
 func _ensure_recipes_loaded() -> void:
-	if not RECIPES.is_empty():
+	if not recipes.is_empty():
 		return
 	for raw_entry in DataRepository.weapons:
 		if not raw_entry is Dictionary:
 			continue
 		var entry: Dictionary = raw_entry
 		var recipe_id := str(entry.get("id", ""))
-		if recipe_id.is_empty() or RECIPES.has(recipe_id):
+		if recipe_id.is_empty() or recipes.has(recipe_id):
 			continue
 		var recipe := entry.duplicate(true)
 		recipe.erase("id")
-		RECIPES[recipe_id] = recipe
+		recipes[recipe_id] = recipe
 
 
 func get_recipe_ids() -> Array[String]:
 	_ensure_recipes_loaded()
 	var result: Array[String] = []
-	for recipe_id in RECIPES.keys():
+	for recipe_id in recipes.keys():
 		result.append(str(recipe_id))
 	result.sort()
 	return result
@@ -60,7 +59,7 @@ func get_recipe_ids() -> Array[String]:
 
 func get_recipe(recipe_id: String) -> Dictionary:
 	_ensure_recipes_loaded()
-	var data: Dictionary = RECIPES.get(recipe_id, {}).duplicate(true)
+	var data: Dictionary = recipes.get(recipe_id, {}).duplicate(true)
 	data["id"] = recipe_id
 	data["unlocked"] = EstateManager.get_forge_level() >= int(data.get("forge_level", 99))
 	data["slot"] = get_item_slot(data)
@@ -81,23 +80,16 @@ func canonical_slot_id(slot_id: String) -> String:
 
 
 func get_slot_icon_asset(slot_id: String) -> String:
-	match canonical_slot_id(slot_id):
-		"head":
-			return "ui/equipment/equipment_head_helmet"
-		"torso":
-			return "ui/equipment/equipment_torso_armor"
-		"right_hand":
-			return "ui/equipment/equipment_weapon_sword"
-		"left_hand":
-			return "ui/equipment/equipment_shield"
-		"lower_body":
-			return "ui/equipment/equipment_feet_boots"
-		"accessory":
-			return "ui/equipment/equipment_additional_net"
-		"mount":
-			return "ui/icons/ui_icon_circle_brown"
-		_:
-			return ""
+	var icons := {
+		"head": "ui/equipment/equipment_head_helmet",
+		"torso": "ui/equipment/equipment_torso_armor",
+		"right_hand": "ui/equipment/equipment_weapon_sword",
+		"left_hand": "ui/equipment/equipment_shield",
+		"lower_body": "ui/equipment/equipment_feet_boots",
+		"accessory": "ui/equipment/equipment_additional_net",
+		"mount": "ui/icons/ui_icon_circle_brown",
+	}
+	return str(icons.get(canonical_slot_id(slot_id), ""))
 
 
 func craft(recipe_id: String) -> bool:
@@ -105,10 +97,10 @@ func craft(recipe_id: String) -> bool:
 	if CampaignManager.campaign_over:
 		craft_failed.emit("La campaña terminó. La forja está disponible solo para consulta.")
 		return false
-	if not RECIPES.has(recipe_id):
+	if not recipes.has(recipe_id):
 		craft_failed.emit("Receta desconocida.")
 		return false
-	var recipe: Dictionary = RECIPES[recipe_id]
+	var recipe: Dictionary = recipes[recipe_id]
 	var required_level := int(recipe.get("forge_level", 1))
 	if EstateManager.get_forge_level() < required_level:
 		craft_failed.emit("La forja no tiene el nivel necesario.")
@@ -165,23 +157,22 @@ func get_item_slot(item: Dictionary) -> String:
 	var explicit := canonical_slot_id(str(item.get("slot", item.get("equipped_slot", ""))))
 	if not explicit.is_empty():
 		return explicit
-	match str(item.get("type", "")):
-		"weapon":
-			return "right_hand"
-		"armor":
-			return "torso"
-		"shield":
-			return "left_hand"
-		"helmet", "head":
-			return "head"
-		"lower_body", "boots", "greaves":
-			return "lower_body"
-		"accessory", "consumable", "antidote", "cheat_item":
-			return "accessory"
-		"mount":
-			return "mount"
-		_:
-			return ""
+	var type_slots := {
+		"weapon": "right_hand",
+		"armor": "torso",
+		"shield": "left_hand",
+		"helmet": "head",
+		"head": "head",
+		"lower_body": "lower_body",
+		"boots": "lower_body",
+		"greaves": "lower_body",
+		"accessory": "accessory",
+		"consumable": "accessory",
+		"antidote": "accessory",
+		"cheat_item": "accessory",
+		"mount": "mount",
+	}
+	return str(type_slots.get(str(item.get("type", "")), ""))
 
 
 func is_item_compatible_with_slot(item: Dictionary, slot_id: String) -> bool:

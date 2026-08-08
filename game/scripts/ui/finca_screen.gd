@@ -38,6 +38,20 @@ void fragment() {
 }
 """
 
+var selected_building_id := "dominus_house"
+var hotspot_buttons: Dictionary = {}
+var modal_layer: CanvasLayer
+var modal_overlay: ColorRect
+var modal_title: Label
+var modal_status: Label
+var modal_description: RichTextLabel
+var modal_effect: Label
+var modal_next_upgrade: Label
+var modal_cost: Label
+var modal_feedback: Label
+var modal_enter_button: Button
+var modal_upgrade_button: Button
+
 @onready var resource_summary: Label = $TopHUD/Margin/Row/Resources
 @onready var week_summary: Label = $TopHUD/Margin/Row/Week
 @onready var advance_week_button: Button = $TopHUD/Margin/Row/AdvanceWeek
@@ -45,8 +59,9 @@ void fragment() {
 @onready var details_scroll: ScrollContainer = $Center/BuildingDetailsPanel/Margin/Scroll
 @onready var building_title: Label = $Center/BuildingDetailsPanel/Margin/Scroll/Details/Title
 @onready var building_status: Label = $Center/BuildingDetailsPanel/Margin/Scroll/Details/Status
-@onready
-var building_description: RichTextLabel = $Center/BuildingDetailsPanel/Margin/Scroll/Details/Description
+@onready var building_description: RichTextLabel = (
+	get_node("Center/BuildingDetailsPanel/Margin/Scroll/Details/" + "Description") as RichTextLabel
+)
 @onready var building_effect: Label = $Center/BuildingDetailsPanel/Margin/Scroll/Details/Effect
 @onready
 var building_next_upgrade: Label = $Center/BuildingDetailsPanel/Margin/Scroll/Details/NextUpgrade
@@ -62,20 +77,6 @@ var building_next_upgrade: Label = $Center/BuildingDetailsPanel/Margin/Scroll/De
 @onready var market_quick_button: Button = $QuickAccess/Margin/Center/Row/Market
 @onready var arena_quick_button: Button = $QuickAccess/Margin/Center/Row/Arena
 @onready var personal_quick_button: Button = $QuickAccess/Margin/Center/Row/Personal
-
-var selected_building_id := "dominus_house"
-var hotspot_buttons: Dictionary = {}
-var modal_layer: CanvasLayer
-var modal_overlay: ColorRect
-var modal_title: Label
-var modal_status: Label
-var modal_description: RichTextLabel
-var modal_effect: Label
-var modal_next_upgrade: Label
-var modal_cost: Label
-var modal_feedback: Label
-var modal_enter_button: Button
-var modal_upgrade_button: Button
 
 
 func _ready() -> void:
@@ -349,7 +350,9 @@ func _refresh_selected_building() -> void:
 		return
 
 	if level >= max_level:
-		building_next_upgrade.text = "Nivel máximo disponible en la demo. En el juego completo llegará a nivel 10."
+		building_next_upgrade.text = (
+			"Nivel máximo disponible en la demo. " + "En el juego completo llegará a nivel 10."
+		)
 		building_cost.text = "Costo: —"
 	else:
 		building_next_upgrade.text = "Próxima mejora: nivel %d de %d" % [level + 1, max_level]
@@ -397,7 +400,9 @@ func _refresh_modal() -> void:
 		modal_upgrade_button.disabled = true
 		return
 	if level >= demo_max:
-		modal_next_upgrade.text = "Máximo de demo alcanzado. La progresión completa continuará hasta nivel 10."
+		modal_next_upgrade.text = (
+			"Máximo de demo alcanzado. " + "La progresión completa continuará hasta nivel 10."
+		)
 		modal_cost.text = ""
 	else:
 		modal_next_upgrade.text = "PRÓXIMA MEJORA · NIVEL %d/%d" % [level + 1, demo_max]
@@ -411,43 +416,35 @@ func _building_effect_text(data: Dictionary) -> String:
 	if bool(data.get("locked", false)):
 		return "Sin efecto durante la demo."
 	var level := int(data.get("level", 0))
-	match str(data.get("effect_type", "")):
-		"administration":
-			return "Administración del ludus y acceso a decisiones de campaña."
-		"capacity":
-			return "Capacidad de personal %s." % RosterManager.get_capacity_summary()
+	var effects := {
+		"administration": "Administración del ludus y acceso a decisiones de campaña.",
+		"capacity": "Capacidad de personal %s." % RosterManager.get_capacity_summary(),
 		"training_multiplier":
-			return "Velocidad de entrenamiento x%.2f." % EstateManager.get_training_multiplier()
-		"forge_level":
-			return "Forja operativa en nivel %d." % EstateManager.get_forge_level()
-		"recovery_bonus":
-			return "+%d de recuperación semanal." % EstateManager.get_recovery_bonus()
+		"Velocidad de entrenamiento x%.2f." % EstateManager.get_training_multiplier(),
+		"forge_level": "Forja operativa en nivel %d." % EstateManager.get_forge_level(),
+		"recovery_bonus": "+%d de recuperación semanal." % EstateManager.get_recovery_bonus(),
 		"mine_production":
-			return "Mina operativa en nivel %d; balance mensual de producción pendiente." % level
-		"beast_capacity":
-			return "Zona de bestias operativa en nivel %d." % level
-		_:
-			return "Efecto reservado para una actualización posterior."
+		"Mina operativa en nivel %d; balance mensual de producción pendiente." % level,
+		"beast_capacity": "Zona de bestias operativa en nivel %d." % level,
+	}
+	return str(
+		effects.get(
+			str(data.get("effect_type", "")), "Efecto reservado para una actualización posterior."
+		)
+	)
 
 
 func _entry_button_text(building_id: String) -> String:
-	match building_id:
-		"dominus_house":
-			return "Abrir campaña"
-		"barracks":
-			return "Entrar a barracones"
-		"training_yard":
-			return "Organizar entrenamiento"
-		"forge":
-			return "Entrar a la forja"
-		"infirmary":
-			return "Revisar personal y heridos"
-		"mine":
-			return "Abrir economía de la mina"
-		"beast_area":
-			return "Zona de bestias"
-		_:
-			return "Entrar"
+	var labels := {
+		"dominus_house": "Abrir campaña",
+		"barracks": "Entrar a barracones",
+		"training_yard": "Organizar entrenamiento",
+		"forge": "Entrar a la forja",
+		"infirmary": "Revisar personal y heridos",
+		"mine": "Abrir economía de la mina",
+		"beast_area": "Zona de bestias",
+	}
+	return str(labels.get(building_id, "Entrar"))
 
 
 func _open_selected_building() -> void:

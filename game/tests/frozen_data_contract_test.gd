@@ -11,6 +11,8 @@ func _ready() -> void:
 	assert(errors.is_empty(), "Frozen Part 3 data contract must validate cleanly: %s" % [errors])
 
 	_assert_eighth_demo_building_is_rejected(validator)
+	_assert_changed_demo_facility_contract_is_rejected(validator)
+	_assert_changed_starting_denarii_is_rejected(validator)
 	_assert_seventeenth_trait_is_rejected(validator)
 	_assert_duplicate_ids_are_rejected(validator)
 	_assert_broken_references_are_rejected(validator)
@@ -27,6 +29,7 @@ func _snapshot() -> Dictionary:
 		"abilities": DataRepository.abilities.duplicate(true),
 		"specializations": DataRepository.specializations.duplicate(true),
 		"beasts": DataRepository.beasts.duplicate(true),
+		"economy_rules": DataRepository.economy_rules.duplicate(true),
 	}
 
 
@@ -75,6 +78,20 @@ func _assert_seventeenth_trait_is_rejected(validator) -> void:
 	)
 
 
+func _assert_changed_demo_facility_contract_is_rejected(validator) -> void:
+	var snapshot := _snapshot()
+	var buildings := snapshot["buildings"] as Array
+	for entry_value in buildings:
+		var entry := entry_value as Dictionary
+		if str(entry.get("id", "")) == "forge":
+			entry["base_cost"] = 321
+	var errors: Array[String] = validator.validate_snapshot(snapshot)
+	assert(
+		_contains_error(errors, "non-canonical base_cost"),
+		"Changing a frozen demo facility cost must fail the contract"
+	)
+
+
 func _assert_duplicate_ids_are_rejected(validator) -> void:
 	var snapshot := _snapshot()
 	var beasts := snapshot["beasts"] as Array
@@ -83,6 +100,17 @@ func _assert_duplicate_ids_are_rejected(validator) -> void:
 	var errors: Array[String] = validator.validate_snapshot(snapshot)
 	assert(
 		_contains_error(errors, "duplicate id"), "Duplicate data ids must fail the frozen contract"
+	)
+
+
+func _assert_changed_starting_denarii_is_rejected(validator) -> void:
+	var snapshot := _snapshot()
+	var rules := snapshot["economy_rules"] as Array
+	(rules[0] as Dictionary)["denarii"] = 500
+	var errors: Array[String] = validator.validate_snapshot(snapshot)
+	assert(
+		_contains_error(errors, "exactly 650 denarii"),
+		"Changing the frozen demo starting balance must fail the contract"
 	)
 
 

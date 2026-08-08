@@ -166,11 +166,11 @@ func _assert_equipment_contracts() -> void:
 		"Danza de dos filos must require dual blades"
 	)
 	assert(
-		EquipmentManager.RECIPES.has("retiarius_kit"),
+		EquipmentManager.recipes.has("retiarius_kit"),
 		"The forge must define the net and trident recipe"
 	)
 	assert(
-		EquipmentManager.RECIPES.has("dual_blades"), "The forge must define the dual blades recipe"
+		EquipmentManager.recipes.has("dual_blades"), "The forge must define the dual blades recipe"
 	)
 
 

@@ -9,6 +9,7 @@ var abilities: Array = []
 var specializations: Array = []
 var beasts: Array = []
 var unique_gladiators: Array = []
+var economy_rules: Array = []
 var frozen_contract_errors: Array[String] = []
 
 
@@ -24,6 +25,7 @@ func load_all() -> void:
 	specializations = _load_json_array("res://data/specializations.json")
 	beasts = _load_json_array("res://data/beasts.json")
 	unique_gladiators = _load_json_array("res://data/unique_gladiators.json")
+	economy_rules = _load_json_array("res://data/economy_rules.json")
 	_validate_frozen_contracts()
 
 
@@ -45,6 +47,24 @@ func get_frozen_contract_errors() -> Array[String]:
 func get_unique_gladiator(gladiator_id: String) -> Dictionary:
 	for entry in unique_gladiators:
 		if entry is Dictionary and str(entry.get("id", "")) == gladiator_id:
+			return entry.duplicate(true)
+	return {}
+
+
+func get_buildings() -> Array:
+	return buildings.duplicate(true)
+
+
+func get_building(building_id: String) -> Dictionary:
+	for entry in buildings:
+		if entry is Dictionary and str(entry.get("id", "")) == building_id:
+			return entry.duplicate(true)
+	return {}
+
+
+func get_economy_rule(rule_id: String) -> Dictionary:
+	for entry in economy_rules:
+		if entry is Dictionary and str(entry.get("id", "")) == rule_id:
 			return entry.duplicate(true)
 	return {}
 

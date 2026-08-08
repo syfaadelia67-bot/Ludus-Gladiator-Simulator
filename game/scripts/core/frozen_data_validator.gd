@@ -9,6 +9,15 @@ const DEMO_BUILDING_IDS: Array[String] = [
 	"mine",
 	"training_yard",
 ]
+const DEMO_BUILDING_CONTRACTS := {
+	"barracks": {"name": "Barracones", "starting_level": 1, "base_cost": 220},
+	"beast_area": {"name": "Zona de bestias", "starting_level": 0, "base_cost": 360},
+	"dominus_house": {"name": "Casa del Dominus", "starting_level": 1, "base_cost": 240},
+	"forge": {"name": "Forja", "starting_level": 0, "base_cost": 320},
+	"infirmary": {"name": "Enfermería", "starting_level": 0, "base_cost": 280},
+	"mine": {"name": "Mina", "starting_level": 0, "base_cost": 0},
+	"training_yard": {"name": "Patio de entrenamiento", "starting_level": 1, "base_cost": 260},
+}
 const REQUIRED_FULL_GAME_BUILDING_IDS: Array[String] = [
 	"private_arena",
 	"sanctuary",
@@ -55,6 +64,7 @@ func validate_repository(repository) -> Array[String]:
 			"abilities": repository.abilities,
 			"specializations": repository.specializations,
 			"beasts": repository.beasts,
+			"economy_rules": repository.economy_rules,
 		}
 	)
 
@@ -62,7 +72,13 @@ func validate_repository(repository) -> Array[String]:
 func validate_snapshot(snapshot: Dictionary) -> Array[String]:
 	var errors: Array[String] = []
 	for collection_name in [
-		"traits", "buildings", "weapons", "abilities", "specializations", "beasts"
+		"traits",
+		"buildings",
+		"weapons",
+		"abilities",
+		"specializations",
+		"beasts",
+		"economy_rules",
 	]:
 		_validate_named_collection(
 			str(collection_name), snapshot.get(str(collection_name), []), errors
@@ -71,6 +87,7 @@ func validate_snapshot(snapshot: Dictionary) -> Array[String]:
 	_validate_buildings(snapshot.get("buildings", []), errors)
 	_validate_traits(snapshot.get("traits", []), errors)
 	_validate_beasts(snapshot.get("beasts", []), errors)
+	_validate_economy_rules(snapshot.get("economy_rules", []), errors)
 	_validate_abilities(snapshot.get("abilities", []), snapshot.get("specializations", []), errors)
 	_validate_specializations(
 		snapshot.get("specializations", []), snapshot.get("abilities", []), errors
@@ -135,6 +152,21 @@ func _validate_buildings(entries: Variant, errors: Array[String]) -> void:
 	demo_ids.sort()
 	if demo_ids != DEMO_BUILDING_IDS:
 		errors.append("Demo must expose exactly seven frozen facilities: %s" % [DEMO_BUILDING_IDS])
+	for building_id in DEMO_BUILDING_IDS:
+		if not by_id.has(building_id):
+			continue
+		var entry: Dictionary = by_id[building_id]
+		var contract: Dictionary = DEMO_BUILDING_CONTRACTS[building_id]
+		for field_name in ["name", "starting_level", "base_cost"]:
+			if entry.get(field_name) != contract.get(field_name):
+				errors.append("Demo facility %s has non-canonical %s" % [building_id, field_name])
+		if int(entry.get("max_level", 0)) != 10:
+			errors.append("Demo facility %s must preserve full-game level X" % building_id)
+		if building_id == "mine":
+			if not bool(entry.get("upgrade_cost_pending", false)):
+				errors.append("Mine cost must remain pending until its frozen value is recovered")
+		elif bool(entry.get("upgrade_cost_pending", false)):
+			errors.append("Only Mine may have a pending demo facility cost")
 	for building_id in REQUIRED_FULL_GAME_BUILDING_IDS:
 		if not by_id.has(building_id):
 			errors.append("Missing required full-game facility: %s" % building_id)
@@ -198,6 +230,18 @@ func _validate_beasts(entries: Variant, errors: Array[String]) -> void:
 		]:
 			if bool(entry.get(str(forbidden_flag), false)):
 				errors.append("Demo beast %s must keep %s disabled" % [beast_id, forbidden_flag])
+
+
+func _validate_economy_rules(entries: Variant, errors: Array[String]) -> void:
+	if not entries is Array:
+		return
+	var by_id := _index_by_id(entries as Array)
+	var starting_resources: Dictionary = by_id.get("demo_starting_resources", {})
+	if starting_resources.is_empty():
+		errors.append("Missing frozen demo starting resources rule")
+		return
+	if int(starting_resources.get("denarii", 0)) != 650:
+		errors.append("Demo campaign must start with exactly 650 denarii")
 
 
 func _validate_abilities(

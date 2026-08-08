@@ -15,7 +15,7 @@ const CANONICAL_FIELDS: Array[String] = [
 
 func _ready() -> void:
 	DataRepository.load_all()
-	EquipmentManager.RECIPES.clear()
+	EquipmentManager.recipes.clear()
 
 	var data_ids: Array[String] = []
 	var available_tags: Array[String] = []
