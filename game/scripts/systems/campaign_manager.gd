@@ -288,26 +288,23 @@ func _evaluate_objectives() -> void:
 
 
 func _objective_progress(objective: Dictionary) -> int:
+	var progress := 0
 	match str(objective.get("type", "")):
 		"fights":
-			return total_wins + total_losses
+			progress = total_wins + total_losses
 		"wins":
-			return total_wins
+			progress = total_wins
 		"reputation":
-			return GameState.reputation
+			progress = GameState.reputation
 		"gladiators":
-			var count := 0
 			for person in RosterManager.get_people():
 				if person.role == "gladiator":
-					count += 1
-			return count
+					progress += 1
 		"building_levels":
-			var total := 0
 			for building_id in EstateManager.get_building_ids():
-				total += EstateManager.get_level(building_id)
-			return total
+				progress += EstateManager.get_level(building_id)
 		"demo_finale":
-			return (
+			progress = (
 				1
 				if (
 					final_combat_resolved
@@ -316,8 +313,7 @@ func _objective_progress(objective: Dictionary) -> int:
 				)
 				else 0
 			)
-		_:
-			return 0
+	return progress
 
 
 func _evaluate_defeat() -> void:
