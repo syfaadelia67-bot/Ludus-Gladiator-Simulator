@@ -1,0 +1,40 @@
+name: Part 3 Stat Adapter Autofmt Once
+
+on:
+  push:
+    branches:
+      - feature/monthly-campaign-foundation
+    paths:
+      - game/tests/combat_stat_adapter_contract_test.gd
+      - .github/workflows/part3-stat-adapter-autofmt-once.yml
+
+permissions:
+  contents: write
+
+jobs:
+  format:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          ref: feature/monthly-campaign-foundation
+          persist-credentials: true
+
+      - name: Install pinned gdtoolkit
+        run: python3 -m pip install --disable-pip-version-check --no-input 'gdtoolkit==4.5.0'
+
+      - name: Format stat adapter contract
+        run: gdformat game/tests/combat_stat_adapter_contract_test.gd
+
+      - name: Commit formatting if needed
+        run: |
+          if git diff --quiet -- game/tests/combat_stat_adapter_contract_test.gd; then
+            echo "No formatting changes needed."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add game/tests/combat_stat_adapter_contract_test.gd
+          git commit -m "style(stats): apply canonical adapter test format"
+          git push origin HEAD:feature/monthly-campaign-foundation
