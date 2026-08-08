@@ -38,6 +38,28 @@ func _test_valid_proposal_reaches_simulator_as_pending() -> void:
 		"gateway must preserve simulator pending reason"
 	)
 	_assert_eq(
+		result.get("blocking_requirement"),
+		"target_rules",
+		"gateway must expose D1 as the current blocking requirement",
+	)
+	var blocking_context := result.get("blocking_context", {}) as Dictionary
+	_assert_eq(
+		blocking_context.get("status"),
+		"pending_design_freeze",
+		"gateway must expose target resolver pending status",
+	)
+	_assert_eq(
+		blocking_context.get("reason"),
+		"target_rules_not_frozen",
+		"gateway must expose target resolver pending reason",
+	)
+	_assert_true(
+		not blocking_context.has("legal_targets"),
+		"gateway must not invent legal targets while D1 is pending",
+	)
+	var candidates := blocking_context.get("candidates", {}) as Dictionary
+	_assert_eq(candidates.get("enemies"), ["b"], "gateway must expose enemy candidates")
+	_assert_eq(
 		result.get("desired_action", {}), proposal_before, "gateway must expose validated intent"
 	)
 	_assert_true(
@@ -74,6 +96,17 @@ func _test_valid_proposal_reaches_simulator_as_pending() -> void:
 		),
 		"gateway readiness arrays must be isolated from nested simulator result"
 	)
+	var gateway_candidates := blocking_context.get("candidates", {}) as Dictionary
+	gateway_candidates["enemies"] = []
+	var nested_blocker := (
+		(result.get("simulation", {}) as Dictionary).get("blocking_context", {}) as Dictionary
+	)
+	var nested_candidates := nested_blocker.get("candidates", {}) as Dictionary
+	_assert_eq(
+		nested_candidates.get("enemies"),
+		["b"],
+		"gateway blocking context must be isolated from nested simulator result",
+	)
 	fixture.owner.free()
 
 
@@ -94,6 +127,16 @@ func _test_invalid_proposal_stops_before_simulator() -> void:
 		result.get("desired_action", {}), {}, "invalid proposal must expose no desired action"
 	)
 	_assert_eq(result.get("simulation", {}), {}, "invalid proposal must never reach simulator")
+	_assert_eq(
+		result.get("blocking_requirement"),
+		"",
+		"policy rejection must not expose a simulator blocker",
+	)
+	_assert_eq(
+		result.get("blocking_context", {}),
+		{},
+		"policy rejection must not expose simulator blocker context",
+	)
 	_assert_eq(
 		result.get("pending_requirements", []),
 		[],
@@ -125,6 +168,16 @@ func _test_unknown_actor_stops_before_simulator() -> void:
 		result.get("reason"), "invalid_actor", "gateway must preserve policy rejection reason"
 	)
 	_assert_eq(result.get("simulation", {}), {}, "unknown actor must never reach simulator")
+	_assert_eq(
+		result.get("blocking_requirement"),
+		"",
+		"unknown actor must not expose a simulator blocker",
+	)
+	_assert_eq(
+		result.get("blocking_context", {}),
+		{},
+		"unknown actor must not expose simulator blocker context",
+	)
 	_assert_eq(
 		result.get("pending_requirements", []),
 		[],
