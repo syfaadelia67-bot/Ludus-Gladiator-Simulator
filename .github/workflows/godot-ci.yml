@@ -45,7 +45,7 @@ jobs:
         run: |
           set -euo pipefail
           set +e
-          godot --headless --editor --path game --quit-after 20 2>&1 | tee godot-import.log
+          godot --headless --editor --path game --quit 2>&1 | tee godot-import.log
           GODOT_STATUS=${PIPESTATUS[0]}
           set -e
           PATTERN='Parse Error|Compile Error|SCRIPT ERROR|Failed to load script|Failed to create an autoload'

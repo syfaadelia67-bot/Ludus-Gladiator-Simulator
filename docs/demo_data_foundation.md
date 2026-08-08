@@ -23,13 +23,14 @@ Build the playable demo on a data model that remains valid for the full game. De
 4. forge
 5. infirmary
 6. kitchen
-7. warehouse
-8. worker_quarters
-9. wall_and_gate
-10. beast_area
-11. sanctuary
-12. private_arena
-13. stable
+7. mine
+8. warehouse
+9. worker_quarters
+10. wall_and_gate
+11. beast_area
+12. sanctuary
+13. private_arena
+14. stable
 
 ### Demo availability
 
@@ -40,22 +41,23 @@ Available in the demo:
 - training_yard
 - forge
 - infirmary
-- kitchen
+- mine
+- beast_area
 
 Visible but blocked in the demo:
 
 - warehouse
 - worker_quarters
 - wall_and_gate
-- beast_area
+- kitchen
 - sanctuary
 - private_arena
 - stable
 
 ### Levels
 
-- Structural full-game levels: 0 to 3.
-- Demo-visible upgrade cap: 1.
+- Structural full-game levels: 0 to 10.
+- Demo-visible upgrade cap: 3.
 - Level 0 means absent, ruined, provisional, or not yet operational according to building data.
 - Demo caps are presentation and progression rules, not catalog limits.
 
@@ -118,7 +120,7 @@ The demo exposes 8 skills. Skills must be catalog-driven and may define:
 
 ## Save migration
 
-Next save version: 11.
+Current save version: 14. This phase does not introduce Save v15.
 
 Migration requirements:
 
@@ -128,6 +130,13 @@ Migration requirements:
 - migrate specialization aliases
 - preserve unknown future-safe fields when possible
 - seed only missing data instead of replacing valid player data
+
+## Economy
+
+- The demo campaign starts with exactly 650 denarii.
+- This value is owned by `data/economy_rules.json` and consumed through `DataRepository`.
+- Food, ore, maintenance, prices and monthly income are not frozen by this section.
+- Missing balance values remain pending instead of being inferred from legacy weekly formulas.
 
 ## Implementation order
 
