@@ -1,0 +1,55 @@
+name: Vendor LimboAI 1.6.0 Once
+
+on:
+  push:
+    branches:
+      - feature/monthly-campaign-foundation
+    paths:
+      - .github/workflows/vendor-limboai-1.6-once.yml
+
+permissions:
+  contents: write
+
+jobs:
+  vendor:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          ref: feature/monthly-campaign-foundation
+          persist-credentials: true
+
+      - name: Download and verify pinned LimboAI
+        shell: bash
+        run: |
+          set -euo pipefail
+          asset='limboai+v1.6.0.gdextension-4.4.zip'
+          sha='20e2559d4000efee4495a2e361b0c3cc1d0c51d38a9cc062d335e020de1a405f'
+          url="https://github.com/limbonaut/limboai/releases/download/v1.6.0/${asset}"
+          tmp="$(mktemp -d)"
+          curl --fail --location --silent --show-error "$url" --output "$tmp/limboai.zip"
+          echo "$sha  $tmp/limboai.zip" | sha256sum --check --status
+          unzip -q "$tmp/limboai.zip" -d "$tmp/extract"
+          gdext="$(find "$tmp/extract" -type f -name '*.gdextension' -path '*/addons/limboai/*' -print -quit)"
+          test -n "$gdext"
+          source_dir="${gdext%%/addons/limboai/*}/addons/limboai"
+          test -d "$source_dir"
+          rm -rf game/addons/limboai
+          mkdir -p game/addons
+          cp -R "$source_dir" game/addons/limboai
+          rm -rf "$tmp"
+
+      - name: Commit vendored extension
+        shell: bash
+        run: |
+          set -euo pipefail
+          if git diff --quiet -- game/addons/limboai && [ -z "$(git ls-files --others --exclude-standard game/addons/limboai)" ]; then
+            echo 'LimboAI already vendored.'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add game/addons/limboai
+          git commit -m 'vendor(ai): add pinned LimboAI 1.6.0 GDExtension'
+          git push origin HEAD:feature/monthly-campaign-foundation
