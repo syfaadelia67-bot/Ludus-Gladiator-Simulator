@@ -25,19 +25,19 @@ func run() -> void:
 		"Un objetivo resuelto no debe evaluarse otra vez."
 	)
 	_assert(
-		manager_source.contains("data[\"failed_objectives\"]"),
+		manager_source.contains('data["failed_objectives"]'),
 		"El guardado debe exportar objetivos fallidos."
 	)
 	_assert(
-		manager_source.contains("data.get(\"failed_objectives\", [])"),
+		manager_source.contains('data.get("failed_objectives", [])'),
 		"Partidas antiguas sin el campo deben seguir cargando."
 	)
 	_assert(
-		manager_source.contains("data[\"deadline_month\"]"),
+		manager_source.contains('data["deadline_month"]'),
 		"El contrato canónico del plazo debe expresarse en meses."
 	)
 	_assert(
-		manager_source.contains("data[\"deadline_week\"]"),
+		manager_source.contains('data["deadline_week"]'),
 		"El alias semanal debe conservarse temporalmente para compatibilidad."
 	)
 	_assert(
@@ -45,13 +45,11 @@ func run() -> void:
 		"El vencimiento debe emitir una señal visible."
 	)
 	_assert(
-		controller_source.contains("bool(objective.get(\"failed\", false))"),
+		controller_source.contains('bool(objective.get("failed", false))'),
 		"La interfaz debe usar el estado oficial del manager."
 	)
 	_assert(
-		project_source.contains(
-			"CampaignManager=\"*res://scripts/systems/campaign_manager_demo.gd\""
-		),
+		project_source.contains('CampaignManager="*res://scripts/systems/campaign_manager_demo.gd"'),
 		"La extensión de campaña debe estar activa."
 	)
 
