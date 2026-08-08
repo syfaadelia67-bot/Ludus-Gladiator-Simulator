@@ -35,7 +35,7 @@ func _snapshot() -> Dictionary:
 
 func _assert_eighth_demo_building_is_rejected(validator) -> void:
 	var snapshot := _snapshot()
-	var buildings: Array = snapshot["buildings"]
+	var buildings := snapshot["buildings"] as Array
 	buildings.append(
 		{
 			"id": "invalid_demo_facility",
@@ -56,7 +56,7 @@ func _assert_eighth_demo_building_is_rejected(validator) -> void:
 
 func _assert_seventeenth_trait_is_rejected(validator) -> void:
 	var snapshot := _snapshot()
-	var traits: Array = snapshot["traits"]
+	var traits := snapshot["traits"] as Array
 	traits.append(
 		{
 			"id": "invalid_trait_17",
@@ -74,8 +74,9 @@ func _assert_seventeenth_trait_is_rejected(validator) -> void:
 
 func _assert_duplicate_ids_are_rejected(validator) -> void:
 	var snapshot := _snapshot()
-	var beasts: Array = snapshot["beasts"]
-	beasts.append(beasts[0].duplicate(true))
+	var beasts := snapshot["beasts"] as Array
+	var duplicate_beast := (beasts[0] as Dictionary).duplicate(true)
+	beasts.append(duplicate_beast)
 	var errors := validator.validate_snapshot(snapshot)
 	assert(
 		_contains_error(errors, "duplicate id"),
@@ -85,8 +86,8 @@ func _assert_duplicate_ids_are_rejected(validator) -> void:
 
 func _assert_broken_references_are_rejected(validator) -> void:
 	var snapshot := _snapshot()
-	var specializations: Array = snapshot["specializations"]
-	var broken_specialization: Dictionary = specializations[1]
+	var specializations := snapshot["specializations"] as Array
+	var broken_specialization := specializations[1] as Dictionary
 	broken_specialization["class_ability"] = "missing_ability"
 	var errors := validator.validate_snapshot(snapshot)
 	assert(
