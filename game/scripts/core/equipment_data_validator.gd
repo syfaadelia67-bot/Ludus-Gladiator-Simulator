@@ -48,7 +48,9 @@ func validate_snapshot(snapshot: Dictionary) -> Array[String]:
 		if not VALID_SLOTS.has(slot):
 			errors.append("Equipment %s has invalid slot: %s" % [equipment_id, slot])
 		if int(entry.get("forge_level", 0)) < 1:
-			errors.append("Equipment %s must require forge level I or higher" % equipment_id)
+			errors.append(
+				"Equipment %s must require forge level I or higher" % equipment_id
+			)
 		for numeric_field in ["ore", "denarii", "power", "defense"]:
 			if int(entry.get(str(numeric_field), -1)) < 0:
 				errors.append(
