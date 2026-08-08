@@ -40,18 +40,28 @@ func _initialize() -> void:
 
 
 func _test_exact_action_ids(catalog, contract) -> void:
-	_assert_eq(catalog.get_action_ids(), EXPECTED_ACTION_IDS, "catalog must expose six canonical actions")
-	_assert_eq(contract.get_action_ids(), EXPECTED_ACTION_IDS, "CombatContract must source catalog actions")
+	_assert_eq(
+		catalog.get_action_ids(), EXPECTED_ACTION_IDS, "catalog must expose six canonical actions"
+	)
+	_assert_eq(
+		contract.get_action_ids(), EXPECTED_ACTION_IDS, "CombatContract must source catalog actions"
+	)
 	for action_id in EXPECTED_ACTION_IDS:
-		_assert_true(contract.is_action_id_valid(action_id), "CombatContract must accept %s" % action_id)
+		_assert_true(
+			contract.is_action_id_valid(action_id), "CombatContract must accept %s" % action_id
+		)
 
 
 func _test_unfrozen_fields_stay_explicitly_pending(catalog) -> void:
 	var contracts: Array[Dictionary] = catalog.get_action_contracts()
-	_assert_eq(contracts.size(), EXPECTED_ACTION_IDS.size(), "every action needs one catalog contract")
+	_assert_eq(
+		contracts.size(), EXPECTED_ACTION_IDS.size(), "every action needs one catalog contract"
+	)
 	for action_contract in contracts:
 		var action_id := str(action_contract.get("id", ""))
-		_assert_true(EXPECTED_ACTION_IDS.has(action_id), "catalog contract must use canonical action id")
+		_assert_true(
+			EXPECTED_ACTION_IDS.has(action_id), "catalog contract must use canonical action id"
+		)
 		for field in PENDING_FIELDS:
 			_assert_eq(
 				action_contract.get(field),
@@ -64,7 +74,9 @@ func _test_catalog_reads_are_isolated(catalog) -> void:
 	var ids := catalog.get_action_ids()
 	ids.clear()
 	_assert_eq(
-		catalog.get_action_ids(), EXPECTED_ACTION_IDS, "mutating returned ids must not alter catalog"
+		catalog.get_action_ids(),
+		EXPECTED_ACTION_IDS,
+		"mutating returned ids must not alter catalog"
 	)
 	var light := catalog.get_action_contract("light")
 	light["target_rule_status"] = "invented"
@@ -76,9 +88,13 @@ func _test_catalog_reads_are_isolated(catalog) -> void:
 
 
 func _test_unknown_action_is_rejected(catalog, contract) -> void:
-	_assert_eq(catalog.get_action_contract("invented"), {}, "unknown action has no catalog contract")
+	_assert_eq(
+		catalog.get_action_contract("invented"), {}, "unknown action has no catalog contract"
+	)
 	_assert_true(not catalog.is_action_id_valid("invented"), "catalog must reject unknown action")
-	_assert_true(not contract.is_action_id_valid("invented"), "CombatContract must reject unknown action")
+	_assert_true(
+		not contract.is_action_id_valid("invented"), "CombatContract must reject unknown action"
+	)
 
 
 func _assert_true(condition: bool, message: String) -> void:
