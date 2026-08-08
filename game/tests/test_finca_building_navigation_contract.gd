@@ -18,7 +18,7 @@ func run() -> void:
 	assert(not hub.contains('"private_arena": "arena"'))
 	assert(not hub.contains('"kitchen": "economia"'))
 	assert(screen.contains("const BUILDING_LAYOUT"))
-	assert(screen.contains('"id":"beast_area"'))
+	assert(screen.contains('"id": "beast_area"'))
 	assert(screen.contains("button.pressed.connect(_on_hotspot_pressed.bind(building_id))"))
 	assert(screen.contains("func _on_hotspot_pressed(building_id: String)"))
 	assert(screen.contains("_open_building_modal()"))
