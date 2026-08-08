@@ -60,10 +60,16 @@ func _assert_valid_intent_stays_pending(simulator) -> void:
 	)
 	(blocking_context.get("candidates", {}) as Dictionary)["enemies"] = []
 	assert(
-		((result.get("blocking_context", {}) as Dictionary).get("candidates", {}) as Dictionary).get(
-			"enemies", []
-		)
-		== [],
+		(
+			(
+				(
+					(result.get("blocking_context", {}) as Dictionary).get("candidates", {})
+					as Dictionary
+				)
+				. get("enemies", [])
+			)
+			== []
+		),
 		"caller may mutate its returned blocking context copy",
 	)
 
