@@ -20,7 +20,9 @@ func _assert_action_catalog(contract) -> void:
 	)
 	for action_id in contract.ACTION_IDS:
 		assert(contract.is_action_id_valid(action_id))
-	assert(not contract.is_action_id_valid("special"), "Unknown actions must not become authoritative")
+	assert(
+		not contract.is_action_id_valid("special"), "Unknown actions must not become authoritative"
+	)
 
 
 func _assert_supported_formats(contract) -> void:
@@ -44,7 +46,8 @@ func _assert_unresolved_stats_are_rejected(contract) -> void:
 func _assert_three_vs_three_is_rejected(contract) -> void:
 	var state := {
 		"format": "3v3",
-		"fighters": [
+		"fighters":
+		[
 			_fighter("a1", "a"),
 			_fighter("a2", "a"),
 			_fighter("a3", "a"),
@@ -67,7 +70,8 @@ func _state_for_format(format_id: String) -> Dictionary:
 		"2v2":
 			return {
 				"format": format_id,
-				"fighters": [
+				"fighters":
+				[
 					_fighter("a1", "a"),
 					_fighter("a2", "a"),
 					_fighter("b1", "b"),
@@ -77,7 +81,8 @@ func _state_for_format(format_id: String) -> Dictionary:
 		"1v2":
 			return {
 				"format": format_id,
-				"fighters": [
+				"fighters":
+				[
 					_fighter("a1", "a"),
 					_fighter("b1", "b"),
 					_fighter("b2", "b"),
