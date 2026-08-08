@@ -92,11 +92,14 @@ func _test_gt1_tie_requires_tiebreak() -> void:
 
 func _register_rivals(points: Array, wins: Array) -> void:
 	for index in range(7):
-		var registered := TournamentManager.register_gt1_rival_result(
-			"rival_%d" % index,
-			"Rival %d" % index,
-			int(points[index]),
-			int(wins[index]),
+		var registered := (
+			TournamentManager
+			. register_gt1_rival_result(
+				"rival_%d" % index,
+				"Rival %d" % index,
+				int(points[index]),
+				int(wins[index]),
+			)
 		)
 		assert(registered)
 
