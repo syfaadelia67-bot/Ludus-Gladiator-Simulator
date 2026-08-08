@@ -64,6 +64,37 @@ func validate_policy_output(state: Dictionary, desired_action: Dictionary) -> Ar
 	return _policy_contract.validate_desired_action(state, desired_action)
 
 
+func write_policy_context_to_blackboard(
+	runtime_objects: Dictionary, policy_context: Dictionary
+) -> Dictionary:
+	var blackboard := _get_blackboard(runtime_objects)
+	if blackboard == null:
+		return {
+			"status": "blackboard_unavailable",
+			"errors": ["LimboAI runtime does not expose a usable Blackboard"],
+		}
+
+	for key in POLICY_CONTEXT_KEYS:
+		if not policy_context.has(key):
+			return {
+				"status": "invalid_context",
+				"errors": ["Policy context is missing key: %s" % key],
+			}
+		blackboard.call("set_var", StringName(key), _isolate_value(policy_context[key]))
+
+	return {"status": "ready", "errors": []}
+
+
+func read_desired_action_from_blackboard(runtime_objects: Dictionary) -> Dictionary:
+	var blackboard := _get_blackboard(runtime_objects)
+	if blackboard == null:
+		return {}
+	var desired_action: Variant = blackboard.call("get_var", &"desired_action", {})
+	if desired_action is not Dictionary:
+		return {}
+	return (desired_action as Dictionary).duplicate(true)
+
+
 func prepare_runtime_objects() -> Dictionary:
 	if not is_limboai_available():
 		return {
@@ -106,3 +137,24 @@ func release_runtime_objects(runtime_objects: Dictionary) -> void:
 		(bt_player as Node).free()
 	# BehaviorTree and Blackboard are RefCounted in the GDExtension contract.
 	objects.clear()
+
+
+func _get_blackboard(runtime_objects: Dictionary) -> Object:
+	var objects_value: Variant = runtime_objects.get("objects", {})
+	if objects_value is not Dictionary:
+		return null
+	var blackboard: Variant = (objects_value as Dictionary).get("blackboard")
+	if blackboard == null or not blackboard is Object:
+		return null
+	var blackboard_object := blackboard as Object
+	if not blackboard_object.has_method("set_var") or not blackboard_object.has_method("get_var"):
+		return null
+	return blackboard_object
+
+
+func _isolate_value(value: Variant) -> Variant:
+	if value is Dictionary:
+		return (value as Dictionary).duplicate(true)
+	if value is Array:
+		return (value as Array).duplicate(true)
+	return value
