@@ -27,18 +27,19 @@ func resolve_intent(state: Dictionary, desired_action: Dictionary) -> Dictionary
 	if not policy_errors.is_empty():
 		return _rejected_result("invalid_desired_action", policy_errors, state, desired_action)
 
-	var target_inspection: Dictionary = _target_resolver.inspect_action_targets(
-		state,
-		str(desired_action.get("actor_id", "")),
-		str(desired_action.get("action_id", "")),
+	var target_inspection: Dictionary = (
+		_target_resolver
+		. inspect_action_targets(
+			state,
+			str(desired_action.get("actor_id", "")),
+			str(desired_action.get("action_id", "")),
+		)
 	)
 	if target_inspection.get("status") != "pending_design_freeze":
 		var target_errors := target_inspection.get("errors", []) as Array
 		if target_errors.is_empty():
 			target_errors = ["Target resolver did not return the expected D1 pending boundary"]
-		return _rejected_result(
-			"invalid_target_context", target_errors, state, desired_action
-		)
+		return _rejected_result("invalid_target_context", target_errors, state, desired_action)
 
 	return {
 		"ok": false,
