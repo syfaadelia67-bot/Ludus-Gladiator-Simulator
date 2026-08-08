@@ -78,7 +78,7 @@ func _assert_seventeenth_trait_is_rejected(validator) -> void:
 func _assert_duplicate_ids_are_rejected(validator) -> void:
 	var snapshot := _snapshot()
 	var beasts := snapshot["beasts"] as Array
-	var duplicate_beast := (beasts[0] as Dictionary).duplicate(true)
+	var duplicate_beast: Dictionary = (beasts[0] as Dictionary).duplicate(true)
 	beasts.append(duplicate_beast)
 	var errors := validator.validate_snapshot(snapshot)
 	assert(
