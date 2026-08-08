@@ -1,0 +1,75 @@
+name: Part 3 Equipment Canonicalize Once
+
+on:
+  push:
+    branches:
+      - feature/monthly-campaign-foundation
+    paths:
+      - .github/workflows/part3-equipment-canonicalize-once.yml
+
+permissions:
+  contents: write
+
+jobs:
+  migrate-equipment-manager:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          ref: feature/monthly-campaign-foundation
+          fetch-depth: 0
+      - name: Replace hardcoded recipes with DataRepository-backed cache
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          path = Path('game/scripts/systems/equipment_manager.gd')
+          text = path.read_text(encoding='utf-8')
+
+          text, count = re.subn(
+              r'const RECIPES := \{.*?\n\}\n\nconst UNIVERSAL_TECHNIQUES:',
+              'var RECIPES: Dictionary = {}\n\nconst UNIVERSAL_TECHNIQUES:',
+              text,
+              count=1,
+              flags=re.S,
+          )
+          if count != 1:
+              raise SystemExit('Could not replace the legacy RECIPES dictionary exactly once')
+
+          marker = 'var serial: int = 0\n\n'
+          helper = '''var serial: int = 0\n\nfunc _ready() -> void:\n    _ensure_recipes_loaded()\n\nfunc _ensure_recipes_loaded() -> void:\n    if not RECIPES.is_empty():\n        return\n    for raw_entry in DataRepository.weapons:\n        if not raw_entry is Dictionary:\n            continue\n        var entry: Dictionary = raw_entry\n        var recipe_id := str(entry.get("id", ""))\n        if recipe_id.is_empty() or RECIPES.has(recipe_id):\n            continue\n        var recipe := entry.duplicate(true)\n        recipe.erase("id")\n        RECIPES[recipe_id] = recipe\n\n'''
+          if marker not in text:
+              raise SystemExit('Could not locate equipment inventory declaration marker')
+          text = text.replace(marker, helper, 1)
+
+          text = text.replace(
+              'func get_recipe_ids() -> Array[String]:\n    var result: Array[String] = []\n    for recipe_id in RECIPES.keys():\n        result.append(str(recipe_id))\n    return result\n',
+              'func get_recipe_ids() -> Array[String]:\n    _ensure_recipes_loaded()\n    var result: Array[String] = []\n    for recipe_id in RECIPES.keys():\n        result.append(str(recipe_id))\n    result.sort()\n    return result\n',
+              1,
+          )
+          text = text.replace(
+              'func get_recipe(recipe_id: String) -> Dictionary:\n    var data: Dictionary = RECIPES.get(recipe_id, {}).duplicate(true)\n',
+              'func get_recipe(recipe_id: String) -> Dictionary:\n    _ensure_recipes_loaded()\n    var data: Dictionary = RECIPES.get(recipe_id, {}).duplicate(true)\n',
+              1,
+          )
+          text = text.replace(
+              'func craft(recipe_id: String) -> bool:\n    if CampaignManager.campaign_over:\n',
+              'func craft(recipe_id: String) -> bool:\n    _ensure_recipes_loaded()\n    if CampaignManager.campaign_over:\n',
+              1,
+          )
+
+          path.write_text(text, encoding='utf-8')
+          PY
+      - name: Apply canonical format
+        run: |
+          python3 -m pip install --disable-pip-version-check --no-input 'gdtoolkit==4.5.0'
+          gdformat game/scripts/systems/equipment_manager.gd
+      - name: Commit canonical equipment manager
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add game/scripts/systems/equipment_manager.gd
+          git diff --cached --quiet && exit 0
+          git commit -m 'refactor(equipment): source forge recipes from canonical JSON'
+          git push origin HEAD:feature/monthly-campaign-foundation
