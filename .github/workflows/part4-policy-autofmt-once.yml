@@ -1,0 +1,41 @@
+name: Part 4 Policy Autofmt Once
+
+on:
+  push:
+    branches:
+      - feature/monthly-campaign-foundation
+    paths:
+      - game/scripts/combat/combat_policy_contract.gd
+      - game/tests/combat_policy_contract_test.gd
+      - .github/workflows/part4-policy-autofmt-once.yml
+
+permissions:
+  contents: write
+
+jobs:
+  format:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          ref: feature/monthly-campaign-foundation
+          persist-credentials: true
+
+      - name: Install pinned gdtoolkit
+        run: python3 -m pip install --disable-pip-version-check --no-input 'gdtoolkit==4.5.0'
+
+      - name: Format policy contract files
+        run: gdformat game/scripts/combat/combat_policy_contract.gd game/tests/combat_policy_contract_test.gd
+
+      - name: Commit formatting if needed
+        run: |
+          if git diff --quiet -- game/scripts/combat/combat_policy_contract.gd game/tests/combat_policy_contract_test.gd; then
+            echo "No formatting changes needed."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add game/scripts/combat/combat_policy_contract.gd game/tests/combat_policy_contract_test.gd
+          git commit -m "style(combat): apply canonical policy contract format"
+          git push origin HEAD:feature/monthly-campaign-foundation
