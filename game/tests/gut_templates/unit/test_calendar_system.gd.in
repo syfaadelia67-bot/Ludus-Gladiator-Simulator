@@ -7,11 +7,11 @@ var manager
 func before_each() -> void:
     manager = autofree(TOURNAMENT_MANAGER_SCRIPT.new())
 
-func test_campaign_uses_seven_internal_ticks_per_visible_week() -> void:
-    assert_eq(GameState.DAYS_PER_WEEK, 7)
-    assert_eq(GameState.get_week(), maxi(1, GameState.day))
+func test_campaign_uses_one_month_per_visible_turn() -> void:
+    assert_eq(GameState.get_month(), maxi(1, GameState.day))
+    assert_eq(GameState.get_week(), GameState.get_month())
 
-func test_arena_event_rotation_is_deterministic() -> void:
+func test_legacy_arena_event_rotation_remains_deterministic_until_tournament_migration() -> void:
     assert_eq(CombatManager.get_event_type_for_week(1), "exhibition")
     assert_eq(CombatManager.get_event_type_for_week(2), "underground")
     assert_eq(CombatManager.get_event_type_for_week(3), "beast_hunt")
@@ -19,13 +19,13 @@ func test_arena_event_rotation_is_deterministic() -> void:
     assert_eq(CombatManager.get_event_type_for_week(12), "official")
     assert_eq(CombatManager.get_event_type_for_week(16), "demo_finale")
 
-func test_campaign_chapter_boundaries_match_the_sixteen_week_demo() -> void:
-    assert_eq(str(CampaignManager.get_chapter_for_week(1).get("id", "")), "ruins")
-    assert_eq(str(CampaignManager.get_chapter_for_week(5).get("id", "")), "ruins")
-    assert_eq(str(CampaignManager.get_chapter_for_week(6).get("id", "")), "blood_reputation")
-    assert_eq(str(CampaignManager.get_chapter_for_week(11).get("id", "")), "blood_reputation")
-    assert_eq(str(CampaignManager.get_chapter_for_week(12).get("id", "")), "name_of_ludus")
-    assert_eq(str(CampaignManager.get_chapter_for_week(16).get("id", "")), "name_of_ludus")
+func test_campaign_chapter_boundaries_match_the_twenty_month_demo() -> void:
+    assert_eq(str(CampaignManager.get_chapter_for_month(1).get("id", "")), "ruins")
+    assert_eq(str(CampaignManager.get_chapter_for_month(6).get("id", "")), "ruins")
+    assert_eq(str(CampaignManager.get_chapter_for_month(7).get("id", "")), "blood_reputation")
+    assert_eq(str(CampaignManager.get_chapter_for_month(12).get("id", "")), "blood_reputation")
+    assert_eq(str(CampaignManager.get_chapter_for_month(13).get("id", "")), "name_of_ludus")
+    assert_eq(str(CampaignManager.get_chapter_for_month(20).get("id", "")), "name_of_ludus")
 
 func test_tournament_legacy_day_fields_migrate_to_week_fields() -> void:
     var entries: Array = [
