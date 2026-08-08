@@ -249,10 +249,10 @@ func _evaluate_campaign_finale() -> void:
 	victory_achieved = placement >= 1 and placement <= 3
 	if victory_achieved:
 		defeat_reason = ""
-		campaign_finished.emit(
-			true,
-			"El ludus terminó %d.º en Roma y obtuvo medalla %s." % [placement, medal],
+		var victory_message := (
+			"El ludus terminó %d.º en Roma y obtuvo medalla %s." % [placement, medal]
 		)
+		campaign_finished.emit(true, victory_message)
 	else:
 		defeat_reason = "El ludus completó el Gran Torneo de Roma sin subir al podio."
 		campaign_finished.emit(false, defeat_reason)
