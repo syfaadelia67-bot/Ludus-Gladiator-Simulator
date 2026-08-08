@@ -6,14 +6,8 @@ const BUILDING_LAYOUT := [
     {"id":"training_yard", "x":0.28, "y":0.45, "w":0.25, "h":0.13},
     {"id":"forge", "x":0.73, "y":0.25, "w":0.20, "h":0.13},
     {"id":"infirmary", "x":0.04, "y":0.53, "w":0.20, "h":0.12},
-    {"id":"kitchen", "x":0.72, "y":0.54, "w":0.21, "h":0.12},
-    {"id":"warehouse", "x":0.80, "y":0.09, "w":0.16, "h":0.11},
-    {"id":"worker_quarters", "x":0.04, "y":0.75, "w":0.22, "h":0.11},
-    {"id":"wall_and_gate", "x":0.39, "y":0.85, "w":0.22, "h":0.10},
-    {"id":"beast_area", "x":0.76, "y":0.76, "w":0.20, "h":0.11},
-    {"id":"sanctuary", "x":0.61, "y":0.09, "w":0.16, "h":0.11},
-    {"id":"private_arena", "x":0.50, "y":0.63, "w":0.22, "h":0.12},
-    {"id":"stable", "x":0.30, "y":0.75, "w":0.17, "h":0.11}
+    {"id":"mine", "x":0.72, "y":0.54, "w":0.21, "h":0.12},
+    {"id":"beast_area", "x":0.76, "y":0.76, "w":0.20, "h":0.11}
 ]
 
 const BUILDING_SYSTEMS := {
@@ -22,7 +16,7 @@ const BUILDING_SYSTEMS := {
     "training_yard":"personal",
     "forge":"forja",
     "infirmary":"personal",
-    "kitchen":"economia"
+    "mine":"economia"
 }
 
 const HOTSPOT_NAMES := {
@@ -31,14 +25,8 @@ const HOTSPOT_NAMES := {
     "training_yard":"Patio de entrenamiento",
     "forge":"Forja",
     "infirmary":"Enfermería",
-    "kitchen":"Cocina y comedor",
-    "warehouse":"Almacén",
-    "worker_quarters":"Trabajadores",
-    "wall_and_gate":"Muralla y puerta",
-    "beast_area":"Bestias",
-    "sanctuary":"Santuario",
-    "private_arena":"Arena privada",
-    "stable":"Establo"
+    "mine":"Mina",
+    "beast_area":"Zona de bestias"
 }
 
 const BLUR_SHADER_CODE := """
@@ -371,7 +359,7 @@ func _refresh_modal() -> void:
     modal_description.text = "[b]Descripción[/b]\n%s" % str(data.get("description", "Sin descripción."))
     modal_effect.text = "EFECTO ACTUAL · %s" % _building_effect_text(data)
     if locked:
-        modal_next_upgrade.text = "Esta instalación forma parte de las siete expansiones reservadas para el juego completo."
+        modal_next_upgrade.text = "Esta instalación no está disponible en la demo."
         modal_cost.text = ""
         modal_enter_button.text = "No disponible en la demo"
         modal_enter_button.disabled = true
@@ -402,8 +390,10 @@ func _building_effect_text(data: Dictionary) -> String:
             return "Forja operativa en nivel %d." % EstateManager.get_forge_level()
         "recovery_bonus":
             return "+%d de recuperación semanal." % EstateManager.get_recovery_bonus()
-        "food_efficiency":
-            return "+%d%% de eficiencia alimentaria proyectada." % (level * 10)
+        "mine_production":
+            return "Mina operativa en nivel %d; balance mensual de producción pendiente." % level
+        "beast_capacity":
+            return "Zona de bestias operativa en nivel %d." % level
         _:
             return "Efecto reservado para una actualización posterior."
 
@@ -419,8 +409,10 @@ func _entry_button_text(building_id: String) -> String:
             return "Entrar a la forja"
         "infirmary":
             return "Revisar personal y heridos"
-        "kitchen":
-            return "Abrir economía y provisiones"
+        "mine":
+            return "Abrir economía de la mina"
+        "beast_area":
+            return "Zona de bestias"
         _:
             return "Entrar"
 
