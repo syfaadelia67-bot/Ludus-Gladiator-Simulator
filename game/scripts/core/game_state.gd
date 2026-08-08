@@ -85,8 +85,7 @@ func advance_month() -> void:
 
 	var base_consumption := maxi(1, RosterManager.people.size())
 	var monthly_consumption := maxi(
-		1,
-		int(ceil(float(base_consumption) * EventManager.get_food_consumption_multiplier()))
+		1, int(ceil(float(base_consumption) * EventManager.get_food_consumption_multiplier()))
 	)
 	food = maxi(0, food - monthly_consumption)
 	ore += int(report.get("ore", 0))
@@ -133,16 +132,19 @@ func add_denarii(amount: int) -> void:
 func get_resource_summary() -> String:
 	var economy := EconomyManager.get_summary()
 	return (
-		"Mes: %d | Denarios: %d | Comida: %d | Mineral: %d | Reputación: %d | "
-		+ "Seguridad: %d | Intel: %d | Deuda: %d | Combates: %d"
-	) % [
-		get_month(),
-		denarii,
-		food,
-		ore,
-		reputation,
-		RosterManager.security_score,
-		RosterManager.intelligence_points,
-		int(economy.get("total_debt", 0)),
-		TournamentManager.active_contracts.size(),
-	]
+		(
+			"Mes: %d | Denarios: %d | Comida: %d | Mineral: %d | Reputación: %d | "
+			+ "Seguridad: %d | Intel: %d | Deuda: %d | Combates: %d"
+		)
+		% [
+			get_month(),
+			denarii,
+			food,
+			ore,
+			reputation,
+			RosterManager.security_score,
+			RosterManager.intelligence_points,
+			int(economy.get("total_debt", 0)),
+			TournamentManager.active_contracts.size(),
+		]
+	)
