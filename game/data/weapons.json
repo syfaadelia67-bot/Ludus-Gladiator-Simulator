@@ -3,58 +3,180 @@
     "id": "gladius",
     "name": "Gladius",
     "type": "weapon",
+    "slot": "right_hand",
     "forge_level": 1,
     "ore": 8,
     "denarii": 45,
     "power": 12,
-    "techniques": ["lunge", "disarm", "execute"]
+    "defense": 0,
+    "tags": ["weapon", "blade", "single_weapon"]
   },
   {
     "id": "spear",
     "name": "Lanza de arena",
     "type": "weapon",
+    "slot": "right_hand",
     "forge_level": 1,
     "ore": 10,
     "denarii": 50,
     "power": 10,
-    "techniques": ["lunge", "disarm", "execute"]
+    "defense": 0,
+    "tags": ["weapon", "spear", "single_weapon"]
   },
   {
     "id": "mace",
     "name": "Maza pesada",
     "type": "weapon",
+    "slot": "right_hand",
     "forge_level": 2,
     "ore": 14,
     "denarii": 75,
     "power": 15,
-    "techniques": ["sunder", "disarm", "execute"]
+    "defense": 0,
+    "tags": ["weapon", "blunt", "single_weapon"]
+  },
+  {
+    "id": "retiarius_kit",
+    "name": "Red y tridente",
+    "type": "weapon",
+    "slot": "right_hand",
+    "forge_level": 1,
+    "ore": 12,
+    "denarii": 65,
+    "power": 10,
+    "defense": 0,
+    "tags": ["weapon", "spear", "net", "retiarius_kit"]
+  },
+  {
+    "id": "dual_blades",
+    "name": "Par de espadas cortas",
+    "type": "weapon",
+    "slot": "right_hand",
+    "forge_level": 2,
+    "ore": 16,
+    "denarii": 85,
+    "power": 14,
+    "defense": 0,
+    "tags": ["weapon", "blade", "dual_blades"]
   },
   {
     "id": "leather_armor",
     "name": "Armadura de cuero",
     "type": "armor",
+    "slot": "torso",
     "forge_level": 1,
     "ore": 5,
     "denarii": 40,
-    "defense": 6
+    "power": 0,
+    "defense": 6,
+    "tags": ["armor", "light_armor"]
   },
   {
     "id": "mail_armor",
     "name": "Cota de malla",
     "type": "armor",
+    "slot": "torso",
     "forge_level": 2,
     "ore": 16,
     "denarii": 90,
-    "defense": 11
+    "power": 0,
+    "defense": 11,
+    "tags": ["armor", "heavy_armor"]
   },
   {
     "id": "tower_shield",
     "name": "Escudo de torre",
     "type": "shield",
+    "slot": "left_hand",
     "forge_level": 3,
     "ore": 20,
     "denarii": 120,
+    "power": 0,
     "defense": 15,
-    "techniques": ["shield_bash"]
+    "tags": ["shield", "large_shield"]
+  },
+  {
+    "id": "bronze_helmet",
+    "name": "Casco de bronce",
+    "type": "helmet",
+    "slot": "head",
+    "forge_level": 1,
+    "ore": 7,
+    "denarii": 45,
+    "power": 0,
+    "defense": 4,
+    "tags": ["helmet", "head_armor"]
+  },
+  {
+    "id": "reinforced_helmet",
+    "name": "Yelmo reforzado",
+    "type": "helmet",
+    "slot": "head",
+    "forge_level": 2,
+    "ore": 12,
+    "denarii": 75,
+    "power": 0,
+    "defense": 7,
+    "tags": ["helmet", "head_armor", "heavy_armor"]
+  },
+  {
+    "id": "bronze_greaves",
+    "name": "Grebas de bronce",
+    "type": "lower_body",
+    "slot": "lower_body",
+    "forge_level": 1,
+    "ore": 6,
+    "denarii": 42,
+    "power": 0,
+    "defense": 4,
+    "tags": ["greaves", "lower_armor"]
+  },
+  {
+    "id": "reinforced_boots",
+    "name": "Botas reforzadas",
+    "type": "lower_body",
+    "slot": "lower_body",
+    "forge_level": 2,
+    "ore": 9,
+    "denarii": 65,
+    "power": 0,
+    "defense": 6,
+    "tags": ["boots", "lower_armor"]
+  },
+  {
+    "id": "linen_wraps",
+    "name": "Vendas de combate",
+    "type": "accessory",
+    "slot": "accessory",
+    "forge_level": 1,
+    "ore": 1,
+    "denarii": 28,
+    "power": 0,
+    "defense": 1,
+    "tags": ["accessory", "bandages", "recovery"]
+  },
+  {
+    "id": "antidote_kit",
+    "name": "Estuche de antídotos",
+    "type": "accessory",
+    "slot": "accessory",
+    "forge_level": 1,
+    "ore": 2,
+    "denarii": 55,
+    "power": 0,
+    "defense": 0,
+    "tags": ["accessory", "antidote"]
+  },
+  {
+    "id": "hidden_hook",
+    "name": "Gancho oculto",
+    "type": "accessory",
+    "slot": "accessory",
+    "forge_level": 2,
+    "ore": 5,
+    "denarii": 80,
+    "power": 3,
+    "defense": 0,
+    "tags": ["accessory", "cheat_item", "contraband"]
   }
 ]
