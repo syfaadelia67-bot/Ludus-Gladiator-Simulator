@@ -20,6 +20,10 @@ func get_action_ids() -> Array[String]:
 	return _action_catalog.get_action_ids()
 
 
+func get_action_contracts() -> Array[Dictionary]:
+	return _action_catalog.get_action_contracts()
+
+
 func validate_state(state: Dictionary) -> Array[String]:
 	var errors: Array[String] = []
 	var format_id := str(state.get("format", ""))
