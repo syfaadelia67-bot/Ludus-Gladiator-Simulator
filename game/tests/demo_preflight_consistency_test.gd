@@ -77,13 +77,19 @@ func _assert_specialization_catalog() -> void:
     assert(GladiatorProgressionManager.canonical_specialization_id("thraex") == "dimachaerus", "thraex must migrate to dimachaerus")
 
 func _assert_trait_catalog() -> void:
-    assert(TraitManager.get_origin_trait_ids().size() == 8, "The demo must contain eight origin traits")
-    assert(TraitManager.get_obtainable_trait_ids().size() == 14, "The demo must contain fourteen obtainable traits")
-    var dreamer := TraitManager.get_trait("dreamer")
-    assert(not dreamer.is_empty(), "Soñador must exist in the obtainable catalog")
-    var effects: Dictionary = dreamer.get("permanent_effects", {})
-    for stat_id in ["strength", "agility", "endurance", "intelligence", "technique"]:
-        assert(int(effects.get(stat_id, 0)) == 1, "Soñador must grant +1 %s" % stat_id)
+    assert(TraitManager.get_normal_trait_ids().size() == 16, "The frozen catalog must contain sixteen normal traits")
+    assert(TraitManager.get_origin_trait_ids().is_empty(), "The frozen model must not expose a separate origin-trait catalog")
+    assert(TraitManager.get_obtainable_trait_ids().is_empty(), "The legacy obtainable-trait catalog must remain inactive")
+
+    var disciplined := TraitManager.get_trait("disciplined")
+    var impulsive := TraitManager.get_trait("impulsive")
+    var reckless := TraitManager.get_trait("reckless")
+    var prudent := TraitManager.get_trait("prudent")
+    assert(disciplined.get("incompatible_with", []).has("impulsive"), "Disciplinado must reject Impulsivo")
+    assert(impulsive.get("incompatible_with", []).has("disciplined"), "Impulsivo must reject Disciplinado")
+    assert(reckless.get("incompatible_with", []).has("prudent"), "Temerario must reject Prudente")
+    assert(prudent.get("incompatible_with", []).has("reckless"), "Prudente must reject Temerario")
+    assert(TraitManager.get_trait("dreamer").is_empty(), "Removed legacy traits must not remain active catalog entries")
 
 func _assert_equipment_contracts() -> void:
     var shield_charge: Dictionary = GladiatorProgressionManager.abilities.get("shield_charge", {})
@@ -114,5 +120,5 @@ func _assert_save_contract() -> void:
     var serialized: Dictionary = SaveManager._serialize_person(person)
     assert(int(serialized.get("technique", 0)) == 7, "Technique must be serialized")
     assert(int(serialized.get("health", 0)) == 65, "Health must be serialized")
-    assert(serialized.get("traits", []).has("dreamer"), "Permanent traits must be serialized")
-    assert(serialized.get("applied_trait_effects", []).has("dreamer"), "Applied permanent effects must be serialized")
+    assert(serialized.get("traits", []).has("dreamer"), "Legacy trait ids must still round-trip through Save v14")
+    assert(serialized.get("applied_trait_effects", []).has("dreamer"), "Legacy applied trait effects must still round-trip through Save v14")
