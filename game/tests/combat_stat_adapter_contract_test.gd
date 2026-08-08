@@ -31,31 +31,27 @@ func _assert_complete_mapping(adapter) -> void:
 	assert(stats.get("TEC") == 13, "TEC must read legacy technique")
 	assert(stats.get("RES") == 14, "RES must read explicit legacy resistance")
 	assert(stats.get("PV") == 15, "PV must read legacy health")
-	assert(
-		adapter.is_complete(adapted),
-		"Explicit canonical sources must produce a complete view"
-	)
+	assert(adapter.is_complete(adapted), "Explicit canonical sources must produce a complete view")
 	assert(source == before, "The adapter must never mutate Save v14 legacy input")
 	var unmapped: Dictionary = adapted.get("legacy_unmapped", {})
+	assert(unmapped.get("endurance") == 16, "Legacy endurance must remain visible but unmapped")
 	assert(
-		unmapped.get("endurance") == 16,
-		"Legacy endurance must remain visible but unmapped"
-	)
-	assert(
-		unmapped.get("intelligence") == 17,
-		"Legacy intelligence must remain visible but unmapped"
+		unmapped.get("intelligence") == 17, "Legacy intelligence must remain visible but unmapped"
 	)
 
 
 func _assert_resistance_is_not_invented(adapter) -> void:
-	var adapted: Dictionary = adapter.from_legacy(
-		{
-			"strength": 21,
-			"agility": 22,
-			"technique": 23,
-			"health": 24,
-			"endurance": 99,
-		}
+	var adapted: Dictionary = (
+		adapter
+		. from_legacy(
+			{
+				"strength": 21,
+				"agility": 22,
+				"technique": 23,
+				"health": 24,
+				"endurance": 99,
+			}
+		)
 	)
 	var stats: Dictionary = adapted.get("stats", {})
 	assert(stats.has("RES"), "The canonical view must always expose RES")
@@ -65,8 +61,7 @@ func _assert_resistance_is_not_invented(adapter) -> void:
 		"Missing resistance must be explicit instead of falling back to endurance"
 	)
 	assert(
-		not adapter.is_complete(adapted),
-		"An unresolved RES mapping must keep the view incomplete"
+		not adapter.is_complete(adapted), "An unresolved RES mapping must keep the view incomplete"
 	)
 
 
@@ -77,6 +72,5 @@ func _assert_missing_sources_are_explicit(adapter) -> void:
 	var stats: Dictionary = adapted.get("stats", {})
 	for stat_id in adapter.CANONICAL_STAT_IDS:
 		assert(
-			stats.has(stat_id),
-			"Canonical stat view must expose %s even when unresolved" % stat_id
+			stats.has(stat_id), "Canonical stat view must expose %s even when unresolved" % stat_id
 		)
