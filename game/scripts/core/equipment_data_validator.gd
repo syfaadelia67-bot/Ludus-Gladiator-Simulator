@@ -48,14 +48,10 @@ func validate_snapshot(snapshot: Dictionary) -> Array[String]:
 		if not VALID_SLOTS.has(slot):
 			errors.append("Equipment %s has invalid slot: %s" % [equipment_id, slot])
 		if int(entry.get("forge_level", 0)) < 1:
-			errors.append(
-				"Equipment %s must require forge level I or higher" % equipment_id
-			)
+			errors.append("Equipment %s must require forge level I or higher" % equipment_id)
 		for numeric_field in ["ore", "denarii", "power", "defense"]:
 			if int(entry.get(str(numeric_field), -1)) < 0:
-				errors.append(
-				"Equipment %s has invalid %s" % [equipment_id, str(numeric_field)]
-			)
+				errors.append("Equipment %s has invalid %s" % [equipment_id, str(numeric_field)])
 		var tags: Variant = entry.get("tags", null)
 		if not tags is Array:
 			errors.append("Equipment %s must define tags as an Array" % equipment_id)
@@ -74,9 +70,9 @@ func validate_snapshot(snapshot: Dictionary) -> Array[String]:
 			var required_tag := str(raw_required_tag)
 			if not available_tags.has(required_tag):
 				errors.append(
-				(
-					"Ability %s requires equipment tag with no canonical provider: %s"
-					% [ability_id, required_tag]
+					(
+						"Ability %s requires equipment tag with no canonical provider: %s"
+						% [ability_id, required_tag]
+					)
 				)
-			)
 	return errors
