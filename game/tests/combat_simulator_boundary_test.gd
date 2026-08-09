@@ -6,6 +6,7 @@ const CombatSimulatorScript = preload("res://scripts/combat/combat_simulator.gd"
 func _ready() -> void:
 	var simulator = CombatSimulatorScript.new()
 	_assert_valid_intent_stays_pending(simulator)
+	_assert_invalid_target_intent_is_rejected(simulator)
 	_assert_invalid_state_is_rejected(simulator)
 	_assert_invalid_intent_is_rejected(simulator)
 	_assert_inputs_are_not_mutated(simulator)
@@ -25,27 +26,17 @@ func _assert_valid_intent_stays_pending(simulator) -> void:
 	)
 	assert((result.get("errors", []) as Array).is_empty())
 	assert(
-		str(result.get("blocking_requirement", "")) == "target_rules",
-		"D1 target rules must be the first explicit blocking requirement",
+		str(result.get("blocking_requirement", "")) == "resolution_order",
+		"D3 resolution order must become the first required blocker after D1 freeze",
 	)
 	var blocking_context := result.get("blocking_context", {}) as Dictionary
-	assert(
-		blocking_context.get("status") == "pending_design_freeze",
-		"D1 blocker must come from the target resolver pending boundary",
-	)
-	assert(
-		blocking_context.get("reason") == "target_rules_not_frozen",
-		"D1 blocker must expose the target resolver reason",
-	)
-	assert(
-		not blocking_context.has("legal_targets"),
-		"Simulator must not invent legal targets while D1 is pending",
-	)
-	var candidates := blocking_context.get("candidates", {}) as Dictionary
-	assert(candidates.get("enemies") == ["b1"], "D1 blocker must expose enemy candidates")
+	var target_context := blocking_context.get("resolved_target_context", {}) as Dictionary
+	assert(target_context.get("status") == "ready", "D1 target context must be fully resolved")
+	assert(target_context.get("legal_targets") == ["b1"], "resolved D1 context must expose enemy target")
+	assert(target_context.get("target_relationship") == "enemy")
 	var pending_requirements := result.get("pending_requirements", []) as Array
-	assert(not pending_requirements.is_empty(), "Pending combat must expose unresolved decisions")
-	assert(pending_requirements.has("target_rules"), "Target rules must remain explicitly pending")
+	assert(not pending_requirements.has("target_rules"), "Frozen D1 must leave pending readiness")
+	assert(pending_requirements.has("resolution_order"), "D3 must remain explicitly pending")
 	assert(
 		pending_requirements.has("damage_and_mitigation"),
 		"Damage and mitigation must remain explicitly pending"
@@ -56,22 +47,26 @@ func _assert_valid_intent_stays_pending(simulator) -> void:
 	var conditional_requirements := result.get("conditional_requirements", []) as Array
 	assert(
 		conditional_requirements.has("position_and_distance_model"),
-		"Position/distance must remain conditional until design decides whether Combat V1 needs it"
+		"Position/distance must remain conditional until design freezes D2"
 	)
-	(blocking_context.get("candidates", {}) as Dictionary)["enemies"] = []
+	(target_context.get("legal_targets", []) as Array).clear()
+	var nested_target_context := (
+		(result.get("blocking_context", {}) as Dictionary).get("resolved_target_context", {}) as Dictionary
+	)
 	assert(
-		(
-			(
-				(
-					(result.get("blocking_context", {}) as Dictionary).get("candidates", {})
-					as Dictionary
-				)
-				. get("enemies", [])
-			)
-			== []
-		),
-		"caller may mutate its returned blocking context copy",
+		(nested_target_context.get("legal_targets", []) as Array).is_empty(),
+		"caller may mutate its returned target context copy",
 	)
+
+
+func _assert_invalid_target_intent_is_rejected(simulator) -> void:
+	var result: Dictionary = simulator.resolve_intent(
+		_state(), {"actor_id": "a1", "action_id": "block", "target_id": "b1"}
+	)
+	assert(not bool(result.get("pending", true)))
+	assert(str(result.get("reason", "")) == "invalid_desired_action")
+	assert(_contains_error(result.get("errors", []), "does not accept an explicit target"))
+	assert(str(result.get("blocking_requirement", "")).is_empty())
 
 
 func _assert_invalid_state_is_rejected(simulator) -> void:
