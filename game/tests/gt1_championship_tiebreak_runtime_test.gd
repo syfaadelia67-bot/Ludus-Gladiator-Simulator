@@ -20,27 +20,37 @@ func _test_unavailable_player_gladiator_is_rejected() -> void:
 	var runtime = GT1ChampionshipTiebreakRuntimeScript.new()
 	var player := _player_person()
 	player.injury_days = 1
-	var result := runtime.start_from_sources(
-		player,
-		{"power": 100, "defense": 0},
-		"alpha",
-		"beta",
-		_rival_fighter("beta"),
+	var result := (
+		runtime
+		. start_from_sources(
+			player,
+			{"power": 100, "defense": 0},
+			"alpha",
+			"beta",
+			_rival_fighter("beta"),
+		)
 	)
 	assert(result.get("status") == "rejected")
 	assert(result.get("reason") == "invalid_tiebreak_sources")
-	assert((result.get("errors", []) as Array).has("Selected player gladiator is not available for combat"))
+	assert(
+		(result.get("errors", []) as Array).has(
+			"Selected player gladiator is not available for combat"
+		)
+	)
 
 
 func _test_explicit_rival_team_mismatch_is_rejected() -> void:
 	_seed_exact_championship_tie()
 	var runtime = GT1ChampionshipTiebreakRuntimeScript.new()
-	var result := runtime.start_from_sources(
-		_player_person(),
-		{"power": 100, "defense": 0},
-		"alpha",
-		"beta",
-		_rival_fighter("gamma"),
+	var result := (
+		runtime
+		. start_from_sources(
+			_player_person(),
+			{"power": 100, "defense": 0},
+			"alpha",
+			"beta",
+			_rival_fighter("gamma"),
+		)
 	)
 	assert(result.get("status") == "rejected")
 	assert(result.get("reason") == "invalid_tiebreak_sources")
@@ -54,12 +64,15 @@ func _test_explicit_rival_team_mismatch_is_rejected() -> void:
 func _test_authoritative_combat_resolves_championship_without_points() -> void:
 	_seed_exact_championship_tie()
 	var runtime = GT1ChampionshipTiebreakRuntimeScript.new()
-	var session := runtime.start_from_sources(
-		_player_person(),
-		{"power": 100, "defense": 0},
-		"alpha",
-		"beta",
-		_rival_fighter("beta"),
+	var session := (
+		runtime
+		. start_from_sources(
+			_player_person(),
+			{"power": 100, "defense": 0},
+			"alpha",
+			"beta",
+			_rival_fighter("beta"),
+		)
 	)
 	assert(session.get("status") == "tiebreak_combat_running")
 	assert(session.get("rival_ludus_id") == "cassianus")
@@ -137,11 +150,14 @@ func _seed_exact_championship_tie() -> void:
 	]
 	for rival_result in rival_results:
 		assert(
-			TournamentManager.register_gt1_rival_result(
-				str(rival_result[0]),
-				str(rival_result[1]),
-				int(rival_result[2]),
-				int(rival_result[3]),
+			(
+				TournamentManager
+				. register_gt1_rival_result(
+					str(rival_result[0]),
+					str(rival_result[1]),
+					int(rival_result[2]),
+					int(rival_result[3]),
+				)
 			)
 		)
 	var summary := TournamentManager.get_gt1_summary()
@@ -150,19 +166,22 @@ func _seed_exact_championship_tie() -> void:
 
 
 func _player_person() -> LudusPerson:
-	return LudusPerson.new(
-		{
-			"id": "champion",
-			"name": "Champion",
-			"role": "gladiator",
-			"strength": 10,
-			"agility": 10,
-			"technique": 20,
-			"resistance": 10,
-			"health": 20,
-			"fatigue": 0,
-			"injury_days": 0,
-		}
+	return (
+		LudusPerson
+		. new(
+			{
+				"id": "champion",
+				"name": "Champion",
+				"role": "gladiator",
+				"strength": 10,
+				"agility": 10,
+				"technique": 20,
+				"resistance": 10,
+				"health": 20,
+				"fatigue": 0,
+				"injury_days": 0,
+			}
+		)
 	)
 
 
