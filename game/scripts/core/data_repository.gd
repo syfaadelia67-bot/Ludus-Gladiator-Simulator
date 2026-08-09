@@ -3,7 +3,9 @@ extends Node
 const FrozenDataValidatorScript = preload("res://scripts/core/frozen_data_validator.gd")
 const EquipmentDataValidatorScript = preload("res://scripts/core/equipment_data_validator.gd")
 const RivalLudiDataValidatorScript = preload("res://scripts/core/rival_ludi_data_validator.gd")
-const MonthlyEconomyDataValidatorScript = preload("res://scripts/core/monthly_economy_data_validator.gd")
+const MonthlyEconomyDataValidatorScript = preload(
+	"res://scripts/core/monthly_economy_data_validator.gd"
+)
 
 var traits: Array = []
 var buildings: Array = []
