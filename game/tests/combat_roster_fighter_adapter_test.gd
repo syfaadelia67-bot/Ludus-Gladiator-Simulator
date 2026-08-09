@@ -34,8 +34,14 @@ func _test_missing_resistance_fails_closed(adapter) -> void:
 	)
 	_assert_eq(result.get("fighter"), {}, "incomplete canonical stats must create no fighter")
 	_assert_eq(source, before, "adapter must not mutate roster source")
-	var unmapped := result.get("legacy_unmapped", {}) as Dictionary
-	_assert_eq(unmapped.get("endurance"), 99, "legacy endurance must remain visible but unmapped")
+	var separate := result.get("legacy_separate", {}) as Dictionary
+	_assert_eq(separate, {"endurance": 99}, "Endurance must remain a separate legacy stat")
+	_assert_eq(
+		result.get("legacy_unmapped", {}),
+		{"endurance": 99},
+		"compatibility alias must expose only Endurance",
+	)
+	_assert_eq(separate.has("intelligence"), false, "Intelligence must be absent from adapter output")
 
 
 func _test_explicit_resistance_builds_fighter(adapter) -> void:
@@ -54,11 +60,26 @@ func _test_explicit_resistance_builds_fighter(adapter) -> void:
 	_assert_eq(stats, {"FUE": 11, "AGI": 12, "TEC": 13, "RES": 14, "PV": 50})
 	_assert_eq(fighter.get("equipment"), {"power": 4, "defense": 3})
 	_assert_eq(fighter.get("team"), "player")
+	_assert_eq(
+		result.get("legacy_separate", {}),
+		{"endurance": 99},
+		"Endurance must remain separate even when canonical RES exists",
+	)
 	var contract: Dictionary = adapter.get_contract()
 	_assert_eq(
 		contract.get("endurance_to_resistance_fallback"),
 		false,
 		"adapter contract must forbid endurance fallback",
+	)
+	_assert_eq(
+		contract.get("endurance_to_stamina_fallback"),
+		false,
+		"Endurance must not silently become Stamina",
+	)
+	_assert_eq(
+		contract.get("removed_legacy_stats"),
+		["intelligence"],
+		"Intelligence must be explicitly removed from the active adapter contract",
 	)
 
 
