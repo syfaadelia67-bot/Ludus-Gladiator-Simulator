@@ -217,9 +217,7 @@ func get_max_energy() -> int:
 
 
 func get_base_attack() -> int:
-	return maxi(
-		1, strength * 2 + agility + floori(float(technique) / 2.0) - injury_severity * 3
-	)
+	return maxi(1, strength * 2 + agility + floori(float(technique) / 2.0) - injury_severity * 3)
 
 
 func get_base_defense() -> int:
@@ -233,12 +231,15 @@ func get_injury_summary() -> String:
 
 
 func summary() -> String:
-	return "%s | %s | trabajo: %s | lealtad: %d | moral: %d | fatiga: %d | %s" % [
-		display_name,
-		role,
-		job,
-		loyalty,
-		morale,
-		fatigue,
-		get_injury_summary(),
-	]
+	return (
+		"%s | %s | trabajo: %s | lealtad: %d | moral: %d | fatiga: %d | %s"
+		% [
+			display_name,
+			role,
+			job,
+			loyalty,
+			morale,
+			fatigue,
+			get_injury_summary(),
+		]
+	)
