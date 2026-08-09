@@ -57,9 +57,7 @@ func validate_selection(
 	return errors
 
 
-func get_month_16_beast_readiness(
-	beasts: Array, runtime_adapter_ready: bool = false
-) -> Dictionary:
+func get_month_16_beast_readiness(beasts: Array, runtime_adapter_ready: bool = false) -> Dictionary:
 	return _beast_readiness.evaluate(beasts, runtime_adapter_ready)
 
 
