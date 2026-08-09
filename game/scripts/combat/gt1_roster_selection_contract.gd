@@ -57,8 +57,10 @@ func validate_selection(
 	return errors
 
 
-func get_month_16_beast_readiness(runtime_adapter_ready: bool = false) -> Dictionary:
-	return _beast_readiness.evaluate(DataRepository.beasts, runtime_adapter_ready)
+func get_month_16_beast_readiness(
+	beasts: Array, runtime_adapter_ready: bool = false
+) -> Dictionary:
+	return _beast_readiness.evaluate(beasts, runtime_adapter_ready)
 
 
 func get_contract() -> Dictionary:
@@ -70,6 +72,7 @@ func get_contract() -> Dictionary:
 		"month_16_beast_readiness": "gt1_beast_readiness_contract",
 		"month_20": "same_pair_with_at_most_one_single_fighter_substitution",
 		"selection_source": "available_player_gladiator_ids",
+		"beast_data_source": "explicit_injected_canonical_beast_data",
 		"combat_stats_authority": "separate_combat_roster_adapter",
 		"invent_beast_stats_allowed": false,
 	}
