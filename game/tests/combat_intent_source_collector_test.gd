@@ -22,7 +22,8 @@ func _test_player_and_limboai_sources_collect_without_mutation() -> void:
 	}
 	var ai_proposal := {"actor_id": "b", "action_id": "light", "target_id": "a"}
 	var ai_requests := {
-		"b": {
+		"b":
+		{
 			"policy_proposal": ai_proposal,
 			"agent": fixture.agent,
 			"instance_owner": fixture.owner,
@@ -32,21 +33,26 @@ func _test_player_and_limboai_sources_collect_without_mutation() -> void:
 	var player_before := player_intents.duplicate(true)
 	var proposal_before := ai_proposal.duplicate(true)
 
-	var result: Dictionary = collector.collect(
-		state,
-		"alpha",
-		player_intents,
-		ai_requests,
+	var result: Dictionary = (
+		collector
+		. collect(
+			state,
+			"alpha",
+			player_intents,
+			ai_requests,
+		)
 	)
 	assert(result.get("status") == "ready")
 	assert(result.get("combat_authority") == "combat_simulator")
 	assert(result.get("active_actor_ids") == ["a", "b"])
 	assert(
-		result.get("providers_by_actor")
-		== {
-			"a": "player",
-			"b": "limboai",
-		}
+		(
+			result.get("providers_by_actor")
+			== {
+				"a": "player",
+				"b": "limboai",
+			}
+		)
 	)
 	var intents := result.get("intents", []) as Array
 	assert(intents.size() == 2)
@@ -67,17 +73,21 @@ func _test_player_and_limboai_sources_collect_without_mutation() -> void:
 func _test_missing_player_source_fails_closed() -> void:
 	var fixture := _runtime_fixture()
 	var collector = CombatIntentSourceCollectorScript.new()
-	var result: Dictionary = collector.collect(
-		_valid_state(),
-		"alpha",
-		{},
-		{
-			"b": {
-				"policy_proposal": {"actor_id": "b", "action_id": "light", "target_id": "a"},
-				"agent": fixture.agent,
-				"instance_owner": fixture.owner,
+	var result: Dictionary = (
+		collector
+		. collect(
+			_valid_state(),
+			"alpha",
+			{},
+			{
+				"b":
+				{
+					"policy_proposal": {"actor_id": "b", "action_id": "light", "target_id": "a"},
+					"agent": fixture.agent,
+					"instance_owner": fixture.owner,
+				},
 			},
-		},
+		)
 	)
 	assert(result.get("status") == "rejected")
 	assert(result.get("reason") == "invalid_intent_sources")
@@ -88,23 +98,28 @@ func _test_missing_player_source_fails_closed() -> void:
 func _test_invalid_limboai_proposal_fails_closed() -> void:
 	var fixture := _runtime_fixture()
 	var collector = CombatIntentSourceCollectorScript.new()
-	var result: Dictionary = collector.collect(
-		_valid_state(),
-		"alpha",
-		{
-			"a": {"actor_id": "a", "action_id": "light", "target_id": "b"},
-		},
-		{
-			"b": {
-				"policy_proposal": {
-					"actor_id": "b",
-					"action_id": "invented_action",
-					"target_id": "a",
-				},
-				"agent": fixture.agent,
-				"instance_owner": fixture.owner,
+	var result: Dictionary = (
+		collector
+		. collect(
+			_valid_state(),
+			"alpha",
+			{
+				"a": {"actor_id": "a", "action_id": "light", "target_id": "b"},
 			},
-		},
+			{
+				"b":
+				{
+					"policy_proposal":
+					{
+						"actor_id": "b",
+						"action_id": "invented_action",
+						"target_id": "a",
+					},
+					"agent": fixture.agent,
+					"instance_owner": fixture.owner,
+				},
+			},
+		)
 	)
 	assert(result.get("status") == "rejected")
 	assert(result.get("reason") == "limboai_intent_rejected")
@@ -116,33 +131,41 @@ func _test_stale_inactive_source_fails_closed() -> void:
 	var fixture := _runtime_fixture()
 	var collector = CombatIntentSourceCollectorScript.new()
 	var state := _valid_state()
-	(state.get("fighters", []) as Array).append(
-		{
-			"id": "ko",
-			"team": "beta",
-			"stats": {"FUE": 10, "AGI": 10, "TEC": 10, "RES": 10, "PV": 100},
-			"current_pv": 0,
-			"stamina": 0,
-		}
+	(
+		(state.get("fighters", []) as Array)
+		. append(
+			{
+				"id": "ko",
+				"team": "beta",
+				"stats": {"FUE": 10, "AGI": 10, "TEC": 10, "RES": 10, "PV": 100},
+				"current_pv": 0,
+				"stamina": 0,
+			}
+		)
 	)
-	var result: Dictionary = collector.collect(
-		state,
-		"alpha",
-		{
-			"a": {"actor_id": "a", "action_id": "light", "target_id": "b"},
-		},
-		{
-			"b": {
-				"policy_proposal": {"actor_id": "b", "action_id": "light", "target_id": "a"},
-				"agent": fixture.agent,
-				"instance_owner": fixture.owner,
+	var result: Dictionary = (
+		collector
+		. collect(
+			state,
+			"alpha",
+			{
+				"a": {"actor_id": "a", "action_id": "light", "target_id": "b"},
 			},
-			"ko": {
-				"policy_proposal": {"actor_id": "ko", "action_id": "light", "target_id": "a"},
-				"agent": fixture.agent,
-				"instance_owner": fixture.owner,
+			{
+				"b":
+				{
+					"policy_proposal": {"actor_id": "b", "action_id": "light", "target_id": "a"},
+					"agent": fixture.agent,
+					"instance_owner": fixture.owner,
+				},
+				"ko":
+				{
+					"policy_proposal": {"actor_id": "ko", "action_id": "light", "target_id": "a"},
+					"agent": fixture.agent,
+					"instance_owner": fixture.owner,
+				},
 			},
-		},
+		)
 	)
 	assert(result.get("status") == "rejected")
 	assert(result.get("reason") == "invalid_intent_sources")
@@ -153,7 +176,8 @@ func _test_stale_inactive_source_fails_closed() -> void:
 func _valid_state() -> Dictionary:
 	return {
 		"format": "1v1",
-		"fighters": [
+		"fighters":
+		[
 			_fighter("a", "alpha"),
 			_fighter("b", "beta"),
 		],
