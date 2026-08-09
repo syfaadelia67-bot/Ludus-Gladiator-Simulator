@@ -2,9 +2,7 @@ extends RefCounted
 
 const Combat1v1LoopScript = preload("res://scripts/combat/combat_1v1_loop.gd")
 const Combat2v2LoopScript = preload("res://scripts/combat/combat_2v2_loop.gd")
-const CombatCarryoverResolverScript = preload(
-	"res://scripts/combat/combat_carryover_resolver.gd"
-)
+const CombatCarryoverResolverScript = preload("res://scripts/combat/combat_carryover_resolver.gd")
 const CombatContractScript = preload("res://scripts/combat/combat_contract.gd")
 
 const GT1_MONTHS := [13, 16, 20]
@@ -104,19 +102,22 @@ func get_contract() -> Dictionary:
 		"tournament_id": "grand_tournament_rome",
 		"encounter_months": GT1_MONTHS.duplicate(),
 		"bouts_per_encounter": BOUTS_PER_ENCOUNTER,
-		"month_13": {
+		"month_13":
+		{
 			"format": "1v1",
 			"consecutive": true,
 			"player_roster": "same_gladiator_all_three_bouts",
 			"carryover": ["current_pv", "stamina"],
 		},
-		"month_16": {
+		"month_16":
+		{
 			"format": "1v1",
 			"consecutive": false,
 			"player_roster": "independent_per_bout",
 			"carryover": [],
 		},
-		"month_20": {
+		"month_20":
+		{
 			"format": "2v2",
 			"consecutive": true,
 			"player_roster": "same_pair_with_at_most_one_unilateral_substitution",
@@ -152,8 +153,8 @@ func _complete_bout(session: Dictionary, combat_result: Dictionary) -> Dictionar
 	var completed := int(session.get("completed_bouts", 0)) + 1
 	next["completed_bouts"] = completed
 	next["player_wins"] = int(session.get("player_wins", 0)) + (1 if player_won else 0)
-	next["player_points"] = int(session.get("player_points", 0)) + int(
-		tournament_result.get("points_gained", 0)
+	next["player_points"] = (
+		int(session.get("player_points", 0)) + int(tournament_result.get("points_gained", 0))
 	)
 	next["last_tournament_result"] = tournament_result.duplicate(true)
 	next["last_combat_result"] = combat_result.duplicate(true)
@@ -231,8 +232,10 @@ func _validate_start(month: int, player_team_id: String, bout_states: Array) -> 
 		var player_ids := _team_fighter_ids(state, player_team_id)
 		if player_ids.size() != expected_team_size:
 			errors.append(
-				"GT I bout %d player team must contain %d fighters"
-				% [index + 1, expected_team_size]
+				(
+					"GT I bout %d player team must contain %d fighters"
+					% [index + 1, expected_team_size]
+				)
 			)
 
 	if not errors.is_empty():
