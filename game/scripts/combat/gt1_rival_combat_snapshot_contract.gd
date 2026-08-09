@@ -14,13 +14,15 @@ func validate(
 		errors.append("Unknown canonical rival Ludus id: %s" % rival_ludus_id)
 	if expected_team_id.is_empty():
 		errors.append("Rival Combat V1 snapshot requires a non-empty expected team id")
-
-	errors.append_array(_combat_contract.validate_fighter_snapshot(fighter_snapshot))
-	if (
-		not expected_team_id.is_empty()
-		and str(fighter_snapshot.get("team", "")) != expected_team_id
-	):
-		errors.append("Rival Combat V1 snapshot must use the declared rival team id")
+	if fighter_snapshot.is_empty():
+		errors.append("Rival Combat V1 snapshot is required")
+	else:
+		errors.append_array(_combat_contract.validate_fighter_snapshot(fighter_snapshot))
+		if (
+			not expected_team_id.is_empty()
+			and str(fighter_snapshot.get("team", "")) != expected_team_id
+		):
+			errors.append("Rival Combat V1 snapshot must use the declared rival team id")
 
 	if not errors.is_empty():
 		return _rejected(rival_ludus_id, expected_team_id, errors)
