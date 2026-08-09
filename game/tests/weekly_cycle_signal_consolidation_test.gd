@@ -37,7 +37,7 @@ func run() -> void:
 	assert(not state_source.contains("RivalManager.process_week()"))
 	assert(not state_source.contains("EconomyManager.process_week()"))
 	assert(not state_source.contains("EventManager.process_week()"))
-	assert(state_source.contains("\"internal_work_ticks\": 1"))
+	assert(state_source.contains('"internal_work_ticks": 1'))
 	assert(not state_source.contains("range(DAYS_PER_WEEK)"))
 
 	# Save-v14 compatibility aliases remain available but cannot schedule runtime.
