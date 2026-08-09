@@ -63,9 +63,7 @@ func collect(
 				_to_string_array(actor_result.get("errors", [])),
 			)
 		var actor_id := str(fighter.get("id", ""))
-		intents.append(
-			(actor_result.get("desired_action", {}) as Dictionary).duplicate(true)
-		)
+		intents.append((actor_result.get("desired_action", {}) as Dictionary).duplicate(true))
 		providers_by_actor[actor_id] = str(actor_result.get("provider", ""))
 
 	return {
