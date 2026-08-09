@@ -11,11 +11,8 @@ var _snapshot_contract = GT1RivalCombatSnapshotContractScript.new()
 func get_snapshot(
 	rival_ludus_id: String, fighter_id: String, expected_team_id: String
 ) -> Dictionary:
-	var catalog_result := _load_catalog()
-	if catalog_result.get("status") != "ready":
-		return catalog_result
 	return get_snapshot_from_entries(
-		catalog_result.get("entries", []) as Array,
+		DataRepository.get_rival_combat_v1_snapshots_for_ludus(rival_ludus_id),
 		rival_ludus_id,
 		fighter_id,
 		expected_team_id,
@@ -120,6 +117,7 @@ func get_snapshot_from_entries(
 		"fighter_snapshot":
 		(selected_validation.get("fighter_snapshot", {}) as Dictionary).duplicate(true),
 		"snapshot_source": CATALOG_PATH,
+		"repository_source": "DataRepository.rival_combat_v1_snapshots",
 		"generated_snapshot": false,
 		"selection_policy": "explicit_fighter_id_required",
 		"availability_policy": "not_inferred_by_provider",
@@ -131,6 +129,7 @@ func get_contract() -> Dictionary:
 	return {
 		"status": "frozen",
 		"catalog_path": CATALOG_PATH,
+		"repository_source": "DataRepository.rival_combat_v1_snapshots",
 		"entry_identity": "rival_ludus_id + fighter.id",
 		"fighter_validation": "gt1_rival_combat_snapshot_contract",
 		"selection_policy": "explicit_fighter_id_required",
@@ -138,42 +137,6 @@ func get_contract() -> Dictionary:
 		"generated_snapshot_allowed": false,
 		"legacy_rival_manager_is_combat_authority": false,
 		"save_version_change_required": false,
-	}
-
-
-func _load_catalog() -> Dictionary:
-	if not FileAccess.file_exists(CATALOG_PATH):
-		return _rejected(
-			"rival_combat_snapshot_catalog_missing",
-			["Canonical rival Combat V1 snapshot catalog is missing"],
-			"",
-			"",
-			"",
-		)
-	var file := FileAccess.open(CATALOG_PATH, FileAccess.READ)
-	if file == null:
-		return _rejected(
-			"rival_combat_snapshot_catalog_unreadable",
-			["Canonical rival Combat V1 snapshot catalog could not be opened"],
-			"",
-			"",
-			"",
-		)
-	var json := JSON.new()
-	if json.parse(file.get_as_text()) != OK or not json.data is Array:
-		return _rejected(
-			"invalid_rival_combat_snapshot_catalog",
-			["Canonical rival Combat V1 snapshot catalog must contain a JSON Array"],
-			"",
-			"",
-			"",
-		)
-	return {
-		"status": "ready",
-		"reason": "",
-		"errors": [],
-		"entries": (json.data as Array).duplicate(true),
-		"snapshot_source": CATALOG_PATH,
 	}
 
 
@@ -193,6 +156,7 @@ func _rejected(
 		"expected_team_id": expected_team_id,
 		"fighter_snapshot": {},
 		"snapshot_source": CATALOG_PATH,
+		"repository_source": "DataRepository.rival_combat_v1_snapshots",
 		"generated_snapshot": false,
 		"selection_policy": "explicit_fighter_id_required",
 		"availability_policy": "not_inferred_by_provider",
