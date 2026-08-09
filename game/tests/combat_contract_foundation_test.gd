@@ -8,6 +8,7 @@ func _ready() -> void:
 	_assert_action_catalog(contract)
 	_assert_supported_formats(contract)
 	_assert_unresolved_stats_are_rejected(contract)
+	_assert_negative_stamina_is_rejected(contract)
 	_assert_three_vs_three_is_rejected(contract)
 	print("Combat Simulator V1 foundation contract: OK")
 	get_tree().quit(0)
@@ -40,6 +41,17 @@ func _assert_unresolved_stats_are_rejected(contract) -> void:
 	assert(
 		_contains_error(errors, "unresolved stat RES"),
 		"Combat authority must refuse unresolved RES instead of inventing a legacy mapping"
+	)
+
+
+func _assert_negative_stamina_is_rejected(contract) -> void:
+	var state := _state_for_format("1v1")
+	var first_fighter := (state["fighters"] as Array)[0] as Dictionary
+	first_fighter["stamina"] = -1
+	var errors: Array[String] = contract.validate_state(state)
+	assert(
+		_contains_error(errors, "stamina cannot be negative"),
+		"D6 must reject negative Stamina rather than allowing invalid resource state"
 	)
 
 
