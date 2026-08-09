@@ -20,6 +20,10 @@ func get_action_ids() -> Array[String]:
 	return _action_catalog.get_action_ids()
 
 
+func get_action_contract(action_id: String) -> Dictionary:
+	return _action_catalog.get_action_contract(action_id)
+
+
 func get_action_contracts() -> Array[Dictionary]:
 	return _action_catalog.get_action_contracts()
 
