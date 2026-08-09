@@ -79,6 +79,8 @@ func _validate_fighters(fighters: Array, errors: Array[String]) -> void:
 			errors.append("Combat fighter %s is missing stamina" % fighter_id)
 		elif not _is_numeric(fighter["stamina"]):
 			errors.append("Combat fighter %s stamina must be numeric" % fighter_id)
+		elif float(fighter["stamina"]) < 0.0:
+			errors.append("Combat fighter %s stamina cannot be negative" % fighter_id)
 
 
 func _validate_team_sizes(format_id: String, fighters: Array, errors: Array[String]) -> void:
