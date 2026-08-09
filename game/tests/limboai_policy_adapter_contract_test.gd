@@ -68,6 +68,10 @@ func _initialize() -> void:
 			"policy context action ids must stay canonical",
 		)
 		_assert_action_contracts(context.get("action_contracts", []))
+		var legal_targets := context.get("legal_targets", {}) as Dictionary
+		_assert_eq(legal_targets.get("light"), ["b"], "LimboAI context must expose light enemy target")
+		_assert_eq(legal_targets.get("heavy"), ["b"], "LimboAI context must expose heavy enemy target")
+		_assert_eq(legal_targets.get("block"), [], "block must have no explicit legal targets")
 		_assert_true(
 			context.get("desired_action") is Dictionary, "policy context needs output slot"
 		)
@@ -92,7 +96,11 @@ func _initialize() -> void:
 		adapter.validate_policy_output(state, desired_action).is_empty(),
 		"LimboAI output must pass canonical policy validation"
 	)
-
+	var invalid_target_action := {"actor_id": "a", "action_id": "block", "target_id": "b"}
+	_assert_true(
+		not adapter.validate_policy_output(state, invalid_target_action).is_empty(),
+		"LimboAI cannot bypass frozen D1 target validation",
+	)
 	var invalid_action := {"actor_id": "a", "action_id": "invented_action", "target_id": "b"}
 	_assert_true(
 		not adapter.validate_policy_output(state, invalid_action).is_empty(),
@@ -121,6 +129,10 @@ func _test_blackboard_bridge(
 		bool(blackboard.call("has_var", &"action_contracts")),
 		"Blackboard must contain action contracts",
 	)
+	_assert_true(
+		bool(blackboard.call("has_var", &"legal_targets")),
+		"Blackboard must contain frozen D1 legal targets",
+	)
 	_assert_eq(
 		blackboard.call("get_var", &"actor_id", ""),
 		"a",
@@ -134,20 +146,19 @@ func _test_blackboard_bridge(
 	var stored_contracts := blackboard.call("get_var", &"action_contracts", []) as Array
 	_assert_action_contracts(stored_contracts)
 	var context_contracts := policy_context.get("action_contracts") as Array
-	(context_contracts[0] as Dictionary)["target_rule_status"] = "invented"
+	(context_contracts[0] as Dictionary)["target_relationship"] = "invented"
 	_assert_eq(
-		(stored_contracts[0] as Dictionary).get("target_rule_status"),
-		"pending",
+		(stored_contracts[0] as Dictionary).get("target_relationship"),
+		"enemy",
 		"Blackboard action contracts must be isolated from policy context",
 	)
-	(stored_contracts[0] as Dictionary)["target_rule_status"] = "blackboard_mutation"
-	var context_after_mutation := policy_context.get("action_contracts") as Array
+	var stored_legal_targets := blackboard.call("get_var", &"legal_targets", {}) as Dictionary
+	((policy_context.get("legal_targets", {}) as Dictionary).get("light") as Array).clear()
 	_assert_eq(
-		(context_after_mutation[0] as Dictionary).get("target_rule_status"),
-		"invented",
-		"Blackboard action contract mutation must not flow back into context",
+		stored_legal_targets.get("light"),
+		["b"],
+		"Blackboard legal targets must be isolated from policy context",
 	)
-	(context_after_mutation[0] as Dictionary)["target_rule_status"] = "pending"
 
 	(
 		blackboard
@@ -182,8 +193,8 @@ func _assert_action_contracts(value: Variant) -> void:
 		)
 		_assert_eq(
 			action_contract.get("target_rule_status"),
-			"pending",
-			"target rules must stay pending in policy metadata",
+			"frozen",
+			"target rules must stay frozen in policy metadata",
 		)
 		_assert_eq(
 			action_contract.get("stamina_cost_status"),
