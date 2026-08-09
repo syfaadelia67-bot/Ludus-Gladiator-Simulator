@@ -130,26 +130,14 @@ func _test_invalid_limboai_proposal_fails_closed() -> void:
 func _test_stale_inactive_source_fails_closed() -> void:
 	var fixture := _runtime_fixture()
 	var collector = CombatIntentSourceCollectorScript.new()
-	var state := _valid_state()
-	(
-		(state.get("fighters", []) as Array)
-		. append(
-			{
-				"id": "ko",
-				"team": "beta",
-				"stats": {"FUE": 10, "AGI": 10, "TEC": 10, "RES": 10, "PV": 100},
-				"current_pv": 0,
-				"stamina": 0,
-			}
-		)
-	)
 	var result: Dictionary = (
 		collector
 		. collect(
-			state,
+			_valid_2v2_state_with_knocked_out_beta(),
 			"alpha",
 			{
 				"a": {"actor_id": "a", "action_id": "light", "target_id": "b"},
+				"a2": {"actor_id": "a2", "action_id": "light", "target_id": "b"},
 			},
 			{
 				"b":
@@ -180,6 +168,22 @@ func _valid_state() -> Dictionary:
 		[
 			_fighter("a", "alpha"),
 			_fighter("b", "beta"),
+		],
+	}
+
+
+func _valid_2v2_state_with_knocked_out_beta() -> Dictionary:
+	var knocked_out := _fighter("ko", "beta")
+	knocked_out["current_pv"] = 0
+	knocked_out["stamina"] = 0
+	return {
+		"format": "2v2",
+		"fighters":
+		[
+			_fighter("a", "alpha"),
+			_fighter("a2", "alpha"),
+			_fighter("b", "beta"),
+			knocked_out,
 		],
 	}
 
