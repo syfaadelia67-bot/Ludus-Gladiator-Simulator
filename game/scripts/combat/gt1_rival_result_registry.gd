@@ -97,6 +97,14 @@ func evaluate_current_standings(non_podium_tiebreak_data: Dictionary = {}) -> Di
 		)
 	)
 	result["resolution_source_contract"] = "gt1_standings_tiebreak_policy"
+	result["applied_to_tournament_manager"] = false
+	if (
+		result.get("status") == "resolved"
+		and result.get("resolution_source") == "head_to_head_then_prior_season_position"
+	):
+		result["applied_to_tournament_manager"] = (
+			TournamentManager.apply_gt1_standings_resolution(result)
+		)
 	return result
 
 
@@ -114,6 +122,8 @@ func get_contract() -> Dictionary:
 		"standings_resolution_policy": "gt1_standings_tiebreak_policy",
 		"podium_tie_resolution": "tournament_characteristic_combat",
 		"non_podium_tie_resolution": ["head_to_head", "prior_season_position"],
+		"resolved_non_podium_tie_authority": "TournamentManager",
+		"resolved_tiebreak_uses_existing_save_v14_fields": true,
 		"alphabetical_fallback_allowed": false,
 		"random_fallback_allowed": false,
 	}
