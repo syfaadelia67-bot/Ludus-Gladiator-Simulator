@@ -66,7 +66,9 @@ func _test_chains_resolved_state_between_exchanges() -> void:
 		"combat_simulator",
 		"1v1 loop must consume the simulator-owned combat result",
 	)
-	_assert_eq(contract.get("automatic_surrender"), "disabled_v1", "V1 surrender must stay disabled")
+	_assert_eq(
+		contract.get("automatic_surrender"), "disabled_v1", "V1 surrender must stay disabled"
+	)
 
 
 func _test_ko_finishes_combat_authoritatively() -> void:
@@ -87,7 +89,9 @@ func _test_ko_finishes_combat_authoritatively() -> void:
 		(result.get("ko_fighter_ids", []) as Array).has("b"),
 		"KO fighter id must be exposed",
 	)
-	_assert_eq(result.get("combat_end_resolved"), true, "KO team elimination must resolve combat end")
+	_assert_eq(
+		result.get("combat_end_resolved"), true, "KO team elimination must resolve combat end"
+	)
 	_assert_eq(result.get("outcome"), "team_win", "single surviving team must produce team_win")
 	_assert_eq(result.get("winner_team_id"), "alpha", "surviving team must be authoritative winner")
 	_assert_eq(result.get("loser_team_id"), "beta", "eliminated team must be authoritative loser")
@@ -102,7 +106,9 @@ func _test_ko_finishes_combat_authoritatively() -> void:
 		)
 	)
 	_assert_eq(cannot_continue.get("status"), "rejected", "finished loop must not advance")
-	_assert_eq(cannot_continue.get("reason"), "invalid_loop_state", "finished loop must fail closed")
+	_assert_eq(
+		cannot_continue.get("reason"), "invalid_loop_state", "finished loop must fail closed"
+	)
 
 
 func _test_incomplete_exchange_is_rejected() -> void:
