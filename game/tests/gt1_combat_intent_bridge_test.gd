@@ -14,14 +14,17 @@ func _test_player_and_limboai_intents_advance_gt1_exchange() -> void:
 	TournamentManager.import_state({})
 	var fixture := _runtime_fixture()
 	var runtime = GT1CombatRuntimeScript.new()
-	var session := runtime.start_encounter(
-		13,
-		"alpha",
-		[
-			_state("player", "rival_1"),
-			_state("player", "rival_2"),
-			_state("player", "rival_3"),
-		],
+	var session := (
+		runtime
+		. start_encounter(
+			13,
+			"alpha",
+			[
+				_state("player", "rival_1"),
+				_state("player", "rival_2"),
+				_state("player", "rival_3"),
+			],
+		)
 	)
 	assert(session.get("status") == "combat_running")
 	var state_before := (
@@ -30,39 +33,48 @@ func _test_player_and_limboai_intents_advance_gt1_exchange() -> void:
 	)
 
 	var bridge = GT1CombatIntentBridgeScript.new()
-	var next: Dictionary = bridge.advance_exchange(
-		session,
-		{
-			"player": {"actor_id": "player", "action_id": "light", "target_id": "rival_1"},
-		},
-		{
-			"rival_1": {
-				"policy_proposal": {
-					"actor_id": "rival_1",
-					"action_id": "light",
-					"target_id": "player",
-				},
-				"agent": fixture.agent,
-				"instance_owner": fixture.owner,
+	var next: Dictionary = (
+		bridge
+		. advance_exchange(
+			session,
+			{
+				"player": {"actor_id": "player", "action_id": "light", "target_id": "rival_1"},
 			},
-		},
+			{
+				"rival_1":
+				{
+					"policy_proposal":
+					{
+						"actor_id": "rival_1",
+						"action_id": "light",
+						"target_id": "player",
+					},
+					"agent": fixture.agent,
+					"instance_owner": fixture.owner,
+				},
+			},
+		)
 	)
 	assert(next.get("status") == "combat_running")
 	assert(next.get("last_intent_actor_ids") == ["player", "rival_1"])
 	assert(
-		next.get("last_intent_providers")
-		== {
-			"player": "player",
-			"rival_1": "limboai",
-		}
+		(
+			next.get("last_intent_providers")
+			== {
+				"player": "player",
+				"rival_1": "limboai",
+			}
+		)
 	)
 	assert(next.get("intent_collection_authority") == "combat_intent_source_collector")
 	assert(next.get("combat_authority") == "combat_simulator")
 	var next_loop := next.get("active_loop", {}) as Dictionary
 	assert(int(next_loop.get("exchange_index", 0)) == 1)
 	assert(
-		((session.get("active_loop", {}) as Dictionary).get("state", {}) as Dictionary)
-		== state_before
+		(
+			((session.get("active_loop", {}) as Dictionary).get("state", {}) as Dictionary)
+			== state_before
+		)
 	)
 
 	var contract: Dictionary = bridge.get_contract()
@@ -77,31 +89,39 @@ func _test_missing_player_intent_stops_before_runtime() -> void:
 	TournamentManager.import_state({})
 	var fixture := _runtime_fixture()
 	var runtime = GT1CombatRuntimeScript.new()
-	var session := runtime.start_encounter(
-		13,
-		"alpha",
-		[
-			_state("player", "rival_1"),
-			_state("player", "rival_2"),
-			_state("player", "rival_3"),
-		],
+	var session := (
+		runtime
+		. start_encounter(
+			13,
+			"alpha",
+			[
+				_state("player", "rival_1"),
+				_state("player", "rival_2"),
+				_state("player", "rival_3"),
+			],
+		)
 	)
 	assert(session.get("status") == "combat_running")
 	var bridge = GT1CombatIntentBridgeScript.new()
-	var result: Dictionary = bridge.advance_exchange(
-		session,
-		{},
-		{
-			"rival_1": {
-				"policy_proposal": {
-					"actor_id": "rival_1",
-					"action_id": "light",
-					"target_id": "player",
+	var result: Dictionary = (
+		bridge
+		. advance_exchange(
+			session,
+			{},
+			{
+				"rival_1":
+				{
+					"policy_proposal":
+					{
+						"actor_id": "rival_1",
+						"action_id": "light",
+						"target_id": "player",
+					},
+					"agent": fixture.agent,
+					"instance_owner": fixture.owner,
 				},
-				"agent": fixture.agent,
-				"instance_owner": fixture.owner,
 			},
-		},
+		)
 	)
 	assert(result.get("status") == "rejected")
 	assert(result.get("reason") == "gt1_intent_collection_failed")
@@ -114,7 +134,8 @@ func _test_missing_player_intent_stops_before_runtime() -> void:
 func _state(player_id: String, rival_id: String) -> Dictionary:
 	return {
 		"format": "1v1",
-		"fighters": [
+		"fighters":
+		[
 			_fighter(player_id, "alpha"),
 			_fighter(rival_id, "beta"),
 		],
