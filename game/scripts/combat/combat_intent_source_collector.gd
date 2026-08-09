@@ -50,57 +50,23 @@ func collect(
 	var intents: Array = []
 	var providers_by_actor: Dictionary = {}
 	for fighter in active_fighters:
-		var actor_id := str(fighter.get("id", ""))
-		var desired_action: Dictionary
-		if str(fighter.get("team", "")) == player_team_id:
-			var raw_player_intent: Variant = player_intents_by_actor.get(actor_id, null)
-			if not raw_player_intent is Dictionary:
-				return _rejected(
-					"invalid_player_intent",
-					["Player fighter %s requires one desired-action Dictionary" % actor_id],
-				)
-			desired_action = (raw_player_intent as Dictionary).duplicate(true)
-			var player_errors := _validate_actor_action(state, actor_id, desired_action)
-			if not player_errors.is_empty():
-				return _rejected("invalid_player_intent", player_errors)
-			providers_by_actor[actor_id] = "player"
-		else:
-			var raw_ai_request: Variant = ai_requests_by_actor.get(actor_id, null)
-			if not raw_ai_request is Dictionary:
-				return _rejected(
-					"invalid_ai_request",
-					["AI fighter %s requires one LimboAI request Dictionary" % actor_id],
-				)
-			var ai_request := raw_ai_request as Dictionary
-			var proposal_value: Variant = ai_request.get("policy_proposal", null)
-			if not proposal_value is Dictionary:
-				return _rejected(
-					"invalid_ai_request",
-					["AI fighter %s request requires policy_proposal" % actor_id],
-				)
-			var agent := ai_request.get("agent", null) as Node
-			var instance_owner := ai_request.get("instance_owner", null) as Node
-			var ai_result: Dictionary = (
-				_limboai_runner
-				. evaluate_proposal(
-					state,
-					actor_id,
-					proposal_value as Dictionary,
-					agent,
-					instance_owner,
-				)
+		var actor_result := _resolve_fighter_intent(
+			state,
+			fighter,
+			player_team_id,
+			player_intents_by_actor,
+			ai_requests_by_actor,
+		)
+		if actor_result.get("status") != "ready":
+			return _rejected(
+				str(actor_result.get("reason", "intent_source_rejected")),
+				_to_string_array(actor_result.get("errors", [])),
 			)
-			if ai_result.get("status") != "ready":
-				return _rejected(
-					"limboai_intent_rejected",
-					_to_string_array(ai_result.get("errors", [])),
-				)
-			desired_action = (ai_result.get("desired_action", {}) as Dictionary).duplicate(true)
-			var ai_errors := _validate_actor_action(state, actor_id, desired_action)
-			if not ai_errors.is_empty():
-				return _rejected("invalid_limboai_intent", ai_errors)
-			providers_by_actor[actor_id] = "limboai"
-		intents.append(desired_action.duplicate(true))
+		var actor_id := str(fighter.get("id", ""))
+		intents.append(
+			(actor_result.get("desired_action", {}) as Dictionary).duplicate(true)
+		)
+		providers_by_actor[actor_id] = str(actor_result.get("provider", ""))
 
 	return {
 		"status": "ready",
@@ -124,6 +90,89 @@ func get_contract() -> Dictionary:
 		"default_action_allowed": false,
 		"combat_authority": "combat_simulator",
 		"policy_may_resolve_combat": false,
+	}
+
+
+func _resolve_fighter_intent(
+	state: Dictionary,
+	fighter: Dictionary,
+	player_team_id: String,
+	player_intents_by_actor: Dictionary,
+	ai_requests_by_actor: Dictionary
+) -> Dictionary:
+	var actor_id := str(fighter.get("id", ""))
+	if str(fighter.get("team", "")) == player_team_id:
+		return _resolve_player_intent(state, actor_id, player_intents_by_actor.get(actor_id, null))
+	return _resolve_ai_intent(state, actor_id, ai_requests_by_actor.get(actor_id, null))
+
+
+func _resolve_player_intent(state: Dictionary, actor_id: String, raw_intent: Variant) -> Dictionary:
+	if not raw_intent is Dictionary:
+		return _actor_rejected(
+			"invalid_player_intent",
+			["Player fighter %s requires one desired-action Dictionary" % actor_id],
+		)
+	var desired_action := (raw_intent as Dictionary).duplicate(true)
+	var errors := _validate_actor_action(state, actor_id, desired_action)
+	if not errors.is_empty():
+		return _actor_rejected("invalid_player_intent", errors)
+	return _actor_ready("player", desired_action)
+
+
+func _resolve_ai_intent(state: Dictionary, actor_id: String, raw_request: Variant) -> Dictionary:
+	if not raw_request is Dictionary:
+		return _actor_rejected(
+			"invalid_ai_request",
+			["AI fighter %s requires one LimboAI request Dictionary" % actor_id],
+		)
+	var ai_request := raw_request as Dictionary
+	var proposal_value: Variant = ai_request.get("policy_proposal", null)
+	if not proposal_value is Dictionary:
+		return _actor_rejected(
+			"invalid_ai_request",
+			["AI fighter %s request requires policy_proposal" % actor_id],
+		)
+	var agent := ai_request.get("agent", null) as Node
+	var instance_owner := ai_request.get("instance_owner", null) as Node
+	var ai_result: Dictionary = (
+		_limboai_runner
+		. evaluate_proposal(
+			state,
+			actor_id,
+			proposal_value as Dictionary,
+			agent,
+			instance_owner,
+		)
+	)
+	if ai_result.get("status") != "ready":
+		return _actor_rejected(
+			"limboai_intent_rejected",
+			_to_string_array(ai_result.get("errors", [])),
+		)
+	var desired_action := (ai_result.get("desired_action", {}) as Dictionary).duplicate(true)
+	var errors := _validate_actor_action(state, actor_id, desired_action)
+	if not errors.is_empty():
+		return _actor_rejected("invalid_limboai_intent", errors)
+	return _actor_ready("limboai", desired_action)
+
+
+func _actor_ready(provider: String, desired_action: Dictionary) -> Dictionary:
+	return {
+		"status": "ready",
+		"reason": "",
+		"errors": [],
+		"provider": provider,
+		"desired_action": desired_action.duplicate(true),
+	}
+
+
+func _actor_rejected(reason: String, errors: Array[String]) -> Dictionary:
+	return {
+		"status": "rejected",
+		"reason": reason,
+		"errors": errors.duplicate(),
+		"provider": "",
+		"desired_action": {},
 	}
 
 
