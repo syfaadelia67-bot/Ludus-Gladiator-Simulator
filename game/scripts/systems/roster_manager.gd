@@ -1,23 +1,25 @@
 extends Node
 
 signal roster_changed
+signal monthly_results(results: Dictionary)
+# Save-v14 / legacy observer alias. It mirrors the same monthly result.
 signal daily_results(results: Dictionary)
 
 const PERSON_SCRIPT = preload("res://scripts/entities/person.gd")
 const JOBS := {
 	"idle": "Descanso — recupera fatiga y heridas",
-	"mining": "Minería — produce mineral cada día",
+	"mining": "Minería — produce mineral cada mes",
 	"security": "Seguridad — protege la finca",
 	"espionage": "Espionaje — genera información",
 	"training": "Entrenamiento — forma gladiadores"
 }
 const JOB_DESCRIPTIONS := {
 	"idle": "No genera recursos. Reduce fatiga y permite recuperarse con mayor seguridad.",
-	"mining": "Produce mineral al avanzar el día. La Fuerza y la Resistencia mejoran el resultado.",
-	"security": "Aumenta la seguridad diaria del ludus y ayuda a bloquear sabotajes y represalias.",
+	"mining": "Produce mineral al cerrar el mes. La Fuerza y la Resistencia mejoran el resultado.",
+	"security": "Aumenta la seguridad mensual del ludus y ayuda a bloquear sabotajes y represalias.",
 	"espionage": "Genera puntos de inteligencia para operaciones contra casas rivales.",
 	"training":
-	"Aumenta el entrenamiento diario. Los esclavos llegan a 100 y se convierten en gladiadores."
+	"Aumenta el entrenamiento mensual. Los esclavos llegan a 100 y se convierten en gladiadores."
 }
 
 var people: Array = []
@@ -159,8 +161,10 @@ func get_job_description(job_id: String) -> String:
 	return str(JOB_DESCRIPTIONS.get(job_id, "Sin descripción."))
 
 
-func process_day() -> Dictionary:
+func process_month() -> Dictionary:
 	var totals := {
+		"period": "month",
+		"month": GameState.get_month(),
 		"ore": 0,
 		"food": 0,
 		"security": 0,
@@ -171,20 +175,27 @@ func process_day() -> Dictionary:
 	}
 	for person in people:
 		var previous_role: String = person.role
-		var result: Dictionary = person.process_day()
+		var result: Dictionary = person.process_month()
 		totals.ore += int(result.ore)
 		totals.security += int(result.security)
 		totals.intel += int(result.intel)
 		totals.training += int(result.training)
 		if previous_role == "slave" and person.role == "gladiator":
 			totals.promotions.append(person.display_name)
-	totals.relationship_events = RelationshipManager.process_day(totals)
+	totals.relationship_events = RelationshipManager.process_month(totals)
 	totals.security += EstateManager.get_security_bonus()
 	security_score = totals.security
 	intelligence_points += totals.intel
-	daily_results.emit(totals)
+	monthly_results.emit(totals.duplicate(true))
+	# Legacy signal mirrors the monthly result. It is not a second tick.
+	daily_results.emit(totals.duplicate(true))
 	roster_changed.emit()
 	return totals
+
+
+func process_day() -> Dictionary:
+	# Save-v14 / legacy caller adapter only.
+	return process_month()
 
 
 func get_roster_summary() -> String:
