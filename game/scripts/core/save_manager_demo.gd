@@ -49,8 +49,26 @@ func _build_payload() -> Dictionary:
 	game_data["day"] = month
 	game_data["week"] = month
 	payload["game_state"] = game_data
+	_inject_canonical_resistance(payload)
 	payload["unique_gladiators"] = UniqueGladiatorManager.export_state()
 	return payload
+
+
+func _inject_canonical_resistance(payload: Dictionary) -> void:
+	var roster_data := payload.get("roster", {}) as Dictionary
+	var people_data := roster_data.get("people", []) as Array
+	var live_people := RosterManager.get_people()
+	var count := mini(people_data.size(), live_people.size())
+	for index in range(count):
+		if not people_data[index] is Dictionary:
+			continue
+		var serialized_person := people_data[index] as Dictionary
+		var live_person = live_people[index]
+		serialized_person["resistance"] = maxi(
+			1, int(live_person.resistance)
+		)
+	roster_data["people"] = people_data
+	payload["roster"] = roster_data
 
 
 func _apply_payload(data: Dictionary) -> bool:
