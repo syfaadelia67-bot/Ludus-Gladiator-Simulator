@@ -25,12 +25,15 @@ func _test_chains_resolved_state_between_exchanges() -> void:
 	var session: Dictionary = loop.start(_state(100, 12))
 	_assert_eq(session.get("status"), "running", "valid 1v1 must start running")
 
-	var first: Dictionary = loop.advance(
-		session,
-		[
-			{"actor_id": "a", "action_id": "light", "target_id": "b"},
-			{"actor_id": "b", "action_id": "block"},
-		],
+	var first: Dictionary = (
+		loop
+		. advance(
+			session,
+			[
+				{"actor_id": "a", "action_id": "light", "target_id": "b"},
+				{"actor_id": "b", "action_id": "block"},
+			],
+		)
 	)
 	_assert_eq(first.get("status"), "running", "non-KO exchange must continue loop")
 	_assert_eq(first.get("exchange_index"), 1, "first exchange must increment index")
@@ -38,12 +41,15 @@ func _test_chains_resolved_state_between_exchanges() -> void:
 	var first_current_pv := float(first_b.get("current_pv", 0.0))
 	_assert_true(first_current_pv < 100.0, "first exchange must persist resolved PV damage")
 
-	var second: Dictionary = loop.advance(
-		first,
-		[
-			{"actor_id": "a", "action_id": "block"},
-			{"actor_id": "b", "action_id": "light", "target_id": "a"},
-		],
+	var second: Dictionary = (
+		loop
+		. advance(
+			first,
+			[
+				{"actor_id": "a", "action_id": "block"},
+				{"actor_id": "b", "action_id": "light", "target_id": "a"},
+			],
+		)
 	)
 	_assert_eq(second.get("status"), "running", "second non-KO exchange must continue")
 	_assert_eq(second.get("exchange_index"), 2, "second exchange must increment index")
@@ -64,12 +70,15 @@ func _test_chains_resolved_state_between_exchanges() -> void:
 func _test_ko_stops_before_next_exchange() -> void:
 	var loop = Combat1v1LoopScript.new()
 	var session: Dictionary = loop.start(_state(5, 100))
-	var result: Dictionary = loop.advance(
-		session,
-		[
-			{"actor_id": "a", "action_id": "heavy", "target_id": "b"},
-			{"actor_id": "b", "action_id": "block"},
-		],
+	var result: Dictionary = (
+		loop
+		. advance(
+			session,
+			[
+				{"actor_id": "a", "action_id": "heavy", "target_id": "b"},
+				{"actor_id": "b", "action_id": "block"},
+			],
+		)
 	)
 	_assert_eq(
 		result.get("status"),
@@ -80,13 +89,18 @@ func _test_ko_stops_before_next_exchange() -> void:
 		(result.get("ko_fighter_ids", []) as Array).has("b"),
 		"KO fighter id must be exposed without declaring a winner",
 	)
-	_assert_eq(result.get("combat_end_resolved"), false, "KO alone must not fake final combat result")
-	var cannot_continue: Dictionary = loop.advance(
-		result,
-		[
-			{"actor_id": "a", "action_id": "light", "target_id": "b"},
-			{"actor_id": "b", "action_id": "block"},
-		],
+	_assert_eq(
+		result.get("combat_end_resolved"), false, "KO alone must not fake final combat result"
+	)
+	var cannot_continue: Dictionary = (
+		loop
+		. advance(
+			result,
+			[
+				{"actor_id": "a", "action_id": "light", "target_id": "b"},
+				{"actor_id": "b", "action_id": "block"},
+			],
+		)
 	)
 	_assert_eq(cannot_continue.get("status"), "rejected", "loop must not advance after KO stop")
 	_assert_eq(cannot_continue.get("reason"), "invalid_loop_state", "stopped loop must fail closed")
@@ -95,11 +109,14 @@ func _test_ko_stops_before_next_exchange() -> void:
 func _test_incomplete_exchange_is_rejected() -> void:
 	var loop = Combat1v1LoopScript.new()
 	var session: Dictionary = loop.start(_state(100, 12))
-	var result: Dictionary = loop.advance(
-		session,
-		[
-			{"actor_id": "a", "action_id": "light", "target_id": "b"},
-		],
+	var result: Dictionary = (
+		loop
+		. advance(
+			session,
+			[
+				{"actor_id": "a", "action_id": "light", "target_id": "b"},
+			],
+		)
 	)
 	_assert_eq(result.get("status"), "rejected", "incomplete 1v1 exchange must fail closed")
 	_assert_eq(result.get("reason"), "incomplete_exchange", "missing peer intent must be explicit")
