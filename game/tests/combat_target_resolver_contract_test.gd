@@ -10,7 +10,7 @@ func _initialize() -> void:
 	_test_1v1_candidates(resolver)
 	_test_2v2_candidates(resolver)
 	_test_1v2_candidates(resolver)
-	_test_action_target_rules_stay_pending(resolver)
+	_test_frozen_action_target_rules(resolver)
 	_test_invalid_inputs_fail_closed(resolver)
 	_test_results_are_isolated(resolver)
 
@@ -31,9 +31,6 @@ func _test_1v1_candidates(resolver) -> void:
 	var candidates := result.get("candidates", {}) as Dictionary
 	_assert_eq(candidates.get("allies"), [], "1v1 actor has no ally candidates")
 	_assert_eq(candidates.get("enemies"), ["b"], "1v1 actor sees opposing candidate")
-	_assert_true(
-		not result.has("legal_targets"), "candidate boundary must not invent legal targets"
-	)
 
 
 func _test_2v2_candidates(resolver) -> void:
@@ -49,6 +46,8 @@ func _test_2v2_candidates(resolver) -> void:
 	var candidates := resolver.get_candidate_groups(state, "a").get("candidates", {}) as Dictionary
 	_assert_eq(candidates.get("allies"), ["a2"], "2v2 actor sees ally candidate")
 	_assert_eq(candidates.get("enemies"), ["b", "b2"], "2v2 actor sees enemy candidates")
+	var light := resolver.inspect_action_targets(state, "a", "light")
+	_assert_eq(light.get("legal_targets"), ["b", "b2"], "2v2 light may target either enemy")
 
 
 func _test_1v2_candidates(resolver) -> void:
@@ -66,26 +65,30 @@ func _test_1v2_candidates(resolver) -> void:
 	var solo_side := resolver.get_candidate_groups(state, "a").get("candidates", {}) as Dictionary
 	_assert_eq(solo_side.get("allies"), [], "1v2 solo side has no ally candidate")
 	_assert_eq(solo_side.get("enemies"), ["b", "b2"], "1v2 solo side sees both opponents")
+	_assert_eq(
+		resolver.inspect_action_targets(state, "a", "heavy").get("legal_targets"),
+		["b", "b2"],
+		"1v2 solo side may heavy either enemy",
+	)
 
 
-func _test_action_target_rules_stay_pending(resolver) -> void:
+func _test_frozen_action_target_rules(resolver) -> void:
 	var state := _state("1v1", [_fighter("a", "alpha"), _fighter("b", "beta")])
-	for action_id in ["light", "heavy", "block", "parry", "dodge", "reposition"]:
+	for action_id in ["light", "heavy"]:
 		var result: Dictionary = resolver.inspect_action_targets(state, "a", action_id)
-		_assert_eq(
-			result.get("status"),
-			"pending_design_freeze",
-			"%s target semantics must remain pending" % action_id,
-		)
-		_assert_eq(result.get("pending"), true, "%s target resolution must be pending" % action_id)
-		_assert_eq(
-			result.get("reason"),
-			"target_rules_not_frozen",
-			"%s must expose D1 pending reason" % action_id,
-		)
-		_assert_true(
-			not result.has("legal_targets"), "%s must not expose legal targets yet" % action_id
-		)
+		_assert_eq(result.get("status"), "ready", "%s target semantics must be frozen" % action_id)
+		_assert_eq(result.get("pending"), false, "%s target resolution must be ready" % action_id)
+		_assert_eq(result.get("target_required"), true, "%s requires explicit target" % action_id)
+		_assert_eq(result.get("target_relationship"), "enemy", "%s targets enemies" % action_id)
+		_assert_eq(result.get("target_count"), 1, "%s targets exactly one enemy" % action_id)
+		_assert_eq(result.get("legal_targets"), ["b"], "%s exposes opponent as legal" % action_id)
+	for action_id in ["block", "parry", "dodge", "reposition"]:
+		var result: Dictionary = resolver.inspect_action_targets(state, "a", action_id)
+		_assert_eq(result.get("status"), "ready", "%s target semantics must be frozen" % action_id)
+		_assert_eq(result.get("target_required"), false, "%s has no explicit target" % action_id)
+		_assert_eq(result.get("target_relationship"), "none", "%s target relationship is none" % action_id)
+		_assert_eq(result.get("target_count"), 0, "%s accepts zero explicit targets" % action_id)
+		_assert_eq(result.get("legal_targets"), [], "%s has no legal explicit targets" % action_id)
 
 
 func _test_invalid_inputs_fail_closed(resolver) -> void:
@@ -113,16 +116,11 @@ func _test_results_are_isolated(resolver) -> void:
 	var state := _state("1v1", [_fighter("a", "alpha"), _fighter("b", "beta")])
 	var state_before := state.duplicate(true)
 	var result: Dictionary = resolver.inspect_action_targets(state, "a", "light")
-	var candidates := result.get("candidates", {}) as Dictionary
-	var enemies := candidates.get("enemies", []) as Array
-	enemies.clear()
+	var legal_targets := result.get("legal_targets", []) as Array
+	legal_targets.clear()
 	_assert_eq(state, state_before, "target inspection must never mutate CombatState")
 	var rebuilt: Dictionary = resolver.inspect_action_targets(state, "a", "light")
-	_assert_eq(
-		(rebuilt.get("candidates", {}) as Dictionary).get("enemies", []),
-		["b"],
-		"mutating returned candidates must not affect later inspections",
-	)
+	_assert_eq(rebuilt.get("legal_targets", []), ["b"], "returned legal targets must be isolated")
 
 
 func _state(format_id: String, fighters: Array) -> Dictionary:
