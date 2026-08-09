@@ -313,10 +313,7 @@ func apply_gt1_standings_resolution(resolution: Dictionary) -> bool:
 	if (
 		placement < 1
 		or placement > GT1_RIVAL_COUNT + 1
-		or (
-			resolution_source == "head_to_head_then_prior_season_position"
-			and placement <= 3
-		)
+		or (resolution_source == "head_to_head_then_prior_season_position" and placement <= 3)
 	):
 		return false
 
