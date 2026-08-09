@@ -30,7 +30,9 @@ func prepare_consecutive_fight(previous_state: Dictionary, next_state: Dictionar
 		var previous_fighter := previous_by_id[fighter_id] as Dictionary
 		var max_pv := float((fighter.get("stats", {}) as Dictionary).get("PV", 0.0))
 		var stamina_capacity := float(fighter.get("stamina_capacity", fighter.get("stamina", 0.0)))
-		fighter["current_pv"] = clampf(float(previous_fighter.get("current_pv", max_pv)), 0.0, max_pv)
+		fighter["current_pv"] = clampf(
+			float(previous_fighter.get("current_pv", max_pv)), 0.0, max_pv
+		)
 		fighter["stamina"] = clampf(
 			float(previous_fighter.get("stamina", stamina_capacity)), 0.0, stamina_capacity
 		)
