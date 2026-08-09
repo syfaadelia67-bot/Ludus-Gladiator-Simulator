@@ -64,9 +64,7 @@ func _inject_canonical_resistance(payload: Dictionary) -> void:
 			continue
 		var serialized_person := people_data[index] as Dictionary
 		var live_person = live_people[index]
-		serialized_person["resistance"] = maxi(
-			1, int(live_person.resistance)
-		)
+		serialized_person["resistance"] = maxi(1, int(live_person.resistance))
 	roster_data["people"] = people_data
 	payload["roster"] = roster_data
 
