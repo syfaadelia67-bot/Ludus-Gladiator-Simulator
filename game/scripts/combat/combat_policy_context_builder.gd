@@ -48,6 +48,21 @@ func build_context(state: Dictionary, actor_id: String) -> Dictionary:
 			"context": {},
 		}
 
+	var legal_targets: Dictionary = {}
+	for action_id in _combat_contract.get_action_ids():
+		var action_target_result: Dictionary = _target_resolver.inspect_action_targets(
+			state, actor_id, action_id
+		)
+		if action_target_result.get("status") != "ready":
+			return {
+				"status": str(action_target_result.get("status", "invalid_target_context")),
+				"errors": (action_target_result.get("errors", []) as Array).duplicate(),
+				"context": {},
+			}
+		legal_targets[action_id] = (
+			(action_target_result.get("legal_targets", []) as Array).duplicate()
+		)
+
 	return {
 		"status": "ready",
 		"errors": [],
@@ -62,6 +77,7 @@ func build_context(state: Dictionary, actor_id: String) -> Dictionary:
 			"action_contracts": _combat_contract.get_action_contracts(),
 			"target_candidates":
 			(target_result.get("candidates", {}) as Dictionary).duplicate(true),
+			"legal_targets": legal_targets.duplicate(true),
 			"combat_state": state.duplicate(true),
 			"desired_action": {},
 		},
