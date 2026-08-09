@@ -9,7 +9,9 @@ const CombatResolutionReadinessScript = preload(
 	"res://scripts/combat/combat_resolution_readiness.gd"
 )
 const CombatRulesD5D9ContractScript = preload("res://scripts/combat/combat_rules_d5_d9_contract.gd")
-const CombatRuntimeStateBuilderScript = preload("res://scripts/combat/combat_runtime_state_builder.gd")
+const CombatRuntimeStateBuilderScript = preload(
+	"res://scripts/combat/combat_runtime_state_builder.gd"
+)
 const CombatTargetResolverScript = preload("res://scripts/combat/combat_target_resolver.gd")
 
 const PENDING_REASON := "combat_resolution_rules_not_frozen"
@@ -65,7 +67,8 @@ func resolve_intent(state: Dictionary, desired_action: Dictionary) -> Dictionary
 			"resolved_target_context": target_inspection.duplicate(true),
 			"resolution_order_contract": _resolution_order.get_contract_status().duplicate(true),
 			"d5_d9_contracts": _d5_d9_contract.get_contracts(),
-			"runtime_state_preview": (runtime_state_result.get("state", {}) as Dictionary).duplicate(true),
+			"runtime_state_preview":
+			(runtime_state_result.get("state", {}) as Dictionary).duplicate(true),
 		},
 		"frozen_requirements": _resolution_readiness.get_frozen_requirements(),
 		"pending_requirements": _resolution_readiness.get_pending_requirements(),
