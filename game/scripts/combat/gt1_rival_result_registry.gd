@@ -24,11 +24,14 @@ func register_result(rival_id: String, points: int, wins: int) -> Dictionary:
 			["GT I rival points must equal wins × 3"],
 		)
 
-	var registered := TournamentManager.register_gt1_rival_result(
-		rival_id,
-		str(identity.get("name", rival_id)),
-		points,
-		wins,
+	var registered := (
+		TournamentManager
+		. register_gt1_rival_result(
+			rival_id,
+			str(identity.get("name", rival_id)),
+			points,
+			wins,
+		)
 	)
 	if not registered:
 		return _rejected(
