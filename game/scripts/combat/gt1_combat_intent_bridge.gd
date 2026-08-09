@@ -35,11 +35,14 @@ func advance_exchange(
 			session,
 		)
 
-	var collection: Dictionary = _collector.collect(
-		state_value as Dictionary,
-		player_team_id,
-		player_intents_by_actor,
-		ai_requests_by_actor,
+	var collection: Dictionary = (
+		_collector
+		. collect(
+			state_value as Dictionary,
+			player_team_id,
+			player_intents_by_actor,
+			ai_requests_by_actor,
+		)
 	)
 	if collection.get("status") != "ready":
 		return _rejected(
@@ -48,18 +51,19 @@ func advance_exchange(
 			session,
 		)
 
-	var next: Dictionary = _runtime.advance_exchange(
-		session,
-		collection.get("intents", []) as Array,
+	var next: Dictionary = (
+		_runtime
+		. advance_exchange(
+			session,
+			collection.get("intents", []) as Array,
+		)
 	)
 	if next.get("status") == "rejected":
 		return next
 	next["last_intent_providers"] = (
-		collection.get("providers_by_actor", {}) as Dictionary
-	).duplicate(true)
-	next["last_intent_actor_ids"] = (
-		collection.get("active_actor_ids", []) as Array
-	).duplicate()
+		(collection.get("providers_by_actor", {}) as Dictionary).duplicate(true)
+	)
+	next["last_intent_actor_ids"] = (collection.get("active_actor_ids", []) as Array).duplicate()
 	next["intent_collection_authority"] = "combat_intent_source_collector"
 	next["combat_authority"] = "combat_simulator"
 	return next
