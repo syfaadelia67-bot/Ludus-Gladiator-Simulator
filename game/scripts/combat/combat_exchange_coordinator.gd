@@ -41,20 +41,16 @@ func submit_intent(session: Dictionary, desired_action: Dictionary) -> Dictionar
 	var state := (session.get("state", {}) as Dictionary).duplicate(true)
 	var actor_id := str(desired_action.get("actor_id", ""))
 	var required_actor_ids: Array[String] = _required_actor_ids(state)
+	var validation_reason := "invalid_desired_action"
+	var policy_errors: Array[String] = []
 	if not required_actor_ids.has(actor_id):
-		return _rejected(
-			"inactive_actor_intent",
-			["Fighter %s is not active for this exchange" % actor_id],
-			state,
-			session.get("intents_by_actor", {}) as Dictionary,
-		)
-
-	var policy_errors: Array[String] = _policy_contract.validate_desired_action(
-		state, desired_action
-	)
+		validation_reason = "inactive_actor_intent"
+		policy_errors.append("Fighter %s is not active for this exchange" % actor_id)
+	else:
+		policy_errors = _policy_contract.validate_desired_action(state, desired_action)
 	if not policy_errors.is_empty():
 		return _rejected(
-			"invalid_desired_action",
+			validation_reason,
 			policy_errors,
 			state,
 			session.get("intents_by_actor", {}) as Dictionary,
