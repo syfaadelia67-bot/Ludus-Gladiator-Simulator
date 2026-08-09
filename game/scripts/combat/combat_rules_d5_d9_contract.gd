@@ -13,20 +13,32 @@ const CONTRACT := {
 		"body_part_armor_model": false,
 		"vulnerability_authority": "combat_simulator",
 		"vulnerability_is_explicit_state": true,
-		"numeric_mitigation_status": PENDING_STATUS,
-		"penetration_status": PENDING_STATUS,
+		"numeric_mitigation_status": FROZEN_STATUS,
+		"penetration_status": "disabled_v1",
 	},
 	"D6":
 	{
 		"id": "stamina",
 		"status": FROZEN_STATUS,
 		"resource_field": "stamina",
+		"capacity_field": "stamina_capacity",
 		"minimum": 0,
 		"negative_values_allowed": false,
 		"insufficient_stamina_behavior": "reject_action",
-		"cost_table_status": PENDING_STATUS,
-		"recovery_amount_status": PENDING_STATUS,
-		"recovery_timing_status": PENDING_STATUS,
+		"action_costs":
+		{
+			"light": 3,
+			"heavy": 5,
+			"block": 2,
+			"parry": 3,
+			"dodge": 4,
+			"reposition": 2,
+		},
+		"recovery_amount": 2,
+		"recovery_timing": "end_exchange",
+		"cost_table_status": FROZEN_STATUS,
+		"recovery_amount_status": FROZEN_STATUS,
+		"recovery_timing_status": FROZEN_STATUS,
 	},
 	"D7":
 	{
@@ -79,11 +91,6 @@ func get_contracts() -> Dictionary:
 
 func get_pending_numeric_requirements() -> Array[String]:
 	return [
-		"armor_numeric_mitigation",
-		"armor_penetration",
-		"stamina_cost_table",
-		"stamina_recovery_amount",
-		"stamina_recovery_timing",
 		"accuracy_formula",
 		"stat_scaling_weights",
 		"surrender_rules",
