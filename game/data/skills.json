@@ -1,0 +1,14 @@
+[
+  {"id":"counterattack","name":"Contraataque","category":"general"},
+  {"id":"charge","name":"Embestida","category":"general"},
+  {"id":"closed_guard","name":"Guardia Cerrada","category":"general"},
+  {"id":"demolisher","name":"Demoledor","category":"general"},
+  {"id":"feint","name":"Finta","category":"general"},
+  {"id":"provoke","name":"Provocación","category":"general"},
+  {"id":"execution","name":"Ejecución","category":"general"},
+  {"id":"aid","name":"Auxilio","category":"general"},
+  {"id":"anchor","name":"Anclaje","category":"specialized"},
+  {"id":"disarm","name":"Desarme","category":"specialized"},
+  {"id":"immobilization","name":"Inmovilización","category":"specialized"},
+  {"id":"interception","name":"Intercepción","category":"specialized"}
+]
