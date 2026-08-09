@@ -15,7 +15,7 @@ func _ready() -> void:
 
 
 func _assert_contract(resolver) -> void:
-	var contract := resolver.get_contract()
+	var contract: Dictionary = resolver.get_contract()
 	assert(contract.get("status") == "frozen")
 	assert(
 		(
@@ -30,7 +30,7 @@ func _assert_contract(resolver) -> void:
 
 func _assert_spend(resolver) -> void:
 	var fighter := _fighter(10, 10)
-	var result := resolver.spend(fighter, "heavy")
+	var result: Dictionary = resolver.spend(fighter, "heavy")
 	assert(result.get("status") == "resolved")
 	assert(result.get("cost") == 5)
 	assert((result.get("fighter", {}) as Dictionary).get("stamina") == 5.0)
@@ -40,17 +40,17 @@ func _assert_spend(resolver) -> void:
 func _assert_insufficient_stamina(resolver) -> void:
 	var fighter := _fighter(4, 10)
 	assert(not resolver.can_pay(fighter, "heavy"))
-	var result := resolver.spend(fighter, "heavy")
+	var result: Dictionary = resolver.spend(fighter, "heavy")
 	assert(result.get("status") == "invalid")
 	assert((result.get("errors", []) as Array).has("insufficient_stamina"))
 	assert((result.get("fighter", {}) as Dictionary).get("stamina") == 4)
 
 
 func _assert_recovery(resolver) -> void:
-	var recovered := resolver.recover(_fighter(4, 10))
+	var recovered: Dictionary = resolver.recover(_fighter(4, 10))
 	assert(recovered.get("status") == "resolved")
 	assert((recovered.get("fighter", {}) as Dictionary).get("stamina") == 6.0)
-	var capped := resolver.recover(_fighter(9, 10))
+	var capped: Dictionary = resolver.recover(_fighter(9, 10))
 	assert((capped.get("fighter", {}) as Dictionary).get("stamina") == 10.0)
 
 
