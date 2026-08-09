@@ -86,7 +86,9 @@ func _test_frozen_action_target_rules(resolver) -> void:
 		var result: Dictionary = resolver.inspect_action_targets(state, "a", action_id)
 		_assert_eq(result.get("status"), "ready", "%s target semantics must be frozen" % action_id)
 		_assert_eq(result.get("target_required"), false, "%s has no explicit target" % action_id)
-		_assert_eq(result.get("target_relationship"), "none", "%s target relationship is none" % action_id)
+		_assert_eq(
+			result.get("target_relationship"), "none", "%s target relationship is none" % action_id
+		)
 		_assert_eq(result.get("target_count"), 0, "%s accepts zero explicit targets" % action_id)
 		_assert_eq(result.get("legal_targets"), [], "%s has no legal explicit targets" % action_id)
 
