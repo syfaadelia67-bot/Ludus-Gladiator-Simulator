@@ -18,7 +18,7 @@ const PENDING_AUTHORITY_BOUNDARIES := {
 	"legacy_combat_manager_quarantine":
 	"Legacy CombatManager still exposes active weekly combat scheduling and non-Combat-V1 formulas.",
 	"canonical_skill_progression_reconciliation":
-	"Legacy abilities/progression are not yet reconciled with the 12 canonical Combat V1 skill identities.",
+	"Legacy abilities are not yet reconciled with the 12 canonical Combat V1 skills.",
 	"playable_combat_v1_ui":
 	"Combat V1 has runtime contracts but no complete player-facing placeholder combat flow yet.",
 	"gt1_rival_results_provider":
@@ -28,7 +28,7 @@ const PENDING_AUTHORITY_BOUNDARIES := {
 	"in_progress_combat_save_policy":
 	"Saving/quitting during a Combat V1 series or tiebreak has no final persistence policy.",
 	"month_20_end_to_end_gate":
-	"No single automated scenario yet covers New Campaign through Month XX, GT I, tiebreak and final save/load.",
+	"No end-to-end test yet covers Month XX, GT I, tiebreak and final save/load.",
 }
 
 
