@@ -12,7 +12,6 @@ const EXPECTED_ACTION_IDS: Array[String] = [
 	"reposition",
 ]
 const PENDING_FIELDS: Array[String] = [
-	"target_rule_status",
 	"stamina_cost_status",
 	"resolution_timing_status",
 	"stat_scaling_status",
@@ -26,6 +25,7 @@ func _initialize() -> void:
 	var catalog = CombatActionCatalogScript.new()
 	var contract = CombatContractScript.new()
 	_test_exact_action_ids(catalog, contract)
+	_test_d1_target_rules_are_frozen(catalog, contract)
 	_test_unfrozen_fields_stay_explicitly_pending(catalog)
 	_test_catalog_reads_are_isolated(catalog)
 	_test_unknown_action_is_rejected(catalog, contract)
@@ -49,6 +49,35 @@ func _test_exact_action_ids(catalog, contract) -> void:
 	for action_id in EXPECTED_ACTION_IDS:
 		_assert_true(
 			contract.is_action_id_valid(action_id), "CombatContract must accept %s" % action_id
+		)
+		_assert_eq(
+			contract.get_action_contract(action_id),
+			catalog.get_action_contract(action_id),
+			"CombatContract must source %s metadata from catalog" % action_id,
+		)
+
+
+func _test_d1_target_rules_are_frozen(catalog, contract) -> void:
+	for action_id in ["light", "heavy"]:
+		var action_contract: Dictionary = catalog.get_action_contract(action_id)
+		_assert_eq(action_contract.get("target_rule_status"), "frozen", "%s D1 must be frozen" % action_id)
+		_assert_eq(action_contract.get("target_required"), true, "%s must require target" % action_id)
+		_assert_eq(
+			action_contract.get("target_relationship"), "enemy", "%s must target enemy" % action_id
+		)
+		_assert_eq(action_contract.get("target_count"), 1, "%s must target exactly one enemy" % action_id)
+	for action_id in ["block", "parry", "dodge", "reposition"]:
+		var action_contract: Dictionary = catalog.get_action_contract(action_id)
+		_assert_eq(action_contract.get("target_rule_status"), "frozen", "%s D1 must be frozen" % action_id)
+		_assert_eq(action_contract.get("target_required"), false, "%s must not require target" % action_id)
+		_assert_eq(
+			action_contract.get("target_relationship"), "none", "%s has no explicit target" % action_id
+		)
+		_assert_eq(action_contract.get("target_count"), 0, "%s must accept zero targets" % action_id)
+		_assert_eq(
+			contract.get_action_contract(action_id).get("target_rule_status"),
+			"frozen",
+			"CombatContract must preserve frozen D1 metadata",
 		)
 
 
@@ -80,10 +109,16 @@ func _test_catalog_reads_are_isolated(catalog) -> void:
 	)
 	var light: Dictionary = catalog.get_action_contract("light")
 	light["target_rule_status"] = "invented"
+	light["target_relationship"] = "ally"
 	_assert_eq(
 		catalog.get_action_contract("light").get("target_rule_status"),
-		"pending",
-		"mutating returned action contract must not alter catalog",
+		"frozen",
+		"mutating returned action contract must not alter D1 status",
+	)
+	_assert_eq(
+		catalog.get_action_contract("light").get("target_relationship"),
+		"enemy",
+		"mutating returned action contract must not alter D1 relationship",
 	)
 
 
