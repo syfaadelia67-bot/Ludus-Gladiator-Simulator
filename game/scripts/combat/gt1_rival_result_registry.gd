@@ -1,7 +1,14 @@
 extends RefCounted
 
+const GT1StandingsTiebreakPolicyScript = preload(
+	"res://scripts/combat/gt1_standings_tiebreak_policy.gd"
+)
+
 const MAX_GT1_POINTS := 27
 const MAX_GT1_WINS := 9
+const REQUIRED_RIVAL_RESULTS := 7
+
+var _tiebreak_policy = GT1StandingsTiebreakPolicyScript.new()
 
 
 func register_result(rival_id: String, points: int, wins: int) -> Dictionary:
@@ -49,7 +56,45 @@ func register_result(rival_id: String, points: int, wins: int) -> Dictionary:
 		"identity_source": "DataRepository.rival_ludi",
 		"score_source": "explicit_external_result",
 		"generated_score": false,
+		"standings_resolution": evaluate_current_standings(),
 	}
+
+
+func evaluate_current_standings(non_podium_tiebreak_data: Dictionary = {}) -> Dictionary:
+	var summary := TournamentManager.get_gt1_summary()
+	if not bool(summary.get("player_series_complete", false)):
+		return _pending("player_series_incomplete", summary)
+	if int(summary.get("rival_results_registered", 0)) != REQUIRED_RIVAL_RESULTS:
+		return _pending("rival_results_incomplete", summary)
+
+	var standings_value: Variant = summary.get("standings", null)
+	if not standings_value is Array:
+		return {
+			"status": "rejected",
+			"reason": "invalid_tournament_standings",
+			"errors": ["TournamentManager did not expose GT I standings as an Array"],
+			"requires_combat_tiebreak": false,
+			"requires_non_podium_data": false,
+			"resolution_source": "gt1_standings_tiebreak_policy",
+		}
+	var standings := standings_value as Array
+	if standings.size() != REQUIRED_RIVAL_RESULTS + 1:
+		return {
+			"status": "rejected",
+			"reason": "incomplete_tournament_standings",
+			"errors": ["GT I standings require player plus seven canonical rival Ludi"],
+			"requires_combat_tiebreak": false,
+			"requires_non_podium_data": false,
+			"resolution_source": "gt1_standings_tiebreak_policy",
+		}
+
+	var result: Dictionary = _tiebreak_policy.evaluate(
+		standings,
+		non_podium_tiebreak_data,
+		"player",
+	)
+	result["resolution_source_contract"] = "gt1_standings_tiebreak_policy"
+	return result
 
 
 func get_contract() -> Dictionary:
@@ -62,6 +107,26 @@ func get_contract() -> Dictionary:
 		"points_per_win": 3,
 		"max_points": MAX_GT1_POINTS,
 		"max_wins": MAX_GT1_WINS,
+		"required_rival_results": REQUIRED_RIVAL_RESULTS,
+		"standings_resolution_policy": "gt1_standings_tiebreak_policy",
+		"podium_tie_resolution": "tournament_characteristic_combat",
+		"non_podium_tie_resolution": ["head_to_head", "prior_season_position"],
+		"alphabetical_fallback_allowed": false,
+		"random_fallback_allowed": false,
+	}
+
+
+func _pending(reason: String, summary: Dictionary) -> Dictionary:
+	return {
+		"status": "pending_results",
+		"reason": reason,
+		"errors": [],
+		"player_series_complete": bool(summary.get("player_series_complete", false)),
+		"rival_results_registered": int(summary.get("rival_results_registered", 0)),
+		"required_rival_results": REQUIRED_RIVAL_RESULTS,
+		"requires_combat_tiebreak": false,
+		"requires_non_podium_data": false,
+		"resolution_source": "gt1_standings_tiebreak_policy",
 	}
 
 
@@ -77,4 +142,5 @@ func _rejected(reason: String, errors: Array[String]) -> Dictionary:
 		"identity_source": "DataRepository.rival_ludi",
 		"score_source": "explicit_external_result",
 		"generated_score": false,
+		"standings_resolution": {},
 	}
