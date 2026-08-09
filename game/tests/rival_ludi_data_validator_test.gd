@@ -8,10 +8,14 @@ func _ready() -> void:
 	DataRepository.load_all()
 
 	var errors: Array[String] = validator.validate_entries(DataRepository.rival_ludi)
-	assert(errors.is_empty(), "Canonical rival Ludus identities must validate cleanly: %s" % [errors])
 	assert(
-		validator.get_canonical_ids()
-		== ["aurelius", "cassianus", "drusus", "flavianus", "marcellus", "severus", "varro"]
+		errors.is_empty(), "Canonical rival Ludus identities must validate cleanly: %s" % [errors]
+	)
+	assert(
+		(
+			validator.get_canonical_ids()
+			== ["aurelius", "cassianus", "drusus", "flavianus", "marcellus", "severus", "varro"]
+		)
 	)
 
 	var with_runtime_stats := DataRepository.rival_ludi.duplicate(true)
