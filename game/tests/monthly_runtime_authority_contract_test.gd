@@ -28,7 +28,7 @@ func _assert_monthly_scheduler_authority() -> void:
 		"range(DAYS_PER_WEEK)",
 	]:
 		assert(not source.contains(forbidden), "Month closure must not call %s" % forbidden)
-	assert(source.contains("\"internal_work_ticks\": 1"))
+	assert(source.contains('"internal_work_ticks": 1'))
 
 
 func _assert_monthly_consumers() -> void:
@@ -36,12 +36,8 @@ func _assert_monthly_consumers() -> void:
 	var planning := FileAccess.get_file_as_string(
 		"res://scripts/systems/weekly_planning_controller.gd"
 	)
-	var cycle_ui := FileAccess.get_file_as_string(
-		"res://scripts/ui/weekly_cycle_presentation.gd"
-	)
-	var closure_ui := FileAccess.get_file_as_string(
-		"res://scripts/ui/weekly_closure_presenter.gd"
-	)
+	var cycle_ui := FileAccess.get_file_as_string("res://scripts/ui/weekly_cycle_presentation.gd")
+	var closure_ui := FileAccess.get_file_as_string("res://scripts/ui/weekly_closure_presenter.gd")
 	var calendar_ui := FileAccess.get_file_as_string(
 		"res://scripts/ui/weekly_calendar_presenter.gd"
 	)
@@ -52,7 +48,7 @@ func _assert_monthly_consumers() -> void:
 	assert(market.contains("GameState.month_advanced.connect"))
 	assert(not market.contains("GameState.week_advanced.connect"))
 	assert(planning.contains("EconomyManager.get_monthly_projection()"))
-	assert(planning.contains("\"month\": GameState.get_month()"))
+	assert(planning.contains('"month": GameState.get_month()'))
 	assert(not planning.contains("GameState.DAYS_PER_WEEK"))
 	assert(cycle_ui.contains("GameState.month_advanced.connect"))
 	assert(closure_ui.contains("GameState.advance_month()"))
@@ -89,11 +85,11 @@ func _assert_social_autoloads_use_monthly_wrappers() -> void:
 	var project := FileAccess.get_file_as_string("res://project.godot")
 	assert(
 		project.contains(
-			"PersonalityManager=\"*res://scripts/systems/personality_manager_monthly.gd\""
+			'PersonalityManager="*res://scripts/systems/personality_manager_monthly.gd"'
 		)
 	)
 	assert(
 		project.contains(
-			"RelationshipManager=\"*res://scripts/systems/relationship_manager_monthly.gd\""
+			'RelationshipManager="*res://scripts/systems/relationship_manager_monthly.gd"'
 		)
 	)
