@@ -26,6 +26,7 @@ func _ready() -> void:
 	accept_button.pressed.connect(_on_accept)
 	cancel_button.pressed.connect(_on_cancel)
 	TournamentManager.calendar_changed.connect(_refresh_all)
+	TournamentManager.grand_tournament_changed.connect(_on_grand_tournament_changed)
 	TournamentManager.contract_failed.connect(_on_failed)
 	TournamentManager.contract_accepted.connect(_on_accepted)
 	TournamentManager.contract_cancelled.connect(_on_cancelled)
@@ -146,6 +147,7 @@ func _refresh_details() -> void:
 	if str(selected.get("competition", "")) == "grand_tournament":
 		lines.append("PTS por victoria: %d" % int(selected.get("points_per_win", 3)))
 		lines.append(str(selected.get("description", "")))
+		_append_gt1_progress(lines)
 	elif str(selected.get("competition", "")) == "underworld":
 		lines.append("Premio por victoria: %d denarios" % int(selected.get("reward_per_win", 60)))
 		lines.append("Reputación: 0")
@@ -160,6 +162,47 @@ func _refresh_details() -> void:
 	accept_button.disabled = (
 		fighter_ids.is_empty() or bool(selected.get("requires_team_selection", false))
 	)
+
+
+func _append_gt1_progress(lines: Array[String]) -> void:
+	var summary: Dictionary = TournamentManager.get_gt1_summary()
+	var progress := summary.get("encounter_progress", {}) as Dictionary
+	var points_per_win := int(summary.get("points_per_win", 3))
+	lines.append("")
+	lines.append("[b]Progreso del Gran Torneo[/b]")
+	lines.append("Combates: %d/9" % int(summary.get("player_bouts", 0)))
+	lines.append("Victorias: %d" % int(summary.get("player_wins", 0)))
+	lines.append("PTS: %d/%d" % [int(summary.get("player_points", 0)), 9 * points_per_win])
+	lines.append("Encuentro XIII: %d/3" % int(progress.get("13", 0)))
+	lines.append("Encuentro XVI: %d/3" % int(progress.get("16", 0)))
+	lines.append("Encuentro XX: %d/3" % int(progress.get("20", 0)))
+
+	if bool(summary.get("tiebreak_required", false)):
+		lines.append("[i]Desempate pendiente: la posición final todavía no está resuelta.[/i]")
+		return
+	if bool(summary.get("standings_resolved", false)):
+		lines.append("Posición final: %d.º" % int(summary.get("placement", 0)))
+		var medal_label := _gt1_medal_label(str(summary.get("medal", "")))
+		if not medal_label.is_empty():
+			lines.append("Medalla: %s" % medal_label)
+		return
+	lines.append("Clasificación final: pendiente.")
+	lines.append(
+		"Resultados de rivales registrados: %d"
+		% int(summary.get("rival_results_registered", 0))
+	)
+
+
+func _gt1_medal_label(medal: String) -> String:
+	match medal:
+		"gold":
+			return "Oro"
+		"silver":
+			return "Plata"
+		"bronze":
+			return "Bronce"
+		_:
+			return ""
 
 
 func _on_event_selected(index: int) -> void:
@@ -205,6 +248,10 @@ func _on_cancelled(contract: Dictionary) -> void:
 		"Contrato cancelado. Penalización: %d denarios." % int(contract.get("cancel_penalty", 0))
 	)
 	call_deferred("_scroll_to_contracts")
+
+
+func _on_grand_tournament_changed(_summary: Dictionary) -> void:
+	_refresh_details()
 
 
 func _on_failed(reason: String) -> void:
