@@ -6,17 +6,17 @@ const GT1BeastReadinessContractScript = preload(
 
 const PENDING_AUTHORITY_BOUNDARIES := {
 	"monthly_economy_runtime":
-	"Economy uses the month-native scheduler, but inherited daily formulas still await replacement by frozen monthly operating rules.",
+	"Month scheduling is canonical; inherited cost formulas still await frozen monthly rules.",
 	"monthly_market_cadence":
-	"Market listens to month_advanced, but its refresh interval is still a transitional legacy turn count rather than frozen monthly balance.",
+	"Month signaling is canonical; refresh cadence is still an unfrozen legacy turn count.",
 	"monthly_roster_work_recovery":
-	"Roster uses one month-native tick, but work, fatigue, training and recovery numbers still inherit unfrozen legacy balance.",
+	"One monthly tick is canonical; work, fatigue and recovery still await monthly balance.",
 	"monthly_event_cadence":
-	"Event chains schedule by month, but inherited cooldown and timed-effect balance still require a frozen monthly rule set.",
+	"Event chains schedule by month; cooldown and timed effects still await monthly balance.",
 	"monthly_planning_turn_closure":
-	"Planning is month-native and GT I uses TournamentManager authority, but non-GT monthly activity blockers are not fully frozen yet.",
+	"Planning is month-native; non-GT activity blockers are not fully frozen yet.",
 	"legacy_combat_manager_quarantine":
-	"Legacy CombatManager still exists as an active combat path with old scheduling and non-Combat-V1 formulas and must be quarantined.",
+	"Legacy CombatManager still exposes old scheduling and non-Combat-V1 formulas.",
 	"canonical_skill_progression_reconciliation":
 	"Legacy abilities are not yet reconciled with the 12 canonical Combat V1 skills.",
 	"playable_combat_v1_ui":
