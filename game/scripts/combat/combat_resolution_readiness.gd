@@ -1,7 +1,6 @@
 extends RefCounted
 
 const REQUIRED_DECISIONS: Array[String] = [
-	"resolution_order",
 	"damage_and_mitigation",
 	"armor_and_vulnerability",
 	"stamina_costs",
@@ -27,6 +26,7 @@ func get_conditional_requirements() -> Array[String]:
 func get_status() -> Dictionary:
 	return {
 		"frozen": false,
+		"frozen_requirements": ["target_rules", "resolution_order"],
 		"pending_requirements": get_pending_requirements(),
 		"conditional_requirements": get_conditional_requirements(),
 	}
