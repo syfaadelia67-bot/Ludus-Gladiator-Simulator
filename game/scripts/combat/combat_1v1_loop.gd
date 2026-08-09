@@ -1,13 +1,11 @@
 extends RefCounted
 
 const CombatContractScript = preload("res://scripts/combat/combat_contract.gd")
-const CombatEndResolverScript = preload("res://scripts/combat/combat_end_resolver.gd")
 const CombatExchangeCoordinatorScript = preload(
 	"res://scripts/combat/combat_exchange_coordinator.gd"
 )
 
 var _combat_contract = CombatContractScript.new()
-var _combat_end_resolver = CombatEndResolverScript.new()
 var _coordinator = CombatExchangeCoordinatorScript.new()
 
 
@@ -81,15 +79,8 @@ func advance(loop_state: Dictionary, intents: Array) -> Dictionary:
 	var next_state := (exchange_result.get("state", {}) as Dictionary).duplicate(true)
 	var next_exchange_index := int(loop_state.get("exchange_index", 0)) + 1
 	var ko_ids := exchange_result.get("ko_fighter_ids", []) as Array
-	var combat_end_result: Dictionary = _combat_end_resolver.resolve(next_state)
-	if combat_end_result.get("status") != "resolved":
-		return _rejected(
-			"combat_end_resolution_failed",
-			combat_end_result.get("errors", []) as Array,
-			next_state,
-			next_exchange_index,
-		)
-	var combat_finished := bool(combat_end_result.get("combat_finished", false))
+	var combat_end_result := exchange_result.get("combat_end_result", {}) as Dictionary
+	var combat_finished := bool(exchange_result.get("combat_end_resolved", false))
 	return {
 		"status": "combat_finished" if combat_finished else "running",
 		"errors": [],
@@ -99,9 +90,9 @@ func advance(loop_state: Dictionary, intents: Array) -> Dictionary:
 		"combat_end_result": combat_end_result.duplicate(true),
 		"ko_fighter_ids": ko_ids.duplicate(),
 		"combat_end_resolved": combat_finished,
-		"outcome": str(combat_end_result.get("outcome", "ongoing")),
-		"winner_team_id": str(combat_end_result.get("winner_team_id", "")),
-		"loser_team_id": str(combat_end_result.get("loser_team_id", "")),
+		"outcome": str(exchange_result.get("outcome", "ongoing")),
+		"winner_team_id": str(exchange_result.get("winner_team_id", "")),
+		"loser_team_id": str(exchange_result.get("loser_team_id", "")),
 	}
 
 
@@ -110,9 +101,9 @@ func get_contract() -> Dictionary:
 		"status": "frozen",
 		"format": "1v1",
 		"state_progression": "resolved_exchange_state_becomes_next_exchange_state",
-		"combat_end_authority": "combat_end_resolver",
+		"combat_end_authority": "combat_simulator",
 		"finish_condition": "team_elimination",
-		"winner_authority": "combat_end_resolver",
+		"winner_authority": "combat_simulator",
 		"automatic_surrender": "disabled_v1",
 		"carryover_scope": "within_same_combat_via_resolved_state",
 		"between_consecutive_gt_fights": "combat_carryover_resolver",
