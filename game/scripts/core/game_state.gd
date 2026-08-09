@@ -105,7 +105,16 @@ func advance_month() -> void:
 	report["next_month"] = get_month()
 	# Legacy report key retains the historical serialized meaning: next turn index.
 	report["week"] = get_month()
-	report["fight"] = CombatManager.get_current_event_details()
+	var next_encounter := TournamentManager.get_gt1_encounter(get_month())
+	if next_encounter.is_empty():
+		report["fight"] = {
+			"month": get_month(),
+			"required": false,
+			"name": "Gestión del ludus",
+		}
+	else:
+		next_encounter["required"] = true
+		report["fight"] = next_encounter
 	report["chapter"] = CampaignManager.get_chapter_for_month(closing_month)
 
 	month_advanced.emit(get_month())
