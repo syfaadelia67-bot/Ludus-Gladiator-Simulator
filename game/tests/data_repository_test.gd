@@ -7,6 +7,7 @@ const COLLECTION_PATHS: Dictionary = {
 	"buildings": "res://data/buildings.json",
 	"weapons": "res://data/weapons.json",
 	"beasts": "res://data/beasts.json",
+	"rival_ludi": "res://data/rival_ludi.json",
 	"economy_rules": "res://data/economy_rules.json",
 }
 const MISSING_PATH: String = "user://data_repository_missing_test.json"
@@ -23,6 +24,11 @@ func _ready() -> void:
 
 	repository.load_all()
 	assert(repository.beasts.size() == 3, "DataRepository must load the three frozen demo beasts")
+	assert(repository.rival_ludi.size() == 7, "DataRepository must load the seven frozen rival Ludi")
+	assert(
+		str(repository.get_rival_ludus("cassianus").get("name", "")) == "Ludus Cassianus",
+		"DataRepository must expose canonical rival Ludus identities"
+	)
 	assert(
 		int(repository.get_economy_rule("demo_starting_resources").get("denarii", 0)) == 650,
 		"DataRepository must expose the frozen 650-denarii demo start"
