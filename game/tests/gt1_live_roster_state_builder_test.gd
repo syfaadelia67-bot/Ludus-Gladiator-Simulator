@@ -39,7 +39,9 @@ func _initialize() -> void:
 func _test_live_autoload_roster_uses_real_equipment_snapshots() -> void:
 	var roster_manager = root.get_node_or_null("RosterManager")
 	var equipment_manager = root.get_node_or_null("EquipmentManager")
-	_assert_true(roster_manager != null, "live integration requires the real RosterManager autoload")
+	_assert_true(
+		roster_manager != null, "live integration requires the real RosterManager autoload"
+	)
 	_assert_true(
 		equipment_manager != null, "live integration requires the real EquipmentManager autoload"
 	)
@@ -50,34 +52,40 @@ func _test_live_autoload_roster_uses_real_equipment_snapshots() -> void:
 	var original_inventory: Array = equipment_manager.inventory.duplicate(true)
 	var original_serial: int = int(equipment_manager.serial)
 
-	var live_person = PersonScript.new(
-		{
-			"id": "live_gladiator",
-			"name": "Live Gladiator",
-			"role": "gladiator",
-			"strength": 11,
-			"agility": 10,
-			"technique": 9,
-			"resistance": 8,
-			"health": 42,
-			"endurance": 7,
-		}
+	var live_person = (
+		PersonScript
+		. new(
+			{
+				"id": "live_gladiator",
+				"name": "Live Gladiator",
+				"role": "gladiator",
+				"strength": 11,
+				"agility": 10,
+				"technique": 9,
+				"resistance": 8,
+				"health": 42,
+				"endurance": 7,
+			}
+		)
 	)
 	roster_manager.people = [live_person]
 	equipment_manager.inventory = []
 	equipment_manager.serial = 0
 
-	var live_item: Dictionary = equipment_manager.add_market_item(
-		{
-			"recipe_id": "live_test_gladius",
-			"name": "Live Test Gladius",
-			"type": "weapon",
-			"slot": "right_hand",
-			"quality": "Común",
-			"power": 9,
-			"defense": 3,
-			"tags": ["sword"],
-		}
+	var live_item: Dictionary = (
+		equipment_manager
+		. add_market_item(
+			{
+				"recipe_id": "live_test_gladius",
+				"name": "Live Test Gladius",
+				"type": "weapon",
+				"slot": "right_hand",
+				"quality": "Común",
+				"power": 9,
+				"defense": 3,
+				"tags": ["sword"],
+			}
+		)
 	)
 	var item_id := str(live_item.get("id", ""))
 	_assert_true(not item_id.is_empty(), "real EquipmentManager must create the live test item")
@@ -92,11 +100,14 @@ func _test_live_autoload_roster_uses_real_equipment_snapshots() -> void:
 		[_opponent("live_y", "rival", 0)],
 		[_opponent("live_z", "rival", 0)],
 	]
-	var first_result: Dictionary = builder.build_from_live_roster(
-		13,
-		"player",
-		[[live_person.id], [live_person.id], [live_person.id]],
-		opponents,
+	var first_result: Dictionary = (
+		builder
+		. build_from_live_roster(
+			13,
+			"player",
+			[[live_person.id], [live_person.id], [live_person.id]],
+			opponents,
+		)
 	)
 	_assert_eq(first_result.get("status"), "ready", "live autoload build must be ready")
 	var first_states := first_result.get("bout_states", []) as Array
@@ -108,15 +119,20 @@ func _test_live_autoload_roster_uses_real_equipment_snapshots() -> void:
 		first_expected,
 		"GT I builder must snapshot power/defense from the real EquipmentManager",
 	)
-	_assert_eq(first_equipment.get("power"), 9, "first live equipment snapshot must use current power")
+	_assert_eq(
+		first_equipment.get("power"), 9, "first live equipment snapshot must use current power"
+	)
 
 	var stored_item: Dictionary = equipment_manager.get_item(item_id)
 	stored_item["power"] = 17
-	var second_result: Dictionary = builder.build_from_live_roster(
-		13,
-		"player",
-		[[live_person.id], [live_person.id], [live_person.id]],
-		opponents,
+	var second_result: Dictionary = (
+		builder
+		. build_from_live_roster(
+			13,
+			"player",
+			[[live_person.id], [live_person.id], [live_person.id]],
+			opponents,
+		)
 	)
 	_assert_eq(second_result.get("status"), "ready", "second live autoload build must be ready")
 	var second_states := second_result.get("bout_states", []) as Array
@@ -127,7 +143,9 @@ func _test_live_autoload_roster_uses_real_equipment_snapshots() -> void:
 		equipment_manager.get_equipped_stats(live_person),
 		"a new GT I build must read the updated real equipment state",
 	)
-	_assert_eq(second_equipment.get("power"), 17, "second live snapshot must reflect equipment change")
+	_assert_eq(
+		second_equipment.get("power"), 17, "second live snapshot must reflect equipment change"
+	)
 	_assert_eq(
 		first_equipment.get("power"),
 		9,
