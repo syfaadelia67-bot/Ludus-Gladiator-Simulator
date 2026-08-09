@@ -1,7 +1,6 @@
 extends RefCounted
 
 const REQUIRED_DECISIONS: Array[String] = [
-	"target_rules",
 	"resolution_order",
 	"damage_and_mitigation",
 	"armor_and_vulnerability",
