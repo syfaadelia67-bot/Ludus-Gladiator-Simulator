@@ -203,9 +203,24 @@ func _assert_action_contracts(value: Variant) -> void:
 			"target rules must stay frozen in policy metadata",
 		)
 		_assert_eq(
+			action_contract.get("resolution_timing_status"),
+			"frozen",
+			"D3 resolution timing must stay frozen in policy metadata",
+		)
+		_assert_eq(
 			action_contract.get("stamina_cost_status"),
+			"frozen",
+			"D6 Stamina costs must stay frozen in policy metadata",
+		)
+		_assert_eq(
+			action_contract.get("stat_scaling_status"),
 			"pending",
-			"Stamina costs must stay pending in policy metadata",
+			"stat scaling must remain pending until numerical design freeze",
+		)
+		_assert_eq(
+			action_contract.get("effect_status"),
+			"pending",
+			"action effects must remain pending until defensive effects freeze",
 		)
 
 
