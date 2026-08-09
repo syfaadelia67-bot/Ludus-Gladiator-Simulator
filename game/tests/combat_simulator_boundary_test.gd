@@ -18,13 +18,13 @@ func _assert_valid_intent_stays_pending(simulator) -> void:
 	var result: Dictionary = simulator.resolve_intent(
 		_state(), {"actor_id": "a1", "action_id": "light", "target_id": "b1"}
 	)
-	assert(not bool(result.get("ok", true)), "Unfrozen combat math must not return a fake success")
+	assert(not bool(result.get("ok", true)), "Unfrozen combat rules must not return a fake success")
 	assert(bool(result.get("pending", false)), "A valid intent must remain explicitly pending")
 	assert(str(result.get("reason", "")) == simulator.PENDING_REASON)
 	assert((result.get("errors", []) as Array).is_empty())
 	assert(
-		str(result.get("blocking_requirement", "")) == "accuracy_formula",
-		"D7 accuracy must become the first required blocker after frozen D6",
+		str(result.get("blocking_requirement", "")) == "defensive_action_effects",
+		"defensive effects must become the first blocker after frozen D7 accuracy",
 	)
 	var blocking_context := result.get("blocking_context", {}) as Dictionary
 	var target_context := blocking_context.get("resolved_target_context", {}) as Dictionary
@@ -44,8 +44,22 @@ func _assert_valid_intent_stays_pending(simulator) -> void:
 	assert((stamina_contract.get("action_costs", {}) as Dictionary).get("heavy") == 5)
 	assert(stamina_contract.get("recovery_amount") == 2)
 	assert(stamina_contract.get("recovery_timing") == "end_exchange")
+	var accuracy_contract := blocking_context.get("accuracy_contract", {}) as Dictionary
+	assert(accuracy_contract.get("status") == "frozen", "D7 contract must be exposed as frozen")
+	assert(accuracy_contract.get("deterministic") == true)
+	assert(accuracy_contract.get("rng_allowed") == false)
+	assert(accuracy_contract.get("critical_hits_enabled") == false)
+	assert(accuracy_contract.get("attacker_stat") == "TEC")
+	assert(accuracy_contract.get("defender_stat") == "AGI")
+	assert(
+		accuracy_contract.get("action_accuracy_modifiers")
+		== {"light": 1.0, "heavy": 0.0}
+	)
 	var d5_d9_contracts := blocking_context.get("d5_d9_contracts", {}) as Dictionary
 	assert((d5_d9_contracts.get("D5", {}) as Dictionary).get("status") == "frozen")
+	assert(
+		(d5_d9_contracts.get("D7", {}) as Dictionary).get("accuracy_formula_status") == "frozen"
+	)
 	assert((d5_d9_contracts.get("D7", {}) as Dictionary).get("critical_hits_enabled") == false)
 	assert(
 		(d5_d9_contracts.get("D9", {}) as Dictionary).get("ko_condition") == "current_pv_lte_zero"
@@ -65,6 +79,7 @@ func _assert_valid_intent_stays_pending(simulator) -> void:
 	assert(frozen_requirements.has("stamina_recovery_amount"))
 	assert(frozen_requirements.has("stamina_recovery_timing"))
 	assert(frozen_requirements.has("accuracy_and_critical_structure"))
+	assert(frozen_requirements.has("accuracy_formula"))
 	assert(frozen_requirements.has("stat_scaling_roles"))
 	assert(frozen_requirements.has("ko_structure"))
 	var pending_requirements := result.get("pending_requirements", []) as Array
@@ -79,7 +94,8 @@ func _assert_valid_intent_stays_pending(simulator) -> void:
 	assert(not pending_requirements.has("stamina_cost_table"), "Frozen D6 must leave readiness")
 	assert(not pending_requirements.has("stamina_recovery_amount"))
 	assert(not pending_requirements.has("stamina_recovery_timing"))
-	assert(pending_requirements.has("accuracy_formula"))
+	assert(not pending_requirements.has("accuracy_formula"), "Frozen D7 must leave readiness")
+	assert(pending_requirements.has("defensive_action_effects"))
 	assert(pending_requirements.has("stat_scaling_weights"))
 	assert(pending_requirements.has("surrender_rules"))
 	var conditional_requirements := result.get("conditional_requirements", []) as Array
