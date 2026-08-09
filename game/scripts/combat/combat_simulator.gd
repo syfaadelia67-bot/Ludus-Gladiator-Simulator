@@ -101,7 +101,9 @@ func resolve_exchange(state: Dictionary, intents: Array) -> Dictionary:
 	result["frozen_requirements"] = _resolution_readiness.get_frozen_requirements()
 	result["pending_requirements"] = _resolution_readiness.get_pending_requirements()
 	result["conditional_requirements"] = _resolution_readiness.get_conditional_requirements()
-	result["combat_completion_pending"] = not _resolution_readiness.get_pending_requirements().is_empty()
+	result["combat_completion_pending"] = not (
+		_resolution_readiness.get_pending_requirements().is_empty()
+	)
 	return result
 
 
