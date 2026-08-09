@@ -130,7 +130,10 @@ func _apply_parry(result: Dictionary, defender_stats: Dictionary) -> void:
 func _apply_evasion(result: Dictionary, bonus: float, outcome_key: String) -> void:
 	var effective_evasion: float = float(result.get("effective_evasion_score", 0.0)) + bonus
 	result["effective_evasion_score"] = effective_evasion
-	if bool(result.get("hit", false)) and float(result.get("attack_score", 0.0)) < effective_evasion:
+	if (
+		bool(result.get("hit", false))
+		and float(result.get("attack_score", 0.0)) < effective_evasion
+	):
 		result["hit"] = false
 		result["damage"] = 0
 		result[outcome_key] = true
