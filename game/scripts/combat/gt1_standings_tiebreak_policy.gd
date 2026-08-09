@@ -4,9 +4,7 @@ const PODIUM_SIZE := 3
 
 
 func evaluate(
-	standings: Array,
-	non_podium_tiebreak_data: Dictionary = {},
-	player_id: String = "player"
+	standings: Array, non_podium_tiebreak_data: Dictionary = {}, player_id: String = "player"
 ) -> Dictionary:
 	var validation_errors := _validate_standings(standings, player_id)
 	if not validation_errors.is_empty():
@@ -81,9 +79,7 @@ func get_contract() -> Dictionary:
 
 
 func _resolve_non_podium_tie(
-	tied_rival_ids: Array[String],
-	tiebreak_data: Dictionary,
-	player_id: String
+	tied_rival_ids: Array[String], tiebreak_data: Dictionary, player_id: String
 ) -> Dictionary:
 	var errors: Array[String] = []
 	var rivals_ahead := 0
