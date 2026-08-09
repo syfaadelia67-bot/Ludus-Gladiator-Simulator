@@ -11,9 +11,23 @@ const EXPECTED_ACTION_IDS: Array[String] = [
 	"dodge",
 	"reposition",
 ]
+const EXPECTED_STAMINA_COSTS := {
+	"light": 3,
+	"heavy": 5,
+	"block": 2,
+	"parry": 3,
+	"dodge": 4,
+	"reposition": 2,
+}
+const EXPECTED_PHASES := {
+	"light": "offense",
+	"heavy": "offense",
+	"block": "preparation",
+	"parry": "preparation",
+	"dodge": "preparation",
+	"reposition": "preparation",
+}
 const PENDING_FIELDS: Array[String] = [
-	"stamina_cost_status",
-	"resolution_timing_status",
 	"stat_scaling_status",
 	"effect_status",
 ]
@@ -26,6 +40,7 @@ func _initialize() -> void:
 	var contract = CombatContractScript.new()
 	_test_exact_action_ids(catalog, contract)
 	_test_d1_target_rules_are_frozen(catalog, contract)
+	_test_d3_and_d6_metadata_are_frozen(catalog)
 	_test_unfrozen_fields_stay_explicitly_pending(catalog)
 	_test_catalog_reads_are_isolated(catalog)
 	_test_unknown_action_is_rejected(catalog, contract)
@@ -95,6 +110,31 @@ func _test_d1_target_rules_are_frozen(catalog, contract) -> void:
 		)
 
 
+func _test_d3_and_d6_metadata_are_frozen(catalog) -> void:
+	for action_id in EXPECTED_ACTION_IDS:
+		var action_contract: Dictionary = catalog.get_action_contract(action_id)
+		_assert_eq(
+			action_contract.get("stamina_cost_status"),
+			"frozen",
+			"%s D6 stamina cost status must be frozen" % action_id,
+		)
+		_assert_eq(
+			action_contract.get("stamina_cost"),
+			EXPECTED_STAMINA_COSTS[action_id],
+			"%s must expose the frozen D6 stamina cost" % action_id,
+		)
+		_assert_eq(
+			action_contract.get("resolution_timing_status"),
+			"frozen",
+			"%s D3 timing status must be frozen" % action_id,
+		)
+		_assert_eq(
+			action_contract.get("resolution_phase"),
+			EXPECTED_PHASES[action_id],
+			"%s must expose its frozen D3 resolution phase" % action_id,
+		)
+
+
 func _test_unfrozen_fields_stay_explicitly_pending(catalog) -> void:
 	var contracts: Array[Dictionary] = catalog.get_action_contracts()
 	_assert_eq(
@@ -124,6 +164,7 @@ func _test_catalog_reads_are_isolated(catalog) -> void:
 	var light: Dictionary = catalog.get_action_contract("light")
 	light["target_rule_status"] = "invented"
 	light["target_relationship"] = "ally"
+	light["stamina_cost"] = 999
 	_assert_eq(
 		catalog.get_action_contract("light").get("target_rule_status"),
 		"frozen",
@@ -133,6 +174,11 @@ func _test_catalog_reads_are_isolated(catalog) -> void:
 		catalog.get_action_contract("light").get("target_relationship"),
 		"enemy",
 		"mutating returned action contract must not alter D1 relationship",
+	)
+	_assert_eq(
+		catalog.get_action_contract("light").get("stamina_cost"),
+		3,
+		"mutating returned action contract must not alter frozen D6 cost",
 	)
 
 
