@@ -2,7 +2,9 @@ extends RefCounted
 
 const CombatContractScript = preload("res://scripts/combat/combat_contract.gd")
 const CombatPolicyContractScript = preload("res://scripts/combat/combat_policy_contract.gd")
-const CombatRuntimeStateBuilderScript = preload("res://scripts/combat/combat_runtime_state_builder.gd")
+const CombatRuntimeStateBuilderScript = preload(
+	"res://scripts/combat/combat_runtime_state_builder.gd"
+)
 const CombatSimulatorScript = preload("res://scripts/combat/combat_simulator.gd")
 
 var _combat_contract = CombatContractScript.new()
