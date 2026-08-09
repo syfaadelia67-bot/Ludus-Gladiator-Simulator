@@ -5,7 +5,10 @@ const CHAIN_EVENTS := {
 	{
 		"title": "La respuesta de la casa rival",
 		"text":
-		"El desafío público dejó heridas en el orgullo de ambos ludus. El rival exige una respuesta definitiva.",
+		(
+			"El desafío público dejó heridas en el orgullo de ambos ludus. "
+			+ "El rival exige una respuesta definitiva."
+		),
 		"choices":
 		[
 			{
@@ -116,6 +119,13 @@ func get_unmet_requirements(choice: Dictionary) -> String:
 	if not base_reason.is_empty():
 		return base_reason
 	var requirements: Dictionary = choice.get("context_requirements", {})
+	var roster_reason := _get_roster_requirement_error(requirements)
+	if not roster_reason.is_empty():
+		return roster_reason
+	return _get_world_requirement_error(requirements)
+
+
+func _get_roster_requirement_error(requirements: Dictionary) -> String:
 	if int(requirements.get("intelligence", 0)) > RosterManager.intelligence_points:
 		return "No hay suficiente inteligencia acumulada."
 	if int(requirements.get("gladiators", 0)) > _count_gladiators():
@@ -124,6 +134,10 @@ func get_unmet_requirements(choice: Dictionary) -> String:
 		return "No hay un gladiador sano disponible."
 	if bool(requirements.get("specialized_gladiator", false)) and not _has_specialized_gladiator():
 		return "Ningún gladiador eligió todavía una especialización."
+	return ""
+
+
+func _get_world_requirement_error(requirements: Dictionary) -> String:
 	var building_id := str(requirements.get("building_id", ""))
 	if (
 		not building_id.is_empty()
