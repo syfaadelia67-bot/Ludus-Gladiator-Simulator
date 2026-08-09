@@ -25,10 +25,12 @@ func _assert_monthly_scheduler_authority() -> void:
 		"RivalManager.process_week()",
 		"EconomyManager.process_week()",
 		"EventManager.process_week()",
+		"CombatManager.get_current_event_details()",
 		"range(DAYS_PER_WEEK)",
 	]:
 		assert(not source.contains(forbidden), "Month closure must not call %s" % forbidden)
 	assert(source.contains('"internal_work_ticks": 1'))
+	assert(source.contains("TournamentManager.get_gt1_encounter(get_month())"))
 
 
 func _assert_monthly_consumers() -> void:
@@ -49,8 +51,13 @@ func _assert_monthly_consumers() -> void:
 	assert(not market.contains("GameState.week_advanced.connect"))
 	assert(planning.contains("EconomyManager.get_monthly_projection()"))
 	assert(planning.contains('"month": GameState.get_month()'))
+	assert(planning.contains("TournamentManager.get_gt1_encounter(GameState.get_month())"))
+	assert(not planning.contains("CombatManager.last_combat_day"))
+	assert(not planning.contains("CombatManager.get_current_event_details()"))
 	assert(not planning.contains("GameState.DAYS_PER_WEEK"))
 	assert(cycle_ui.contains("GameState.month_advanced.connect"))
+	assert(cycle_ui.contains("TournamentManager.get_gt1_encounter(month)"))
+	assert(not cycle_ui.contains("CombatManager.get_current_event_details()"))
 	assert(closure_ui.contains("GameState.advance_month()"))
 	assert(calendar_ui.contains("GameState.month_advanced.connect"))
 	assert(calendar_ui.contains("DEMO_FINAL_MONTH := 20"))
