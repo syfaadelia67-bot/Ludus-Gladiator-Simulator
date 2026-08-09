@@ -4,6 +4,9 @@ const Combat1v1LoopScript = preload("res://scripts/combat/combat_1v1_loop.gd")
 const Combat2v2LoopScript = preload("res://scripts/combat/combat_2v2_loop.gd")
 const CombatCarryoverResolverScript = preload("res://scripts/combat/combat_carryover_resolver.gd")
 const CombatContractScript = preload("res://scripts/combat/combat_contract.gd")
+const GT1LiveRosterStateBuilderScript = preload(
+	"res://scripts/combat/gt1_live_roster_state_builder.gd"
+)
 
 const GT1_MONTHS := [13, 16, 20]
 const BOUTS_PER_ENCOUNTER := 3
@@ -12,6 +15,34 @@ var _combat_contract = CombatContractScript.new()
 var _carryover = CombatCarryoverResolverScript.new()
 var _loop_1v1 = Combat1v1LoopScript.new()
 var _loop_2v2 = Combat2v2LoopScript.new()
+var _live_state_builder = GT1LiveRosterStateBuilderScript.new()
+
+
+func start_encounter_from_live_roster(
+	month: int, player_team_id: String, player_ids_by_bout: Array, opponent_fighters_by_bout: Array
+) -> Dictionary:
+	var build_result: Dictionary = _live_state_builder.build_from_live_roster(
+		month,
+		player_team_id,
+		player_ids_by_bout,
+		opponent_fighters_by_bout,
+	)
+	if build_result.get("status") != "ready":
+		return _rejected(
+			"gt1_live_roster_build_failed",
+			build_result.get("errors", []) as Array,
+			month,
+			player_team_id,
+		)
+
+	var session: Dictionary = start_encounter(
+		month, player_team_id, build_result.get("bout_states", []) as Array
+	)
+	if session.get("status") != "combat_running":
+		return session
+	session["combat_state_source"] = str(build_result.get("source", ""))
+	session["opponent_source"] = str(build_result.get("opponent_source", ""))
+	return session
 
 
 func start_encounter(month: int, player_team_id: String, bout_states: Array) -> Dictionary:
@@ -102,6 +133,10 @@ func get_contract() -> Dictionary:
 		"tournament_id": "grand_tournament_rome",
 		"encounter_months": GT1_MONTHS.duplicate(),
 		"bouts_per_encounter": BOUTS_PER_ENCOUNTER,
+		"live_roster_start": "GT1LiveRosterStateBuilder.build_from_live_roster",
+		"live_player_source": "RosterManager.get_gladiators",
+		"live_equipment_source": "EquipmentManager.get_equipped_stats",
+		"live_opponent_source": "explicit_external_combat_v1_snapshots",
 		"month_13":
 		{
 			"format": "1v1",
