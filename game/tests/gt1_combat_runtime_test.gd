@@ -94,7 +94,9 @@ func _test_month_20_runs_2v2_series_with_one_substitution() -> void:
 	assert(bool(session.get("substitution_used", false)))
 
 	for bout in range(3):
-		var player_ids: Array[String] = ["p1", "p2"] if bout == 0 else ["p1", "p3"]
+		var player_ids: Array[String] = ["p1", "p2"]
+		if bout > 0:
+			player_ids = ["p1", "p3"]
 		var enemy_ids: Array[String] = [
 			"r20_%da" % [bout + 1],
 			"r20_%db" % [bout + 1],
