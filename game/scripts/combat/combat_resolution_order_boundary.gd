@@ -45,7 +45,8 @@ func build_resolution_plan(state: Dictionary, intents: Array) -> Dictionary:
 		"state": state.duplicate(true),
 		"submitted_intents": intents.duplicate(true),
 		"phase_order": PHASE_ORDER.duplicate(),
-		"phases": [
+		"phases":
+		[
 			{
 				"id": "preparation",
 				"simultaneous": true,
@@ -114,8 +115,9 @@ func _validate_intents(state: Dictionary, intents: Array) -> Array[String]:
 
 
 func _sort_by_actor_id(left: Variant, right: Variant) -> bool:
-	return str((left as Dictionary).get("actor_id", "")) < str(
-		(right as Dictionary).get("actor_id", "")
+	return (
+		str((left as Dictionary).get("actor_id", ""))
+		< str((right as Dictionary).get("actor_id", ""))
 	)
 
 
