@@ -8,6 +8,8 @@ const CombatResolutionOrderBoundaryScript = preload(
 const CombatResolutionReadinessScript = preload(
 	"res://scripts/combat/combat_resolution_readiness.gd"
 )
+const CombatRulesD5D9ContractScript = preload("res://scripts/combat/combat_rules_d5_d9_contract.gd")
+const CombatRuntimeStateBuilderScript = preload("res://scripts/combat/combat_runtime_state_builder.gd")
 const CombatTargetResolverScript = preload("res://scripts/combat/combat_target_resolver.gd")
 
 const PENDING_REASON := "combat_resolution_rules_not_frozen"
@@ -17,6 +19,8 @@ var _combat_contract = CombatContractScript.new()
 var _policy_contract = CombatPolicyContractScript.new()
 var _resolution_order = CombatResolutionOrderBoundaryScript.new()
 var _resolution_readiness = CombatResolutionReadinessScript.new()
+var _d5_d9_contract = CombatRulesD5D9ContractScript.new()
+var _runtime_state_builder = CombatRuntimeStateBuilderScript.new()
 var _target_resolver = CombatTargetResolverScript.new()
 
 
@@ -45,6 +49,11 @@ func resolve_intent(state: Dictionary, desired_action: Dictionary) -> Dictionary
 			target_errors = ["Frozen D1 target resolution did not return a ready result"]
 		return _rejected_result("invalid_target_context", target_errors, state, desired_action)
 
+	var runtime_state_result: Dictionary = _runtime_state_builder.build(state)
+	if runtime_state_result.get("status") != "ready":
+		var runtime_errors := runtime_state_result.get("errors", []) as Array
+		return _rejected_result("invalid_runtime_state", runtime_errors, state, desired_action)
+
 	return {
 		"ok": false,
 		"pending": true,
@@ -55,7 +64,10 @@ func resolve_intent(state: Dictionary, desired_action: Dictionary) -> Dictionary
 		{
 			"resolved_target_context": target_inspection.duplicate(true),
 			"resolution_order_contract": _resolution_order.get_contract_status().duplicate(true),
+			"d5_d9_contracts": _d5_d9_contract.get_contracts(),
+			"runtime_state_preview": (runtime_state_result.get("state", {}) as Dictionary).duplicate(true),
 		},
+		"frozen_requirements": _resolution_readiness.get_frozen_requirements(),
 		"pending_requirements": _resolution_readiness.get_pending_requirements(),
 		"conditional_requirements": _resolution_readiness.get_conditional_requirements(),
 		"state": state.duplicate(true),
@@ -73,6 +85,7 @@ func _rejected_result(
 		"errors": errors.duplicate(),
 		"blocking_requirement": "",
 		"blocking_context": {},
+		"frozen_requirements": [],
 		"pending_requirements": [],
 		"conditional_requirements": [],
 		"state": state.duplicate(true),
