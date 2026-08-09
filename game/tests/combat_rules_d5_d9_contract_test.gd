@@ -74,7 +74,19 @@ func _test_d7(contract) -> void:
 	_assert_eq(
 		d7.get("accuracy_resolution_owner"), "combat_simulator", "simulator must own accuracy"
 	)
-	_assert_eq(d7.get("accuracy_formula_status"), "pending", "accuracy formula stays pending")
+	_assert_eq(d7.get("accuracy_formula_status"), "frozen", "D7 accuracy formula must be frozen")
+	_assert_eq(d7.get("attacker_stat"), "TEC", "D7 attack score must use TEC")
+	_assert_eq(d7.get("defender_stat"), "AGI", "D7 evasion score must use AGI")
+	_assert_eq(
+		d7.get("action_accuracy_modifiers"),
+		{"light": 1.0, "heavy": 0.0},
+		"D7 action accuracy modifiers must remain frozen",
+	)
+	_assert_eq(
+		d7.get("hit_rule"),
+		"attack_score_gte_evasion_score",
+		"D7 hit comparison must remain deterministic",
+	)
 
 
 func _test_d8(contract) -> void:
