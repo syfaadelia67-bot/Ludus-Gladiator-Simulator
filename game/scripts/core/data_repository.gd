@@ -7,7 +7,10 @@ const RivalLudiDataValidatorScript = preload("res://scripts/core/rival_ludi_data
 var traits: Array = []
 var buildings: Array = []
 var weapons: Array = []
+# Legacy combat abilities are kept temporarily for old presentation/runtime compatibility.
+# Frozen Combat V1 skill identity lives in skills.json and must not be inferred from this array.
 var abilities: Array = []
+var skills: Array = []
 var specializations: Array = []
 var beasts: Array = []
 var rival_ludi: Array = []
@@ -25,6 +28,7 @@ func load_all() -> void:
 	buildings = _load_json_array("res://data/buildings.json")
 	weapons = _load_json_array("res://data/weapons.json")
 	abilities = _load_json_array("res://data/abilities.json")
+	skills = _load_json_array("res://data/skills.json")
 	specializations = _load_json_array("res://data/specializations.json")
 	beasts = _load_json_array("res://data/beasts.json")
 	rival_ludi = _load_json_array("res://data/rival_ludi.json")
@@ -66,6 +70,17 @@ func get_buildings() -> Array:
 func get_building(building_id: String) -> Dictionary:
 	for entry in buildings:
 		if entry is Dictionary and str(entry.get("id", "")) == building_id:
+			return entry.duplicate(true)
+	return {}
+
+
+func get_skills() -> Array:
+	return skills.duplicate(true)
+
+
+func get_skill(skill_id: String) -> Dictionary:
+	for entry in skills:
+		if entry is Dictionary and str(entry.get("id", "")) == skill_id:
 			return entry.duplicate(true)
 	return {}
 
