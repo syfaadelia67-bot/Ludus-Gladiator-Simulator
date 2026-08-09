@@ -1,6 +1,7 @@
 extends SceneTree
 
 const BuilderScript = preload("res://scripts/combat/gt1_live_roster_state_builder.gd")
+const PersonScript = preload("res://scripts/entities/person.gd")
 
 var _failures: Array[String] = []
 
@@ -21,6 +22,7 @@ class FakePerson:
 
 
 func _initialize() -> void:
+	_test_live_autoload_roster_uses_real_equipment_snapshots()
 	_test_month_20_builds_real_2v2_snapshots()
 	_test_month_13_requires_same_live_gladiator()
 	_test_unavailable_gladiator_fails_closed()
@@ -32,6 +34,114 @@ func _initialize() -> void:
 	for failure in _failures:
 		push_error(failure)
 	quit(1)
+
+
+func _test_live_autoload_roster_uses_real_equipment_snapshots() -> void:
+	var roster_manager = root.get_node_or_null("RosterManager")
+	var equipment_manager = root.get_node_or_null("EquipmentManager")
+	_assert_true(roster_manager != null, "live integration requires the real RosterManager autoload")
+	_assert_true(
+		equipment_manager != null, "live integration requires the real EquipmentManager autoload"
+	)
+	if roster_manager == null or equipment_manager == null:
+		return
+
+	var original_people: Array = roster_manager.people.duplicate()
+	var original_inventory: Array = equipment_manager.inventory.duplicate(true)
+	var original_serial: int = int(equipment_manager.serial)
+
+	var live_person = PersonScript.new(
+		{
+			"id": "live_gladiator",
+			"name": "Live Gladiator",
+			"role": "gladiator",
+			"strength": 11,
+			"agility": 10,
+			"technique": 9,
+			"resistance": 8,
+			"health": 42,
+			"endurance": 7,
+		}
+	)
+	roster_manager.people = [live_person]
+	equipment_manager.inventory = []
+	equipment_manager.serial = 0
+
+	var live_item: Dictionary = equipment_manager.add_market_item(
+		{
+			"recipe_id": "live_test_gladius",
+			"name": "Live Test Gladius",
+			"type": "weapon",
+			"slot": "right_hand",
+			"quality": "Común",
+			"power": 9,
+			"defense": 3,
+			"tags": ["sword"],
+		}
+	)
+	var item_id := str(live_item.get("id", ""))
+	_assert_true(not item_id.is_empty(), "real EquipmentManager must create the live test item")
+	_assert_true(
+		equipment_manager.equip_item_to_slot(live_person.id, item_id, "right_hand"),
+		"real EquipmentManager must equip the live test item",
+	)
+
+	var builder = BuilderScript.new()
+	var opponents := [
+		[_opponent("live_x", "rival", 0)],
+		[_opponent("live_y", "rival", 0)],
+		[_opponent("live_z", "rival", 0)],
+	]
+	var first_result: Dictionary = builder.build_from_live_roster(
+		13,
+		"player",
+		[[live_person.id], [live_person.id], [live_person.id]],
+		opponents,
+	)
+	_assert_eq(first_result.get("status"), "ready", "live autoload build must be ready")
+	var first_states := first_result.get("bout_states", []) as Array
+	var first_fighter := _fighter_by_id(first_states[0] as Dictionary, live_person.id)
+	var first_equipment := first_fighter.get("equipment", {}) as Dictionary
+	var first_expected: Dictionary = equipment_manager.get_equipped_stats(live_person)
+	_assert_eq(
+		first_equipment,
+		first_expected,
+		"GT I builder must snapshot power/defense from the real EquipmentManager",
+	)
+	_assert_eq(first_equipment.get("power"), 9, "first live equipment snapshot must use current power")
+
+	var stored_item: Dictionary = equipment_manager.get_item(item_id)
+	stored_item["power"] = 17
+	var second_result: Dictionary = builder.build_from_live_roster(
+		13,
+		"player",
+		[[live_person.id], [live_person.id], [live_person.id]],
+		opponents,
+	)
+	_assert_eq(second_result.get("status"), "ready", "second live autoload build must be ready")
+	var second_states := second_result.get("bout_states", []) as Array
+	var second_fighter := _fighter_by_id(second_states[0] as Dictionary, live_person.id)
+	var second_equipment := second_fighter.get("equipment", {}) as Dictionary
+	_assert_eq(
+		second_equipment,
+		equipment_manager.get_equipped_stats(live_person),
+		"a new GT I build must read the updated real equipment state",
+	)
+	_assert_eq(second_equipment.get("power"), 17, "second live snapshot must reflect equipment change")
+	_assert_eq(
+		first_equipment.get("power"),
+		9,
+		"previous GT I state must remain an immutable build-time equipment snapshot",
+	)
+	_assert_eq(
+		first_result.get("source"),
+		"live_roster_and_equipment_snapshots",
+		"live integration must report its authoritative player source",
+	)
+
+	roster_manager.people = original_people
+	equipment_manager.inventory = original_inventory
+	equipment_manager.serial = original_serial
 
 
 func _test_month_20_builds_real_2v2_snapshots() -> void:
@@ -67,12 +177,12 @@ func _test_month_20_builds_real_2v2_snapshots() -> void:
 	_assert_eq(
 		(first_a.get("equipment", {}) as Dictionary).get("power"),
 		12,
-		"equipment power must snapshot from live equipment"
+		"equipment power must snapshot from live equipment",
 	)
 	_assert_eq(
 		(first_a.get("stats", {}) as Dictionary).get("RES"),
 		7,
-		"RES must come from person.resistance"
+		"RES must come from person.resistance",
 	)
 	var third_ids := _team_ids(states[2] as Dictionary, "player")
 	_assert_eq(third_ids, ["a", "c"], "single month XX substitution must materialize")
@@ -99,7 +209,7 @@ func _test_month_13_requires_same_live_gladiator() -> void:
 	_assert_eq(result.get("status"), "invalid", "month XIII roster change must fail closed")
 	_assert_true(
 		_contains(result.get("errors", []), "same gladiator"),
-		"month XIII violation must be explicit"
+		"month XIII violation must be explicit",
 	)
 
 
@@ -124,7 +234,7 @@ func _test_unavailable_gladiator_fails_closed() -> void:
 	_assert_eq(result.get("status"), "invalid", "unavailable live fighter must fail closed")
 	_assert_true(
 		_contains(result.get("errors", []), "unavailable gladiator missing"),
-		"missing roster id must be reported"
+		"missing roster id must be reported",
 	)
 
 
@@ -135,7 +245,7 @@ func _test_opponents_are_explicit_and_not_generated() -> void:
 	_assert_eq(
 		contract.get("opponent_source"),
 		"explicit_external_combat_v1_snapshots",
-		"opponents must remain explicit"
+		"opponents must remain explicit",
 	)
 
 
