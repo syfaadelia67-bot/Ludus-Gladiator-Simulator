@@ -1,8 +1,6 @@
 extends Node
 
-const CombatV1PersonStatPolicyScript = preload(
-	"res://scripts/core/combat_v1_person_stat_policy.gd"
-)
+const CombatV1PersonStatPolicyScript = preload("res://scripts/core/combat_v1_person_stat_policy.gd")
 
 
 func run() -> void:
@@ -17,7 +15,7 @@ func run() -> void:
 	assert(not policy.validate_new_person_data({"resistance": 0}).is_empty())
 
 	var roster_source := FileAccess.get_file_as_string("res://scripts/systems/roster_manager.gd")
-	assert(roster_source.count('"resistance":5') >= 3)
+	assert(roster_source.count('"resistance": 5') >= 3)
 
 	var market_source := FileAccess.get_file_as_string("res://scripts/systems/market_manager.gd")
 	assert(
