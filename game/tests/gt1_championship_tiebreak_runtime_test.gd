@@ -53,7 +53,7 @@ func _test_explicit_rival_team_mismatch_is_rejected() -> void:
 		)
 	)
 	assert(result.get("status") == "rejected")
-	assert(result.get("reason") == "invalid_tiebreak_sources")
+	assert(result.get("reason") == "invalid_rival_combat_snapshot")
 	assert(
 		(result.get("errors", []) as Array).has(
 			"Rival Combat V1 snapshot must use the declared rival team id"
@@ -78,6 +78,11 @@ func _test_authoritative_combat_resolves_championship_without_points() -> void:
 	assert(session.get("rival_ludus_id") == "cassianus")
 	assert(session.get("rival_source") == "explicit_external_combat_v1_snapshot")
 	assert(session.get("team_to_ludus") == {"alpha": "player", "beta": "cassianus"})
+	var rival_validation := session.get("rival_snapshot_validation", {}) as Dictionary
+	assert(rival_validation.get("status") == "ready")
+	assert(rival_validation.get("rival_ludus_name") == "Ludus Cassianus")
+	assert(rival_validation.get("generated_snapshot") == false)
+	assert(rival_validation.get("storage_policy") == "caller_owned_ephemeral")
 
 	var result := (
 		runtime
@@ -119,6 +124,7 @@ func _test_contract() -> void:
 	assert(contract.get("player_source") == "RosterManager.get_person")
 	assert(contract.get("equipment_source") == "EquipmentManager.get_equipped_stats")
 	assert(contract.get("rival_source") == "explicit_external_combat_v1_snapshot")
+	assert(contract.get("rival_validation_contract") == "gt1_rival_combat_snapshot_contract")
 	assert(contract.get("rival_generation_allowed") == false)
 	assert(contract.get("combat_runtime") == "Combat1v1Loop")
 	assert(contract.get("combat_result_authority") == "CombatSimulator")
