@@ -298,10 +298,13 @@ func apply_gt1_standings_resolution(resolution: Dictionary) -> bool:
 		return false
 
 	var resolution_source := str(resolution.get("resolution_source", ""))
-	if resolution_source not in [
-		"head_to_head_then_prior_season_position",
-		"tournament_characteristic_combat",
-	]:
+	if (
+		resolution_source
+		not in [
+			"head_to_head_then_prior_season_position",
+			"tournament_characteristic_combat",
+		]
+	):
 		return false
 
 	var placement := int(resolution.get("placement", 0))
