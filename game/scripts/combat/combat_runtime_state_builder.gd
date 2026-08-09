@@ -62,7 +62,9 @@ func validate_runtime_state(state: Dictionary) -> Array[String]:
 			if capacity < 0.0:
 				errors.append("Combat fighter %s stamina_capacity cannot be negative" % fighter_id)
 			elif stamina > capacity:
-				errors.append("Combat fighter %s stamina cannot exceed stamina_capacity" % fighter_id)
+				errors.append(
+					"Combat fighter %s stamina cannot exceed stamina_capacity" % fighter_id
+				)
 	return errors
 
 
