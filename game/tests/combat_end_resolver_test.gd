@@ -59,7 +59,8 @@ func _test_contract_disables_automatic_surrender() -> void:
 func _state(alpha_pv: int, beta_pv: int) -> Dictionary:
 	return {
 		"format": "1v1",
-		"fighters": [
+		"fighters":
+		[
 			_fighter("a", "alpha", alpha_pv),
 			_fighter("b", "beta", beta_pv),
 		],
