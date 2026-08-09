@@ -1,10 +1,13 @@
 extends "res://scripts/systems/event_manager.gd"
 
 const CHAIN_EVENTS := {
-	"rival_challenge_aftermath": {
+	"rival_challenge_aftermath":
+	{
 		"title": "La respuesta de la casa rival",
-		"text": "El desafío público dejó heridas en el orgullo de ambos ludus. El rival exige una respuesta definitiva.",
-		"choices": [
+		"text":
+		"El desafío público dejó heridas en el orgullo de ambos ludus. El rival exige una respuesta definitiva.",
+		"choices":
+		[
 			{
 				"id": "public_duel",
 				"label": "Aceptar un duelo público",
@@ -28,10 +31,12 @@ const CHAIN_EVENTS := {
 			}
 		]
 	},
-	"veteran_trial": {
+	"veteran_trial":
+	{
 		"title": "La prueba del veterano",
 		"text": "El veterano refugiado exige comprobar que el ludus merece sus enseñanzas.",
-		"choices": [
+		"choices":
+		[
 			{
 				"id": "train_specialist",
 				"label": "Presentar un gladiador especializado",
