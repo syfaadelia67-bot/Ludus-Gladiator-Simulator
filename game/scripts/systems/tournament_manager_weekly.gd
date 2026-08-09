@@ -289,6 +289,46 @@ func register_gt1_rival_result(
 	return true
 
 
+func apply_gt1_standings_resolution(resolution: Dictionary) -> bool:
+	if gt1_player_bouts < GT1_TOTAL_BOUTS or gt1_rival_scores.size() != GT1_RIVAL_COUNT:
+		return false
+	if gt1_standings_resolved or not gt1_tiebreak_required:
+		return false
+	if str(resolution.get("status", "")) != "resolved":
+		return false
+
+	var resolution_source := str(resolution.get("resolution_source", ""))
+	if resolution_source not in [
+		"head_to_head_then_prior_season_position",
+		"tournament_characteristic_combat",
+	]:
+		return false
+
+	var placement := int(resolution.get("placement", 0))
+	if placement < 1 or placement > GT1_RIVAL_COUNT + 1:
+		return false
+	if resolution_source == "head_to_head_then_prior_season_position" and placement <= 3:
+		return false
+
+	var expected_medal := ""
+	match placement:
+		1:
+			expected_medal = "gold"
+		2:
+			expected_medal = "silver"
+		3:
+			expected_medal = "bronze"
+	if str(resolution.get("medal", "")) != expected_medal:
+		return false
+
+	gt1_placement = placement
+	gt1_medal = expected_medal
+	gt1_standings_resolved = true
+	gt1_tiebreak_required = false
+	grand_tournament_changed.emit(get_gt1_summary())
+	return true
+
+
 func get_gt1_summary() -> Dictionary:
 	return {
 		"id": GT1_ID,
