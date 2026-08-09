@@ -64,7 +64,7 @@ func _assert_parry_uses_tec(resolver) -> void:
 
 
 func _assert_dodge_uses_agi(resolver) -> void:
-	var attacker := _fighter(10, 10, 11, 10, 12, 0)
+	var attacker := _fighter(10, 10, 10, 10, 12, 0)
 	var defender := _fighter(10, 10, 10, 10, 0, 0)
 	var base := _base_results(attacker, defender, "light")
 	assert((base.accuracy as Dictionary).get("hit") == true)
