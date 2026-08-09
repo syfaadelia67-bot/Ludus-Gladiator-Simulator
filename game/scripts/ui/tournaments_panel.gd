@@ -188,8 +188,7 @@ func _append_gt1_progress(lines: Array[String]) -> void:
 		return
 	lines.append("Clasificación final: pendiente.")
 	lines.append(
-		"Resultados de rivales registrados: %d"
-		% int(summary.get("rival_results_registered", 0))
+		"Resultados de rivales registrados: %d" % int(summary.get("rival_results_registered", 0))
 	)
 
 
