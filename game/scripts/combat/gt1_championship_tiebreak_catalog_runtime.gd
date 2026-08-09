@@ -81,10 +81,7 @@ func get_contract() -> Dictionary:
 
 
 func _rejected(
-	reason: String,
-	errors: Array,
-	request: Dictionary = {},
-	rival_lookup: Dictionary = {}
+	reason: String, errors: Array, request: Dictionary = {}, rival_lookup: Dictionary = {}
 ) -> Dictionary:
 	return {
 		"status": "rejected",
