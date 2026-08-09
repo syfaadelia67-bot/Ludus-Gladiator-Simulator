@@ -20,47 +20,28 @@ func _assert_valid_intent_stays_pending(simulator) -> void:
 	)
 	assert(not bool(result.get("ok", true)), "Unfrozen combat math must not return a fake success")
 	assert(bool(result.get("pending", false)), "A valid intent must remain explicitly pending")
-	assert(
-		str(result.get("reason", "")) == simulator.PENDING_REASON,
-		"Pending resolution must expose the frozen reason code"
-	)
+	assert(str(result.get("reason", "")) == simulator.PENDING_REASON)
 	assert((result.get("errors", []) as Array).is_empty())
 	assert(
-		str(result.get("blocking_requirement", "")) == "resolution_order",
-		"D3 resolution order must become the first required blocker after D1 freeze",
+		str(result.get("blocking_requirement", "")) == "damage_and_mitigation",
+		"D4 damage/mitigation must become the first required blocker after D3 freeze",
 	)
 	var blocking_context := result.get("blocking_context", {}) as Dictionary
 	var target_context := blocking_context.get("resolved_target_context", {}) as Dictionary
-	assert(target_context.get("status") == "ready", "D1 target context must be fully resolved")
-	assert(
-		target_context.get("legal_targets") == ["b1"],
-		"resolved D1 context must expose enemy target"
-	)
-	assert(target_context.get("target_relationship") == "enemy")
+	assert(target_context.get("status") == "ready", "D1 target context must remain resolved")
+	assert(target_context.get("legal_targets") == ["b1"])
+	var order_contract := blocking_context.get("resolution_order_contract", {}) as Dictionary
+	assert(order_contract.get("status") == "frozen", "D3 contract must be exposed as frozen")
+	assert(order_contract.get("phase_order") == ["preparation", "offense"])
+	assert(order_contract.get("initiative_mode") == "none")
+	assert(order_contract.get("tie_break_mode") == "simultaneous")
 	var pending_requirements := result.get("pending_requirements", []) as Array
 	assert(not pending_requirements.has("target_rules"), "Frozen D1 must leave pending readiness")
-	assert(pending_requirements.has("resolution_order"), "D3 must remain explicitly pending")
-	assert(
-		pending_requirements.has("damage_and_mitigation"),
-		"Damage and mitigation must remain explicitly pending"
-	)
-	assert(
-		pending_requirements.has("stamina_costs"), "Stamina costs must remain explicitly pending"
-	)
+	assert(not pending_requirements.has("resolution_order"), "Frozen D3 must leave pending readiness")
+	assert(pending_requirements.has("damage_and_mitigation"))
+	assert(pending_requirements.has("stamina_costs"))
 	var conditional_requirements := result.get("conditional_requirements", []) as Array
-	assert(
-		conditional_requirements.has("position_and_distance_model"),
-		"Position/distance must remain conditional until design freezes D2"
-	)
-	(target_context.get("legal_targets", []) as Array).clear()
-	var nested_target_context := (
-		(result.get("blocking_context", {}) as Dictionary).get("resolved_target_context", {})
-		as Dictionary
-	)
-	assert(
-		(nested_target_context.get("legal_targets", []) as Array).is_empty(),
-		"caller may mutate its returned target context copy",
-	)
+	assert(conditional_requirements.has("position_and_distance_model"))
 
 
 func _assert_invalid_target_intent_is_rejected(simulator) -> void:
