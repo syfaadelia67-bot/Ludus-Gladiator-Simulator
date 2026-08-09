@@ -44,10 +44,15 @@ func _normalize_month_log(month: int) -> void:
 	if encounter.is_empty():
 		activity_log.append_text("\n[color=gray]Mes de gestión del ludus.[/color]")
 		return
-	activity_log.append_text(
-		"\n[color=gold]%s · %s.[/color]"
-		% [
-			str(encounter.get("tournament_name", "Gran Torneo de Roma")),
-			str(encounter.get("format", "Arena")),
-		]
+	(
+		activity_log
+		. append_text(
+			(
+				"\n[color=gold]%s · %s.[/color]"
+				% [
+					str(encounter.get("tournament_name", "Gran Torneo de Roma")),
+					str(encounter.get("format", "Arena")),
+				]
+			)
+		)
 	)
