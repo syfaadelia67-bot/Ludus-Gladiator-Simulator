@@ -8,7 +8,9 @@ signal equipment_purchase_completed(item_name: String, price: int)
 signal equipment_purchase_failed(reason: String)
 
 const PERSON_SCRIPT = preload("res://scripts/entities/person.gd")
-const AUTO_REFRESH_WEEKS := 3
+# Transitional cadence inherited from the old turn count. Part 3 will freeze
+# the actual market refresh balance; this constant is not a weekly scheduler.
+const LEGACY_AUTO_REFRESH_TURNS := 3
 const EQUIPMENT_REFRESH_COST := 100
 const EQUIPMENT_OFFER_COUNT := 6
 
@@ -18,7 +20,7 @@ var offers: Array = []
 var refresh_cost: int = EQUIPMENT_REFRESH_COST
 var offer_count: int = 4
 var equipment_offers: Array[Dictionary] = []
-var last_auto_refresh_week: int = 1
+var last_auto_refresh_month: int = 1
 var names := [
 	"Aelia",
 	"Brutus",
@@ -41,13 +43,13 @@ var _equipment_offer_serial: int = 0
 
 
 func _ready() -> void:
-	if not GameState.week_advanced.is_connected(_on_week_advanced):
-		GameState.week_advanced.connect(_on_week_advanced)
+	if not GameState.month_advanced.is_connected(_on_month_advanced):
+		GameState.month_advanced.connect(_on_month_advanced)
 	if offers.is_empty():
 		refresh_market(false)
 	if equipment_offers.is_empty():
 		refresh_equipment_market(false)
-	last_auto_refresh_week = maxi(1, last_auto_refresh_week)
+	last_auto_refresh_month = maxi(1, last_auto_refresh_month)
 
 
 func refresh_market(charge: bool = true) -> bool:
@@ -56,7 +58,7 @@ func refresh_market(charge: bool = true) -> bool:
 		return false
 	if charge:
 		purchase_failed.emit(
-			"Las ofertas de luchadores se renuevan automáticamente cada 3 semanas."
+			"Las ofertas de luchadores se renuevan automáticamente por la cadencia de campaña."
 		)
 		return false
 	if not UniqueGladiatorManager.first_purchase_completed:
@@ -92,22 +94,32 @@ func refresh_equipment_market(charge: bool = true) -> bool:
 	return true
 
 
-func _on_week_advanced(week: int) -> void:
-	if week < last_auto_refresh_week:
-		last_auto_refresh_week = week
-	if week - last_auto_refresh_week < AUTO_REFRESH_WEEKS:
+func _on_month_advanced(month: int) -> void:
+	if month < last_auto_refresh_month:
+		last_auto_refresh_month = month
+	if month - last_auto_refresh_month < LEGACY_AUTO_REFRESH_TURNS:
 		return
-	last_auto_refresh_week = week
+	last_auto_refresh_month = month
 	refresh_market(false)
 	refresh_equipment_market(false)
 
 
+func get_next_auto_refresh_month() -> int:
+	return last_auto_refresh_month + LEGACY_AUTO_REFRESH_TURNS
+
+
+func get_months_until_auto_refresh() -> int:
+	return maxi(0, get_next_auto_refresh_month() - GameState.get_month())
+
+
 func get_next_auto_refresh_week() -> int:
-	return last_auto_refresh_week + AUTO_REFRESH_WEEKS
+	# Legacy UI adapter.
+	return get_next_auto_refresh_month()
 
 
 func get_weeks_until_auto_refresh() -> int:
-	return maxi(0, get_next_auto_refresh_week() - GameState.get_week())
+	# Legacy UI adapter.
+	return get_months_until_auto_refresh()
 
 
 func sync_unique_offers() -> void:
