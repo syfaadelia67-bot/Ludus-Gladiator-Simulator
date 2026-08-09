@@ -20,8 +20,7 @@ func build(
 			"required_data": ["head_to_head", "prior_season_position"],
 			"first_tied_position": int(standings_resolution.get("first_tied_position", 0)),
 			"last_tied_position": int(standings_resolution.get("last_tied_position", 0)),
-			"tied_rival_ids":
-			(standings_resolution.get("tied_rival_ids", []) as Array).duplicate(),
+			"tied_rival_ids": (standings_resolution.get("tied_rival_ids", []) as Array).duplicate(),
 			"presentation_may_resolve_standings": false,
 		}
 
