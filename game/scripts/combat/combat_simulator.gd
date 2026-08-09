@@ -3,6 +3,10 @@ extends RefCounted
 const CombatAccuracyResolverScript = preload("res://scripts/combat/combat_accuracy_resolver.gd")
 const CombatContractScript = preload("res://scripts/combat/combat_contract.gd")
 const CombatDamageResolverScript = preload("res://scripts/combat/combat_damage_resolver.gd")
+const CombatDefensiveEffectResolverScript = preload(
+	"res://scripts/combat/combat_defensive_effect_resolver.gd"
+)
+const CombatExchangeResolverScript = preload("res://scripts/combat/combat_exchange_resolver.gd")
 const CombatPolicyContractScript = preload("res://scripts/combat/combat_policy_contract.gd")
 const CombatResolutionOrderBoundaryScript = preload(
 	"res://scripts/combat/combat_resolution_order_boundary.gd"
@@ -17,12 +21,14 @@ const CombatRuntimeStateBuilderScript = preload(
 const CombatStaminaResolverScript = preload("res://scripts/combat/combat_stamina_resolver.gd")
 const CombatTargetResolverScript = preload("res://scripts/combat/combat_target_resolver.gd")
 
-const PENDING_REASON := "combat_resolution_rules_not_frozen"
-const NEXT_BLOCKER_ID := "defensive_action_effects"
+const PENDING_REASON := "complete_exchange_required"
+const NEXT_BLOCKER_ID := "complete_exchange_intents"
 
 var _accuracy_resolver = CombatAccuracyResolverScript.new()
 var _combat_contract = CombatContractScript.new()
 var _damage_resolver = CombatDamageResolverScript.new()
+var _defensive_resolver = CombatDefensiveEffectResolverScript.new()
+var _exchange_resolver = CombatExchangeResolverScript.new()
 var _policy_contract = CombatPolicyContractScript.new()
 var _resolution_order = CombatResolutionOrderBoundaryScript.new()
 var _resolution_readiness = CombatResolutionReadinessScript.new()
@@ -75,6 +81,8 @@ func resolve_intent(state: Dictionary, desired_action: Dictionary) -> Dictionary
 			"damage_contract": _damage_resolver.get_contract().duplicate(true),
 			"stamina_contract": _stamina_resolver.get_contract().duplicate(true),
 			"accuracy_contract": _accuracy_resolver.get_contract().duplicate(true),
+			"defensive_effect_contract": _defensive_resolver.get_contract().duplicate(true),
+			"exchange_contract": _exchange_resolver.get_contract().duplicate(true),
 			"d5_d9_contracts": _d5_d9_contract.get_contracts(),
 			"runtime_state_preview":
 			(runtime_state_result.get("state", {}) as Dictionary).duplicate(true),
@@ -85,6 +93,16 @@ func resolve_intent(state: Dictionary, desired_action: Dictionary) -> Dictionary
 		"state": state.duplicate(true),
 		"desired_action": desired_action.duplicate(true),
 	}
+
+
+func resolve_exchange(state: Dictionary, intents: Array) -> Dictionary:
+	var exchange_result: Dictionary = _exchange_resolver.resolve_exchange(state, intents)
+	var result := exchange_result.duplicate(true)
+	result["frozen_requirements"] = _resolution_readiness.get_frozen_requirements()
+	result["pending_requirements"] = _resolution_readiness.get_pending_requirements()
+	result["conditional_requirements"] = _resolution_readiness.get_conditional_requirements()
+	result["combat_completion_pending"] = not _resolution_readiness.get_pending_requirements().is_empty()
+	return result
 
 
 func _rejected_result(
