@@ -47,14 +47,17 @@ func _test_other_podium_tie_shapes_stay_pending(contract) -> void:
 
 
 func _test_player_win_resolves_gold_without_points(contract) -> void:
-	var resolution: Dictionary = contract.resolve_combat_result(
-		contract.build_request(_policy_result(), _standings()),
-		{
-			"status": "combat_finished",
-			"outcome": "team_win",
-			"winner_team_id": "alpha",
-		},
-		{"alpha": "player", "beta": "cassianus"},
+	var resolution: Dictionary = (
+		contract
+		. resolve_combat_result(
+			contract.build_request(_policy_result(), _standings()),
+			{
+				"status": "combat_finished",
+				"outcome": "team_win",
+				"winner_team_id": "alpha",
+			},
+			{"alpha": "player", "beta": "cassianus"},
+		)
 	)
 	assert(resolution.get("status") == "resolved")
 	assert(int(resolution.get("placement", 0)) == 1)
@@ -65,14 +68,17 @@ func _test_player_win_resolves_gold_without_points(contract) -> void:
 
 
 func _test_rival_win_resolves_silver_without_points(contract) -> void:
-	var resolution: Dictionary = contract.resolve_combat_result(
-		contract.build_request(_policy_result(), _standings()),
-		{
-			"status": "combat_finished",
-			"outcome": "team_win",
-			"winner_team_id": "beta",
-		},
-		{"alpha": "player", "beta": "cassianus"},
+	var resolution: Dictionary = (
+		contract
+		. resolve_combat_result(
+			contract.build_request(_policy_result(), _standings()),
+			{
+				"status": "combat_finished",
+				"outcome": "team_win",
+				"winner_team_id": "beta",
+			},
+			{"alpha": "player", "beta": "cassianus"},
+		)
 	)
 	assert(resolution.get("status") == "resolved")
 	assert(int(resolution.get("placement", 0)) == 2)
@@ -82,14 +88,17 @@ func _test_rival_win_resolves_silver_without_points(contract) -> void:
 
 
 func _test_double_ko_requires_rematch(contract) -> void:
-	var resolution: Dictionary = contract.resolve_combat_result(
-		contract.build_request(_policy_result(), _standings()),
-		{
-			"status": "combat_finished",
-			"outcome": "double_ko",
-			"winner_team_id": "",
-		},
-		{"alpha": "player", "beta": "cassianus"},
+	var resolution: Dictionary = (
+		contract
+		. resolve_combat_result(
+			contract.build_request(_policy_result(), _standings()),
+			{
+				"status": "combat_finished",
+				"outcome": "double_ko",
+				"winner_team_id": "",
+			},
+			{"alpha": "player", "beta": "cassianus"},
+		)
 	)
 	assert(resolution.get("status") == "rematch_required")
 	assert(resolution.get("reason") == "double_ko")
