@@ -1,8 +1,8 @@
 # Combat V1 — Resolution Decision Matrix
 
-Status: **PENDING DESIGN FREEZE**
+Status: **PARTIALLY FROZEN**
 
-This file is a decision worksheet, not an implementation contract. A row becomes authoritative only after its status is explicitly changed from `PENDING` to `FROZEN` and the corresponding contract tests are added.
+This file is a decision worksheet and contract ledger. A row becomes authoritative only after its status is explicitly changed from `PENDING` to `FROZEN`, reflected in runtime contracts, and protected by tests.
 
 ## Protected context
 
@@ -21,47 +21,34 @@ Combat V1 already protects these structural decisions:
 
 ### D1 — Target rules
 
-Status: `PENDING`
+Status: `FROZEN`
 
-Question:
-- Which actions require a target?
-- Which target relationships are legal: enemy, ally, self, none?
-- Does legality change between `1v1`, `1v2`, and `2v2`?
-
-Current evidence:
-- `CombatPolicy` only validates that a non-empty `target_id` exists.
-- Policy Context exposes allies and enemies separately but deliberately calls them target candidates, not legal targets.
-- `CombatTargetResolver` owns candidate classification for `1v1`, `1v2`, and `2v2`.
-- `CombatTargetResolver.inspect_action_targets()` returns `pending_design_freeze` with reason `target_rules_not_frozen` for all six base actions and never exposes `legal_targets` while D1 is pending.
-- `CombatSimulator` surfaces D1 as `blocking_requirement = target_rules` and attaches isolated `blocking_context` without resolving combat.
-- `CombatDecisionGateway` propagates the same blocker with an independent deep copy; policy rejection exposes no simulator blocker.
-- Canonical abilities mostly describe effects on a rival, but `abilities.json` has no formal `target_type` field.
-- No recovered repository evidence defines target semantics for the six V1 base actions.
-
-Structural implementation status:
-- candidate discovery: `IMPLEMENTED / NON-AUTHORITATIVE`;
-- D1 pending boundary: `IMPLEMENTED`;
-- legal-target semantics: `NOT FROZEN`;
-- target relationship enforcement: `NOT IMPLEMENTED` by design until freeze.
-
-Current simplest design candidate, **PROPOSAL ONLY**:
-- `light` / `heavy`: exactly one enemy target;
-- `block` / `parry` / `dodge`: no explicit target; actor is implicit;
+Authoritative rules:
+- `light`: exactly one enemy target;
+- `heavy`: exactly one enemy target;
+- `block`: no explicit target; the actor is implicit;
+- `parry`: no explicit target; the actor is implicit;
+- `dodge`: no explicit target; the actor is implicit;
 - `reposition`: no explicit target;
-- no ally-targeting for the six base actions in V1;
-- same relationship rules in `1v1`, `1v2`, and `2v2`.
+- the six base actions have no ally-targeting in Combat V1;
+- the same target-relationship rules apply in `1v1`, `1v2`, and `2v2`.
 
-Approval boundary:
-- this proposal remains non-authoritative while D1 is `PENDING`;
-- documentation cannot alter runtime behavior;
-- it must not change `CombatPolicy`, `CombatTargetResolver`, action contracts, LimboAI, or simulator resolution until D1 is explicitly `FROZEN`;
-- activation requires relationship/format contract tests.
+Runtime contract:
+- `combat_action_catalog.gd` stores the frozen target metadata for all six actions;
+- `CombatTargetResolver` exposes `legal_targets` from the authoritative CombatState;
+- `light` and `heavy` resolve legal targets only from the actor's enemy set;
+- `block`, `parry`, `dodge`, and `reposition` expose no explicit legal target;
+- `CombatPolicy` rejects missing offensive targets, ally/self offensive targets, unknown targets, and explicit targets on no-target actions;
+- Policy Context exposes both descriptive `target_candidates` and authoritative `legal_targets`;
+- the LimboAI Blackboard receives isolated copies of `legal_targets` and cannot bypass `CombatPolicy` validation;
+- `CombatSimulator` requires D1 target inspection to be `ready` before proceeding to later resolution blockers.
 
-Freeze acceptance criteria:
-- every base action has an explicit target requirement;
-- every supported format has deterministic legal-target rules;
-- `CombatPolicy` rejects illegal relationships;
-- Policy Context may then expose `legal_targets` rather than generic candidates.
+Validation coverage:
+- legal targeting is covered in `1v1`, `1v2`, and `2v2`;
+- ally-target rejection is covered in `2v2`;
+- no-target action rejection is covered;
+- catalog, resolver, policy context, Blackboard, simulator, and gateway copy-isolation are protected;
+- `target_rules` has been removed from resolution readiness.
 
 ### D2 — Position and distance model
 
@@ -93,7 +80,7 @@ If included:
 
 ### D3 — Resolution order
 
-Status: `PENDING`
+Status: `PENDING / NEXT REQUIRED BLOCKER`
 
 Question:
 - How are simultaneous or competing intents ordered?
@@ -235,13 +222,13 @@ Freeze acceptance criteria:
 
 | Action | Target rule | Stamina | Resolution timing | Stat inputs | State/effect | Status |
 | --- | --- | --- | --- | --- | --- | --- |
-| `light` | TBD | TBD | TBD | TBD | TBD | PENDING |
-| `heavy` | TBD | TBD | TBD | TBD | TBD | PENDING |
-| `block` | TBD | TBD | TBD | TBD | TBD | PENDING |
-| `parry` | TBD | TBD | TBD | TBD | TBD | PENDING |
-| `dodge` | TBD | TBD | TBD | TBD | TBD | PENDING |
-| `reposition` | TBD | TBD | TBD | TBD | TBD | PENDING |
+| `light` | exactly 1 enemy | TBD | TBD | TBD | TBD | D1 FROZEN |
+| `heavy` | exactly 1 enemy | TBD | TBD | TBD | TBD | D1 FROZEN |
+| `block` | no explicit target | TBD | TBD | TBD | TBD | D1 FROZEN |
+| `parry` | no explicit target | TBD | TBD | TBD | TBD | D1 FROZEN |
+| `dodge` | no explicit target | TBD | TBD | TBD | TBD | D1 FROZEN |
+| `reposition` | no explicit target | TBD | TBD | TBD | TBD | D1 FROZEN |
 
 ## Freeze rule
 
-A design item must not become authoritative merely because it appears in legacy code, an ability description, a test fixture, a temporary AI proposal, a tuning experiment, or this worksheet. It becomes frozen only when explicitly marked `FROZEN`, reflected in code/data contracts, and protected by tests.
+A design item must not become authoritative merely because it appears in legacy code, an ability description, a test fixture, a temporary AI proposal, a tuning experiment, or this worksheet. It becomes frozen only when explicitly approved, reflected in code/data contracts, and protected by tests.
