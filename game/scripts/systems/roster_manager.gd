@@ -31,9 +31,9 @@ func _ready() -> void:
 func _seed_initial_roster() -> void:
     people.clear()
     var starters := [
-        {"id":"darian","name":"Darian","origin":"Tracia","role":"slave","strength":8,"agility":5,"endurance":7,"intelligence":3,"technique":4,"health":52,"loyalty":48,"morale":58,"traits":["freedom_seeker","vengeful"]},
-        {"id":"cassia","name":"Cassia","origin":"Numidia","role":"slave","strength":4,"agility":8,"endurance":5,"intelligence":8,"technique":6,"health":46,"loyalty":61,"morale":64,"traits":["superstitious","mentor"]},
-        {"id":"brenna","name":"Brenna","origin":"Britania","role":"slave","strength":6,"agility":6,"endurance":8,"intelligence":4,"technique":5,"health":55,"loyalty":55,"morale":62,"traits":["protector","beast_hunter"]}
+        {"id":"darian","name":"Darian","origin":"Tracia","role":"slave","strength":8,"agility":5,"endurance":7,"resistance":5,"intelligence":3,"technique":4,"health":52,"loyalty":48,"morale":58,"traits":["freedom_seeker","vengeful"]},
+        {"id":"cassia","name":"Cassia","origin":"Numidia","role":"slave","strength":4,"agility":8,"endurance":5,"resistance":5,"intelligence":8,"technique":6,"health":46,"loyalty":61,"morale":64,"traits":["superstitious","mentor"]},
+        {"id":"brenna","name":"Brenna","origin":"Britania","role":"slave","strength":6,"agility":6,"endurance":8,"resistance":5,"intelligence":4,"technique":5,"health":55,"loyalty":55,"morale":62,"traits":["protector","beast_hunter"]}
     ]
     for data in starters:
         people.append(PERSON_SCRIPT.new(data))
