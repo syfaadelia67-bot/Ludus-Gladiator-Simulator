@@ -27,7 +27,9 @@ var _stamina_resolver = CombatStaminaResolverScript.new()
 func resolve_exchange(state: Dictionary, intents: Array) -> Dictionary:
 	var runtime_result: Dictionary = _prepare_runtime_state(state)
 	if runtime_result.get("status") != "ready":
-		return _rejected("invalid_runtime_state", runtime_result.get("errors", []) as Array, state, intents)
+		return _rejected(
+			"invalid_runtime_state", runtime_result.get("errors", []) as Array, state, intents
+		)
 
 	var runtime_state := (runtime_result.get("state", {}) as Dictionary).duplicate(true)
 	var plan: Dictionary = _order_boundary.build_resolution_plan(runtime_state, intents)
@@ -177,11 +179,7 @@ func _resolve_offense_phase(state: Dictionary, intents: Array) -> Array:
 
 
 func _base_attack_result(
-	actor_id: String,
-	target_id: String,
-	action_id: String,
-	accuracy: Dictionary,
-	damage: Dictionary
+	actor_id: String, target_id: String, action_id: String, accuracy: Dictionary, damage: Dictionary
 ) -> Dictionary:
 	var errors: Array = []
 	if accuracy.get("status") != "resolved":
@@ -230,8 +228,8 @@ func _commit_damage(state: Dictionary, attack_results: Array) -> void:
 	for raw_result in attack_results:
 		var result := raw_result as Dictionary
 		var target_id := str(result.get("target_id", ""))
-		damage_by_target[target_id] = int(damage_by_target.get(target_id, 0)) + int(
-			result.get("damage", 0)
+		damage_by_target[target_id] = (
+			int(damage_by_target.get(target_id, 0)) + int(result.get("damage", 0))
 		)
 	for target_id in damage_by_target:
 		var fighter_index: int = _find_fighter_index(state, str(target_id))
