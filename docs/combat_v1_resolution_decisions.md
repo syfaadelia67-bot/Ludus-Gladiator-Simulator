@@ -74,89 +74,141 @@ Runtime contract:
 - `CombatSimulator` exposes the frozen D3 contract in blocker context and advances the next required blocker to D4 `damage_and_mitigation`;
 - `resolution_order` has been removed from pending resolution readiness.
 
-Validation coverage:
-- `1v1` phase split and snapshots;
-- complete `1v2` coverage requirement;
-- `2v2` simultaneous phase grouping independent of submission order;
-- duplicate actors rejected;
-- invalid D1 target semantics rejected before ordering;
-- state, submitted intents and returned plans remain isolated copies.
-
 ### D4 — Damage and mitigation
 
 Status: `PENDING / NEXT REQUIRED BLOCKER`
 
-Question:
-- authoritative `light`/`heavy` damage;
-- RES mitigation;
-- weapon and armor contribution.
+Still deliberately unresolved:
+- authoritative `light` / `heavy` damage values and formula;
+- exact FUE scaling;
+- exact RES mitigation;
+- weapon power contribution;
+- armor numeric mitigation and penetration.
 
-Current evidence:
-- legacy formula depends on old derived attack/defense and was not promoted.
-
-Freeze acceptance criteria:
-- deterministic formula per offensive action;
-- explicit bounds, RES and equipment contribution;
-- low/equal/high spread tests.
+Legacy attack/defense formulas are evidence only and have not been promoted.
 
 ### D5 — Armor and vulnerability
 
-Status: `PENDING`
+Status: `FROZEN STRUCTURE / NUMERIC SUBRULES PENDING`
 
-Question:
-- armor model;
-- precise vulnerability state/duration;
-- defensive-action interactions.
+Authoritative structural rules:
+- armor comes from canonical equipment `defense` rather than being silently folded into RES;
+- armor and RES remain separate simulator inputs;
+- Combat V1 has no body-part armor model;
+- vulnerability is an explicit runtime combat state owned by `CombatSimulator`;
+- fighters begin combat with `vulnerable = false`;
+- exact armor mitigation and penetration values remain pending D4.
 
-### D6 — Stamina costs and recovery
+### D6 — Stamina
 
-Status: `PENDING`
+Status: `FROZEN STRUCTURE / NUMERIC SUBRULES PENDING`
 
-Question:
-- cost of all six actions;
-- recovery timing;
-- insufficient-Stamina behavior.
+Authoritative structural rules:
+- `stamina` is the canonical combat resource;
+- Stamina has a minimum of 0 and negative values are invalid CombatState;
+- an action that lacks the required Stamina must fail closed rather than create debt or negative Stamina;
+- legacy `energy` values are not copied into V1;
+- exact costs for the six actions, recovery amount and recovery timing remain pending.
 
 ### D7 — Accuracy and criticals
 
-Status: `PENDING`
+Status: `FROZEN STRUCTURE / FORMULA PENDING`
 
-Question:
-- deterministic, contested, threshold or probabilistic hit model;
-- whether V1 includes critical hits.
+Authoritative structural rules:
+- V1 hit resolution does not use RNG;
+- V1 critical hits are disabled;
+- `CombatSimulator` owns accuracy resolution;
+- the exact deterministic accuracy/avoidance formula remains pending;
+- legacy random hit/critical probabilities are not authoritative.
 
 ### D8 — Stat scaling
 
-Status: `PENDING`
+Status: `FROZEN ROLES / WEIGHTS PENDING`
 
-Question:
-- which `FUE / AGI / TEC / RES / PV` affect which actions and how much.
+Authoritative stat roles:
+- `FUE` -> offensive power;
+- `AGI` -> evasion and reposition;
+- `TEC` -> accuracy and parry;
+- `RES` -> mitigation and block;
+- `PV` -> maximum health;
+- legacy `endurance` cannot silently substitute for RES;
+- exact coefficients/weights remain pending alongside D4/D7 math.
 
 ### D9 — KO and surrender
 
-Status: `PENDING`
+Status: `FROZEN KO STRUCTURE / SURRENDER RULES PENDING`
 
-Question:
-- fight-ending conditions;
-- surrender ownership/availability.
+Authoritative structural rules:
+- runtime health is `current_pv`, distinct from maximum `stats.PV`;
+- new runtime combat state initializes `current_pv = stats.PV`;
+- `CombatSimulator` owns KO authority;
+- KO occurs when `current_pv <= 0`;
+- surrender is not a seventh base combat action;
+- probabilistic surrender is forbidden in V1;
+- exact surrender eligibility/trigger rules remain pending and cannot declare a winner outside simulator authority.
+
+Runtime support:
+- `combat_runtime_state_builder.gd` creates isolated runtime state with `current_pv` and `vulnerable`;
+- `combat_rules_d5_d9_contract.gd` is the central structural ledger for D5-D9;
+- resolution readiness now distinguishes frozen structure from unresolved numeric/eligibility subrules.
 
 ### D10 — Carryover
 
 Status: `PENDING`
 
 Question:
-- which state persists across consecutive GT fights.
+- which runtime state persists across consecutive GT fights;
+- how `current_pv`, Stamina, vulnerability and future statuses reset or carry;
+- how the Month XX substitution interacts with carryover.
+
+## Resolution readiness after D5-D9 structural freeze
+
+Frozen structural requirements:
+- `target_rules`;
+- `resolution_order`;
+- `armor_and_vulnerability_structure`;
+- `stamina_structure`;
+- `accuracy_and_critical_structure`;
+- `stat_scaling_roles`;
+- `ko_structure`.
+
+Still pending:
+- `damage_and_mitigation`;
+- `armor_numeric_mitigation`;
+- `armor_penetration`;
+- `stamina_cost_table`;
+- `stamina_recovery_amount`;
+- `stamina_recovery_timing`;
+- `accuracy_formula`;
+- `stat_scaling_weights`;
+- `surrender_rules`;
+- `carryover`.
+
+Conditional:
+- `position_and_distance_model`.
 
 ## Action-level freeze checklist
 
-| Action | Target rule | Resolution timing | Stamina | Stat inputs | State/effect | Status |
+| Action | Target rule | Resolution timing | Stamina | Stat roles | Effect/math | Status |
 | --- | --- | --- | --- | --- | --- | --- |
-| `light` | exactly 1 enemy | offense / simultaneous | TBD | TBD | TBD | D1 + D3 FROZEN |
-| `heavy` | exactly 1 enemy | offense / simultaneous | TBD | TBD | TBD | D1 + D3 FROZEN |
-| `block` | no explicit target | preparation / simultaneous | TBD | TBD | TBD | D1 + D3 FROZEN |
-| `parry` | no explicit target | preparation / simultaneous | TBD | TBD | TBD | D1 + D3 FROZEN |
-| `dodge` | no explicit target | preparation / simultaneous | TBD | TBD | TBD | D1 + D3 FROZEN |
-| `reposition` | no explicit target | preparation / simultaneous | TBD | TBD | TBD | D1 + D3 FROZEN |
+| `light` | exactly 1 enemy | offense / simultaneous | resource semantics frozen; cost TBD | FUE offense, TEC accuracy | damage TBD | D1 + D3 + D6-D8 STRUCTURE |
+| `heavy` | exactly 1 enemy | offense / simultaneous | resource semantics frozen; cost TBD | FUE offense, TEC accuracy | damage TBD | D1 + D3 + D6-D8 STRUCTURE |
+| `block` | no explicit target | preparation / simultaneous | resource semantics frozen; cost TBD | RES block | exact mitigation TBD | D1 + D3 + D5-D8 STRUCTURE |
+| `parry` | no explicit target | preparation / simultaneous | resource semantics frozen; cost TBD | TEC parry | exact effect TBD | D1 + D3 + D6-D8 STRUCTURE |
+| `dodge` | no explicit target | preparation / simultaneous | resource semantics frozen; cost TBD | AGI evasion | exact effect TBD | D1 + D3 + D6-D8 STRUCTURE |
+| `reposition` | no explicit target | preparation / simultaneous | resource semantics frozen; cost TBD | AGI reposition | D2/effect TBD | D1 + D3 + D6-D8 STRUCTURE |
+
+## Validation checkpoint
+
+Head validated before this documentation update: `7c5cd9551877ac686d3defc0e05f2abfca8dbc53`.
+
+- Core systems suite: **80/80 passed**;
+- UI/integration suite: passed;
+- GUT behavior suite: passed;
+- Godot 4.5.2 import/compile/smoke: passed;
+- gdformat/gdlint: passed;
+- Gitleaks: passed;
+- CI Gate: passed.
 
 ## Freeze rule
 
