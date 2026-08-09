@@ -13,13 +13,14 @@ const FROZEN_REQUIREMENTS: Array[String] = [
 	"stamina_recovery_timing",
 	"accuracy_and_critical_structure",
 	"accuracy_formula",
+	"defensive_action_effects",
 	"stat_scaling_roles",
+	"stat_scaling_weights",
+	"complete_exchange_resolution",
 	"ko_structure",
 ]
 
 const REQUIRED_DECISIONS: Array[String] = [
-	"defensive_action_effects",
-	"stat_scaling_weights",
 	"surrender_rules",
 	"carryover",
 ]
