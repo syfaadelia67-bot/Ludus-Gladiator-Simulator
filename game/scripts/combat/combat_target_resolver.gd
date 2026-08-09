@@ -48,14 +48,41 @@ func inspect_action_targets(state: Dictionary, actor_id: String, action_id: Stri
 	if candidate_result.get("status") != "ready":
 		return candidate_result
 
+	var action_contract := _combat_contract.get_action_contract(action_id)
+	if str(action_contract.get("target_rule_status", "")) != "frozen":
+		return {
+			"status": "pending_design_freeze",
+			"pending": true,
+			"reason": TARGET_RULES_PENDING_REASON,
+			"errors": [],
+			"actor_id": actor_id,
+			"action_id": action_id,
+			"candidates": (candidate_result.get("candidates", {}) as Dictionary).duplicate(true),
+		}
+
+	var relationship := str(action_contract.get("target_relationship", ""))
+	var candidates := candidate_result.get("candidates", {}) as Dictionary
+	var legal_targets: Array = []
+	if relationship == "enemy":
+		legal_targets = (candidates.get("enemies", []) as Array).duplicate()
+	elif relationship != "none":
+		return _rejected(
+			"invalid_target_contract",
+			["Unsupported frozen target relationship for %s: %s" % [action_id, relationship]],
+		)
+
 	return {
-		"status": "pending_design_freeze",
-		"pending": true,
-		"reason": TARGET_RULES_PENDING_REASON,
+		"status": "ready",
+		"pending": false,
+		"reason": "",
 		"errors": [],
 		"actor_id": actor_id,
 		"action_id": action_id,
-		"candidates": (candidate_result.get("candidates", {}) as Dictionary).duplicate(true),
+		"target_required": bool(action_contract.get("target_required", false)),
+		"target_relationship": relationship,
+		"target_count": int(action_contract.get("target_count", 0)),
+		"legal_targets": legal_targets,
+		"candidates": candidates.duplicate(true),
 	}
 
 
