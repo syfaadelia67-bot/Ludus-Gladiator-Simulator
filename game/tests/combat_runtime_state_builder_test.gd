@@ -1,6 +1,8 @@
 extends SceneTree
 
-const CombatRuntimeStateBuilderScript = preload("res://scripts/combat/combat_runtime_state_builder.gd")
+const CombatRuntimeStateBuilderScript = preload(
+	"res://scripts/combat/combat_runtime_state_builder.gd"
+)
 
 var _failures: Array[String] = []
 
@@ -30,7 +32,9 @@ func _test_build_initializes_runtime_fields(builder) -> void:
 	for raw_fighter in fighters:
 		var fighter := raw_fighter as Dictionary
 		var stats := fighter.get("stats", {}) as Dictionary
-		_assert_eq(fighter.get("current_pv"), float(stats.get("PV", 0)), "current_pv starts from max PV")
+		_assert_eq(
+			fighter.get("current_pv"), float(stats.get("PV", 0)), "current_pv starts from max PV"
+		)
 		_assert_eq(fighter.get("vulnerable"), false, "fighters start non-vulnerable")
 
 
@@ -39,15 +43,23 @@ func _test_invalid_state_is_rejected(builder) -> void:
 	(state.get("fighters", []) as Array)[0]["stamina"] = -1
 	var result: Dictionary = builder.build(state)
 	_assert_eq(result.get("status"), "invalid_state", "negative Stamina must fail closed")
-	_assert_true(_contains_error(result.get("errors", []), "stamina cannot be negative"), "negative Stamina error must be explicit")
+	_assert_true(
+		_contains_error(result.get("errors", []), "stamina cannot be negative"),
+		"negative Stamina error must be explicit"
+	)
 
 
 func _test_runtime_validation(builder) -> void:
-	var runtime_state := (builder.build(_state()).get("state", {}) as Dictionary)
-	_assert_eq(builder.validate_runtime_state(runtime_state), [], "fresh runtime state must validate")
+	var runtime_state := builder.build(_state()).get("state", {}) as Dictionary
+	_assert_eq(
+		builder.validate_runtime_state(runtime_state), [], "fresh runtime state must validate"
+	)
 	var fighter := (runtime_state.get("fighters", []) as Array)[0] as Dictionary
 	fighter["vulnerable"] = "yes"
-	_assert_true(_contains_error(builder.validate_runtime_state(runtime_state), "vulnerable must be bool"), "vulnerability state type must be protected")
+	_assert_true(
+		_contains_error(builder.validate_runtime_state(runtime_state), "vulnerable must be bool"),
+		"vulnerability state type must be protected"
+	)
 
 
 func _test_ko_threshold(builder) -> void:
