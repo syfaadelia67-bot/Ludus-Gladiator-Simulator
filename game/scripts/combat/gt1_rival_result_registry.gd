@@ -88,10 +88,13 @@ func evaluate_current_standings(non_podium_tiebreak_data: Dictionary = {}) -> Di
 			"resolution_source": "gt1_standings_tiebreak_policy",
 		}
 
-	var result: Dictionary = _tiebreak_policy.evaluate(
-		standings,
-		non_podium_tiebreak_data,
-		"player",
+	var result: Dictionary = (
+		_tiebreak_policy
+		. evaluate(
+			standings,
+			non_podium_tiebreak_data,
+			"player",
+		)
 	)
 	result["resolution_source_contract"] = "gt1_standings_tiebreak_policy"
 	return result
