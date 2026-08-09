@@ -32,12 +32,15 @@ func _assert_simulator_resolves_complete_exchange(simulator) -> void:
 
 
 func _assert_simulator_keeps_combat_completion_pending(simulator) -> void:
-	var result: Dictionary = simulator.resolve_exchange(
-		_state(),
-		[
-			{"actor_id": "a", "action_id": "light", "target_id": "b"},
-			{"actor_id": "b", "action_id": "light", "target_id": "a"},
-		],
+	var result: Dictionary = (
+		simulator
+		. resolve_exchange(
+			_state(),
+			[
+				{"actor_id": "a", "action_id": "light", "target_id": "b"},
+				{"actor_id": "b", "action_id": "light", "target_id": "a"},
+			],
+		)
 	)
 	assert(result.get("status") == "resolved")
 	assert(result.get("combat_completion_pending") == true)
@@ -49,11 +52,14 @@ func _assert_simulator_keeps_combat_completion_pending(simulator) -> void:
 
 
 func _assert_simulator_rejects_incomplete_exchange(simulator) -> void:
-	var result: Dictionary = simulator.resolve_exchange(
-		_state(),
-		[
-			{"actor_id": "a", "action_id": "light", "target_id": "b"},
-		],
+	var result: Dictionary = (
+		simulator
+		. resolve_exchange(
+			_state(),
+			[
+				{"actor_id": "a", "action_id": "light", "target_id": "b"},
+			],
+		)
 	)
 	assert(result.get("status") == "rejected")
 	assert(result.get("reason") == "invalid_intents")
@@ -63,7 +69,8 @@ func _assert_simulator_rejects_incomplete_exchange(simulator) -> void:
 func _state() -> Dictionary:
 	return {
 		"format": "1v1",
-		"fighters": [
+		"fighters":
+		[
 			_fighter("a", "alpha"),
 			_fighter("b", "beta"),
 		],
