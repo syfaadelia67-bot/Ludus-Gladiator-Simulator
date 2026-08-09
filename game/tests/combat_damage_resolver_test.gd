@@ -46,14 +46,14 @@ func _assert_equipment_contribution(resolver) -> void:
 
 
 func _assert_minimum_damage(resolver) -> void:
-	var result := resolver.resolve_damage(
-		_fighter(1, 1, 0, 0), _fighter(1, 50, 0, 50), "light"
-	)
+	var result := resolver.resolve_damage(_fighter(1, 1, 0, 0), _fighter(1, 50, 0, 50), "light")
 	assert(result.get("damage") == 1)
 
 
 func _assert_invalid_inputs_fail_closed(resolver) -> void:
-	var invalid_action := resolver.resolve_damage(_fighter(10, 10, 0, 0), _fighter(10, 10, 0, 0), "block")
+	var invalid_action := resolver.resolve_damage(
+		_fighter(10, 10, 0, 0), _fighter(10, 10, 0, 0), "block"
+	)
 	assert(invalid_action.get("status") == "invalid")
 	var attacker := _fighter(10, 10, 0, 0)
 	(attacker["stats"] as Dictionary)["FUE"] = -1
