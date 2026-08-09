@@ -2,10 +2,12 @@ extends RefCounted
 
 const CombatContractScript = preload("res://scripts/combat/combat_contract.gd")
 const CombatPolicyContractScript = preload("res://scripts/combat/combat_policy_contract.gd")
+const CombatRuntimeStateBuilderScript = preload("res://scripts/combat/combat_runtime_state_builder.gd")
 const CombatSimulatorScript = preload("res://scripts/combat/combat_simulator.gd")
 
 var _combat_contract = CombatContractScript.new()
 var _policy_contract = CombatPolicyContractScript.new()
+var _runtime_builder = CombatRuntimeStateBuilderScript.new()
 var _simulator = CombatSimulatorScript.new()
 
 
@@ -35,6 +37,16 @@ func submit_intent(session: Dictionary, desired_action: Dictionary) -> Dictionar
 		)
 
 	var state := (session.get("state", {}) as Dictionary).duplicate(true)
+	var actor_id := str(desired_action.get("actor_id", ""))
+	var required_actor_ids: Array[String] = _required_actor_ids(state)
+	if not required_actor_ids.has(actor_id):
+		return _rejected(
+			"inactive_actor_intent",
+			["Fighter %s is not active for this exchange" % actor_id],
+			state,
+			session.get("intents_by_actor", {}) as Dictionary,
+		)
+
 	var policy_errors: Array[String] = _policy_contract.validate_desired_action(
 		state, desired_action
 	)
@@ -46,7 +58,6 @@ func submit_intent(session: Dictionary, desired_action: Dictionary) -> Dictionar
 			session.get("intents_by_actor", {}) as Dictionary,
 		)
 
-	var actor_id := str(desired_action.get("actor_id", ""))
 	var intents := (session.get("intents_by_actor", {}) as Dictionary).duplicate(true)
 	if intents.has(actor_id):
 		return _rejected(
@@ -57,7 +68,6 @@ func submit_intent(session: Dictionary, desired_action: Dictionary) -> Dictionar
 		)
 	intents[actor_id] = desired_action.duplicate(true)
 
-	var required_actor_ids: Array[String] = _required_actor_ids(state)
 	var missing_actor_ids: Array[String] = []
 	for required_actor_id in required_actor_ids:
 		if not intents.has(required_actor_id):
@@ -106,6 +116,7 @@ func get_contract() -> Dictionary:
 		"status": "frozen",
 		"authority": "combat_simulator",
 		"collection_mode": "exactly_one_intent_per_active_fighter",
+		"knocked_out_fighter_intent": "reject",
 		"duplicate_actor_intent": "reject",
 		"missing_actor_intent": "collecting",
 		"default_action_allowed": false,
@@ -119,6 +130,8 @@ func _required_actor_ids(state: Dictionary) -> Array[String]:
 	var ids: Array[String] = []
 	for raw_fighter in state.get("fighters", []) as Array:
 		var fighter := raw_fighter as Dictionary
+		if _runtime_builder.is_knocked_out(fighter):
+			continue
 		ids.append(str(fighter.get("id", "")))
 	ids.sort()
 	return ids
