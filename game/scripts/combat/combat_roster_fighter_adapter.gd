@@ -18,13 +18,15 @@ func build_fighter(
 
 	var adapted: Dictionary = _stat_adapter.from_legacy(source)
 	var pending: Array[String] = _stat_adapter.get_pending_stat_ids(adapted)
+	var legacy_separate := (adapted.get("legacy_separate", {}) as Dictionary).duplicate(true)
 	if not pending.is_empty():
 		return {
 			"status": "pending_canonical_stats",
 			"errors": [],
 			"pending_stat_ids": pending.duplicate(),
 			"fighter": {},
-			"legacy_unmapped": (adapted.get("legacy_unmapped", {}) as Dictionary).duplicate(true),
+			"legacy_separate": legacy_separate.duplicate(true),
+			"legacy_unmapped": legacy_separate.duplicate(true),
 		}
 
 	var fighter_id := str(person_source.get("id", ""))
@@ -34,6 +36,7 @@ func build_fighter(
 			"errors": ["Combat roster fighter requires non-empty id and team_id"],
 			"pending_stat_ids": [],
 			"fighter": {},
+			"legacy_separate": {},
 			"legacy_unmapped": {},
 		}
 
@@ -53,7 +56,8 @@ func build_fighter(
 				"defense": int(equipment_stats.get("defense", 0)),
 			},
 		},
-		"legacy_unmapped": (adapted.get("legacy_unmapped", {}) as Dictionary).duplicate(true),
+		"legacy_separate": legacy_separate.duplicate(true),
+		"legacy_unmapped": legacy_separate.duplicate(true),
 	}
 
 
@@ -68,7 +72,11 @@ func get_contract() -> Dictionary:
 			"resistance": "RES",
 			"health": "PV",
 		},
+		"legacy_separate_stats": ["endurance"],
+		"removed_legacy_stats": ["intelligence"],
 		"endurance_to_resistance_fallback": false,
+		"endurance_to_stamina_fallback": false,
+		"intelligence_used_by_combat_v1": false,
 		"missing_canonical_stats": "fail_closed",
 		"equipment_source": "explicit_power_defense_snapshot",
 		"save_version_change_required": false,
