@@ -21,13 +21,16 @@ func _ready() -> void:
 
 
 func _test_clear_standings(policy) -> void:
-	var result := policy.evaluate(
-		[
-			_entry("r1", 27, 9),
-			_entry("player", 24, 8),
-			_entry("r2", 21, 7),
-			_entry("r3", 18, 6),
-		]
+	var result := (
+		policy
+		. evaluate(
+			[
+				_entry("r1", 27, 9),
+				_entry("player", 24, 8),
+				_entry("r2", 21, 7),
+				_entry("r3", 18, 6),
+			]
+		)
 	)
 	assert(result.get("status") == "resolved")
 	assert(int(result.get("placement", 0)) == 2)
@@ -36,13 +39,16 @@ func _test_clear_standings(policy) -> void:
 
 
 func _test_podium_tie_requires_combat(policy) -> void:
-	var result := policy.evaluate(
-		[
-			_entry("player", 27, 9),
-			_entry("cassianus", 27, 9),
-			_entry("flavianus", 21, 7),
-			_entry("drusus", 18, 6),
-		]
+	var result := (
+		policy
+		. evaluate(
+			[
+				_entry("player", 27, 9),
+				_entry("cassianus", 27, 9),
+				_entry("flavianus", 21, 7),
+				_entry("drusus", 18, 6),
+			]
+		)
 	)
 	assert(result.get("status") == "podium_combat_required")
 	assert(result.get("requires_combat_tiebreak") == true)
@@ -63,37 +69,47 @@ func _test_non_podium_tie_requires_explicit_data(policy) -> void:
 
 
 func _test_non_podium_head_to_head_resolves(policy) -> void:
-	var player_wins := policy.evaluate(
-		_non_podium_tie_fixture(),
-		{
-			"cassianus": {"head_to_head_winner_id": "player"},
-		}
+	var player_wins := (
+		policy
+		. evaluate(
+			_non_podium_tie_fixture(),
+			{
+				"cassianus": {"head_to_head_winner_id": "player"},
+			}
+		)
 	)
 	assert(player_wins.get("status") == "resolved")
 	assert(int(player_wins.get("placement", 0)) == 4)
 	assert(str(player_wins.get("medal", "x")).is_empty())
 	assert(player_wins.get("resolution_source") == "head_to_head_then_prior_season_position")
 
-	var rival_wins := policy.evaluate(
-		_non_podium_tie_fixture(),
-		{
-			"cassianus": {"head_to_head_winner_id": "cassianus"},
-		}
+	var rival_wins := (
+		policy
+		. evaluate(
+			_non_podium_tie_fixture(),
+			{
+				"cassianus": {"head_to_head_winner_id": "cassianus"},
+			}
+		)
 	)
 	assert(rival_wins.get("status") == "resolved")
 	assert(int(rival_wins.get("placement", 0)) == 5)
 
 
 func _test_non_podium_prior_season_position_resolves(policy) -> void:
-	var result := policy.evaluate(
-		_non_podium_tie_fixture(),
-		{
-			"cassianus": {
-				"head_to_head_winner_id": "",
-				"player_prior_season_position": 6,
-				"rival_prior_season_position": 4,
-			},
-		}
+	var result := (
+		policy
+		. evaluate(
+			_non_podium_tie_fixture(),
+			{
+				"cassianus":
+				{
+					"head_to_head_winner_id": "",
+					"player_prior_season_position": 6,
+					"rival_prior_season_position": 4,
+				},
+			}
+		)
 	)
 	assert(result.get("status") == "resolved")
 	assert(int(result.get("placement", 0)) == 5)
@@ -101,15 +117,19 @@ func _test_non_podium_prior_season_position_resolves(policy) -> void:
 
 
 func _test_missing_non_podium_data_never_falls_back(policy) -> void:
-	var result := policy.evaluate(
-		_non_podium_tie_fixture(),
-		{
-			"cassianus": {
-				"head_to_head_winner_id": "",
-				"player_prior_season_position": 0,
-				"rival_prior_season_position": 0,
-			},
-		}
+	var result := (
+		policy
+		. evaluate(
+			_non_podium_tie_fixture(),
+			{
+				"cassianus":
+				{
+					"head_to_head_winner_id": "",
+					"player_prior_season_position": 0,
+					"rival_prior_season_position": 0,
+				},
+			}
+		)
 	)
 	assert(result.get("status") == "non_podium_data_required")
 	assert(int(result.get("placement", -1)) == 0)
@@ -119,9 +139,7 @@ func _test_missing_non_podium_data_never_falls_back(policy) -> void:
 func _test_contract(policy) -> void:
 	var contract := policy.get_contract()
 	assert(contract.get("podium_tie") == "tournament_characteristic_combat")
-	assert(
-		contract.get("non_podium_tie") == ["head_to_head", "prior_season_position"]
-	)
+	assert(contract.get("non_podium_tie") == ["head_to_head", "prior_season_position"])
 	assert(contract.get("missing_non_podium_data") == "pending")
 	assert(contract.get("alphabetical_fallback_allowed") == false)
 	assert(contract.get("random_fallback_allowed") == false)
