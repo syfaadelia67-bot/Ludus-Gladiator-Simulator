@@ -17,15 +17,18 @@ func build(session: Dictionary, tournament_summary: Dictionary) -> Dictionary:
 			continue
 		var fighter := raw_fighter as Dictionary
 		var stats := fighter.get("stats", {}) as Dictionary
-		fighters.append(
-			{
-				"id": str(fighter.get("id", "")),
-				"team": str(fighter.get("team", "")),
-				"current_pv": int(fighter.get("current_pv", stats.get("PV", 0))),
-				"max_pv": int(stats.get("PV", 0)),
-				"stamina": float(fighter.get("stamina", 0.0)),
-				"knocked_out": int(fighter.get("current_pv", stats.get("PV", 0))) <= 0,
-			}
+		(
+			fighters
+			. append(
+				{
+					"id": str(fighter.get("id", "")),
+					"team": str(fighter.get("team", "")),
+					"current_pv": int(fighter.get("current_pv", stats.get("PV", 0))),
+					"max_pv": int(stats.get("PV", 0)),
+					"stamina": float(fighter.get("stamina", 0.0)),
+					"knocked_out": int(fighter.get("current_pv", stats.get("PV", 0))) <= 0,
+				}
+			)
 		)
 
 	var progress := tournament_summary.get("encounter_progress", {}) as Dictionary
@@ -44,9 +47,8 @@ func build(session: Dictionary, tournament_summary: Dictionary) -> Dictionary:
 		"tournament_points": int(tournament_summary.get("player_points", 0)),
 		"tournament_bouts": int(tournament_summary.get("player_bouts", 0)),
 		"fighters": fighters,
-		"last_intent_providers": (
-			(session.get("last_intent_providers", {}) as Dictionary).duplicate(true)
-		),
+		"last_intent_providers":
+		(session.get("last_intent_providers", {}) as Dictionary).duplicate(true),
 		"combat_authority": "combat_simulator",
 		"scoring_authority": "tournament_manager",
 		"presentation_may_mutate_combat": false,
