@@ -32,7 +32,7 @@ func resolve_damage(attacker: Dictionary, defender: Dictionary, action_id: Strin
 		float(defender_stats.get("RES", 0.0)) * float(MITIGATION_COEFFICIENTS["RES"])
 		+ float(defender_equipment.get("defense", 0.0)) * float(MITIGATION_COEFFICIENTS["defense"])
 	)
-	var final_damage := max(MIN_DAMAGE, int(round(raw_damage - mitigation)))
+	var final_damage: int = maxi(MIN_DAMAGE, int(round(raw_damage - mitigation)))
 	return {
 		"status": "resolved",
 		"errors": [],
