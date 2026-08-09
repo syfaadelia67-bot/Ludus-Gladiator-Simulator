@@ -45,6 +45,12 @@ func validate_state(state: Dictionary) -> Array[String]:
 	return errors
 
 
+func validate_fighter_snapshot(fighter: Dictionary) -> Array[String]:
+	var errors: Array[String] = []
+	_validate_fighters([fighter], errors)
+	return errors
+
+
 func _validate_fighters(fighters: Array, errors: Array[String]) -> void:
 	var seen_ids: Dictionary = {}
 	for raw_fighter in fighters:
