@@ -50,13 +50,16 @@ func _test_explicit_rival_result_registration() -> void:
 
 
 func _test_completed_standings_surface_non_podium_tiebreak_requirement() -> void:
-	TournamentManager.import_state(
-		{
-			"gt1_player_points": 18,
-			"gt1_player_wins": 6,
-			"gt1_player_bouts": 9,
-			"gt1_encounter_progress": {"13": 3, "16": 3, "20": 3},
-		}
+	(
+		TournamentManager
+		. import_state(
+			{
+				"gt1_player_points": 18,
+				"gt1_player_wins": 6,
+				"gt1_player_bouts": 9,
+				"gt1_encounter_progress": {"13": 3, "16": 3, "20": 3},
+			}
+		)
 	)
 	var registry = GT1RivalResultRegistryScript.new()
 	var rival_results := [
@@ -70,10 +73,13 @@ func _test_completed_standings_surface_non_podium_tiebreak_requirement() -> void
 	]
 	var final_result: Dictionary = {}
 	for rival_result in rival_results:
-		final_result = registry.register_result(
-			str(rival_result[0]),
-			int(rival_result[1]),
-			int(rival_result[2]),
+		final_result = (
+			registry
+			. register_result(
+				str(rival_result[0]),
+				int(rival_result[1]),
+				int(rival_result[2]),
+			)
 		)
 		assert(final_result.get("status") == "registered")
 
