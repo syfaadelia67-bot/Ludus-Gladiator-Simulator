@@ -21,7 +21,10 @@ const EXPECTED_SPECIALIZED := {
 func _ready() -> void:
 	var skills := DataRepository.get_skills()
 	assert(skills.size() == 12, "Frozen combat data must expose exactly twelve skills")
-	assert(DataRepository.is_frozen_contract_valid(), "Frozen data validator must accept canonical skills")
+	assert(
+		DataRepository.is_frozen_contract_valid(),
+		"Frozen data validator must accept canonical skills"
+	)
 
 	var seen: Dictionary = {}
 	for raw_entry in skills:
@@ -29,7 +32,9 @@ func _ready() -> void:
 		var entry: Dictionary = raw_entry
 		var skill_id := str(entry.get("id", ""))
 		seen[skill_id] = true
-		assert(entry.keys().size() == 3, "Frozen skill identity must not contain unfrozen mechanics")
+		assert(
+			entry.keys().size() == 3, "Frozen skill identity must not contain unfrozen mechanics"
+		)
 		if EXPECTED_GENERAL.has(skill_id):
 			assert(str(entry.get("name", "")) == EXPECTED_GENERAL[skill_id])
 			assert(str(entry.get("category", "")) == "general")
