@@ -2,6 +2,9 @@ extends Node
 
 const FrozenDataValidatorScript = preload("res://scripts/core/frozen_data_validator.gd")
 const EquipmentDataValidatorScript = preload("res://scripts/core/equipment_data_validator.gd")
+const RivalCombatV1SnapshotDataValidatorScript = preload(
+	"res://scripts/core/rival_combat_v1_snapshot_data_validator.gd"
+)
 const RivalLudiDataValidatorScript = preload("res://scripts/core/rival_ludi_data_validator.gd")
 const MonthlyEconomyDataValidatorScript = preload(
 	"res://scripts/core/monthly_economy_data_validator.gd"
@@ -17,6 +20,7 @@ var skills: Array = []
 var specializations: Array = []
 var beasts: Array = []
 var rival_ludi: Array = []
+var rival_combat_v1_snapshots: Array = []
 var unique_gladiators: Array = []
 var economy_rules: Array = []
 var frozen_contract_errors: Array[String] = []
@@ -35,6 +39,7 @@ func load_all() -> void:
 	specializations = _load_json_array("res://data/specializations.json")
 	beasts = _load_json_array("res://data/beasts.json")
 	rival_ludi = _load_json_array("res://data/rival_ludi.json")
+	rival_combat_v1_snapshots = _load_json_array("res://data/rival_combat_v1_snapshots.json")
 	unique_gladiators = _load_json_array("res://data/unique_gladiators.json")
 	economy_rules = _load_json_array("res://data/economy_rules.json")
 	_validate_frozen_contracts()
@@ -43,11 +48,15 @@ func load_all() -> void:
 func _validate_frozen_contracts() -> void:
 	var frozen_validator = FrozenDataValidatorScript.new()
 	var equipment_validator = EquipmentDataValidatorScript.new()
+	var rival_combat_v1_snapshot_validator = RivalCombatV1SnapshotDataValidatorScript.new()
 	var rival_ludi_validator = RivalLudiDataValidatorScript.new()
 	var monthly_economy_validator = MonthlyEconomyDataValidatorScript.new()
 	frozen_contract_errors = frozen_validator.validate_repository(self)
 	frozen_contract_errors.append_array(equipment_validator.validate_repository(self))
 	frozen_contract_errors.append_array(rival_ludi_validator.validate_repository(self))
+	frozen_contract_errors.append_array(
+		rival_combat_v1_snapshot_validator.validate_repository(self)
+	)
 	frozen_contract_errors.append_array(monthly_economy_validator.validate_repository(self))
 	for error_message in frozen_contract_errors:
 		push_error("Frozen data contract: %s" % error_message)
@@ -97,6 +106,26 @@ func get_rival_ludi() -> Array:
 func get_rival_ludus(rival_id: String) -> Dictionary:
 	for entry in rival_ludi:
 		if entry is Dictionary and str(entry.get("id", "")) == rival_id:
+			return entry.duplicate(true)
+	return {}
+
+
+func get_rival_combat_v1_snapshots() -> Array:
+	return rival_combat_v1_snapshots.duplicate(true)
+
+
+func get_rival_combat_v1_snapshots_for_ludus(rival_ludus_id: String) -> Array[Dictionary]:
+	var result: Array[Dictionary] = []
+	for entry in rival_combat_v1_snapshots:
+		if entry is Dictionary and str(entry.get("rival_ludus_id", "")) == rival_ludus_id:
+			result.append(entry.duplicate(true))
+	return result
+
+
+func get_rival_combat_v1_snapshot(rival_ludus_id: String, fighter_id: String) -> Dictionary:
+	for entry in get_rival_combat_v1_snapshots_for_ludus(rival_ludus_id):
+		var fighter := entry.get("fighter", {}) as Dictionary
+		if str(fighter.get("id", "")) == fighter_id:
 			return entry.duplicate(true)
 	return {}
 
