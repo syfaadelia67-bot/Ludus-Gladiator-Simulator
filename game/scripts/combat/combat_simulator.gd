@@ -2,16 +2,20 @@ extends RefCounted
 
 const CombatContractScript = preload("res://scripts/combat/combat_contract.gd")
 const CombatPolicyContractScript = preload("res://scripts/combat/combat_policy_contract.gd")
+const CombatResolutionOrderBoundaryScript = preload(
+	"res://scripts/combat/combat_resolution_order_boundary.gd"
+)
 const CombatResolutionReadinessScript = preload(
 	"res://scripts/combat/combat_resolution_readiness.gd"
 )
 const CombatTargetResolverScript = preload("res://scripts/combat/combat_target_resolver.gd")
 
 const PENDING_REASON := "combat_resolution_rules_not_frozen"
-const NEXT_BLOCKER_ID := "resolution_order"
+const NEXT_BLOCKER_ID := "damage_and_mitigation"
 
 var _combat_contract = CombatContractScript.new()
 var _policy_contract = CombatPolicyContractScript.new()
+var _resolution_order = CombatResolutionOrderBoundaryScript.new()
 var _resolution_readiness = CombatResolutionReadinessScript.new()
 var _target_resolver = CombatTargetResolverScript.new()
 
@@ -47,7 +51,10 @@ func resolve_intent(state: Dictionary, desired_action: Dictionary) -> Dictionary
 		"reason": PENDING_REASON,
 		"errors": [],
 		"blocking_requirement": NEXT_BLOCKER_ID,
-		"blocking_context": {"resolved_target_context": target_inspection.duplicate(true)},
+		"blocking_context": {
+			"resolved_target_context": target_inspection.duplicate(true),
+			"resolution_order_contract": _resolution_order.get_contract_status().duplicate(true),
+		},
 		"pending_requirements": _resolution_readiness.get_pending_requirements(),
 		"conditional_requirements": _resolution_readiness.get_conditional_requirements(),
 		"state": state.duplicate(true),
