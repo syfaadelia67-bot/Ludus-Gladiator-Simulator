@@ -92,6 +92,8 @@ func _test_d7(contract) -> void:
 func _test_d8(contract) -> void:
 	var d8: Dictionary = contract.get_contract("D8")
 	var roles := d8.get("roles", {}) as Dictionary
+	var weights := d8.get("weights", {}) as Dictionary
+	var modifiers := d8.get("flat_action_modifiers", {}) as Dictionary
 	_assert_eq(d8.get("status"), "frozen", "D8 role map must be frozen")
 	_assert_eq(roles.get("FUE"), ["offensive_power"], "FUE role must stay offensive")
 	_assert_eq(roles.get("AGI"), ["evasion", "reposition"], "AGI roles must stay mobility/evasion")
@@ -99,11 +101,28 @@ func _test_d8(contract) -> void:
 	_assert_eq(roles.get("RES"), ["mitigation", "block"], "RES roles must stay mitigation/block")
 	_assert_eq(roles.get("PV"), ["maximum_health"], "PV must be maximum health")
 	_assert_eq(
+		weights.get("FUE"),
+		{"light_damage": 0.35, "heavy_damage": 0.50},
+		"FUE damage weights must match frozen D4",
+	)
+	_assert_eq(weights.get("AGI"), {"base_evasion": 1.0}, "AGI evasion weight must match D7")
+	_assert_eq(
+		weights.get("TEC"), {"accuracy": 1.0, "parry": 1.0}, "TEC weights must match D7/defense"
+	)
+	_assert_eq(
+		weights.get("RES"),
+		{"damage_mitigation": 0.15, "block_reduction": 0.25},
+		"RES weights must match D4/block",
+	)
+	_assert_eq(weights.get("PV"), {"maximum_health": 1.0}, "PV must remain 1:1 maximum health")
+	_assert_eq(modifiers.get("dodge_evasion"), 2.0, "dodge flat modifier must stay frozen")
+	_assert_eq(modifiers.get("reposition_evasion"), 1.0, "reposition modifier must stay frozen")
+	_assert_eq(
 		d8.get("legacy_endurance_substitution_allowed"),
 		false,
 		"endurance must not silently become RES"
 	)
-	_assert_eq(d8.get("weights_status"), "pending", "exact stat weights must remain pending")
+	_assert_eq(d8.get("weights_status"), "frozen", "exact stat weights must be frozen")
 
 
 func _test_d9(contract) -> void:
