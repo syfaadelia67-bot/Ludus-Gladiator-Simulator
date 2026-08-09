@@ -24,7 +24,7 @@ func _initialize() -> void:
 
 
 func _test_d5(contract) -> void:
-	var d5 := contract.get_contract("D5")
+	var d5: Dictionary = contract.get_contract("D5")
 	_assert_eq(d5.get("status"), "frozen", "D5 structure must be frozen")
 	_assert_eq(
 		d5.get("armor_source"),
@@ -42,7 +42,7 @@ func _test_d5(contract) -> void:
 
 
 func _test_d6(contract) -> void:
-	var d6 := contract.get_contract("D6")
+	var d6: Dictionary = contract.get_contract("D6")
 	_assert_eq(d6.get("status"), "frozen", "D6 structure must be frozen")
 	_assert_eq(d6.get("resource_field"), "stamina", "Stamina field must remain canonical")
 	_assert_eq(d6.get("minimum"), 0, "Stamina cannot go below zero")
@@ -56,7 +56,7 @@ func _test_d6(contract) -> void:
 
 
 func _test_d7(contract) -> void:
-	var d7 := contract.get_contract("D7")
+	var d7: Dictionary = contract.get_contract("D7")
 	_assert_eq(d7.get("status"), "frozen", "D7 structure must be frozen")
 	_assert_eq(d7.get("hit_rng_allowed"), false, "V1 hit resolution must not use RNG")
 	_assert_eq(d7.get("critical_hits_enabled"), false, "V1 critical hits must be disabled")
@@ -67,7 +67,7 @@ func _test_d7(contract) -> void:
 
 
 func _test_d8(contract) -> void:
-	var d8 := contract.get_contract("D8")
+	var d8: Dictionary = contract.get_contract("D8")
 	var roles := d8.get("roles", {}) as Dictionary
 	_assert_eq(d8.get("status"), "frozen", "D8 role map must be frozen")
 	_assert_eq(roles.get("FUE"), ["offensive_power"], "FUE role must stay offensive")
@@ -84,7 +84,7 @@ func _test_d8(contract) -> void:
 
 
 func _test_d9(contract) -> void:
-	var d9 := contract.get_contract("D9")
+	var d9: Dictionary = contract.get_contract("D9")
 	_assert_eq(d9.get("status"), "frozen", "D9 structure must be frozen")
 	_assert_eq(
 		d9.get("runtime_health_field"), "current_pv", "runtime health must be distinct from max PV"
@@ -104,8 +104,8 @@ func _test_d9(contract) -> void:
 
 
 func _test_copy_isolation(contract) -> void:
-	var first := contract.get_contracts()
-	var second := contract.get_contracts()
+	var first: Dictionary = contract.get_contracts()
+	var second: Dictionary = contract.get_contracts()
 	(first["D8"] as Dictionary)["status"] = "mutated"
 	_assert_eq(
 		(second["D8"] as Dictionary).get("status"), "frozen", "contract copies must be isolated"
