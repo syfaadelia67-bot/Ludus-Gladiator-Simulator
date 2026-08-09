@@ -63,10 +63,10 @@ func _test_chains_resolved_state_between_exchanges() -> void:
 	var contract: Dictionary = loop.get_contract()
 	_assert_eq(
 		contract.get("winner_authority"),
-		"combat_end_resolver",
-		"1v1 loop winner must come from the frozen combat-end authority",
+		"combat_simulator",
+		"1v1 loop must consume the simulator-owned combat result",
 	)
-	_assert_eq(contract.get("automatic_surrender"), "disabled_v1", "V1 surrender must be explicit")
+	_assert_eq(contract.get("automatic_surrender"), "disabled_v1", "V1 surrender must stay disabled")
 
 
 func _test_ko_finishes_combat_authoritatively() -> void:
