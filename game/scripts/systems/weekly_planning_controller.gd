@@ -73,18 +73,26 @@ func get_summary() -> Dictionary:
 		),
 	)
 	var event_pending := not EventManager.get_pending_event().is_empty()
-	var fight_pending := (
-		UniqueGladiatorManager.first_purchase_completed
-		and RosterManager.has_gladiator()
-		and CombatManager.last_combat_day != GameState.get_month()
-	)
+	var fight := TournamentManager.get_gt1_encounter(GameState.get_month())
+	var fight_pending := false
+	if not fight.is_empty():
+		var gt1_summary := TournamentManager.get_gt1_summary()
+		var progress: Dictionary = gt1_summary.get("encounter_progress", {})
+		fight_pending = int(progress.get(str(GameState.get_month()), 0)) < 3
+		fight["required"] = true
+	else:
+		fight = {
+			"month": GameState.get_month(),
+			"required": false,
+			"name": "Gestión del ludus",
+		}
 	var blockers: Array[String] = []
 	var warnings: Array[String] = []
 
 	if event_pending:
 		blockers.append("Hay un evento mensual pendiente de resolución.")
 	if fight_pending:
-		blockers.append("El combate requerido del mes todavía no fue disputado.")
+		blockers.append("El encuentro del Gran Torneo de este mes todavía no fue completado.")
 	if GameState.food < food_consumption:
 		warnings.append("La comida no alcanza para cubrir el consumo previsto.")
 	if GameState.denarii + int(economy.get("income", 0)) < int(economy.get("expenses", 0)):
@@ -113,7 +121,7 @@ func get_summary() -> Dictionary:
 		"food_after": maxi(0, GameState.food - food_consumption),
 		"economy": economy,
 		"denarii_after": GameState.denarii + int(economy.get("net", 0)),
-		"fight": CombatManager.get_current_event_details(),
+		"fight": fight,
 		"fight_pending": fight_pending,
 		"event_pending": event_pending,
 		"blockers": blockers,
