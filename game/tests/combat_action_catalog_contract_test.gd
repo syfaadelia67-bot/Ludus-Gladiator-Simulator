@@ -60,20 +60,34 @@ func _test_exact_action_ids(catalog, contract) -> void:
 func _test_d1_target_rules_are_frozen(catalog, contract) -> void:
 	for action_id in ["light", "heavy"]:
 		var action_contract: Dictionary = catalog.get_action_contract(action_id)
-		_assert_eq(action_contract.get("target_rule_status"), "frozen", "%s D1 must be frozen" % action_id)
-		_assert_eq(action_contract.get("target_required"), true, "%s must require target" % action_id)
+		_assert_eq(
+			action_contract.get("target_rule_status"), "frozen", "%s D1 must be frozen" % action_id
+		)
+		_assert_eq(
+			action_contract.get("target_required"), true, "%s must require target" % action_id
+		)
 		_assert_eq(
 			action_contract.get("target_relationship"), "enemy", "%s must target enemy" % action_id
 		)
-		_assert_eq(action_contract.get("target_count"), 1, "%s must target exactly one enemy" % action_id)
+		_assert_eq(
+			action_contract.get("target_count"), 1, "%s must target exactly one enemy" % action_id
+		)
 	for action_id in ["block", "parry", "dodge", "reposition"]:
 		var action_contract: Dictionary = catalog.get_action_contract(action_id)
-		_assert_eq(action_contract.get("target_rule_status"), "frozen", "%s D1 must be frozen" % action_id)
-		_assert_eq(action_contract.get("target_required"), false, "%s must not require target" % action_id)
 		_assert_eq(
-			action_contract.get("target_relationship"), "none", "%s has no explicit target" % action_id
+			action_contract.get("target_rule_status"), "frozen", "%s D1 must be frozen" % action_id
 		)
-		_assert_eq(action_contract.get("target_count"), 0, "%s must accept zero targets" % action_id)
+		_assert_eq(
+			action_contract.get("target_required"), false, "%s must not require target" % action_id
+		)
+		_assert_eq(
+			action_contract.get("target_relationship"),
+			"none",
+			"%s has no explicit target" % action_id
+		)
+		_assert_eq(
+			action_contract.get("target_count"), 0, "%s must accept zero targets" % action_id
+		)
 		_assert_eq(
 			contract.get_action_contract(action_id).get("target_rule_status"),
 			"frozen",
