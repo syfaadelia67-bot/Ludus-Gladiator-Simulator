@@ -58,6 +58,10 @@ func _assert_valid_intent_requires_complete_exchange(simulator) -> void:
 	var exchange_contract := blocking_context.get("exchange_contract", {}) as Dictionary
 	assert(exchange_contract.get("status") == "frozen")
 	assert(exchange_contract.get("offense_commit") == "simultaneous")
+	var combat_end_contract := blocking_context.get("combat_end_contract", {}) as Dictionary
+	assert(combat_end_contract.get("status") == "frozen")
+	assert(combat_end_contract.get("finish_condition") == "team_elimination")
+	assert(combat_end_contract.get("automatic_surrender") == "disabled_v1")
 	var d5_d9_contracts := blocking_context.get("d5_d9_contracts", {}) as Dictionary
 	assert((d5_d9_contracts.get("D5", {}) as Dictionary).get("status") == "frozen")
 	assert((d5_d9_contracts.get("D7", {}) as Dictionary).get("accuracy_formula_status") == "frozen")
@@ -65,6 +69,7 @@ func _assert_valid_intent_requires_complete_exchange(simulator) -> void:
 	assert(
 		(d5_d9_contracts.get("D9", {}) as Dictionary).get("ko_condition") == "current_pv_lte_zero"
 	)
+	assert((d5_d9_contracts.get("D9", {}) as Dictionary).get("surrender_rules_status") == "frozen")
 	var runtime_preview := blocking_context.get("runtime_state_preview", {}) as Dictionary
 	var runtime_fighter := (runtime_preview.get("fighters", []) as Array)[0] as Dictionary
 	assert(runtime_fighter.get("current_pv") == 10.0)
@@ -78,11 +83,11 @@ func _assert_valid_intent_requires_complete_exchange(simulator) -> void:
 	assert(frozen_requirements.has("stat_scaling_weights"))
 	assert(frozen_requirements.has("complete_exchange_resolution"))
 	assert(frozen_requirements.has("ko_structure"))
+	assert(frozen_requirements.has("surrender_rules"))
+	assert(frozen_requirements.has("combat_end_rules"))
+	assert(frozen_requirements.has("carryover"))
 	var pending_requirements := result.get("pending_requirements", []) as Array
-	assert(not pending_requirements.has("defensive_action_effects"))
-	assert(not pending_requirements.has("stat_scaling_weights"))
-	assert(pending_requirements.has("surrender_rules"))
-	assert(pending_requirements.has("carryover"))
+	assert(pending_requirements.is_empty())
 	var conditional_requirements := result.get("conditional_requirements", []) as Array
 	assert(conditional_requirements.has("position_and_distance_model"))
 
