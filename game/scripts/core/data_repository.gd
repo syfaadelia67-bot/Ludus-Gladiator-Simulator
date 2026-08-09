@@ -9,6 +9,7 @@ var weapons: Array = []
 var abilities: Array = []
 var specializations: Array = []
 var beasts: Array = []
+var rival_ludi: Array = []
 var unique_gladiators: Array = []
 var economy_rules: Array = []
 var frozen_contract_errors: Array[String] = []
@@ -25,6 +26,7 @@ func load_all() -> void:
 	abilities = _load_json_array("res://data/abilities.json")
 	specializations = _load_json_array("res://data/specializations.json")
 	beasts = _load_json_array("res://data/beasts.json")
+	rival_ludi = _load_json_array("res://data/rival_ludi.json")
 	unique_gladiators = _load_json_array("res://data/unique_gladiators.json")
 	economy_rules = _load_json_array("res://data/economy_rules.json")
 	_validate_frozen_contracts()
@@ -61,6 +63,17 @@ func get_buildings() -> Array:
 func get_building(building_id: String) -> Dictionary:
 	for entry in buildings:
 		if entry is Dictionary and str(entry.get("id", "")) == building_id:
+			return entry.duplicate(true)
+	return {}
+
+
+func get_rival_ludi() -> Array:
+	return rival_ludi.duplicate(true)
+
+
+func get_rival_ludus(rival_id: String) -> Dictionary:
+	for entry in rival_ludi:
+		if entry is Dictionary and str(entry.get("id", "")) == rival_id:
 			return entry.duplicate(true)
 	return {}
 
