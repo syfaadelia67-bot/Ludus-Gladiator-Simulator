@@ -92,16 +92,19 @@ func _test_explicit_resistance_builds_fighter(adapter) -> void:
 
 
 func _test_live_person_supplies_canonical_resistance(adapter) -> void:
-	var person = PersonScript.new(
-		{
-			"id": "live_g1",
-			"strength": 7,
-			"agility": 8,
-			"technique": 9,
-			"resistance": 12,
-			"endurance": 88,
-			"health": 60,
-		}
+	var person = (
+		PersonScript
+		. new(
+			{
+				"id": "live_g1",
+				"strength": 7,
+				"agility": 8,
+				"technique": 9,
+				"resistance": 12,
+				"endurance": 88,
+				"health": 60,
+			}
+		)
 	)
 	var result: Dictionary = adapter.build_from_person(person, "player", {"power": 2, "defense": 1})
 	_assert_eq(result.get("status"), "ready", "live roster person must build without override")
@@ -116,15 +119,18 @@ func _test_live_person_supplies_canonical_resistance(adapter) -> void:
 
 
 func _test_legacy_person_receives_neutral_resistance_baseline(adapter) -> void:
-	var legacy_person = PersonScript.new(
-		{
-			"id": "legacy_g1",
-			"strength": 7,
-			"agility": 8,
-			"technique": 9,
-			"endurance": 99,
-			"health": 60,
-		}
+	var legacy_person = (
+		PersonScript
+		. new(
+			{
+				"id": "legacy_g1",
+				"strength": 7,
+				"agility": 8,
+				"technique": 9,
+				"endurance": 99,
+				"health": 60,
+			}
+		)
 	)
 	_assert_eq(legacy_person.resistance, 5, "legacy v14 person must receive neutral RES baseline")
 	var result: Dictionary = adapter.build_from_person(legacy_person, "player")
