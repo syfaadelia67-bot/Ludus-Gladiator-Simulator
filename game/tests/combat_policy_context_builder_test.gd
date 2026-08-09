@@ -60,7 +60,9 @@ func _test_1v1_context(builder) -> void:
 	_assert_eq(legal_targets.get("light"), ["b"], "light must expose enemy target")
 	_assert_eq(legal_targets.get("heavy"), ["b"], "heavy must expose enemy target")
 	for action_id in ["block", "parry", "dodge", "reposition"]:
-		_assert_eq(legal_targets.get(action_id), [], "%s must expose no explicit targets" % action_id)
+		_assert_eq(
+			legal_targets.get(action_id), [], "%s must expose no explicit targets" % action_id
+		)
 	var isolated_actor := context.get("actor") as Dictionary
 	isolated_actor["stamina"] = 0
 	_assert_eq(
