@@ -31,10 +31,10 @@ Question:
 Current evidence:
 - `CombatPolicy` only validates that a non-empty `target_id` exists.
 - Policy Context exposes allies and enemies separately but deliberately calls them target candidates, not legal targets.
-- `CombatTargetResolver` now owns candidate classification for `1v1`, `1v2`, and `2v2`.
-- `CombatTargetResolver.inspect_action_targets()` deliberately returns `pending_design_freeze` with reason `target_rules_not_frozen` for all six base actions and never exposes `legal_targets` while D1 is pending.
-- `CombatSimulator` surfaces D1 as `blocking_requirement = target_rules` and attaches the resolver result as isolated `blocking_context` without resolving combat.
-- `CombatDecisionGateway` propagates the same blocker to its caller with an independent deep copy; policy rejection exposes no simulator blocker.
+- `CombatTargetResolver` owns candidate classification for `1v1`, `1v2`, and `2v2`.
+- `CombatTargetResolver.inspect_action_targets()` returns `pending_design_freeze` with reason `target_rules_not_frozen` for all six base actions and never exposes `legal_targets` while D1 is pending.
+- `CombatSimulator` surfaces D1 as `blocking_requirement = target_rules` and attaches isolated `blocking_context` without resolving combat.
+- `CombatDecisionGateway` propagates the same blocker with an independent deep copy; policy rejection exposes no simulator blocker.
 - Canonical abilities mostly describe effects on a rival, but `abilities.json` has no formal `target_type` field.
 - No recovered repository evidence defines target semantics for the six V1 base actions.
 
@@ -44,14 +44,17 @@ Structural implementation status:
 - legal-target semantics: `NOT FROZEN`;
 - target relationship enforcement: `NOT IMPLEMENTED` by design until freeze.
 
-Current simplest design candidate, **not frozen**:
-- `light` / `heavy`: one enemy target;
-- `block` / `parry` / `dodge`: no explicit target, actor is implicit;
+Current simplest design candidate, **PROPOSAL ONLY**:
+- `light` / `heavy`: exactly one enemy target;
+- `block` / `parry` / `dodge`: no explicit target; actor is implicit;
 - `reposition`: no explicit target;
 - no ally-targeting for the six base actions in V1;
 - same relationship rules in `1v1`, `1v2`, and `2v2`.
 
-This candidate is intentionally documented as a proposal only. It must not affect `CombatPolicy`, `CombatTargetResolver`, or LimboAI until D1 becomes explicitly `FROZEN`.
+Approval boundary:
+- this proposal must remain non-authoritative while D1 is `PENDING`;
+- it must not alter `CombatPolicy`, `CombatTargetResolver`, action contracts, LimboAI, or simulator resolution merely because it is documented here;
+- activation requires D1 to be explicitly changed to `FROZEN` and protected by relationship/format tests.
 
 Must not be inferred automatically:
 - `block/parry/dodge/reposition` being self-only;
@@ -110,11 +113,11 @@ Question:
 - How do defensive reactions interact with attacks?
 
 Current evidence:
-- Legacy combat simply alternates player attack and then enemy attack each round.
+- Legacy combat alternates player attack and then enemy attack each round.
 - The legacy order is side-biased and cannot represent `2v2` or `1v2` fairly without additional rules.
-- Historical `relentless_pursuit` includes `retain_initiative_on_hit`, showing that initiative was contemplated as an effect, but the legacy simulator has no reusable initiative state for Combat V1.
+- Historical `relentless_pursuit` includes `retain_initiative_on_hit`, but the legacy simulator has no reusable initiative state for Combat V1.
 - Historical feint/stun/action-loss mechanics can suppress an action, but they do not define a general V1 ordering model.
-- `parry`, `block`, and `dodge` are first-class V1 actions, so the final ordering model must define how defensive intent interacts with an opposing offensive intent.
+- `parry`, `block`, and `dodge` are first-class V1 actions, so final ordering must define how defensive intent interacts with offensive intent.
 - LimboAI execution order cannot be allowed to decide simulator resolution order.
 
 Evidence-based constraint, **not frozen**:
