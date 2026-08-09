@@ -1,5 +1,6 @@
 extends RefCounted
 
+const CombatAccuracyResolverScript = preload("res://scripts/combat/combat_accuracy_resolver.gd")
 const CombatContractScript = preload("res://scripts/combat/combat_contract.gd")
 const CombatDamageResolverScript = preload("res://scripts/combat/combat_damage_resolver.gd")
 const CombatPolicyContractScript = preload("res://scripts/combat/combat_policy_contract.gd")
@@ -17,8 +18,9 @@ const CombatStaminaResolverScript = preload("res://scripts/combat/combat_stamina
 const CombatTargetResolverScript = preload("res://scripts/combat/combat_target_resolver.gd")
 
 const PENDING_REASON := "combat_resolution_rules_not_frozen"
-const NEXT_BLOCKER_ID := "accuracy_formula"
+const NEXT_BLOCKER_ID := "defensive_action_effects"
 
+var _accuracy_resolver = CombatAccuracyResolverScript.new()
 var _combat_contract = CombatContractScript.new()
 var _damage_resolver = CombatDamageResolverScript.new()
 var _policy_contract = CombatPolicyContractScript.new()
@@ -72,6 +74,7 @@ func resolve_intent(state: Dictionary, desired_action: Dictionary) -> Dictionary
 			"resolution_order_contract": _resolution_order.get_contract_status().duplicate(true),
 			"damage_contract": _damage_resolver.get_contract().duplicate(true),
 			"stamina_contract": _stamina_resolver.get_contract().duplicate(true),
+			"accuracy_contract": _accuracy_resolver.get_contract().duplicate(true),
 			"d5_d9_contracts": _d5_d9_contract.get_contracts(),
 			"runtime_state_preview":
 			(runtime_state_result.get("state", {}) as Dictionary).duplicate(true),
