@@ -8,7 +8,7 @@ const CombatResolutionReadinessScript = preload(
 const CombatTargetResolverScript = preload("res://scripts/combat/combat_target_resolver.gd")
 
 const PENDING_REASON := "combat_resolution_rules_not_frozen"
-const TARGET_BLOCKER_ID := "target_rules"
+const NEXT_BLOCKER_ID := "resolution_order"
 
 var _combat_contract = CombatContractScript.new()
 var _policy_contract = CombatPolicyContractScript.new()
@@ -35,10 +35,10 @@ func resolve_intent(state: Dictionary, desired_action: Dictionary) -> Dictionary
 			str(desired_action.get("action_id", "")),
 		)
 	)
-	if target_inspection.get("status") != "pending_design_freeze":
+	if target_inspection.get("status") != "ready":
 		var target_errors := target_inspection.get("errors", []) as Array
 		if target_errors.is_empty():
-			target_errors = ["Target resolver did not return the expected D1 pending boundary"]
+			target_errors = ["Frozen D1 target resolution did not return a ready result"]
 		return _rejected_result("invalid_target_context", target_errors, state, desired_action)
 
 	return {
@@ -46,8 +46,8 @@ func resolve_intent(state: Dictionary, desired_action: Dictionary) -> Dictionary
 		"pending": true,
 		"reason": PENDING_REASON,
 		"errors": [],
-		"blocking_requirement": TARGET_BLOCKER_ID,
-		"blocking_context": target_inspection.duplicate(true),
+		"blocking_requirement": NEXT_BLOCKER_ID,
+		"blocking_context": {"resolved_target_context": target_inspection.duplicate(true)},
 		"pending_requirements": _resolution_readiness.get_pending_requirements(),
 		"conditional_requirements": _resolution_readiness.get_conditional_requirements(),
 		"state": state.duplicate(true),
