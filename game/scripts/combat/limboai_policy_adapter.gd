@@ -22,6 +22,7 @@ const POLICY_CONTEXT_KEYS := [
 	"available_action_ids",
 	"action_contracts",
 	"target_candidates",
+	"legal_targets",
 	"combat_state",
 	"desired_action",
 ]
