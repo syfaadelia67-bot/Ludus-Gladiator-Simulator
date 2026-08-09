@@ -1,7 +1,6 @@
 extends SceneTree
 
 const BuilderScript = preload("res://scripts/combat/gt1_live_roster_state_builder.gd")
-const PersonScript = preload("res://scripts/entities/person.gd")
 
 var _failures: Array[String] = []
 
@@ -48,29 +47,26 @@ func _test_live_autoload_roster_uses_real_equipment_snapshots() -> void:
 	if roster_manager == null or equipment_manager == null:
 		return
 
-	var original_people: Array = roster_manager.people.duplicate()
+	var live_people: Array = roster_manager.get_people()
+	_assert_true(not live_people.is_empty(), "live RosterManager must expose a seeded real person")
+	if live_people.is_empty():
+		return
+	var live_person = live_people[0]
+	_assert_true(live_person != null, "seeded live roster person must exist")
+	if live_person == null:
+		return
+
+	var original_role := str(live_person.role)
+	var original_slots: Dictionary = live_person.get_equipped_slots()
 	var original_inventory: Array = equipment_manager.inventory.duplicate(true)
 	var original_serial: int = int(equipment_manager.serial)
 
-	var live_person = (
-		PersonScript
-		. new(
-			{
-				"id": "live_gladiator",
-				"name": "Live Gladiator",
-				"role": "gladiator",
-				"strength": 11,
-				"agility": 10,
-				"technique": 9,
-				"resistance": 8,
-				"health": 42,
-				"endurance": 7,
-			}
-		)
-	)
-	roster_manager.people = [live_person]
-	equipment_manager.inventory = []
+	live_person.role = "gladiator"
+	equipment_manager.inventory.clear()
 	equipment_manager.serial = 0
+	for slot_id in equipment_manager.get_slot_ids():
+		if slot_id != "mount":
+			live_person.set_equipped_item_id(slot_id, "")
 
 	var live_item: Dictionary = (
 		equipment_manager
@@ -90,7 +86,7 @@ func _test_live_autoload_roster_uses_real_equipment_snapshots() -> void:
 	var item_id := str(live_item.get("id", ""))
 	_assert_true(not item_id.is_empty(), "real EquipmentManager must create the live test item")
 	_assert_true(
-		equipment_manager.equip_item_to_slot(live_person.id, item_id, "right_hand"),
+		equipment_manager.equip_item_to_slot(str(live_person.id), item_id, "right_hand"),
 		"real EquipmentManager must equip the live test item",
 	)
 
@@ -100,18 +96,19 @@ func _test_live_autoload_roster_uses_real_equipment_snapshots() -> void:
 		[_opponent("live_y", "rival", 0)],
 		[_opponent("live_z", "rival", 0)],
 	]
+	var live_id := str(live_person.id)
 	var first_result: Dictionary = (
 		builder
 		. build_from_live_roster(
 			13,
 			"player",
-			[[live_person.id], [live_person.id], [live_person.id]],
+			[[live_id], [live_id], [live_id]],
 			opponents,
 		)
 	)
 	_assert_eq(first_result.get("status"), "ready", "live autoload build must be ready")
 	var first_states := first_result.get("bout_states", []) as Array
-	var first_fighter := _fighter_by_id(first_states[0] as Dictionary, live_person.id)
+	var first_fighter := _fighter_by_id(first_states[0] as Dictionary, live_id)
 	var first_equipment := first_fighter.get("equipment", {}) as Dictionary
 	var first_expected: Dictionary = equipment_manager.get_equipped_stats(live_person)
 	_assert_eq(
@@ -130,13 +127,13 @@ func _test_live_autoload_roster_uses_real_equipment_snapshots() -> void:
 		. build_from_live_roster(
 			13,
 			"player",
-			[[live_person.id], [live_person.id], [live_person.id]],
+			[[live_id], [live_id], [live_id]],
 			opponents,
 		)
 	)
 	_assert_eq(second_result.get("status"), "ready", "second live autoload build must be ready")
 	var second_states := second_result.get("bout_states", []) as Array
-	var second_fighter := _fighter_by_id(second_states[0] as Dictionary, live_person.id)
+	var second_fighter := _fighter_by_id(second_states[0] as Dictionary, live_id)
 	var second_equipment := second_fighter.get("equipment", {}) as Dictionary
 	_assert_eq(
 		second_equipment,
@@ -157,9 +154,13 @@ func _test_live_autoload_roster_uses_real_equipment_snapshots() -> void:
 		"live integration must report its authoritative player source",
 	)
 
-	roster_manager.people = original_people
-	equipment_manager.inventory = original_inventory
+	equipment_manager.inventory.clear()
+	for original_item in original_inventory:
+		equipment_manager.inventory.append(original_item)
 	equipment_manager.serial = original_serial
+	for slot_id in equipment_manager.get_slot_ids():
+		live_person.set_equipped_item_id(slot_id, str(original_slots.get(slot_id, "")))
+	live_person.role = original_role
 
 
 func _test_month_20_builds_real_2v2_snapshots() -> void:
