@@ -38,7 +38,9 @@ func _test_valid_explicit_snapshot(contract) -> void:
 
 
 func _test_unknown_rival_is_rejected(contract) -> void:
-	var result: Dictionary = contract.validate("legacy_rival", "beta", _fighter("beta"))
+	var result: Dictionary = (
+		contract.validate("legacy_rival", "beta", _fighter("beta"))
+	)
 	assert(result.get("status") == "rejected")
 	assert(result.get("reason") == "invalid_rival_combat_snapshot")
 	assert(
