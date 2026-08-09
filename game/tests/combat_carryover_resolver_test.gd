@@ -31,7 +31,10 @@ func _test_carries_pv_and_stamina_for_same_fighter_id() -> void:
 	var carried_a: Dictionary = _fighter_by_id(result.get("state", {}) as Dictionary, "a")
 	_assert_eq(carried_a.get("current_pv"), 6.0, "same fighter must carry current PV")
 	_assert_eq(carried_a.get("stamina"), 4.0, "same fighter must carry Stamina")
-	_assert_true((result.get("carried_fighter_ids", []) as Array).has("a"), "carried fighter id must be exposed")
+	_assert_true(
+		(result.get("carried_fighter_ids", []) as Array).has("a"),
+		"carried fighter id must be exposed"
+	)
 
 
 func _test_resets_transient_vulnerability() -> void:
@@ -41,7 +44,9 @@ func _test_resets_transient_vulnerability() -> void:
 	previous_a["vulnerable"] = true
 	var result: Dictionary = resolver.prepare_consecutive_fight(previous, _base_state("a", "c"))
 	var carried_a: Dictionary = _fighter_by_id(result.get("state", {}) as Dictionary, "a")
-	_assert_eq(carried_a.get("vulnerable"), false, "between-fight transient vulnerability must reset")
+	_assert_eq(
+		carried_a.get("vulnerable"), false, "between-fight transient vulnerability must reset"
+	)
 
 
 func _test_new_opponent_starts_fresh() -> void:
@@ -51,7 +56,10 @@ func _test_new_opponent_starts_fresh() -> void:
 	var new_opponent: Dictionary = _fighter_by_id(result.get("state", {}) as Dictionary, "c")
 	_assert_eq(new_opponent.get("current_pv"), 10.0, "new opponent must start at full canonical PV")
 	_assert_eq(new_opponent.get("stamina"), 10, "new opponent must keep base Stamina")
-	_assert_true(not (result.get("carried_fighter_ids", []) as Array).has("c"), "new opponent is not carryover")
+	_assert_true(
+		not (result.get("carried_fighter_ids", []) as Array).has("c"),
+		"new opponent is not carryover"
+	)
 
 
 func _test_contract_forbids_free_restore_between_consecutive_fights() -> void:
@@ -59,13 +67,18 @@ func _test_contract_forbids_free_restore_between_consecutive_fights() -> void:
 	var contract: Dictionary = resolver.get_contract()
 	_assert_eq(contract.get("status"), "frozen", "D10 contract must be frozen")
 	_assert_eq(contract.get("full_heal_between_consecutive_fights"), false, "no free GT heal")
-	_assert_eq(contract.get("full_stamina_restore_between_consecutive_fights"), false, "no free GT stamina reset")
+	_assert_eq(
+		contract.get("full_stamina_restore_between_consecutive_fights"),
+		false,
+		"no free GT stamina reset"
+	)
 
 
 func _base_state(first_id: String, second_id: String) -> Dictionary:
 	return {
 		"format": "1v1",
-		"fighters": [
+		"fighters":
+		[
 			_fighter(first_id, "alpha"),
 			_fighter(second_id, "beta"),
 		],
