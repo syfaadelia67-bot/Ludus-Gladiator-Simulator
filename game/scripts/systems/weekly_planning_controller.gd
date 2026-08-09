@@ -65,8 +65,10 @@ func get_summary() -> Dictionary:
 		1,
 		int(
 			ceil(
-				float(RosterManager.get_people().size())
-				* EventManager.get_food_consumption_multiplier()
+				(
+					float(RosterManager.get_people().size())
+					* EventManager.get_food_consumption_multiplier()
+				)
 			)
 		),
 	)
@@ -92,8 +94,10 @@ func get_summary() -> Dictionary:
 	for item in training:
 		if int(item.get("injury_risk", 0)) >= 20:
 			warnings.append(
-				"%s tiene %d%% de riesgo de lesión por entrenamiento."
-				% [item.get("name", "Gladiador"), int(item.get("injury_risk", 0))]
+				(
+					"%s tiene %d%% de riesgo de lesión por entrenamiento."
+					% [item.get("name", "Gladiador"), int(item.get("injury_risk", 0))]
+				)
 			)
 
 	return {
