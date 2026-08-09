@@ -68,7 +68,9 @@ func _test_valid_proposal_reaches_simulator_as_pending() -> void:
 		exchange_contract.get("offense_commit"), "simultaneous", "exchange must stay simultaneous"
 	)
 	var combat_end_contract := blocking_context.get("combat_end_contract", {}) as Dictionary
-	_assert_eq(combat_end_contract.get("status"), "frozen", "gateway must expose combat-end contract")
+	_assert_eq(
+		combat_end_contract.get("status"), "frozen", "gateway must expose combat-end contract"
+	)
 	_assert_eq(
 		combat_end_contract.get("automatic_surrender"),
 		"disabled_v1",
