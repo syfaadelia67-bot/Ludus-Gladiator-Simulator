@@ -7,6 +7,7 @@ func _ready() -> void:
 	DataRepository.load_all()
 	_test_explicit_rival_result_registration()
 	_test_completed_standings_surface_non_podium_tiebreak_requirement()
+	_test_exact_first_place_tie_resolves_from_combat_authority()
 	print("Canonical GT I rival result registry: OK")
 	get_tree().quit(0)
 
@@ -42,8 +43,12 @@ func _test_explicit_rival_result_registration() -> void:
 	assert(contract.get("points_per_win") == 3)
 	assert(contract.get("standings_resolution_policy") == "gt1_standings_tiebreak_policy")
 	assert(contract.get("podium_tie_resolution") == "tournament_characteristic_combat")
+	assert(contract.get("podium_tiebreak_contract") == "gt1_podium_tiebreak_contract")
+	assert(contract.get("exact_championship_tiebreak") == "two_ludi_tied_first_at_27_points")
+	assert(contract.get("exact_championship_format") == "1v1")
+	assert(contract.get("exact_championship_points_awarded") == 0)
 	assert(contract.get("non_podium_tie_resolution") == ["head_to_head", "prior_season_position"])
-	assert(contract.get("resolved_non_podium_tie_authority") == "TournamentManager")
+	assert(contract.get("resolved_tiebreak_authority") == "TournamentManager")
 	assert(contract.get("resolved_tiebreak_uses_existing_save_v14_fields") == true)
 	assert(contract.get("alphabetical_fallback_allowed") == false)
 	assert(contract.get("random_fallback_allowed") == false)
@@ -127,5 +132,88 @@ func _test_completed_standings_surface_non_podium_tiebreak_requirement() -> void
 	assert(restored_summary.get("standings_resolved") == true)
 	assert(int(restored_summary.get("placement", 0)) == 4)
 	assert(str(restored_summary.get("medal", "x")).is_empty())
+
+	TournamentManager.import_state({})
+
+
+func _test_exact_first_place_tie_resolves_from_combat_authority() -> void:
+	(
+		TournamentManager
+		. import_state(
+			{
+				"gt1_player_points": 27,
+				"gt1_player_wins": 9,
+				"gt1_player_bouts": 9,
+				"gt1_encounter_progress": {"13": 3, "16": 3, "20": 3},
+			}
+		)
+	)
+	var registry = GT1RivalResultRegistryScript.new()
+	var rival_results := [
+		["cassianus", 27, 9],
+		["aurelius", 24, 8],
+		["flavianus", 21, 7],
+		["drusus", 18, 6],
+		["severus", 15, 5],
+		["marcellus", 12, 4],
+		["varro", 9, 3],
+	]
+	var final_result: Dictionary = {}
+	for rival_result in rival_results:
+		final_result = (
+			registry
+			. register_result(
+				str(rival_result[0]),
+				int(rival_result[1]),
+				int(rival_result[2]),
+			)
+		)
+		assert(final_result.get("status") == "registered")
+
+	var standings_resolution := final_result.get("standings_resolution", {}) as Dictionary
+	assert(standings_resolution.get("status") == "podium_combat_required")
+	assert(standings_resolution.get("tied_rival_ids") == ["cassianus"])
+	assert(int(standings_resolution.get("first_tied_position", 0)) == 1)
+	assert(int(standings_resolution.get("last_tied_position", 0)) == 2)
+
+	var request := registry.build_podium_tiebreak_request()
+	assert(request.get("status") == "ready")
+	assert(request.get("format") == "1v1")
+	assert(request.get("participant_ludus_ids") == ["player", "cassianus"])
+	assert(request.get("player_selection") == "one_available_gladiator")
+	assert(request.get("rival_selection") == "one_available_gladiator")
+	assert(int(request.get("points_awarded", -1)) == 0)
+
+	var resolved := registry.resolve_podium_tiebreak(
+		{
+			"status": "combat_finished",
+			"outcome": "team_win",
+			"winner_team_id": "alpha",
+		},
+		{"alpha": "player", "beta": "cassianus"},
+	)
+	assert(resolved.get("status") == "resolved")
+	assert(resolved.get("resolution_source") == "tournament_characteristic_combat")
+	assert(resolved.get("winner_ludus_id") == "player")
+	assert(int(resolved.get("placement", 0)) == 1)
+	assert(resolved.get("medal") == "gold")
+	assert(int(resolved.get("points_awarded", -1)) == 0)
+	assert(resolved.get("applied_to_tournament_manager") == true)
+
+	var summary := TournamentManager.get_gt1_summary()
+	assert(summary.get("tiebreak_required") == false)
+	assert(summary.get("standings_resolved") == true)
+	assert(int(summary.get("placement", 0)) == 1)
+	assert(summary.get("medal") == "gold")
+	assert(int(summary.get("player_points", 0)) == 27)
+	assert(int(summary.get("player_wins", 0)) == 9)
+
+	var saved_state := TournamentManager.export_state()
+	TournamentManager.import_state(saved_state)
+	var restored := TournamentManager.get_gt1_summary()
+	assert(restored.get("standings_resolved") == true)
+	assert(int(restored.get("placement", 0)) == 1)
+	assert(restored.get("medal") == "gold")
+	assert(int(restored.get("player_points", 0)) == 27)
 
 	TournamentManager.import_state({})
