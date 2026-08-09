@@ -42,6 +42,5 @@ func _normalize_month_log(month: int) -> void:
 	)
 	var fight: Dictionary = CombatManager.get_current_event_details()
 	activity_log.append_text(
-		"\n[color=gold]Combate programado: %s.[/color]"
-		% str(fight.get("name", "Arena del mes"))
+		"\n[color=gold]Combate programado: %s.[/color]" % str(fight.get("name", "Arena del mes"))
 	)
