@@ -6,6 +6,7 @@ const CombatDamageResolverScript = preload("res://scripts/combat/combat_damage_r
 const CombatDefensiveEffectResolverScript = preload(
 	"res://scripts/combat/combat_defensive_effect_resolver.gd"
 )
+const CombatEndResolverScript = preload("res://scripts/combat/combat_end_resolver.gd")
 const CombatExchangeResolverScript = preload("res://scripts/combat/combat_exchange_resolver.gd")
 const CombatPolicyContractScript = preload("res://scripts/combat/combat_policy_contract.gd")
 const CombatResolutionOrderBoundaryScript = preload(
@@ -26,6 +27,7 @@ const NEXT_BLOCKER_ID := "complete_exchange_intents"
 
 var _accuracy_resolver = CombatAccuracyResolverScript.new()
 var _combat_contract = CombatContractScript.new()
+var _combat_end_resolver = CombatEndResolverScript.new()
 var _damage_resolver = CombatDamageResolverScript.new()
 var _defensive_resolver = CombatDefensiveEffectResolverScript.new()
 var _exchange_resolver = CombatExchangeResolverScript.new()
@@ -83,6 +85,7 @@ func resolve_intent(state: Dictionary, desired_action: Dictionary) -> Dictionary
 			"accuracy_contract": _accuracy_resolver.get_contract().duplicate(true),
 			"defensive_effect_contract": _defensive_resolver.get_contract().duplicate(true),
 			"exchange_contract": _exchange_resolver.get_contract().duplicate(true),
+			"combat_end_contract": _combat_end_resolver.get_contract().duplicate(true),
 			"d5_d9_contracts": _d5_d9_contract.get_contracts(),
 			"runtime_state_preview":
 			(runtime_state_result.get("state", {}) as Dictionary).duplicate(true),
@@ -101,9 +104,30 @@ func resolve_exchange(state: Dictionary, intents: Array) -> Dictionary:
 	result["frozen_requirements"] = _resolution_readiness.get_frozen_requirements()
 	result["pending_requirements"] = _resolution_readiness.get_pending_requirements()
 	result["conditional_requirements"] = _resolution_readiness.get_conditional_requirements()
-	result["combat_completion_pending"] = not (
-		_resolution_readiness.get_pending_requirements().is_empty()
-	)
+	result["combat_completion_pending"] = false
+	if exchange_result.get("status") != "resolved":
+		result["combat_end_result"] = {}
+		result["combat_end_resolved"] = false
+		return result
+
+	var resolved_state := exchange_result.get("state", {}) as Dictionary
+	var combat_end_result: Dictionary = _combat_end_resolver.resolve(resolved_state)
+	if combat_end_result.get("status") != "resolved":
+		result["status"] = "rejected"
+		result["ok"] = false
+		result["reason"] = "combat_end_resolution_failed"
+		result["errors"] = (combat_end_result.get("errors", []) as Array).duplicate()
+		result["combat_end_result"] = combat_end_result.duplicate(true)
+		result["combat_end_resolved"] = false
+		return result
+
+	result["combat_end_result"] = combat_end_result.duplicate(true)
+	result["combat_end_resolved"] = bool(combat_end_result.get("combat_finished", false))
+	result["surrender_resolved"] = true
+	result["surrender_occurred"] = false
+	result["outcome"] = str(combat_end_result.get("outcome", "ongoing"))
+	result["winner_team_id"] = str(combat_end_result.get("winner_team_id", ""))
+	result["loser_team_id"] = str(combat_end_result.get("loser_team_id", ""))
 	return result
 
 
