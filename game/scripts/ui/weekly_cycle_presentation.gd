@@ -40,7 +40,14 @@ func _normalize_month_log(month: int) -> void:
 	activity_log.text = activity_log.text.replace(
 		"[b]Semana %d[/b]" % month, "[b]Mes %d[/b]" % month
 	)
-	var fight: Dictionary = CombatManager.get_current_event_details()
+	var encounter := TournamentManager.get_gt1_encounter(month)
+	if encounter.is_empty():
+		activity_log.append_text("\n[color=gray]Mes de gestión del ludus.[/color]")
+		return
 	activity_log.append_text(
-		"\n[color=gold]Combate programado: %s.[/color]" % str(fight.get("name", "Arena del mes"))
+		"\n[color=gold]%s · %s.[/color]"
+		% [
+			str(encounter.get("tournament_name", "Gran Torneo de Roma")),
+			str(encounter.get("format", "Arena")),
+		]
 	)
