@@ -8,15 +8,15 @@ const FROZEN_REQUIREMENTS: Array[String] = [
 	"armor_penetration_disabled_v1",
 	"armor_and_vulnerability_structure",
 	"stamina_structure",
+	"stamina_cost_table",
+	"stamina_recovery_amount",
+	"stamina_recovery_timing",
 	"accuracy_and_critical_structure",
 	"stat_scaling_roles",
 	"ko_structure",
 ]
 
 const REQUIRED_DECISIONS: Array[String] = [
-	"stamina_cost_table",
-	"stamina_recovery_amount",
-	"stamina_recovery_timing",
 	"accuracy_formula",
 	"stat_scaling_weights",
 	"surrender_rules",
