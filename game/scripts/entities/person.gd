@@ -39,7 +39,7 @@ var equipped_armor_id: String = ""
 var equipped_shield_id: String = ""
 var equipped_slots: Dictionary = {}
 
-# Kept as injury_days for save compatibility. In the weekly campaign it represents recovery weeks.
+# Save-v14 field name retained. Runtime interpretation is recovery months/turns.
 var injury_severity: int = 0
 var injury_days: int = 0
 var injury_name: String = ""
@@ -132,8 +132,9 @@ func assign_job(new_job: String) -> void:
 	job = new_job
 
 
-func process_day() -> Dictionary:
+func process_month() -> Dictionary:
 	var result := {
+		"period": "month",
 		"ore": 0,
 		"food": 0,
 		"security": 0,
@@ -143,14 +144,14 @@ func process_day() -> Dictionary:
 	}
 	if injury_days > 0:
 		job = "idle"
-		var recovery_week_bonus := floori(float(EstateManager.get_recovery_bonus()) / 4.0)
-		injury_days = maxi(0, injury_days - 1 - recovery_week_bonus)
+		var recovery_month_bonus := floori(float(EstateManager.get_recovery_bonus()) / 4.0)
+		injury_days = maxi(0, injury_days - 1 - recovery_month_bonus)
 		fatigue = maxi(0, fatigue - 10 - EstateManager.get_recovery_bonus())
 		morale = mini(100, morale + 3)
 		if injury_days == 0:
 			injury_severity = 0
 			injury_name = ""
-		result.personality = PersonalityManager.process_person_day(self, result)
+		result.personality = PersonalityManager.process_person_month(self, result)
 		return result
 	match job:
 		"mining":
@@ -177,11 +178,16 @@ func process_day() -> Dictionary:
 		_:
 			fatigue = maxi(0, fatigue - 6 - EstateManager.get_recovery_bonus())
 			morale = mini(100, morale + 2)
-	result.personality = PersonalityManager.process_person_day(self, result)
+	result.personality = PersonalityManager.process_person_month(self, result)
 	morale = clampi(morale - floori(float(fatigue) / 25.0), 0, 100)
 	loyalty = clampi(loyalty, 0, 100)
 	fatigue = clampi(fatigue, 0, 100)
 	return result
+
+
+func process_day() -> Dictionary:
+	# Save-v14 / legacy caller adapter only. Never an additional simulation tick.
+	return process_month()
 
 
 func apply_growth(growth: Dictionary) -> void:
@@ -194,10 +200,10 @@ func apply_growth(growth: Dictionary) -> void:
 	health = maxi(1, health + int(growth.get("health", 0)))
 
 
-func apply_injury(name_value: String, severity: int, recovery_weeks: int) -> void:
+func apply_injury(name_value: String, severity: int, recovery_months: int) -> void:
 	injury_name = name_value
 	injury_severity = clampi(severity, 1, 3)
-	injury_days = maxi(1, recovery_weeks)
+	injury_days = maxi(1, recovery_months)
 	job = "idle"
 
 
@@ -227,7 +233,7 @@ func get_base_defense() -> int:
 func get_injury_summary() -> String:
 	if injury_days <= 0:
 		return "Sin heridas"
-	return "%s · gravedad %d · %d semana(s)" % [injury_name, injury_severity, injury_days]
+	return "%s · gravedad %d · %d mes(es)" % [injury_name, injury_severity, injury_days]
 
 
 func summary() -> String:
