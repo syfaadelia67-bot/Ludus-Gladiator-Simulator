@@ -44,6 +44,15 @@ Structural implementation status:
 - legal-target semantics: `NOT FROZEN`;
 - target relationship enforcement: `NOT IMPLEMENTED` by design until freeze.
 
+Current simplest design candidate, **not frozen**:
+- `light` / `heavy`: one enemy target;
+- `block` / `parry` / `dodge`: no explicit target, actor is implicit;
+- `reposition`: no explicit target;
+- no ally-targeting for the six base actions in V1;
+- same relationship rules in `1v1`, `1v2`, and `2v2`.
+
+This candidate is intentionally documented as a proposal only. It must not affect `CombatPolicy`, `CombatTargetResolver`, or LimboAI until D1 becomes explicitly `FROZEN`.
+
 Must not be inferred automatically:
 - `block/parry/dodge/reposition` being self-only;
 - `light/heavy` requiring an enemy target;
@@ -70,7 +79,7 @@ Current evidence:
 - Current CombatState intentionally has no authoritative spatial state.
 - Presentation coordinates, if any are later used by animation/UI, are not valid evidence for simulation authority.
 
-Evidence-based recommendation, not frozen:
+Evidence-based recommendation, **not frozen**:
 - prefer an abstract `reposition` action for Combat V1;
 - do not add authoritative coordinates/range bands unless a later combat rule demonstrably requires them;
 - express pursuit, entangle and mobility effects as simulator states/modifiers rather than presentation-space movement where possible.
@@ -108,7 +117,7 @@ Current evidence:
 - `parry`, `block`, and `dodge` are first-class V1 actions, so the final ordering model must define how defensive intent interacts with an opposing offensive intent.
 - LimboAI execution order cannot be allowed to decide simulator resolution order.
 
-Evidence-based constraint, not frozen:
+Evidence-based constraint, **not frozen**:
 - resolution should be exchange-based and deterministic from CombatState/intents;
 - node order, frame timing, BehaviorTree tick timing, and dictionary/array insertion order must never decide priority;
 - any initiative/tie-break rule must be owned by `CombatSimulator` and explicitly reproducible.
