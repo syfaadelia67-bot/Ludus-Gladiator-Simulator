@@ -26,18 +26,10 @@ func _initialize() -> void:
 func _test_d5(contract) -> void:
 	var d5: Dictionary = contract.get_contract("D5")
 	_assert_eq(d5.get("status"), "frozen", "D5 structure must be frozen")
-	_assert_eq(
-		d5.get("armor_source"),
-		"equipment_defense",
-		"armor must come from canonical equipment defense"
-	)
-	_assert_eq(
-		d5.get("armor_is_separate_from_res"), true, "armor and RES must remain separate inputs"
-	)
+	_assert_eq(d5.get("armor_source"), "equipment_defense", "armor must come from equipment")
+	_assert_eq(d5.get("armor_is_separate_from_res"), true, "armor and RES remain separate")
 	_assert_eq(d5.get("body_part_armor_model"), false, "V1 must not invent body-part armor")
-	_assert_eq(
-		d5.get("vulnerability_authority"), "combat_simulator", "simulator owns vulnerability state"
-	)
+	_assert_eq(d5.get("vulnerability_authority"), "combat_simulator", "simulator owns vulnerability")
 	_assert_eq(d5.get("numeric_mitigation_status"), "frozen", "D4 freezes armor mitigation")
 	_assert_eq(d5.get("penetration_status"), "disabled_v1", "V1 penetration stays disabled")
 
@@ -49,15 +41,11 @@ func _test_d6(contract) -> void:
 	_assert_eq(d6.get("capacity_field"), "stamina_capacity", "D6 needs an explicit runtime cap")
 	_assert_eq(d6.get("minimum"), 0, "Stamina cannot go below zero")
 	_assert_eq(d6.get("negative_values_allowed"), false, "negative Stamina must be forbidden")
-	_assert_eq(
-		d6.get("insufficient_stamina_behavior"),
-		"reject_action",
-		"insufficient Stamina must fail closed"
-	)
+	_assert_eq(d6.get("insufficient_stamina_behavior"), "reject_action", "insufficient Stamina fails closed")
 	_assert_eq(
 		d6.get("action_costs"),
 		{"light": 3, "heavy": 5, "block": 2, "parry": 3, "dodge": 4, "reposition": 2},
-		"D6 action costs must remain frozen"
+		"D6 action costs must remain frozen",
 	)
 	_assert_eq(d6.get("recovery_amount"), 2, "D6 recovery amount must remain frozen")
 	_assert_eq(d6.get("recovery_timing"), "end_exchange", "recovery happens once per exchange")
@@ -71,22 +59,12 @@ func _test_d7(contract) -> void:
 	_assert_eq(d7.get("status"), "frozen", "D7 structure must be frozen")
 	_assert_eq(d7.get("hit_rng_allowed"), false, "V1 hit resolution must not use RNG")
 	_assert_eq(d7.get("critical_hits_enabled"), false, "V1 critical hits must be disabled")
-	_assert_eq(
-		d7.get("accuracy_resolution_owner"), "combat_simulator", "simulator must own accuracy"
-	)
+	_assert_eq(d7.get("accuracy_resolution_owner"), "combat_simulator", "simulator must own accuracy")
 	_assert_eq(d7.get("accuracy_formula_status"), "frozen", "D7 accuracy formula must be frozen")
 	_assert_eq(d7.get("attacker_stat"), "TEC", "D7 attack score must use TEC")
 	_assert_eq(d7.get("defender_stat"), "AGI", "D7 evasion score must use AGI")
-	_assert_eq(
-		d7.get("action_accuracy_modifiers"),
-		{"light": 1.0, "heavy": 0.0},
-		"D7 action accuracy modifiers must remain frozen",
-	)
-	_assert_eq(
-		d7.get("hit_rule"),
-		"attack_score_gte_evasion_score",
-		"D7 hit comparison must remain deterministic",
-	)
+	_assert_eq(d7.get("action_accuracy_modifiers"), {"light": 1.0, "heavy": 0.0}, "accuracy mods")
+	_assert_eq(d7.get("hit_rule"), "attack_score_gte_evasion_score", "D7 hit rule deterministic")
 
 
 func _test_d8(contract) -> void:
@@ -100,15 +78,9 @@ func _test_d8(contract) -> void:
 	_assert_eq(roles.get("TEC"), ["accuracy", "parry"], "TEC roles must stay precision/parry")
 	_assert_eq(roles.get("RES"), ["mitigation", "block"], "RES roles must stay mitigation/block")
 	_assert_eq(roles.get("PV"), ["maximum_health"], "PV must be maximum health")
-	_assert_eq(
-		weights.get("FUE"),
-		{"light_damage": 0.35, "heavy_damage": 0.50},
-		"FUE damage weights must match frozen D4",
-	)
+	_assert_eq(weights.get("FUE"), {"light_damage": 0.35, "heavy_damage": 0.50}, "FUE D4 weights")
 	_assert_eq(weights.get("AGI"), {"base_evasion": 1.0}, "AGI evasion weight must match D7")
-	_assert_eq(
-		weights.get("TEC"), {"accuracy": 1.0, "parry": 1.0}, "TEC weights must match D7/defense"
-	)
+	_assert_eq(weights.get("TEC"), {"accuracy": 1.0, "parry": 1.0}, "TEC weights must match")
 	_assert_eq(
 		weights.get("RES"),
 		{"damage_mitigation": 0.15, "block_reduction": 0.25},
@@ -117,41 +89,31 @@ func _test_d8(contract) -> void:
 	_assert_eq(weights.get("PV"), {"maximum_health": 1.0}, "PV must remain 1:1 maximum health")
 	_assert_eq(modifiers.get("dodge_evasion"), 2.0, "dodge flat modifier must stay frozen")
 	_assert_eq(modifiers.get("reposition_evasion"), 1.0, "reposition modifier must stay frozen")
-	_assert_eq(
-		d8.get("legacy_endurance_substitution_allowed"),
-		false,
-		"endurance must not silently become RES"
-	)
+	_assert_eq(d8.get("legacy_endurance_substitution_allowed"), false, "endurance cannot replace RES")
 	_assert_eq(d8.get("weights_status"), "frozen", "exact stat weights must be frozen")
 
 
 func _test_d9(contract) -> void:
 	var d9: Dictionary = contract.get_contract("D9")
 	_assert_eq(d9.get("status"), "frozen", "D9 structure must be frozen")
-	_assert_eq(
-		d9.get("runtime_health_field"), "current_pv", "runtime health must be distinct from max PV"
-	)
+	_assert_eq(d9.get("runtime_health_field"), "current_pv", "runtime health must be current_pv")
 	_assert_eq(d9.get("maximum_health_source"), "stats.PV", "max health comes from canonical PV")
 	_assert_eq(d9.get("ko_condition"), "current_pv_lte_zero", "KO threshold must be explicit")
 	_assert_eq(d9.get("ko_authority"), "combat_simulator", "simulator owns KO")
-	_assert_eq(
-		d9.get("surrender_is_base_action"), false, "surrender must not become a seventh base action"
-	)
-	_assert_eq(
-		d9.get("surrender_rng_allowed"),
-		false,
-		"legacy probabilistic surrender must stay quarantined"
-	)
-	_assert_eq(d9.get("surrender_rules_status"), "pending", "surrender eligibility remains pending")
+	_assert_eq(d9.get("combat_end_condition"), "team_elimination", "combat ends on team elimination")
+	_assert_eq(d9.get("double_ko_outcome"), "double_ko", "double KO must remain explicit")
+	_assert_eq(d9.get("surrender_is_base_action"), false, "surrender is not a seventh action")
+	_assert_eq(d9.get("surrender_rng_allowed"), false, "probabilistic surrender remains forbidden")
+	_assert_eq(d9.get("automatic_surrender"), "disabled_v1", "automatic surrender is disabled V1")
+	_assert_eq(d9.get("surrender_rules_status"), "frozen", "D9 surrender rule must be frozen")
+	_assert_eq(contract.get_pending_numeric_requirements(), [], "D5-D9 must expose no pending rules")
 
 
 func _test_copy_isolation(contract) -> void:
 	var first: Dictionary = contract.get_contracts()
 	var second: Dictionary = contract.get_contracts()
 	(first["D8"] as Dictionary)["status"] = "mutated"
-	_assert_eq(
-		(second["D8"] as Dictionary).get("status"), "frozen", "contract copies must be isolated"
-	)
+	_assert_eq((second["D8"] as Dictionary).get("status"), "frozen", "contract copies isolated")
 
 
 func _assert_eq(actual: Variant, expected: Variant, message: String) -> void:
