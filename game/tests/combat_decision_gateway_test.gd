@@ -71,11 +71,14 @@ func _test_valid_proposal_reaches_simulator_as_pending() -> void:
 	var pending_requirements := result.get("pending_requirements", []) as Array
 	_assert_true(not pending_requirements.has("target_rules"), "gateway must remove frozen D1")
 	_assert_true(not pending_requirements.has("resolution_order"), "gateway must remove frozen D3")
-	_assert_true(not pending_requirements.has("damage_and_mitigation"), "gateway must remove frozen D4")
-	_assert_true(not pending_requirements.has("stamina_cost_table"), "gateway must remove frozen D6")
 	_assert_true(
-		pending_requirements.has("accuracy_formula"),
-		"gateway must surface unresolved D7 accuracy"
+		not pending_requirements.has("damage_and_mitigation"), "gateway must remove frozen D4"
+	)
+	_assert_true(
+		not pending_requirements.has("stamina_cost_table"), "gateway must remove frozen D6"
+	)
+	_assert_true(
+		pending_requirements.has("accuracy_formula"), "gateway must surface unresolved D7 accuracy"
 	)
 	var conditional_requirements := result.get("conditional_requirements", []) as Array
 	_assert_true(
