@@ -47,7 +47,11 @@ const CONTRACT := {
 		"hit_rng_allowed": false,
 		"critical_hits_enabled": false,
 		"accuracy_resolution_owner": "combat_simulator",
-		"accuracy_formula_status": PENDING_STATUS,
+		"accuracy_formula_status": FROZEN_STATUS,
+		"attacker_stat": "TEC",
+		"defender_stat": "AGI",
+		"action_accuracy_modifiers": {"light": 1.0, "heavy": 0.0},
+		"hit_rule": "attack_score_gte_evasion_score",
 	},
 	"D8":
 	{
@@ -91,7 +95,6 @@ func get_contracts() -> Dictionary:
 
 func get_pending_numeric_requirements() -> Array[String]:
 	return [
-		"accuracy_formula",
 		"stat_scaling_weights",
 		"surrender_rules",
 	]
