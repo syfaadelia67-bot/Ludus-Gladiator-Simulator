@@ -30,12 +30,15 @@ func _assert_contract(resolver) -> void:
 
 func _assert_light_vs_block(resolver) -> void:
 	var state := _state()
-	var result: Dictionary = resolver.resolve_exchange(
-		state,
-		[
-			{"actor_id": "a", "action_id": "light", "target_id": "b"},
-			{"actor_id": "b", "action_id": "block"},
-		],
+	var result: Dictionary = (
+		resolver
+		. resolve_exchange(
+			state,
+			[
+				{"actor_id": "a", "action_id": "light", "target_id": "b"},
+				{"actor_id": "b", "action_id": "block"},
+			],
+		)
 	)
 	assert(result.get("status") == "resolved")
 	var attacks := result.get("attack_results", []) as Array
@@ -52,12 +55,15 @@ func _assert_light_vs_block(resolver) -> void:
 
 
 func _assert_light_vs_dodge(resolver) -> void:
-	var result: Dictionary = resolver.resolve_exchange(
-		_state(),
-		[
-			{"actor_id": "a", "action_id": "light", "target_id": "b"},
-			{"actor_id": "b", "action_id": "dodge"},
-		],
+	var result: Dictionary = (
+		resolver
+		. resolve_exchange(
+			_state(),
+			[
+				{"actor_id": "a", "action_id": "light", "target_id": "b"},
+				{"actor_id": "b", "action_id": "dodge"},
+			],
+		)
 	)
 	assert(result.get("status") == "resolved")
 	var attack := (result.get("attack_results", []) as Array)[0] as Dictionary
@@ -69,12 +75,15 @@ func _assert_light_vs_dodge(resolver) -> void:
 
 
 func _assert_simultaneous_attacks_commit_together(resolver) -> void:
-	var result: Dictionary = resolver.resolve_exchange(
-		_state(),
-		[
-			{"actor_id": "a", "action_id": "light", "target_id": "b"},
-			{"actor_id": "b", "action_id": "light", "target_id": "a"},
-		],
+	var result: Dictionary = (
+		resolver
+		. resolve_exchange(
+			_state(),
+			[
+				{"actor_id": "a", "action_id": "light", "target_id": "b"},
+				{"actor_id": "b", "action_id": "light", "target_id": "a"},
+			],
+		)
 	)
 	assert(result.get("status") == "resolved")
 	assert((result.get("attack_results", []) as Array).size() == 2)
@@ -92,12 +101,15 @@ func _assert_insufficient_stamina_rejects_without_mutation(resolver) -> void:
 	var fighters := state.get("fighters", []) as Array
 	(fighters[0] as Dictionary)["stamina"] = 2
 	var before := state.duplicate(true)
-	var result: Dictionary = resolver.resolve_exchange(
-		state,
-		[
-			{"actor_id": "a", "action_id": "light", "target_id": "b"},
-			{"actor_id": "b", "action_id": "block"},
-		],
+	var result: Dictionary = (
+		resolver
+		. resolve_exchange(
+			state,
+			[
+				{"actor_id": "a", "action_id": "light", "target_id": "b"},
+				{"actor_id": "b", "action_id": "block"},
+			],
+		)
 	)
 	assert(result.get("status") == "rejected")
 	assert(result.get("reason") == "insufficient_stamina")
@@ -109,12 +121,15 @@ func _assert_reposition_clears_vulnerability(resolver) -> void:
 	var runtime_state := _runtime_state()
 	var b_before := _fighter_by_id(runtime_state, "b")
 	b_before["vulnerable"] = true
-	var result: Dictionary = resolver.resolve_exchange(
-		runtime_state,
-		[
-			{"actor_id": "a", "action_id": "light", "target_id": "b"},
-			{"actor_id": "b", "action_id": "reposition"},
-		],
+	var result: Dictionary = (
+		resolver
+		. resolve_exchange(
+			runtime_state,
+			[
+				{"actor_id": "a", "action_id": "light", "target_id": "b"},
+				{"actor_id": "b", "action_id": "reposition"},
+			],
+		)
 	)
 	assert(result.get("status") == "resolved")
 	var b := _fighter_by_id(result.get("state", {}) as Dictionary, "b")
@@ -140,7 +155,8 @@ func _assert_result_is_isolated(resolver) -> void:
 func _state() -> Dictionary:
 	return {
 		"format": "1v1",
-		"fighters": [
+		"fighters":
+		[
 			_fighter("a", "alpha"),
 			_fighter("b", "beta"),
 		],
