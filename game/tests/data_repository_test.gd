@@ -32,6 +32,14 @@ func _ready() -> void:
 		"DataRepository must expose canonical rival Ludus identities"
 	)
 	assert(
+		repository.rival_combat_v1_snapshots.is_empty(),
+		"Rival Combat V1 snapshot catalog must stay empty until canonical rival stats are frozen"
+	)
+	assert(
+		repository.get_rival_combat_v1_snapshots_for_ludus("cassianus").is_empty(),
+		"DataRepository must expose the empty canonical rival snapshot catalog without fallback data"
+	)
+	assert(
 		int(repository.get_economy_rule("demo_starting_resources").get("denarii", 0)) == 650,
 		"DataRepository must expose the frozen 650-denarii demo start"
 	)
