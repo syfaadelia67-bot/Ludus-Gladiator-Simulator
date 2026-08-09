@@ -38,13 +38,15 @@ func _test_d5(contract) -> void:
 	_assert_eq(
 		d5.get("vulnerability_authority"), "combat_simulator", "simulator owns vulnerability state"
 	)
-	_assert_eq(d5.get("numeric_mitigation_status"), "pending", "armor math stays pending D4")
+	_assert_eq(d5.get("numeric_mitigation_status"), "frozen", "D4 freezes armor mitigation")
+	_assert_eq(d5.get("penetration_status"), "disabled_v1", "V1 penetration stays disabled")
 
 
 func _test_d6(contract) -> void:
 	var d6: Dictionary = contract.get_contract("D6")
 	_assert_eq(d6.get("status"), "frozen", "D6 structure must be frozen")
 	_assert_eq(d6.get("resource_field"), "stamina", "Stamina field must remain canonical")
+	_assert_eq(d6.get("capacity_field"), "stamina_capacity", "D6 needs an explicit runtime cap")
 	_assert_eq(d6.get("minimum"), 0, "Stamina cannot go below zero")
 	_assert_eq(d6.get("negative_values_allowed"), false, "negative Stamina must be forbidden")
 	_assert_eq(
@@ -52,7 +54,16 @@ func _test_d6(contract) -> void:
 		"reject_action",
 		"insufficient Stamina must fail closed"
 	)
-	_assert_eq(d6.get("cost_table_status"), "pending", "cost numbers must remain pending")
+	_assert_eq(
+		d6.get("action_costs"),
+		{"light": 3, "heavy": 5, "block": 2, "parry": 3, "dodge": 4, "reposition": 2},
+		"D6 action costs must remain frozen"
+	)
+	_assert_eq(d6.get("recovery_amount"), 2, "D6 recovery amount must remain frozen")
+	_assert_eq(d6.get("recovery_timing"), "end_exchange", "recovery happens once per exchange")
+	_assert_eq(d6.get("cost_table_status"), "frozen", "cost table must be frozen")
+	_assert_eq(d6.get("recovery_amount_status"), "frozen", "recovery amount must be frozen")
+	_assert_eq(d6.get("recovery_timing_status"), "frozen", "recovery timing must be frozen")
 
 
 func _test_d7(contract) -> void:
