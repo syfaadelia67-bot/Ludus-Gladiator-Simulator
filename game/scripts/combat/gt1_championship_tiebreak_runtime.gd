@@ -61,10 +61,13 @@ func start_from_sources(
 	if not source_errors.is_empty():
 		return _rejected("invalid_tiebreak_sources", source_errors, request)
 
-	var player_build := _fighter_adapter.build_from_person(
-		player_person,
-		player_team_id,
-		player_equipment_stats,
+	var player_build := (
+		_fighter_adapter
+		. build_from_person(
+			player_person,
+			player_team_id,
+			player_equipment_stats,
+		)
 	)
 	if player_build.get("status") != "ready":
 		var build_errors := player_build.get("errors", []) as Array
@@ -105,7 +108,12 @@ func start_from_sources(
 		"active_loop": loop_state.duplicate(true),
 		"last_combat_result": {},
 		"standings_resolution": {},
-		"player_source": "live_roster_and_equipment" if player_person == RosterManager.get_person(str(player_person.id)) else "explicit_test_source",
+		"player_source":
+		(
+			"live_roster_and_equipment"
+			if player_person == RosterManager.get_person(str(player_person.id))
+			else "explicit_test_source"
+		),
 		"rival_source": "explicit_external_combat_v1_snapshot",
 	}
 
@@ -132,9 +140,12 @@ func advance_exchange(session: Dictionary, intents: Array) -> Dictionary:
 	if combat_result.get("status") != "combat_finished":
 		return next
 
-	var standings_resolution := _registry.resolve_podium_tiebreak(
-		combat_result,
-		session.get("team_to_ludus", {}) as Dictionary,
+	var standings_resolution := (
+		_registry
+		. resolve_podium_tiebreak(
+			combat_result,
+			session.get("team_to_ludus", {}) as Dictionary,
+		)
 	)
 	next["standings_resolution"] = standings_resolution.duplicate(true)
 	next["active_loop"] = {}
@@ -192,7 +203,9 @@ func _validate_sources(
 		errors.append("Championship tiebreak requires an explicit rival Combat V1 snapshot")
 	elif str(rival_fighter_snapshot.get("team", "")) != rival_team_id:
 		errors.append("Rival Combat V1 snapshot must use the declared rival team id")
-	elif player_person != null and str(rival_fighter_snapshot.get("id", "")) == str(player_person.id):
+	elif (
+		player_person != null and str(rival_fighter_snapshot.get("id", "")) == str(player_person.id)
+	):
 		errors.append("Championship tiebreak fighters must have distinct ids")
 	return errors
 
