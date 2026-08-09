@@ -29,7 +29,9 @@ func _test_d5(contract) -> void:
 	_assert_eq(d5.get("armor_source"), "equipment_defense", "armor must come from equipment")
 	_assert_eq(d5.get("armor_is_separate_from_res"), true, "armor and RES remain separate")
 	_assert_eq(d5.get("body_part_armor_model"), false, "V1 must not invent body-part armor")
-	_assert_eq(d5.get("vulnerability_authority"), "combat_simulator", "simulator owns vulnerability")
+	_assert_eq(
+		d5.get("vulnerability_authority"), "combat_simulator", "simulator owns vulnerability"
+	)
 	_assert_eq(d5.get("numeric_mitigation_status"), "frozen", "D4 freezes armor mitigation")
 	_assert_eq(d5.get("penetration_status"), "disabled_v1", "V1 penetration stays disabled")
 
@@ -41,7 +43,11 @@ func _test_d6(contract) -> void:
 	_assert_eq(d6.get("capacity_field"), "stamina_capacity", "D6 needs an explicit runtime cap")
 	_assert_eq(d6.get("minimum"), 0, "Stamina cannot go below zero")
 	_assert_eq(d6.get("negative_values_allowed"), false, "negative Stamina must be forbidden")
-	_assert_eq(d6.get("insufficient_stamina_behavior"), "reject_action", "insufficient Stamina fails closed")
+	_assert_eq(
+		d6.get("insufficient_stamina_behavior"),
+		"reject_action",
+		"insufficient Stamina fails closed"
+	)
 	_assert_eq(
 		d6.get("action_costs"),
 		{"light": 3, "heavy": 5, "block": 2, "parry": 3, "dodge": 4, "reposition": 2},
@@ -59,7 +65,9 @@ func _test_d7(contract) -> void:
 	_assert_eq(d7.get("status"), "frozen", "D7 structure must be frozen")
 	_assert_eq(d7.get("hit_rng_allowed"), false, "V1 hit resolution must not use RNG")
 	_assert_eq(d7.get("critical_hits_enabled"), false, "V1 critical hits must be disabled")
-	_assert_eq(d7.get("accuracy_resolution_owner"), "combat_simulator", "simulator must own accuracy")
+	_assert_eq(
+		d7.get("accuracy_resolution_owner"), "combat_simulator", "simulator must own accuracy"
+	)
 	_assert_eq(d7.get("accuracy_formula_status"), "frozen", "D7 accuracy formula must be frozen")
 	_assert_eq(d7.get("attacker_stat"), "TEC", "D7 attack score must use TEC")
 	_assert_eq(d7.get("defender_stat"), "AGI", "D7 evasion score must use AGI")
@@ -89,7 +97,9 @@ func _test_d8(contract) -> void:
 	_assert_eq(weights.get("PV"), {"maximum_health": 1.0}, "PV must remain 1:1 maximum health")
 	_assert_eq(modifiers.get("dodge_evasion"), 2.0, "dodge flat modifier must stay frozen")
 	_assert_eq(modifiers.get("reposition_evasion"), 1.0, "reposition modifier must stay frozen")
-	_assert_eq(d8.get("legacy_endurance_substitution_allowed"), false, "endurance cannot replace RES")
+	_assert_eq(
+		d8.get("legacy_endurance_substitution_allowed"), false, "endurance cannot replace RES"
+	)
 	_assert_eq(d8.get("weights_status"), "frozen", "exact stat weights must be frozen")
 
 
@@ -100,13 +110,17 @@ func _test_d9(contract) -> void:
 	_assert_eq(d9.get("maximum_health_source"), "stats.PV", "max health comes from canonical PV")
 	_assert_eq(d9.get("ko_condition"), "current_pv_lte_zero", "KO threshold must be explicit")
 	_assert_eq(d9.get("ko_authority"), "combat_simulator", "simulator owns KO")
-	_assert_eq(d9.get("combat_end_condition"), "team_elimination", "combat ends on team elimination")
+	_assert_eq(
+		d9.get("combat_end_condition"), "team_elimination", "combat ends on team elimination"
+	)
 	_assert_eq(d9.get("double_ko_outcome"), "double_ko", "double KO must remain explicit")
 	_assert_eq(d9.get("surrender_is_base_action"), false, "surrender is not a seventh action")
 	_assert_eq(d9.get("surrender_rng_allowed"), false, "probabilistic surrender remains forbidden")
 	_assert_eq(d9.get("automatic_surrender"), "disabled_v1", "automatic surrender is disabled V1")
 	_assert_eq(d9.get("surrender_rules_status"), "frozen", "D9 surrender rule must be frozen")
-	_assert_eq(contract.get_pending_numeric_requirements(), [], "D5-D9 must expose no pending rules")
+	_assert_eq(
+		contract.get_pending_numeric_requirements(), [], "D5-D9 must expose no pending rules"
+	)
 
 
 func _test_copy_isolation(contract) -> void:
