@@ -1,12 +1,12 @@
 extends SceneTree
 
 const SelectionContractScript = preload("res://scripts/combat/gt1_roster_selection_contract.gd")
+const BEASTS_PATH := "res://data/beasts.json"
 
 var _failures: Array[String] = []
 
 
 func _initialize() -> void:
-	DataRepository.load_all()
 	var contract = SelectionContractScript.new()
 	_test_month_13(contract)
 	_test_month_16(contract)
@@ -44,7 +44,7 @@ func _test_month_16(contract) -> void:
 
 
 func _test_month_16_beast_readiness(contract) -> void:
-	var readiness: Dictionary = contract.get_month_16_beast_readiness(false)
+	var readiness: Dictionary = contract.get_month_16_beast_readiness(_load_beasts(), false)
 	_assert_true(
 		readiness.get("status") == "blocked",
 		"month XVI beast selection must remain blocked until canonical stats and adapter exist",
@@ -125,9 +125,21 @@ func _test_frozen_contract(contract) -> void:
 		"month XVI selection must expose its beast readiness authority",
 	)
 	_assert_true(
+		frozen.get("beast_data_source") == "explicit_injected_canonical_beast_data",
+		"month XVI beast readiness must not depend on a global DataRepository autoload",
+	)
+	_assert_true(
 		frozen.get("invent_beast_stats_allowed") == false,
 		"roster selection must forbid invented beast stats",
 	)
+
+
+func _load_beasts() -> Array:
+	var text := FileAccess.get_file_as_string(BEASTS_PATH)
+	var parsed: Variant = JSON.parse_string(text)
+	if parsed is Array:
+		return parsed as Array
+	return []
 
 
 func _assert_empty(errors: Array, message: String) -> void:
