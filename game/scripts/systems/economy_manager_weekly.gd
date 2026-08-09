@@ -75,7 +75,9 @@ func get_monthly_projection() -> Dictionary:
 	var sponsor_income := 0
 	for contract in active_contracts:
 		sponsor_income += int(
-			contract.get("monthly_income", contract.get("weekly_income", contract.get("daily_income", 0)))
+			contract.get(
+				"monthly_income", contract.get("weekly_income", contract.get("daily_income", 0))
+			)
 		)
 	var loan_payments := 0
 	for loan in active_loans:
@@ -140,13 +142,7 @@ func _record_entry(amount: int, reason: String) -> void:
 	normalized_reason = normalized_reason.replace("Ingreso semanal de", "Ingreso mensual de")
 	var month := GameState.get_month()
 	ledger.push_front(
-		{
-			"month": month,
-			"week": month,
-			"day": month,
-			"amount": amount,
-			"reason": normalized_reason
-		}
+		{"month": month, "week": month, "day": month, "amount": amount, "reason": normalized_reason}
 	)
 	if ledger.size() > 80:
 		ledger.resize(80)
@@ -167,8 +163,7 @@ func _normalize_contracts() -> void:
 			0,
 			int(
 				contract.get(
-					"monthly_income",
-					contract.get("weekly_income", contract.get("daily_income", 0))
+					"monthly_income", contract.get("weekly_income", contract.get("daily_income", 0))
 				)
 			),
 		)
