@@ -41,12 +41,14 @@ func build_fighter(
 		"status": "ready",
 		"errors": [],
 		"pending_stat_ids": [],
-		"fighter": {
+		"fighter":
+		{
 			"id": fighter_id,
 			"team": team_id,
 			"stats": (adapted.get("stats", {}) as Dictionary).duplicate(true),
 			"stamina": float(person_source.get("stamina", 10.0)),
-			"equipment": {
+			"equipment":
+			{
 				"power": int(equipment_stats.get("power", 0)),
 				"defense": int(equipment_stats.get("defense", 0)),
 			},
@@ -58,7 +60,8 @@ func build_fighter(
 func get_contract() -> Dictionary:
 	return {
 		"status": "frozen",
-		"legacy_mapping": {
+		"legacy_mapping":
+		{
 			"strength": "FUE",
 			"agility": "AGI",
 			"technique": "TEC",
