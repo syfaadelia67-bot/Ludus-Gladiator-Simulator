@@ -43,16 +43,30 @@ const NORMAL_TRAIT_IDS: Array[String] = [
 	"vigilant",
 ]
 const DEMO_BEAST_IDS: Array[String] = ["bear", "boar", "lion"]
-const ABILITY_IDS: Array[String] = [
-	"cast_net",
-	"dance_of_two_blades",
-	"feint",
-	"opportunity_strike",
-	"precise_strike",
-	"relentless_pursuit",
-	"shield_charge",
-	"throw_sand",
+const GENERAL_SKILL_CONTRACTS := {
+	"aid": "Auxilio",
+	"charge": "Embestida",
+	"closed_guard": "Guardia Cerrada",
+	"counterattack": "Contraataque",
+	"demolisher": "Demoledor",
+	"execution": "Ejecución",
+	"feint": "Finta",
+	"provoke": "Provocación",
+}
+const SPECIALIZED_SKILL_CONTRACTS := {
+	"anchor": "Anclaje",
+	"disarm": "Desarme",
+	"immobilization": "Inmovilización",
+	"interception": "Intercepción",
+}
+const FAMILIARITY_LEVELS: Array[String] = [
+	"Conocida",
+	"Aprendida",
+	"Practicada",
+	"Dominada",
+	"Experto",
 ]
+const SKILL_ALLOWED_FIELDS: Array[String] = ["id", "name", "category"]
 
 
 func validate_repository(repository) -> Array[String]:
@@ -61,8 +75,7 @@ func validate_repository(repository) -> Array[String]:
 			"traits": repository.traits,
 			"buildings": repository.buildings,
 			"weapons": repository.weapons,
-			"abilities": repository.abilities,
-			"specializations": repository.specializations,
+			"skills": repository.skills,
 			"beasts": repository.beasts,
 			"economy_rules": repository.economy_rules,
 		}
@@ -75,8 +88,7 @@ func validate_snapshot(snapshot: Dictionary) -> Array[String]:
 		"traits",
 		"buildings",
 		"weapons",
-		"abilities",
-		"specializations",
+		"skills",
 		"beasts",
 		"economy_rules",
 	]:
@@ -88,10 +100,7 @@ func validate_snapshot(snapshot: Dictionary) -> Array[String]:
 	_validate_traits(snapshot.get("traits", []), errors)
 	_validate_beasts(snapshot.get("beasts", []), errors)
 	_validate_economy_rules(snapshot.get("economy_rules", []), errors)
-	_validate_abilities(snapshot.get("abilities", []), snapshot.get("specializations", []), errors)
-	_validate_specializations(
-		snapshot.get("specializations", []), snapshot.get("abilities", []), errors
-	)
+	_validate_skills(snapshot.get("skills", []), errors)
 	return errors
 
 
@@ -193,15 +202,11 @@ func _validate_traits(entries: Variant, errors: Array[String]) -> void:
 		for raw_other in entry.get("incompatible_with", []):
 			var other_id := str(raw_other)
 			if not by_id.has(other_id):
-				errors.append(
-					"Trait %s references unknown incompatibility: %s" % [trait_id, other_id]
-				)
-				continue
+				errors.append("Trait %s references unknown incompatibility: %s" % [trait_id, other_id])
+			continue
 			var other: Dictionary = by_id[other_id]
 			if not other.get("incompatible_with", []).has(trait_id):
-				errors.append(
-					"Trait incompatibility must be symmetric: %s <-> %s" % [trait_id, other_id]
-				)
+				errors.append("Trait incompatibility must be symmetric: %s <-> %s" % [trait_id, other_id])
 
 
 func _validate_beasts(entries: Variant, errors: Array[String]) -> void:
@@ -244,68 +249,50 @@ func _validate_economy_rules(entries: Variant, errors: Array[String]) -> void:
 		errors.append("Demo campaign must start with exactly 650 denarii")
 
 
-func _validate_abilities(
-	entries: Variant, specialization_entries: Variant, errors: Array[String]
-) -> void:
-	if not entries is Array or not specialization_entries is Array:
+func _validate_skills(entries: Variant, errors: Array[String]) -> void:
+	if not entries is Array:
 		return
 	var typed_entries: Array = entries as Array
-	var typed_specializations: Array = specialization_entries as Array
-	var ids: Array[String] = _sorted_ids(typed_entries)
-	if ids != ABILITY_IDS:
-		errors.append("Frozen ability catalog must contain exactly eight canonical abilities")
-	var specialization_ids: Dictionary = _id_set(typed_specializations)
-	for raw_entry in typed_entries:
-		if not raw_entry is Dictionary:
-			continue
-		var entry: Dictionary = raw_entry
-		var ability_id := str(entry.get("id", ""))
-		if int(entry.get("demo_max_level", 0)) != 2:
-			errors.append("Ability %s must stop at rank II in demo" % ability_id)
-		if int(entry.get("full_max_level", 0)) != 3:
-			errors.append("Ability %s must reserve rank III for full game" % ability_id)
-		var levels: Dictionary = entry.get("levels", {})
-		for rank in ["1", "2", "3"]:
-			if not levels.has(rank):
-				errors.append("Ability %s is missing rank %s" % [ability_id, rank])
-		var rank_three: Dictionary = levels.get("3", {})
-		if not bool(rank_three.get("locked", false)):
-			errors.append("Ability %s rank III must remain locked in demo" % ability_id)
-		var category := str(entry.get("category", ""))
-		if not ["basic", "class"].has(category):
-			errors.append("Ability %s has invalid category: %s" % [ability_id, category])
-		if category == "class":
-			var specialization_id := str(entry.get("specialization", ""))
-			if not specialization_ids.has(specialization_id):
-				errors.append(
-					(
-						"Ability %s references unknown specialization: %s"
-						% [ability_id, specialization_id]
-					)
-				)
+	var by_id: Dictionary = _index_by_id(typed_entries)
+	var expected_ids: Array[String] = []
+	for skill_id in GENERAL_SKILL_CONTRACTS.keys():
+		expected_ids.append(str(skill_id))
+	for skill_id in SPECIALIZED_SKILL_CONTRACTS.keys():
+		expected_ids.append(str(skill_id))
+	expected_ids.sort()
+	if _sorted_ids(typed_entries) != expected_ids:
+		errors.append("Frozen combat skill catalog must contain exactly 8 general + 4 specialized skills")
+	for skill_id in GENERAL_SKILL_CONTRACTS.keys():
+		_validate_skill_entry(
+			str(skill_id), str(GENERAL_SKILL_CONTRACTS[skill_id]), "general", by_id, errors
+		)
+	for skill_id in SPECIALIZED_SKILL_CONTRACTS.keys():
+		_validate_skill_entry(
+			str(skill_id), str(SPECIALIZED_SKILL_CONTRACTS[skill_id]), "specialized", by_id, errors
+		)
 
 
-func _validate_specializations(
-	entries: Variant, ability_entries: Variant, errors: Array[String]
+func _validate_skill_entry(
+	skill_id: String,
+	expected_name: String,
+	expected_category: String,
+	by_id: Dictionary,
+	errors: Array[String]
 ) -> void:
-	if not entries is Array or not ability_entries is Array:
+	if not by_id.has(skill_id):
+		errors.append("Missing frozen combat skill: %s" % skill_id)
 		return
-	var typed_entries: Array = entries as Array
-	var typed_abilities: Array = ability_entries as Array
-	var ability_ids: Dictionary = _id_set(typed_abilities)
-	for raw_entry in typed_entries:
-		if not raw_entry is Dictionary:
-			continue
-		var entry: Dictionary = raw_entry
-		var specialization_id := str(entry.get("id", ""))
-		var class_ability := str(entry.get("class_ability", ""))
-		if not class_ability.is_empty() and not ability_ids.has(class_ability):
+	var entry: Dictionary = by_id[skill_id]
+	if str(entry.get("name", "")) != expected_name:
+		errors.append("Combat skill %s has non-canonical name" % skill_id)
+	if str(entry.get("category", "")) != expected_category:
+		errors.append("Combat skill %s has non-canonical category" % skill_id)
+	for raw_field in entry.keys():
+		var field_name := str(raw_field)
+		if not SKILL_ALLOWED_FIELDS.has(field_name):
 			errors.append(
-				(
-					"Specialization %s references unknown class ability: %s"
-					% [specialization_id, class_ability]
-				)
-			)
+			"Combat skill %s contains unfrozen mechanical field: %s" % [skill_id, field_name]
+		)
 
 
 func _index_by_id(entries: Array) -> Dictionary:
@@ -316,13 +303,6 @@ func _index_by_id(entries: Array) -> Dictionary:
 			var entry_id := str(entry.get("id", ""))
 			if not entry_id.is_empty():
 				result[entry_id] = entry
-	return result
-
-
-func _id_set(entries: Array) -> Dictionary:
-	var result: Dictionary = {}
-	for entry_id in _sorted_ids(entries):
-		result[entry_id] = true
 	return result
 
 
