@@ -16,7 +16,8 @@ const JOBS := {
 const JOB_DESCRIPTIONS := {
 	"idle": "No genera recursos. Reduce fatiga y permite recuperarse con mayor seguridad.",
 	"mining": "Produce mineral al cerrar el mes. La Fuerza y la Resistencia mejoran el resultado.",
-	"security": "Aumenta la seguridad mensual del ludus y ayuda a bloquear sabotajes y represalias.",
+	"security":
+	"Aumenta la seguridad mensual del ludus y ayuda a bloquear sabotajes y represalias.",
 	"espionage": "Genera puntos de inteligencia para operaciones contra casas rivales.",
 	"training":
 	"Aumenta el entrenamiento mensual. Los esclavos llegan a 100 y se convierten en gladiadores."
