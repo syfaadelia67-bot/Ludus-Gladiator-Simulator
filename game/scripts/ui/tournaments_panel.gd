@@ -1,12 +1,18 @@
 extends VBoxContainer
 
 const FIGHTER_SELECTOR_PATH := NodePath("Scroll/Content/TournamentContent/Right/FighterSelector")
+const GT1RivalResultRegistryScript = preload("res://scripts/combat/gt1_rival_result_registry.gd")
+const GT1TiebreakPresentationSnapshotScript = preload(
+	"res://scripts/combat/gt1_tiebreak_presentation_snapshot.gd"
+)
 
 var event_ids: Array[String] = []
 var fighter_ids: Array[String] = []
 var contract_ids: Array[String] = []
 var selected_event_id := ""
 var selected_contract_id := ""
+var _gt1_rival_result_registry = GT1RivalResultRegistryScript.new()
+var _gt1_tiebreak_presentation_snapshot = GT1TiebreakPresentationSnapshotScript.new()
 
 @onready var back_button: Button = $Navigation/BackToFinca
 @onready var status: Label = $Navigation/Status
@@ -178,7 +184,7 @@ func _append_gt1_progress(lines: Array[String]) -> void:
 	lines.append("Encuentro XX: %d/3" % int(progress.get("20", 0)))
 
 	if bool(summary.get("tiebreak_required", false)):
-		lines.append("[i]Desempate pendiente: la posición final todavía no está resuelta.[/i]")
+		_append_gt1_tiebreak_status(lines, summary)
 		return
 	if bool(summary.get("standings_resolved", false)):
 		lines.append("Posición final: %d.º" % int(summary.get("placement", 0)))
@@ -190,6 +196,46 @@ func _append_gt1_progress(lines: Array[String]) -> void:
 	lines.append(
 		"Resultados de rivales registrados: %d" % int(summary.get("rival_results_registered", 0))
 	)
+
+
+func _append_gt1_tiebreak_status(lines: Array[String], summary: Dictionary) -> void:
+	var standings_resolution := _gt1_rival_result_registry.evaluate_current_standings()
+	var podium_request: Dictionary = {}
+	if standings_resolution.get("status") == "podium_combat_required":
+		podium_request = _gt1_rival_result_registry.build_podium_tiebreak_request()
+	var snapshot: Dictionary = _gt1_tiebreak_presentation_snapshot.build(
+		summary,
+		standings_resolution,
+		podium_request,
+	)
+
+	match str(snapshot.get("status", "")):
+		"championship_tiebreak_ready":
+			lines.append("")
+			lines.append("[b]Desempate por el campeonato[/b]")
+			lines.append("Rival: %s" % str(snapshot.get("rival_ludus_name", "Ludus rival")))
+			lines.append(
+				"Formato: %s especial · %d PTS"
+				% [snapshot.get("format", "1v1"), int(snapshot.get("points_awarded", 0))]
+			)
+			lines.append("Participa un gladiador disponible por Ludus.")
+			if bool(snapshot.get("requires_external_rival_snapshot", false)):
+				lines.append(
+					"[i]Pendiente del snapshot Combat V1 explícito del rival; "
+					+ "no se generarán estadísticas rivales.[/i]"
+				)
+		"non_podium_data_required":
+			lines.append(
+				"[i]Desempate fuera del podio pendiente: faltan el resultado directo "
+				+ "y/o la posición de la temporada previa.[/i]"
+			)
+		"pending_exact_rule":
+			lines.append(
+				"[i]Desempate de podio pendiente: esta forma de empate todavía no tiene "
+				+ "una regla exacta congelada.[/i]"
+			)
+		_:
+			lines.append("[i]Desempate pendiente: la posición final todavía no está resuelta.[/i]")
 
 
 func _gt1_medal_label(medal: String) -> String:
