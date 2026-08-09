@@ -41,7 +41,9 @@ func _test_missing_resistance_fails_closed(adapter) -> void:
 		{"endurance": 99},
 		"compatibility alias must expose only Endurance",
 	)
-	_assert_eq(separate.has("intelligence"), false, "Intelligence must be absent from adapter output")
+	_assert_eq(
+		separate.has("intelligence"), false, "Intelligence must be absent from adapter output"
+	)
 
 
 func _test_explicit_resistance_builds_fighter(adapter) -> void:
