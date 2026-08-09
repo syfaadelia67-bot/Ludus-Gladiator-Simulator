@@ -6,11 +6,15 @@ const CombatRosterFighterAdapterScript = preload(
 	"res://scripts/combat/combat_roster_fighter_adapter.gd"
 )
 const GT1RivalResultRegistryScript = preload("res://scripts/combat/gt1_rival_result_registry.gd")
+const GT1RivalCombatSnapshotContractScript = preload(
+	"res://scripts/combat/gt1_rival_combat_snapshot_contract.gd"
+)
 
 var _loop = Combat1v1LoopScript.new()
 var _combat_contract = CombatContractScript.new()
 var _fighter_adapter = CombatRosterFighterAdapterScript.new()
 var _registry = GT1RivalResultRegistryScript.new()
+var _rival_snapshot_contract = GT1RivalCombatSnapshotContractScript.new()
 
 
 func start_from_live_roster(
@@ -61,6 +65,21 @@ func start_from_sources(
 	if not source_errors.is_empty():
 		return _rejected("invalid_tiebreak_sources", source_errors, request)
 
+	var rival_snapshot_validation := (
+		_rival_snapshot_contract
+		. validate(
+			str(request.get("rival_ludus_id", "")),
+			rival_team_id,
+			rival_fighter_snapshot,
+		)
+	)
+	if rival_snapshot_validation.get("status") != "ready":
+		return _rejected(
+			"invalid_rival_combat_snapshot",
+			rival_snapshot_validation.get("errors", []) as Array,
+			request,
+		)
+
 	var player_build := (
 		_fighter_adapter
 		. build_from_person(
@@ -76,7 +95,9 @@ func start_from_sources(
 		return _rejected("player_combat_snapshot_failed", build_errors, request)
 
 	var player_fighter := (player_build.get("fighter", {}) as Dictionary).duplicate(true)
-	var rival_fighter := rival_fighter_snapshot.duplicate(true)
+	var rival_fighter := (
+		(rival_snapshot_validation.get("fighter_snapshot", {}) as Dictionary).duplicate(true)
+	)
 	var state := {
 		"format": "1v1",
 		"fighters": [player_fighter, rival_fighter],
@@ -114,7 +135,8 @@ func start_from_sources(
 			if player_person == RosterManager.get_person(str(player_person.id))
 			else "explicit_test_source"
 		),
-		"rival_source": "explicit_external_combat_v1_snapshot",
+		"rival_source": str(rival_snapshot_validation.get("snapshot_source", "")),
+		"rival_snapshot_validation": rival_snapshot_validation.duplicate(true),
 	}
 
 
@@ -175,6 +197,7 @@ func get_contract() -> Dictionary:
 		"player_source": "RosterManager.get_person",
 		"equipment_source": "EquipmentManager.get_equipped_stats",
 		"rival_source": "explicit_external_combat_v1_snapshot",
+		"rival_validation_contract": "gt1_rival_combat_snapshot_contract",
 		"rival_generation_allowed": false,
 		"combat_runtime": "Combat1v1Loop",
 		"combat_result_authority": "CombatSimulator",
@@ -199,12 +222,10 @@ func _validate_sources(
 		errors.append("Championship tiebreak requires two non-empty team ids")
 	elif player_team_id == rival_team_id:
 		errors.append("Championship tiebreak teams must be distinct")
-	if rival_fighter_snapshot.is_empty():
-		errors.append("Championship tiebreak requires an explicit rival Combat V1 snapshot")
-	elif str(rival_fighter_snapshot.get("team", "")) != rival_team_id:
-		errors.append("Rival Combat V1 snapshot must use the declared rival team id")
-	elif (
-		player_person != null and str(rival_fighter_snapshot.get("id", "")) == str(player_person.id)
+	if (
+		player_person != null
+		and not rival_fighter_snapshot.is_empty()
+		and str(rival_fighter_snapshot.get("id", "")) == str(player_person.id)
 	):
 		errors.append("Championship tiebreak fighters must have distinct ids")
 	return errors
