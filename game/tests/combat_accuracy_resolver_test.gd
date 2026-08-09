@@ -22,10 +22,7 @@ func _assert_contract(resolver) -> void:
 	assert(contract.get("critical_hits_enabled") == false)
 	assert(contract.get("attacker_stat") == "TEC")
 	assert(contract.get("defender_stat") == "AGI")
-	assert(
-		contract.get("action_accuracy_modifiers")
-		== {"light": 1.0, "heavy": 0.0}
-	)
+	assert(contract.get("action_accuracy_modifiers") == {"light": 1.0, "heavy": 0.0})
 	assert(contract.get("hit_rule") == "attack_score_gte_evasion_score")
 
 
@@ -54,9 +51,7 @@ func _assert_heavy_requires_full_score(resolver) -> void:
 
 
 func _assert_invalid_inputs_fail_closed(resolver) -> void:
-	var unsupported: Dictionary = resolver.resolve_hit(
-		_fighter(10, 10), _fighter(10, 10), "block"
-	)
+	var unsupported: Dictionary = resolver.resolve_hit(_fighter(10, 10), _fighter(10, 10), "block")
 	assert(unsupported.get("status") == "invalid")
 	var attacker := _fighter(10, 10)
 	(attacker.get("stats") as Dictionary)["TEC"] = -1
