@@ -126,7 +126,7 @@ func _test_missing_player_intent_stops_before_runtime() -> void:
 	assert(result.get("status") == "rejected")
 	assert(result.get("reason") == "gt1_intent_collection_failed")
 	assert(_contains_error(result, "Missing player intent source for active fighter player"))
-	assert(TournamentManager.get_gt1_summary().get("total_bouts") == 0)
+	assert(TournamentManager.get_gt1_summary().get("player_bouts") == 0)
 	fixture.owner.free()
 	TournamentManager.import_state({})
 
