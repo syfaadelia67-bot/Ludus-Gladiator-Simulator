@@ -120,7 +120,8 @@ func _summary(tiebreak_required: bool, standings_resolved: bool) -> Dictionary:
 	return {
 		"tiebreak_required": tiebreak_required,
 		"standings_resolved": standings_resolved,
-		"standings": [
+		"standings":
+		[
 			{"id": "player", "name": "Tu Ludus", "points": 27, "wins": 9},
 			{"id": "cassianus", "name": "Ludus Cassianus", "points": 27, "wins": 9},
 		],
