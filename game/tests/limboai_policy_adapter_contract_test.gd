@@ -69,8 +69,12 @@ func _initialize() -> void:
 		)
 		_assert_action_contracts(context.get("action_contracts", []))
 		var legal_targets := context.get("legal_targets", {}) as Dictionary
-		_assert_eq(legal_targets.get("light"), ["b"], "LimboAI context must expose light enemy target")
-		_assert_eq(legal_targets.get("heavy"), ["b"], "LimboAI context must expose heavy enemy target")
+		_assert_eq(
+			legal_targets.get("light"), ["b"], "LimboAI context must expose light enemy target"
+		)
+		_assert_eq(
+			legal_targets.get("heavy"), ["b"], "LimboAI context must expose heavy enemy target"
+		)
 		_assert_eq(legal_targets.get("block"), [], "block must have no explicit legal targets")
 		_assert_true(
 			context.get("desired_action") is Dictionary, "policy context needs output slot"
