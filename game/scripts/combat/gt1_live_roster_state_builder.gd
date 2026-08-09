@@ -10,6 +10,8 @@ const GT1RosterSelectionContractScript = preload(
 
 const GT1_MONTHS := [13, 16, 20]
 const BOUT_COUNT := 3
+const ROSTER_AUTOLOAD_NAME := "RosterManager"
+const EQUIPMENT_AUTOLOAD_NAME := "EquipmentManager"
 
 var _combat_contract = CombatContractScript.new()
 var _fighter_adapter = CombatRosterFighterAdapterScript.new()
@@ -19,12 +21,28 @@ var _selection_contract = GT1RosterSelectionContractScript.new()
 func build_from_live_roster(
 	month: int, player_team_id: String, player_ids_by_bout: Array, opponent_fighters_by_bout: Array
 ) -> Dictionary:
+	var sources := _resolve_live_sources()
+	if sources.get("status") != "ready":
+		return _invalid(sources.get("errors", []) as Array[String])
+
+	var roster_manager = sources.get("roster_manager")
+	var equipment_manager = sources.get("equipment_manager")
 	var people_by_id: Dictionary = {}
 	var equipment_by_id: Dictionary = {}
-	for person in RosterManager.get_gladiators():
+	var gladiators = roster_manager.call("get_gladiators")
+	if not gladiators is Array:
+		return _invalid(["GT I live roster source returned a non-Array gladiator roster"])
+	for person in gladiators as Array:
+		if person == null:
+			continue
 		var person_id := str(person.id)
 		people_by_id[person_id] = person
-		equipment_by_id[person_id] = EquipmentManager.get_equipped_stats(person).duplicate(true)
+		var equipped_stats = equipment_manager.call("get_equipped_stats", person)
+		if not equipped_stats is Dictionary:
+			return _invalid(
+				["GT I equipment source returned invalid stats for gladiator %s" % person_id]
+			)
+		equipment_by_id[person_id] = (equipped_stats as Dictionary).duplicate(true)
 	return build_from_sources(
 		month,
 		player_team_id,
@@ -125,7 +143,7 @@ func get_contract() -> Dictionary:
 	return {
 		"status": "frozen",
 		"player_source": "RosterManager.get_gladiators",
-		"equipment_source": "EquipmentManager.get_equipped_stats_snapshot",
+		"equipment_source": "EquipmentManager.get_equipped_stats",
 		"fighter_adapter": "CombatRosterFighterAdapter.build_from_person",
 		"opponent_source": "explicit_external_combat_v1_snapshots",
 		"rival_generation_allowed": false,
@@ -133,6 +151,31 @@ func get_contract() -> Dictionary:
 		"month_16_format": "1v1",
 		"month_20_format": "2v2",
 		"save_version_change_required": false,
+	}
+
+
+func _resolve_live_sources() -> Dictionary:
+	var main_loop := Engine.get_main_loop()
+	if not main_loop is SceneTree:
+		return {
+			"status": "invalid",
+			"errors": ["GT I live roster builder requires an active SceneTree"],
+		}
+	var root := (main_loop as SceneTree).root
+	var roster_manager := root.get_node_or_null(NodePath(ROSTER_AUTOLOAD_NAME))
+	var equipment_manager := root.get_node_or_null(NodePath(EQUIPMENT_AUTOLOAD_NAME))
+	var errors: Array[String] = []
+	if roster_manager == null or not roster_manager.has_method("get_gladiators"):
+		errors.append("GT I live roster builder could not resolve RosterManager.get_gladiators")
+	if equipment_manager == null or not equipment_manager.has_method("get_equipped_stats"):
+		errors.append("GT I live roster builder could not resolve EquipmentManager.get_equipped_stats")
+	if not errors.is_empty():
+		return {"status": "invalid", "errors": errors}
+	return {
+		"status": "ready",
+		"errors": [],
+		"roster_manager": roster_manager,
+		"equipment_manager": equipment_manager,
 	}
 
 
