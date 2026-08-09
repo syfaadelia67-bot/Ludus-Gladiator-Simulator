@@ -104,10 +104,13 @@ func _test_gt1_tie_requires_tiebreak() -> void:
 func _register_rivals(points: Array, wins: Array) -> void:
 	var registry = GT1RivalResultRegistryScript.new()
 	for index in range(RIVAL_IDS.size()):
-		var result := registry.register_result(
-			RIVAL_IDS[index],
-			int(points[index]),
-			int(wins[index]),
+		var result := (
+			registry
+			. register_result(
+				RIVAL_IDS[index],
+				int(points[index]),
+				int(wins[index]),
+			)
 		)
 		assert(result.get("status") == "registered")
 
