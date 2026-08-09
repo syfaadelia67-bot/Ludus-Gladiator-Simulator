@@ -38,7 +38,9 @@ func _assert_valid_intent_stays_pending(simulator) -> void:
 	var d5_d9_contracts := blocking_context.get("d5_d9_contracts", {}) as Dictionary
 	assert((d5_d9_contracts.get("D5", {}) as Dictionary).get("status") == "frozen")
 	assert((d5_d9_contracts.get("D7", {}) as Dictionary).get("critical_hits_enabled") == false)
-	assert((d5_d9_contracts.get("D9", {}) as Dictionary).get("ko_condition") == "current_pv_lte_zero")
+	assert(
+		(d5_d9_contracts.get("D9", {}) as Dictionary).get("ko_condition") == "current_pv_lte_zero"
+	)
 	var runtime_preview := blocking_context.get("runtime_state_preview", {}) as Dictionary
 	var runtime_fighter := (runtime_preview.get("fighters", []) as Array)[0] as Dictionary
 	assert(runtime_fighter.get("current_pv") == 10.0)
@@ -51,7 +53,9 @@ func _assert_valid_intent_stays_pending(simulator) -> void:
 	assert(frozen_requirements.has("ko_structure"))
 	var pending_requirements := result.get("pending_requirements", []) as Array
 	assert(not pending_requirements.has("target_rules"), "Frozen D1 must leave pending readiness")
-	assert(not pending_requirements.has("resolution_order"), "Frozen D3 must leave pending readiness")
+	assert(
+		not pending_requirements.has("resolution_order"), "Frozen D3 must leave pending readiness"
+	)
 	assert(pending_requirements.has("damage_and_mitigation"))
 	assert(pending_requirements.has("armor_numeric_mitigation"))
 	assert(pending_requirements.has("stamina_cost_table"))
