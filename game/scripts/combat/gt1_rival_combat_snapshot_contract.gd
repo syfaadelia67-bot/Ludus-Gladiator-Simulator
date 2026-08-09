@@ -59,7 +59,9 @@ func get_contract() -> Dictionary:
 	}
 
 
-func _rejected(rival_ludus_id: String, expected_team_id: String, errors: Array[String]) -> Dictionary:
+func _rejected(
+	rival_ludus_id: String, expected_team_id: String, errors: Array[String]
+) -> Dictionary:
 	return {
 		"status": "rejected",
 		"reason": "invalid_rival_combat_snapshot",
