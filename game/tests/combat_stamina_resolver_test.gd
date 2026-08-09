@@ -18,8 +18,10 @@ func _assert_contract(resolver) -> void:
 	var contract := resolver.get_contract()
 	assert(contract.get("status") == "frozen")
 	assert(
-		contract.get("action_costs")
-		== {"light": 3, "heavy": 5, "block": 2, "parry": 3, "dodge": 4, "reposition": 2}
+		(
+			contract.get("action_costs")
+			== {"light": 3, "heavy": 5, "block": 2, "parry": 3, "dodge": 4, "reposition": 2}
+		)
 	)
 	assert(contract.get("recovery_amount") == 2)
 	assert(contract.get("recovery_timing") == "end_exchange")
