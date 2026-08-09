@@ -15,7 +15,7 @@ func _ready() -> void:
 
 
 func _assert_contract(resolver) -> void:
-	var contract := resolver.get_contract()
+	var contract: Dictionary = resolver.get_contract()
 	assert(contract.get("status") == "frozen")
 	assert(contract.get("deterministic") == true)
 	assert(contract.get("minimum_damage") == 1)
@@ -26,8 +26,8 @@ func _assert_contract(resolver) -> void:
 func _assert_light_and_heavy(resolver) -> void:
 	var attacker := _fighter(10, 10, 12, 0)
 	var defender := _fighter(10, 10, 0, 10)
-	var light := resolver.resolve_damage(attacker, defender, "light")
-	var heavy := resolver.resolve_damage(attacker, defender, "heavy")
+	var light: Dictionary = resolver.resolve_damage(attacker, defender, "light")
+	var heavy: Dictionary = resolver.resolve_damage(attacker, defender, "heavy")
 	assert(light.get("status") == "resolved")
 	assert(light.get("damage") == 6)
 	assert(heavy.get("damage") == 10)
@@ -36,28 +36,32 @@ func _assert_light_and_heavy(resolver) -> void:
 
 func _assert_equipment_contribution(resolver) -> void:
 	var defender := _fighter(10, 10, 0, 0)
-	var unarmed := resolver.resolve_damage(_fighter(10, 10, 0, 0), defender, "light")
-	var armed := resolver.resolve_damage(_fighter(10, 10, 12, 0), defender, "light")
+	var unarmed: Dictionary = resolver.resolve_damage(_fighter(10, 10, 0, 0), defender, "light")
+	var armed: Dictionary = resolver.resolve_damage(_fighter(10, 10, 12, 0), defender, "light")
 	assert(int(armed.get("damage")) > int(unarmed.get("damage")))
-	var armored := resolver.resolve_damage(
+	var armored: Dictionary = resolver.resolve_damage(
 		_fighter(10, 10, 12, 0), _fighter(10, 10, 0, 10), "light"
 	)
 	assert(int(armored.get("damage")) < int(armed.get("damage")))
 
 
 func _assert_minimum_damage(resolver) -> void:
-	var result := resolver.resolve_damage(_fighter(1, 1, 0, 0), _fighter(1, 50, 0, 50), "light")
+	var result: Dictionary = resolver.resolve_damage(
+		_fighter(1, 1, 0, 0), _fighter(1, 50, 0, 50), "light"
+	)
 	assert(result.get("damage") == 1)
 
 
 func _assert_invalid_inputs_fail_closed(resolver) -> void:
-	var invalid_action := resolver.resolve_damage(
+	var invalid_action: Dictionary = resolver.resolve_damage(
 		_fighter(10, 10, 0, 0), _fighter(10, 10, 0, 0), "block"
 	)
 	assert(invalid_action.get("status") == "invalid")
 	var attacker := _fighter(10, 10, 0, 0)
 	(attacker["stats"] as Dictionary)["FUE"] = -1
-	var invalid_stat := resolver.resolve_damage(attacker, _fighter(10, 10, 0, 0), "light")
+	var invalid_stat: Dictionary = resolver.resolve_damage(
+		attacker, _fighter(10, 10, 0, 0), "light"
+	)
 	assert(invalid_stat.get("status") == "invalid")
 
 
