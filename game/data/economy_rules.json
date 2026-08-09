@@ -3,5 +3,13 @@
     "id": "demo_starting_resources",
     "name": "Recursos iniciales de la demo",
     "denarii": 650
+  },
+  {
+    "id": "monthly_operating_costs",
+    "name": "Costes operativos mensuales",
+    "fixed_expense": 88,
+    "slave_maintenance": 5,
+    "gladiator_maintenance": 20,
+    "beast_maintenance": 10
   }
 ]
