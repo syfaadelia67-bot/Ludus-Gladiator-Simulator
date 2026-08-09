@@ -35,7 +35,9 @@ func submit_intent(session: Dictionary, desired_action: Dictionary) -> Dictionar
 		)
 
 	var state := (session.get("state", {}) as Dictionary).duplicate(true)
-	var policy_errors: Array[String] = _policy_contract.validate_desired_action(state, desired_action)
+	var policy_errors: Array[String] = _policy_contract.validate_desired_action(
+		state, desired_action
+	)
 	if not policy_errors.is_empty():
 		return _rejected(
 			"invalid_desired_action",
