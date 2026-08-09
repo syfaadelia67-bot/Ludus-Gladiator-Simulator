@@ -17,25 +17,28 @@ func _ready() -> void:
 
 
 func _test_exact_championship_tie_surfaces_external_rival_requirement(snapshot) -> void:
-	var result: Dictionary = snapshot.build(
-		_summary(true, false),
-		{
-			"status": "podium_combat_required",
-			"reason": "podium_tie",
-			"tied_rival_ids": ["cassianus"],
-		},
-		{
-			"status": "ready",
-			"format": "1v1",
-			"player_ludus_id": "player",
-			"rival_ludus_id": "cassianus",
-			"player_selection": "one_available_gladiator",
-			"rival_selection": "one_available_gladiator",
-			"points_awarded": 0,
-			"combat_result_authority": "CombatSimulator",
-			"standings_authority": "TournamentManager",
-			"double_ko_resolution": "rematch_required",
-		},
+	var result: Dictionary = (
+		snapshot
+		. build(
+			_summary(true, false),
+			{
+				"status": "podium_combat_required",
+				"reason": "podium_tie",
+				"tied_rival_ids": ["cassianus"],
+			},
+			{
+				"status": "ready",
+				"format": "1v1",
+				"player_ludus_id": "player",
+				"rival_ludus_id": "cassianus",
+				"player_selection": "one_available_gladiator",
+				"rival_selection": "one_available_gladiator",
+				"points_awarded": 0,
+				"combat_result_authority": "CombatSimulator",
+				"standings_authority": "TournamentManager",
+				"double_ko_resolution": "rematch_required",
+			},
+		)
 	)
 	assert(result.get("status") == "championship_tiebreak_ready")
 	assert(result.get("format") == "1v1")
@@ -49,15 +52,18 @@ func _test_exact_championship_tie_surfaces_external_rival_requirement(snapshot) 
 
 
 func _test_non_podium_tie_surfaces_required_data(snapshot) -> void:
-	var result: Dictionary = snapshot.build(
-		_summary(true, false),
-		{
-			"status": "non_podium_data_required",
-			"reason": "non_podium_tie",
-			"first_tied_position": 4,
-			"last_tied_position": 5,
-			"tied_rival_ids": ["cassianus"],
-		},
+	var result: Dictionary = (
+		snapshot
+		. build(
+			_summary(true, false),
+			{
+				"status": "non_podium_data_required",
+				"reason": "non_podium_tie",
+				"first_tied_position": 4,
+				"last_tied_position": 5,
+				"tied_rival_ids": ["cassianus"],
+			},
+		)
 	)
 	assert(result.get("status") == "non_podium_data_required")
 	assert(result.get("requires_combat") == false)
@@ -68,17 +74,20 @@ func _test_non_podium_tie_surfaces_required_data(snapshot) -> void:
 
 
 func _test_unsupported_podium_tie_stays_pending(snapshot) -> void:
-	var result: Dictionary = snapshot.build(
-		_summary(true, false),
-		{
-			"status": "podium_combat_required",
-			"reason": "podium_tie",
-		},
-		{
-			"status": "pending_exact_rule",
-			"reason": "unsupported_podium_tie_shape",
-			"errors": ["Only the exact frozen championship tie is supported"],
-		},
+	var result: Dictionary = (
+		snapshot
+		. build(
+			_summary(true, false),
+			{
+				"status": "podium_combat_required",
+				"reason": "podium_tie",
+			},
+			{
+				"status": "pending_exact_rule",
+				"reason": "unsupported_podium_tie_shape",
+				"errors": ["Only the exact frozen championship tie is supported"],
+			},
+		)
 	)
 	assert(result.get("status") == "pending_exact_rule")
 	assert(result.get("reason") == "unsupported_podium_tie_shape")
