@@ -23,41 +23,50 @@ func _test_empty_catalog_is_valid_until_balance_is_frozen(validator) -> void:
 
 
 func _test_valid_entry_is_accepted(validator) -> void:
-	var errors: Array[String] = validator.validate_entries(
-		[
-			{
-				"rival_ludus_id": "cassianus",
-				"fighter": _fighter("cassianus_champion", "cassianus_team"),
-			}
-		]
+	var errors: Array[String] = (
+		validator
+		. validate_entries(
+			[
+				{
+					"rival_ludus_id": "cassianus",
+					"fighter": _fighter("cassianus_champion", "cassianus_team"),
+				}
+			]
+		)
 	)
 	assert(errors.is_empty())
 
 
 func _test_unknown_rival_is_rejected(validator) -> void:
-	var errors: Array[String] = validator.validate_entries(
-		[
-			{
-				"rival_ludus_id": "legacy_rival",
-				"fighter": _fighter("legacy_champion", "legacy_team"),
-			}
-		]
+	var errors: Array[String] = (
+		validator
+		. validate_entries(
+			[
+				{
+					"rival_ludus_id": "legacy_rival",
+					"fighter": _fighter("legacy_champion", "legacy_team"),
+				}
+			]
+		)
 	)
 	assert(errors.has("Unknown canonical rival Ludus id: legacy_rival"))
 
 
 func _test_duplicate_fighter_id_is_rejected(validator) -> void:
-	var errors: Array[String] = validator.validate_entries(
-		[
-			{
-				"rival_ludus_id": "cassianus",
-				"fighter": _fighter("cassianus_champion", "cassianus_team"),
-			},
-			{
-				"rival_ludus_id": "cassianus",
-				"fighter": _fighter("cassianus_champion", "cassianus_team"),
-			},
-		]
+	var errors: Array[String] = (
+		validator
+		. validate_entries(
+			[
+				{
+					"rival_ludus_id": "cassianus",
+					"fighter": _fighter("cassianus_champion", "cassianus_team"),
+				},
+				{
+					"rival_ludus_id": "cassianus",
+					"fighter": _fighter("cassianus_champion", "cassianus_team"),
+				},
+			]
+		)
 	)
 	assert(errors.has("Duplicate rival Combat V1 fighter id cassianus_champion for cassianus"))
 
@@ -72,14 +81,17 @@ func _test_missing_canonical_stat_is_rejected(validator) -> void:
 
 
 func _test_runtime_metadata_is_rejected(validator) -> void:
-	var errors: Array[String] = validator.validate_entries(
-		[
-			{
-				"rival_ludus_id": "cassianus",
-				"fighter": _fighter("cassianus_champion", "cassianus_team"),
-				"available": true,
-			}
-		]
+	var errors: Array[String] = (
+		validator
+		. validate_entries(
+			[
+				{
+					"rival_ludus_id": "cassianus",
+					"fighter": _fighter("cassianus_champion", "cassianus_team"),
+					"available": true,
+				}
+			]
+		)
 	)
 	assert(errors.has("Rival Combat V1 snapshot entry contains unsupported field available"))
 
