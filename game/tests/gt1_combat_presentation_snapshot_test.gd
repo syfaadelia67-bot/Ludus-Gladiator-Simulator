@@ -17,10 +17,13 @@ func run() -> void:
 		"player_wins": 1,
 		"player_points": 3,
 		"last_intent_providers": {"player": "player", "rival": "limboai"},
-		"active_loop": {
-			"state": {
+		"active_loop":
+		{
+			"state":
+			{
 				"format": "1v1",
-				"fighters": [
+				"fighters":
+				[
 					{
 						"id": "player",
 						"team": "alpha",
