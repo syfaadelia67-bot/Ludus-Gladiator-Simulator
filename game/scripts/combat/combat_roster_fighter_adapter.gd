@@ -5,6 +5,29 @@ const CombatStatAdapterScript = preload("res://scripts/core/combat_stat_adapter.
 var _stat_adapter = CombatStatAdapterScript.new()
 
 
+func build_from_person(person, team_id: String, equipment_stats: Dictionary = {}) -> Dictionary:
+	if person == null:
+		return {
+			"status": "invalid_source",
+			"errors": ["Combat roster fighter requires a person source"],
+			"pending_stat_ids": [],
+			"fighter": {},
+			"legacy_separate": {},
+			"legacy_unmapped": {},
+		}
+	var source := {
+		"id": str(person.id),
+		"strength": int(person.strength),
+		"agility": int(person.agility),
+		"technique": int(person.technique),
+		"resistance": int(person.resistance),
+		"health": int(person.health),
+		"endurance": int(person.endurance),
+		"stamina": 10.0,
+	}
+	return build_fighter(source, team_id, equipment_stats)
+
+
 func build_fighter(
 	person_source: Dictionary,
 	team_id: String,
@@ -72,6 +95,8 @@ func get_contract() -> Dictionary:
 			"resistance": "RES",
 			"health": "PV",
 		},
+		"live_roster_res_source": "person.resistance",
+		"legacy_missing_resistance_baseline": 5,
 		"legacy_separate_stats": ["endurance"],
 		"removed_legacy_stats": ["intelligence"],
 		"endurance_to_resistance_fallback": false,
