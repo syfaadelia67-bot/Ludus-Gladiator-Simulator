@@ -51,15 +51,10 @@ func _assert_valid_intent_stays_pending(simulator) -> void:
 	assert(accuracy_contract.get("critical_hits_enabled") == false)
 	assert(accuracy_contract.get("attacker_stat") == "TEC")
 	assert(accuracy_contract.get("defender_stat") == "AGI")
-	assert(
-		accuracy_contract.get("action_accuracy_modifiers")
-		== {"light": 1.0, "heavy": 0.0}
-	)
+	assert(accuracy_contract.get("action_accuracy_modifiers") == {"light": 1.0, "heavy": 0.0})
 	var d5_d9_contracts := blocking_context.get("d5_d9_contracts", {}) as Dictionary
 	assert((d5_d9_contracts.get("D5", {}) as Dictionary).get("status") == "frozen")
-	assert(
-		(d5_d9_contracts.get("D7", {}) as Dictionary).get("accuracy_formula_status") == "frozen"
-	)
+	assert((d5_d9_contracts.get("D7", {}) as Dictionary).get("accuracy_formula_status") == "frozen")
 	assert((d5_d9_contracts.get("D7", {}) as Dictionary).get("critical_hits_enabled") == false)
 	assert(
 		(d5_d9_contracts.get("D9", {}) as Dictionary).get("ko_condition") == "current_pv_lte_zero"
