@@ -200,7 +200,7 @@ Conditional:
 
 ## Validation checkpoint
 
-Head validated before this documentation update: `7c5cd9551877ac686d3defc0e05f2abfca8dbc53`.
+Runtime head `7c5cd9551877ac686d3defc0e05f2abfca8dbc53` was validated with:
 
 - Core systems suite: **80/80 passed**;
 - UI/integration suite: passed;
@@ -209,6 +209,8 @@ Head validated before this documentation update: `7c5cd9551877ac686d3defc0e05f2a
 - gdformat/gdlint: passed;
 - Gitleaks: passed;
 - CI Gate: passed.
+
+The subsequent commits only update this decision ledger and do not change runtime contracts.
 
 ## Freeze rule
 
