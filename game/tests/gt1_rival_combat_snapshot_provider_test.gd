@@ -25,10 +25,7 @@ func _test_empty_canonical_catalog_fails_closed() -> void:
 	assert(result.get("status") == "rejected")
 	assert(result.get("reason") == "rival_combat_snapshot_unavailable")
 	assert(result.get("generated_snapshot") == false)
-	assert(
-		result.get("snapshot_source")
-		== "res://data/rival_combat_v1_snapshots.json"
-	)
+	assert(result.get("snapshot_source") == "res://data/rival_combat_v1_snapshots.json")
 
 
 func _test_explicit_entry_is_validated_and_copied() -> void:
@@ -39,11 +36,14 @@ func _test_explicit_entry_is_validated_and_copied() -> void:
 			"fighter": _fighter("rival_glad", "beta"),
 		}
 	]
-	var result := provider.get_snapshot_from_entries(
-		entries,
-		"cassianus",
-		"rival_glad",
-		"beta",
+	var result := (
+		provider
+		. get_snapshot_from_entries(
+			entries,
+			"cassianus",
+			"rival_glad",
+			"beta",
+		)
 	)
 	assert(result.get("status") == "ready")
 	assert(result.get("fighter_id") == "rival_glad")
@@ -103,10 +103,7 @@ func _test_catalog_runtime_contract() -> void:
 	var contract := runtime.get_contract()
 	assert(contract.get("supported_tie") == "two_ludi_tied_first_at_27_points")
 	assert(contract.get("format") == "1v1")
-	assert(
-		contract.get("rival_source")
-		== "res://data/rival_combat_v1_snapshots.json"
-	)
+	assert(contract.get("rival_source") == "res://data/rival_combat_v1_snapshots.json")
 	assert(contract.get("rival_provider") == "gt1_rival_combat_snapshot_provider")
 	assert(contract.get("rival_selection_policy") == "explicit_fighter_id_required")
 	assert(contract.get("rival_availability_policy") == "not_inferred_by_provider")
