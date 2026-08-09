@@ -6,9 +6,12 @@ const CombatPolicyContractScript = preload("res://scripts/combat/combat_policy_c
 func _ready() -> void:
 	var policy = CombatPolicyContractScript.new()
 	_assert_valid_intent(policy)
+	_assert_missing_enemy_target_is_rejected(policy)
+	_assert_ally_target_is_rejected(policy)
+	_assert_no_target_actions_reject_explicit_target(policy)
 	_assert_unknown_actor_is_rejected(policy)
 	_assert_unknown_action_is_rejected(policy)
-	_assert_unknown_optional_target_is_rejected(policy)
+	_assert_unknown_target_is_rejected(policy)
 	_assert_invalid_state_blocks_policy(policy)
 	_assert_inputs_are_not_mutated(policy)
 	print("Combat policy desired-action contract: OK")
@@ -19,8 +22,47 @@ func _assert_valid_intent(policy) -> void:
 	var state := _state()
 	var desired := {"actor_id": "a1", "action_id": "light", "target_id": "b1"}
 	var errors: Array[String] = policy.validate_desired_action(state, desired)
-	assert(errors.is_empty(), "Known actor/action/target intent must validate: %s" % [errors])
+	assert(errors.is_empty(), "Known enemy-target intent must validate: %s" % [errors])
 	assert(policy.is_valid_desired_action(state, desired))
+	for action_id in ["block", "parry", "dodge", "reposition"]:
+		var no_target := {"actor_id": "a1", "action_id": action_id}
+		assert(
+			policy.validate_desired_action(state, no_target).is_empty(),
+			"%s must validate without explicit target" % action_id,
+		)
+
+
+func _assert_missing_enemy_target_is_rejected(policy) -> void:
+	for action_id in ["light", "heavy"]:
+		var errors: Array[String] = policy.validate_desired_action(
+			_state(), {"actor_id": "a1", "action_id": action_id}
+		)
+		assert(_contains_error(errors, "requires exactly one enemy target"))
+
+
+func _assert_ally_target_is_rejected(policy) -> void:
+	var state := {
+		"format": "2v2",
+		"fighters":
+		[
+			_fighter("a1", "a"),
+			_fighter("a2", "a"),
+			_fighter("b1", "b"),
+			_fighter("b2", "b"),
+		],
+	}
+	var errors: Array[String] = policy.validate_desired_action(
+		state, {"actor_id": "a1", "action_id": "light", "target_id": "a2"}
+	)
+	assert(_contains_error(errors, "not a legal enemy target"))
+
+
+func _assert_no_target_actions_reject_explicit_target(policy) -> void:
+	for action_id in ["block", "parry", "dodge", "reposition"]:
+		var errors: Array[String] = policy.validate_desired_action(
+			_state(), {"actor_id": "a1", "action_id": action_id, "target_id": "b1"}
+		)
+		assert(_contains_error(errors, "does not accept an explicit target"))
 
 
 func _assert_unknown_actor_is_rejected(policy) -> void:
@@ -37,7 +79,7 @@ func _assert_unknown_action_is_rejected(policy) -> void:
 	assert(_contains_error(errors, "unsupported action"))
 
 
-func _assert_unknown_optional_target_is_rejected(policy) -> void:
+func _assert_unknown_target_is_rejected(policy) -> void:
 	var errors: Array[String] = policy.validate_desired_action(
 		_state(), {"actor_id": "a1", "action_id": "heavy", "target_id": "missing"}
 	)
