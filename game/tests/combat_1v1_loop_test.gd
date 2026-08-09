@@ -7,7 +7,7 @@ var _failures: Array[String] = []
 
 func _initialize() -> void:
 	_test_chains_resolved_state_between_exchanges()
-	_test_ko_stops_before_next_exchange()
+	_test_ko_finishes_combat_authoritatively()
 	_test_incomplete_exchange_is_rejected()
 	_test_non_1v1_is_rejected()
 
@@ -37,6 +37,7 @@ func _test_chains_resolved_state_between_exchanges() -> void:
 	)
 	_assert_eq(first.get("status"), "running", "non-KO exchange must continue loop")
 	_assert_eq(first.get("exchange_index"), 1, "first exchange must increment index")
+	_assert_eq(first.get("outcome"), "ongoing", "non-KO exchange must remain ongoing")
 	var first_b: Dictionary = _fighter_by_id(first.get("state", {}) as Dictionary, "b")
 	var first_current_pv := float(first_b.get("current_pv", 0.0))
 	_assert_true(first_current_pv < 100.0, "first exchange must persist resolved PV damage")
@@ -62,12 +63,13 @@ func _test_chains_resolved_state_between_exchanges() -> void:
 	var contract: Dictionary = loop.get_contract()
 	_assert_eq(
 		contract.get("winner_authority"),
-		"pending_combat_end_rules",
-		"1v1 loop must not invent a winner before combat-end freeze",
+		"combat_end_resolver",
+		"1v1 loop winner must come from the frozen combat-end authority",
 	)
+	_assert_eq(contract.get("automatic_surrender"), "disabled_v1", "V1 surrender must be explicit")
 
 
-func _test_ko_stops_before_next_exchange() -> void:
+func _test_ko_finishes_combat_authoritatively() -> void:
 	var loop = Combat1v1LoopScript.new()
 	var session: Dictionary = loop.start(_state(5, 100))
 	var result: Dictionary = (
@@ -80,18 +82,15 @@ func _test_ko_stops_before_next_exchange() -> void:
 			],
 		)
 	)
-	_assert_eq(
-		result.get("status"),
-		"awaiting_combat_end_resolution",
-		"KO must stop the loop before another exchange",
-	)
+	_assert_eq(result.get("status"), "combat_finished", "team elimination must finish 1v1")
 	_assert_true(
 		(result.get("ko_fighter_ids", []) as Array).has("b"),
-		"KO fighter id must be exposed without declaring a winner",
+		"KO fighter id must be exposed",
 	)
-	_assert_eq(
-		result.get("combat_end_resolved"), false, "KO alone must not fake final combat result"
-	)
+	_assert_eq(result.get("combat_end_resolved"), true, "KO team elimination must resolve combat end")
+	_assert_eq(result.get("outcome"), "team_win", "single surviving team must produce team_win")
+	_assert_eq(result.get("winner_team_id"), "alpha", "surviving team must be authoritative winner")
+	_assert_eq(result.get("loser_team_id"), "beta", "eliminated team must be authoritative loser")
 	var cannot_continue: Dictionary = (
 		loop
 		. advance(
@@ -102,8 +101,8 @@ func _test_ko_stops_before_next_exchange() -> void:
 			],
 		)
 	)
-	_assert_eq(cannot_continue.get("status"), "rejected", "loop must not advance after KO stop")
-	_assert_eq(cannot_continue.get("reason"), "invalid_loop_state", "stopped loop must fail closed")
+	_assert_eq(cannot_continue.get("status"), "rejected", "finished loop must not advance")
+	_assert_eq(cannot_continue.get("reason"), "invalid_loop_state", "finished loop must fail closed")
 
 
 func _test_incomplete_exchange_is_rejected() -> void:
