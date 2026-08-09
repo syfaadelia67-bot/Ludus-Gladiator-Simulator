@@ -47,22 +47,26 @@ func _refresh() -> void:
 
 	var chapter: Dictionary = CampaignManager.get_current_chapter()
 	var lines: Array[String] = [
-		"[b]CAPÍTULO %d — %s[/b]"
-		% [int(chapter.get("number", 1)), chapter.get("name", "Campaña")],
+		"[b]CAPÍTULO %d — %s[/b]" % [int(chapter.get("number", 1)), chapter.get("name", "Campaña")],
 		str(chapter.get("description", "")),
 		"[b]Objetivos del capítulo[/b]",
 	]
 	for objective in CampaignManager.get_current_chapter_objectives():
 		var completed := bool(objective.get("completed", false))
 		var marker := "✓" if completed else "•"
-		lines.append(
-			"%s %s — %d/%d"
-			% [
-				marker,
-				objective.get("title", "Objetivo"),
-				int(objective.get("progress", 0)),
-				int(objective.get("target", 1)),
-			]
+		(
+			lines
+			. append(
+				(
+					"%s %s — %d/%d"
+					% [
+						marker,
+						objective.get("title", "Objetivo"),
+						int(objective.get("progress", 0)),
+						int(objective.get("target", 1)),
+					]
+				)
+			)
 		)
 
 	lines.append("[b]CALENDARIO MENSUAL[/b]")
@@ -74,14 +78,19 @@ func _refresh() -> void:
 		var current_marker := "→ " if offset == 0 else ""
 		if TournamentManager.is_grand_tournament_month(month):
 			var encounter := TournamentManager.get_gt1_encounter(month)
-			lines.append(
-				"%sMes %d — %s · %s"
-				% [
-					current_marker,
-					month,
-					str(encounter.get("tournament_name", "Gran Torneo de Roma")),
-					str(encounter.get("format", "Arena")),
-				]
+			(
+				lines
+				. append(
+					(
+						"%sMes %d — %s · %s"
+						% [
+							current_marker,
+							month,
+							str(encounter.get("tournament_name", "Gran Torneo de Roma")),
+							str(encounter.get("format", "Arena")),
+						]
+					)
+				)
 			)
 		else:
 			lines.append("%sMes %d — Gestión del ludus" % [current_marker, month])
