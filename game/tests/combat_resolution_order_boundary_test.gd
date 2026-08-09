@@ -44,11 +44,15 @@ func _test_1v1_phase_plan(boundary) -> void:
 	var preparation := phases[0] as Dictionary
 	var offense := phases[1] as Dictionary
 	_assert_eq(preparation.get("id"), "preparation", "defensive/tactical phase resolves first")
-	_assert_eq(preparation.get("snapshot"), "exchange_start", "preparation shares exchange-start snapshot")
+	_assert_eq(
+		preparation.get("snapshot"), "exchange_start", "preparation shares exchange-start snapshot"
+	)
 	_assert_eq(preparation.get("simultaneous"), true, "preparation intents are simultaneous")
 	_assert_eq((preparation.get("intents", []) as Array).size(), 1, "dodge belongs to preparation")
 	_assert_eq(offense.get("id"), "offense", "offense resolves second")
-	_assert_eq(offense.get("snapshot"), "after_preparation_commit", "offense sees committed preparation")
+	_assert_eq(
+		offense.get("snapshot"), "after_preparation_commit", "offense sees committed preparation"
+	)
 	_assert_eq(offense.get("simultaneous"), true, "offensive intents are simultaneous")
 	_assert_eq((offense.get("intents", []) as Array).size(), 1, "light belongs to offense")
 
@@ -63,7 +67,9 @@ func _test_1v2_requires_complete_exchange(boundary) -> void:
 		{"actor_id": "b", "action_id": "block"},
 	]
 	var rejected: Dictionary = boundary.build_resolution_plan(state, incomplete)
-	_assert_eq(rejected.get("status"), "invalid_intents", "1v2 needs one intent from all three fighters")
+	_assert_eq(
+		rejected.get("status"), "invalid_intents", "1v2 needs one intent from all three fighters"
+	)
 	_assert_true(
 		_contains_error(rejected.get("errors", []), "Fighter b2 must submit exactly one intent"),
 		"missing 1v2 actor must be named",
@@ -127,24 +133,30 @@ func _test_duplicate_actor_is_rejected(boundary) -> void:
 func _test_invalid_state_is_rejected(boundary) -> void:
 	var state := _state("1v1", [_fighter("a", "alpha"), _fighter("b", "beta")])
 	state["format"] = "3v3"
-	var result: Dictionary = boundary.build_resolution_plan(
-		state,
-		[
-			{"actor_id": "a", "action_id": "light", "target_id": "b"},
-			{"actor_id": "b", "action_id": "dodge"},
-		],
+	var result: Dictionary = (
+		boundary
+		. build_resolution_plan(
+			state,
+			[
+				{"actor_id": "a", "action_id": "light", "target_id": "b"},
+				{"actor_id": "b", "action_id": "dodge"},
+			],
+		)
 	)
 	_assert_eq(result.get("status"), "invalid_state", "invalid CombatState must fail closed")
 
 
 func _test_invalid_intent_is_rejected(boundary) -> void:
 	var state := _state("1v1", [_fighter("a", "alpha"), _fighter("b", "beta")])
-	var result: Dictionary = boundary.build_resolution_plan(
-		state,
-		[
-			{"actor_id": "a", "action_id": "block", "target_id": "b"},
-			{"actor_id": "b", "action_id": "dodge"},
-		],
+	var result: Dictionary = (
+		boundary
+		. build_resolution_plan(
+			state,
+			[
+				{"actor_id": "a", "action_id": "block", "target_id": "b"},
+				{"actor_id": "b", "action_id": "dodge"},
+			],
+		)
 	)
 	_assert_eq(result.get("status"), "invalid_intents", "D3 must reuse frozen D1 validation")
 	_assert_true(
