@@ -24,7 +24,7 @@ func _assert_valid_intent_stays_pending(simulator) -> void:
 	assert((result.get("errors", []) as Array).is_empty())
 	assert(
 		str(result.get("blocking_requirement", "")) == "damage_and_mitigation",
-		"D4 damage/mitigation must become the first required blocker after D3 freeze",
+		"D4 damage/mitigation must remain the first required blocker",
 	)
 	var blocking_context := result.get("blocking_context", {}) as Dictionary
 	var target_context := blocking_context.get("resolved_target_context", {}) as Dictionary
@@ -35,13 +35,29 @@ func _assert_valid_intent_stays_pending(simulator) -> void:
 	assert(order_contract.get("phase_order") == ["preparation", "offense"])
 	assert(order_contract.get("initiative_mode") == "none")
 	assert(order_contract.get("tie_break_mode") == "simultaneous")
+	var d5_d9_contracts := blocking_context.get("d5_d9_contracts", {}) as Dictionary
+	assert((d5_d9_contracts.get("D5", {}) as Dictionary).get("status") == "frozen")
+	assert((d5_d9_contracts.get("D7", {}) as Dictionary).get("critical_hits_enabled") == false)
+	assert((d5_d9_contracts.get("D9", {}) as Dictionary).get("ko_condition") == "current_pv_lte_zero")
+	var runtime_preview := blocking_context.get("runtime_state_preview", {}) as Dictionary
+	var runtime_fighter := (runtime_preview.get("fighters", []) as Array)[0] as Dictionary
+	assert(runtime_fighter.get("current_pv") == 10.0)
+	assert(runtime_fighter.get("vulnerable") == false)
+	var frozen_requirements := result.get("frozen_requirements", []) as Array
+	assert(frozen_requirements.has("armor_and_vulnerability_structure"))
+	assert(frozen_requirements.has("stamina_structure"))
+	assert(frozen_requirements.has("accuracy_and_critical_structure"))
+	assert(frozen_requirements.has("stat_scaling_roles"))
+	assert(frozen_requirements.has("ko_structure"))
 	var pending_requirements := result.get("pending_requirements", []) as Array
 	assert(not pending_requirements.has("target_rules"), "Frozen D1 must leave pending readiness")
-	assert(
-		not pending_requirements.has("resolution_order"), "Frozen D3 must leave pending readiness"
-	)
+	assert(not pending_requirements.has("resolution_order"), "Frozen D3 must leave pending readiness")
 	assert(pending_requirements.has("damage_and_mitigation"))
-	assert(pending_requirements.has("stamina_costs"))
+	assert(pending_requirements.has("armor_numeric_mitigation"))
+	assert(pending_requirements.has("stamina_cost_table"))
+	assert(pending_requirements.has("accuracy_formula"))
+	assert(pending_requirements.has("stat_scaling_weights"))
+	assert(pending_requirements.has("surrender_rules"))
 	var conditional_requirements := result.get("conditional_requirements", []) as Array
 	assert(conditional_requirements.has("position_and_distance_model"))
 
@@ -66,6 +82,7 @@ func _assert_invalid_state_is_rejected(simulator) -> void:
 	assert(not bool(result.get("pending", true)))
 	assert(str(result.get("reason", "")) == "invalid_state")
 	assert(_contains_error(result.get("errors", []), "unresolved stat RES"))
+	assert((result.get("frozen_requirements", []) as Array).is_empty())
 	assert((result.get("pending_requirements", []) as Array).is_empty())
 	assert(str(result.get("blocking_requirement", "")).is_empty())
 	assert((result.get("blocking_context", {}) as Dictionary).is_empty())
@@ -78,6 +95,7 @@ func _assert_invalid_intent_is_rejected(simulator) -> void:
 	assert(not bool(result.get("pending", true)))
 	assert(str(result.get("reason", "")) == "invalid_desired_action")
 	assert(_contains_error(result.get("errors", []), "unsupported action"))
+	assert((result.get("frozen_requirements", []) as Array).is_empty())
 	assert((result.get("pending_requirements", []) as Array).is_empty())
 	assert(str(result.get("blocking_requirement", "")).is_empty())
 	assert((result.get("blocking_context", {}) as Dictionary).is_empty())
