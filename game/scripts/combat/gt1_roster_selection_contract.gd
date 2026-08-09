@@ -1,7 +1,13 @@
 extends RefCounted
 
+const GT1BeastReadinessContractScript = preload(
+	"res://scripts/combat/gt1_beast_readiness_contract.gd"
+)
+
 const GT1_MONTHS := [13, 16, 20]
 const BOUT_COUNT := 3
+
+var _beast_readiness = GT1BeastReadinessContractScript.new()
 
 
 func validate_selection(
@@ -51,14 +57,21 @@ func validate_selection(
 	return errors
 
 
+func get_month_16_beast_readiness(runtime_adapter_ready: bool = false) -> Dictionary:
+	return _beast_readiness.evaluate(DataRepository.beasts, runtime_adapter_ready)
+
+
 func get_contract() -> Dictionary:
 	return {
 		"status": "frozen",
 		"month_13": "same_single_gladiator_all_three_bouts",
-		"month_16": "one_available_gladiator_selected_per_independent_bout",
+		"month_16_frozen_design": "one_available_gladiator_or_beast_per_independent_bout",
+		"month_16_current_selection": "human_gladiators_only_until_beast_readiness",
+		"month_16_beast_readiness": "gt1_beast_readiness_contract",
 		"month_20": "same_pair_with_at_most_one_single_fighter_substitution",
 		"selection_source": "available_player_gladiator_ids",
 		"combat_stats_authority": "separate_combat_roster_adapter",
+		"invent_beast_stats_allowed": false,
 	}
 
 
