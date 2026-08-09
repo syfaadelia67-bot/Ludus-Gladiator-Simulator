@@ -1,6 +1,7 @@
 extends RefCounted
 
 const CombatContractScript = preload("res://scripts/combat/combat_contract.gd")
+const CombatDamageResolverScript = preload("res://scripts/combat/combat_damage_resolver.gd")
 const CombatPolicyContractScript = preload("res://scripts/combat/combat_policy_contract.gd")
 const CombatResolutionOrderBoundaryScript = preload(
 	"res://scripts/combat/combat_resolution_order_boundary.gd"
@@ -15,9 +16,10 @@ const CombatRuntimeStateBuilderScript = preload(
 const CombatTargetResolverScript = preload("res://scripts/combat/combat_target_resolver.gd")
 
 const PENDING_REASON := "combat_resolution_rules_not_frozen"
-const NEXT_BLOCKER_ID := "damage_and_mitigation"
+const NEXT_BLOCKER_ID := "stamina_cost_table"
 
 var _combat_contract = CombatContractScript.new()
+var _damage_resolver = CombatDamageResolverScript.new()
 var _policy_contract = CombatPolicyContractScript.new()
 var _resolution_order = CombatResolutionOrderBoundaryScript.new()
 var _resolution_readiness = CombatResolutionReadinessScript.new()
@@ -66,6 +68,7 @@ func resolve_intent(state: Dictionary, desired_action: Dictionary) -> Dictionary
 		{
 			"resolved_target_context": target_inspection.duplicate(true),
 			"resolution_order_contract": _resolution_order.get_contract_status().duplicate(true),
+			"damage_contract": _damage_resolver.get_contract().duplicate(true),
 			"d5_d9_contracts": _d5_d9_contract.get_contracts(),
 			"runtime_state_preview":
 			(runtime_state_result.get("state", {}) as Dictionary).duplicate(true),
