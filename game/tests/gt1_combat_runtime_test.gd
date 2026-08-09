@@ -25,12 +25,15 @@ func _test_month_13_consecutive_1v1_carries_player_state() -> void:
 
 	for bout in range(3):
 		var enemy_id := "r13_%d" % [bout + 1]
-		session = runtime.advance_exchange(
-			session,
-			[
-				{"actor_id": "player", "action_id": "light", "target_id": enemy_id},
-				{"actor_id": enemy_id, "action_id": "block"},
-			],
+		session = (
+			runtime
+			. advance_exchange(
+				session,
+				[
+					{"actor_id": "player", "action_id": "light", "target_id": enemy_id},
+					{"actor_id": enemy_id, "action_id": "block"},
+				],
+			)
 		)
 		if bout < 2:
 			assert(session.get("status") == "combat_running")
@@ -60,12 +63,15 @@ func _test_month_16_uses_three_independent_1v1_fights() -> void:
 	for bout in range(3):
 		var player_id := "p16_%d" % [bout + 1]
 		var enemy_id := "r16_%d" % [bout + 1]
-		session = runtime.advance_exchange(
-			session,
-			[
-				{"actor_id": player_id, "action_id": "light", "target_id": enemy_id},
-				{"actor_id": enemy_id, "action_id": "block"},
-			],
+		session = (
+			runtime
+			. advance_exchange(
+				session,
+				[
+					{"actor_id": player_id, "action_id": "light", "target_id": enemy_id},
+					{"actor_id": enemy_id, "action_id": "block"},
+				],
+			)
 		)
 		assert((session.get("carried_fighter_ids", []) as Array).is_empty())
 
@@ -93,14 +99,17 @@ func _test_month_20_runs_2v2_series_with_one_substitution() -> void:
 			"r20_%da" % [bout + 1],
 			"r20_%db" % [bout + 1],
 		]
-		session = runtime.advance_exchange(
-			session,
-			[
-				{"actor_id": player_ids[0], "action_id": "light", "target_id": enemy_ids[0]},
-				{"actor_id": player_ids[1], "action_id": "light", "target_id": enemy_ids[1]},
-				{"actor_id": enemy_ids[0], "action_id": "block"},
-				{"actor_id": enemy_ids[1], "action_id": "block"},
-			],
+		session = (
+			runtime
+			. advance_exchange(
+				session,
+				[
+					{"actor_id": player_ids[0], "action_id": "light", "target_id": enemy_ids[0]},
+					{"actor_id": player_ids[1], "action_id": "light", "target_id": enemy_ids[1]},
+					{"actor_id": enemy_ids[0], "action_id": "block"},
+					{"actor_id": enemy_ids[1], "action_id": "block"},
+				],
+			)
 		)
 		if bout == 0:
 			var carried := session.get("carried_fighter_ids", []) as Array
@@ -120,14 +129,17 @@ func _test_month_20_runs_2v2_series_with_one_substitution() -> void:
 func _test_month_13_rejects_roster_change() -> void:
 	TournamentManager.import_state({})
 	var runtime = GT1CombatRuntimeScript.new()
-	var result: Dictionary = runtime.start_encounter(
-		13,
-		"player_team",
-		[
-			_state_1v1("player_a", "enemy_a"),
-			_state_1v1("player_b", "enemy_b"),
-			_state_1v1("player_a", "enemy_c"),
-		],
+	var result: Dictionary = (
+		runtime
+		. start_encounter(
+			13,
+			"player_team",
+			[
+				_state_1v1("player_a", "enemy_a"),
+				_state_1v1("player_b", "enemy_b"),
+				_state_1v1("player_a", "enemy_c"),
+			],
+		)
 	)
 	assert(result.get("status") == "rejected")
 	assert(_contains_error(result, "same player gladiator"))
@@ -136,14 +148,17 @@ func _test_month_13_rejects_roster_change() -> void:
 func _test_month_20_rejects_second_substitution() -> void:
 	TournamentManager.import_state({})
 	var runtime = GT1CombatRuntimeScript.new()
-	var result: Dictionary = runtime.start_encounter(
-		20,
-		"player_team",
-		[
-			_state_2v2(["p1", "p2"], ["e1", "e2"]),
-			_state_2v2(["p1", "p3"], ["e3", "e4"]),
-			_state_2v2(["p1", "p4"], ["e5", "e6"]),
-		],
+	var result: Dictionary = (
+		runtime
+		. start_encounter(
+			20,
+			"player_team",
+			[
+				_state_2v2(["p1", "p2"], ["e1", "e2"]),
+				_state_2v2(["p1", "p3"], ["e3", "e4"]),
+				_state_2v2(["p1", "p4"], ["e5", "e6"]),
+			],
+		)
 	)
 	assert(result.get("status") == "rejected")
 	assert(_contains_error(result, "at most one unilateral"))
@@ -152,7 +167,8 @@ func _test_month_20_rejects_second_substitution() -> void:
 func _state_1v1(player_id: String, enemy_id: String) -> Dictionary:
 	return {
 		"format": "1v1",
-		"fighters": [
+		"fighters":
+		[
 			_fighter(player_id, "player_team", 40, 100),
 			_fighter(enemy_id, "rival_team", 5, 0),
 		],
@@ -162,7 +178,8 @@ func _state_1v1(player_id: String, enemy_id: String) -> Dictionary:
 func _state_2v2(player_ids: Array[String], enemy_ids: Array[String]) -> Dictionary:
 	return {
 		"format": "2v2",
-		"fighters": [
+		"fighters":
+		[
 			_fighter(player_ids[0], "player_team", 40, 100),
 			_fighter(player_ids[1], "player_team", 40, 100),
 			_fighter(enemy_ids[0], "rival_team", 5, 0),
