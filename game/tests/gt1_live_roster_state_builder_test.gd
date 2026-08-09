@@ -54,7 +54,9 @@ func _test_live_autoload_roster_uses_real_equipment_snapshots() -> void:
 		roster_manager._seed_initial_roster()
 
 	var live_people: Array = roster_manager.get_people()
-	_assert_true(not live_people.is_empty(), "real RosterManager seeding must create LudusPerson entries")
+	_assert_true(
+		not live_people.is_empty(), "real RosterManager seeding must create LudusPerson entries"
+	)
 	if live_people.is_empty():
 		return
 	var live_person = live_people[0]
