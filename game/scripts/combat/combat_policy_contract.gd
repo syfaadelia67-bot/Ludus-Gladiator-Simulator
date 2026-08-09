@@ -50,8 +50,10 @@ func validate_desired_action(state: Dictionary, desired_action: Dictionary) -> A
 			errors.append("Desired action references unknown target: %s" % target_id)
 		elif not legal_targets.has(target_id):
 			errors.append(
-				"Desired action %s target %s is not a legal %s target"
-				% [action_id, target_id, relationship]
+				(
+					"Desired action %s target %s is not a legal %s target"
+					% [action_id, target_id, relationship]
+				)
 			)
 	elif not target_id.is_empty():
 		errors.append("Desired action %s does not accept an explicit target" % action_id)
