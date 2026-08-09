@@ -21,7 +21,7 @@ func _ready() -> void:
 
 
 func _test_clear_standings(policy) -> void:
-	var result := (
+	var result: Dictionary = (
 		policy
 		. evaluate(
 			[
@@ -39,7 +39,7 @@ func _test_clear_standings(policy) -> void:
 
 
 func _test_podium_tie_requires_combat(policy) -> void:
-	var result := (
+	var result: Dictionary = (
 		policy
 		. evaluate(
 			[
@@ -59,7 +59,7 @@ func _test_podium_tie_requires_combat(policy) -> void:
 
 
 func _test_non_podium_tie_requires_explicit_data(policy) -> void:
-	var result := policy.evaluate(_non_podium_tie_fixture())
+	var result: Dictionary = policy.evaluate(_non_podium_tie_fixture())
 	assert(result.get("status") == "non_podium_data_required")
 	assert(result.get("requires_combat_tiebreak") == false)
 	assert(result.get("requires_non_podium_data") == true)
@@ -69,7 +69,7 @@ func _test_non_podium_tie_requires_explicit_data(policy) -> void:
 
 
 func _test_non_podium_head_to_head_resolves(policy) -> void:
-	var player_wins := (
+	var player_wins: Dictionary = (
 		policy
 		. evaluate(
 			_non_podium_tie_fixture(),
@@ -83,7 +83,7 @@ func _test_non_podium_head_to_head_resolves(policy) -> void:
 	assert(str(player_wins.get("medal", "x")).is_empty())
 	assert(player_wins.get("resolution_source") == "head_to_head_then_prior_season_position")
 
-	var rival_wins := (
+	var rival_wins: Dictionary = (
 		policy
 		. evaluate(
 			_non_podium_tie_fixture(),
@@ -97,7 +97,7 @@ func _test_non_podium_head_to_head_resolves(policy) -> void:
 
 
 func _test_non_podium_prior_season_position_resolves(policy) -> void:
-	var result := (
+	var result: Dictionary = (
 		policy
 		. evaluate(
 			_non_podium_tie_fixture(),
@@ -117,7 +117,7 @@ func _test_non_podium_prior_season_position_resolves(policy) -> void:
 
 
 func _test_missing_non_podium_data_never_falls_back(policy) -> void:
-	var result := (
+	var result: Dictionary = (
 		policy
 		. evaluate(
 			_non_podium_tie_fixture(),
@@ -137,7 +137,7 @@ func _test_missing_non_podium_data_never_falls_back(policy) -> void:
 
 
 func _test_contract(policy) -> void:
-	var contract := policy.get_contract()
+	var contract: Dictionary = policy.get_contract()
 	assert(contract.get("podium_tie") == "tournament_characteristic_combat")
 	assert(contract.get("non_podium_tie") == ["head_to_head", "prior_season_position"])
 	assert(contract.get("missing_non_podium_data") == "pending")
