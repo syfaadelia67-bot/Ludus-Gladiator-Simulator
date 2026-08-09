@@ -110,13 +110,14 @@ func _test_unavailable_and_duplicate(contract) -> void:
 func _test_frozen_contract(contract) -> void:
 	var frozen: Dictionary = contract.get_contract()
 	_assert_true(
-		frozen.get("month_16_frozen_design")
-		== "one_available_gladiator_or_beast_per_independent_bout",
+		(
+			frozen.get("month_16_frozen_design")
+			== "one_available_gladiator_or_beast_per_independent_bout"
+		),
 		"month XVI frozen design must retain gladiator-or-beast support",
 	)
 	_assert_true(
-		frozen.get("month_16_current_selection")
-		== "human_gladiators_only_until_beast_readiness",
+		frozen.get("month_16_current_selection") == "human_gladiators_only_until_beast_readiness",
 		"month XVI current implementation must report human-only selection honestly",
 	)
 	_assert_true(
