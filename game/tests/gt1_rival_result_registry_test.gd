@@ -184,13 +184,16 @@ func _test_exact_first_place_tie_resolves_from_combat_authority() -> void:
 	assert(request.get("rival_selection") == "one_available_gladiator")
 	assert(int(request.get("points_awarded", -1)) == 0)
 
-	var resolved := registry.resolve_podium_tiebreak(
-		{
-			"status": "combat_finished",
-			"outcome": "team_win",
-			"winner_team_id": "alpha",
-		},
-		{"alpha": "player", "beta": "cassianus"},
+	var resolved := (
+		registry
+		. resolve_podium_tiebreak(
+			{
+				"status": "combat_finished",
+				"outcome": "team_win",
+				"winner_team_id": "alpha",
+			},
+			{"alpha": "player", "beta": "cassianus"},
+		)
 	)
 	assert(resolved.get("status") == "resolved")
 	assert(resolved.get("resolution_source") == "tournament_characteristic_combat")
