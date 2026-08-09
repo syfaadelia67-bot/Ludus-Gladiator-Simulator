@@ -1,6 +1,9 @@
 extends RefCounted
 
 const PENDING_STATUS := "pending"
+const FROZEN_STATUS := "frozen"
+const TARGET_RELATIONSHIP_ENEMY := "enemy"
+const TARGET_RELATIONSHIP_NONE := "none"
 const ACTION_IDS: Array[String] = [
 	"light",
 	"heavy",
@@ -14,7 +17,10 @@ const ACTION_CONTRACTS := {
 	"light":
 	{
 		"id": "light",
-		"target_rule_status": PENDING_STATUS,
+		"target_rule_status": FROZEN_STATUS,
+		"target_required": true,
+		"target_relationship": TARGET_RELATIONSHIP_ENEMY,
+		"target_count": 1,
 		"stamina_cost_status": PENDING_STATUS,
 		"resolution_timing_status": PENDING_STATUS,
 		"stat_scaling_status": PENDING_STATUS,
@@ -23,7 +29,10 @@ const ACTION_CONTRACTS := {
 	"heavy":
 	{
 		"id": "heavy",
-		"target_rule_status": PENDING_STATUS,
+		"target_rule_status": FROZEN_STATUS,
+		"target_required": true,
+		"target_relationship": TARGET_RELATIONSHIP_ENEMY,
+		"target_count": 1,
 		"stamina_cost_status": PENDING_STATUS,
 		"resolution_timing_status": PENDING_STATUS,
 		"stat_scaling_status": PENDING_STATUS,
@@ -32,7 +41,10 @@ const ACTION_CONTRACTS := {
 	"block":
 	{
 		"id": "block",
-		"target_rule_status": PENDING_STATUS,
+		"target_rule_status": FROZEN_STATUS,
+		"target_required": false,
+		"target_relationship": TARGET_RELATIONSHIP_NONE,
+		"target_count": 0,
 		"stamina_cost_status": PENDING_STATUS,
 		"resolution_timing_status": PENDING_STATUS,
 		"stat_scaling_status": PENDING_STATUS,
@@ -41,7 +53,10 @@ const ACTION_CONTRACTS := {
 	"parry":
 	{
 		"id": "parry",
-		"target_rule_status": PENDING_STATUS,
+		"target_rule_status": FROZEN_STATUS,
+		"target_required": false,
+		"target_relationship": TARGET_RELATIONSHIP_NONE,
+		"target_count": 0,
 		"stamina_cost_status": PENDING_STATUS,
 		"resolution_timing_status": PENDING_STATUS,
 		"stat_scaling_status": PENDING_STATUS,
@@ -50,7 +65,10 @@ const ACTION_CONTRACTS := {
 	"dodge":
 	{
 		"id": "dodge",
-		"target_rule_status": PENDING_STATUS,
+		"target_rule_status": FROZEN_STATUS,
+		"target_required": false,
+		"target_relationship": TARGET_RELATIONSHIP_NONE,
+		"target_count": 0,
 		"stamina_cost_status": PENDING_STATUS,
 		"resolution_timing_status": PENDING_STATUS,
 		"stat_scaling_status": PENDING_STATUS,
@@ -59,7 +77,10 @@ const ACTION_CONTRACTS := {
 	"reposition":
 	{
 		"id": "reposition",
-		"target_rule_status": PENDING_STATUS,
+		"target_rule_status": FROZEN_STATUS,
+		"target_required": false,
+		"target_relationship": TARGET_RELATIONSHIP_NONE,
+		"target_count": 0,
 		"stamina_cost_status": PENDING_STATUS,
 		"resolution_timing_status": PENDING_STATUS,
 		"stat_scaling_status": PENDING_STATUS,
