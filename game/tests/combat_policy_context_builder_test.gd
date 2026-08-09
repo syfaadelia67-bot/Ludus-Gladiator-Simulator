@@ -12,9 +12,23 @@ const EXPECTED_ACTION_IDS: Array[String] = [
 	"dodge",
 	"reposition",
 ]
+const EXPECTED_STAMINA_COSTS := {
+	"light": 3,
+	"heavy": 5,
+	"block": 2,
+	"parry": 3,
+	"dodge": 4,
+	"reposition": 2,
+}
+const EXPECTED_PHASES := {
+	"light": "offense",
+	"heavy": "offense",
+	"block": "preparation",
+	"parry": "preparation",
+	"dodge": "preparation",
+	"reposition": "preparation",
+}
 const PENDING_ACTION_FIELDS: Array[String] = [
-	"stamina_cost_status",
-	"resolution_timing_status",
 	"stat_scaling_status",
 	"effect_status",
 ]
@@ -149,15 +163,36 @@ func _assert_action_contracts(value: Variant) -> void:
 	)
 	for index in range(contracts.size()):
 		var action_contract := contracts[index] as Dictionary
+		var action_id := EXPECTED_ACTION_IDS[index]
 		_assert_eq(
 			action_contract.get("id"),
-			EXPECTED_ACTION_IDS[index],
+			action_id,
 			"action contract order must match canonical ids",
 		)
 		_assert_eq(
 			action_contract.get("target_rule_status"),
 			"frozen",
 			"D1 target rules must be frozen in policy context",
+		)
+		_assert_eq(
+			action_contract.get("stamina_cost_status"),
+			"frozen",
+			"D6 stamina cost must be frozen in policy context",
+		)
+		_assert_eq(
+			action_contract.get("stamina_cost"),
+			EXPECTED_STAMINA_COSTS[action_id],
+			"policy context must expose exact D6 cost",
+		)
+		_assert_eq(
+			action_contract.get("resolution_timing_status"),
+			"frozen",
+			"D3 timing must be frozen in policy context",
+		)
+		_assert_eq(
+			action_contract.get("resolution_phase"),
+			EXPECTED_PHASES[action_id],
+			"policy context must expose exact D3 phase",
 		)
 		for field in PENDING_ACTION_FIELDS:
 			_assert_eq(
