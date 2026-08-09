@@ -39,11 +39,14 @@ func _test_missing_resistance_fails_closed(adapter) -> void:
 
 
 func _test_explicit_resistance_builds_fighter(adapter) -> void:
-	var result: Dictionary = adapter.build_fighter(
-		_person_source(),
-		"player",
-		{"power": 4, "defense": 3},
-		{"resistance": 14},
+	var result: Dictionary = (
+		adapter
+		. build_fighter(
+			_person_source(),
+			"player",
+			{"power": 4, "defense": 3},
+			{"resistance": 14},
+		)
 	)
 	_assert_eq(result.get("status"), "ready", "explicit resistance must complete fighter")
 	var fighter := result.get("fighter", {}) as Dictionary
