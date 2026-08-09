@@ -3,6 +3,9 @@ extends RefCounted
 const FROZEN_REQUIREMENTS: Array[String] = [
 	"target_rules",
 	"resolution_order",
+	"damage_and_mitigation",
+	"armor_numeric_mitigation",
+	"armor_penetration_disabled_v1",
 	"armor_and_vulnerability_structure",
 	"stamina_structure",
 	"accuracy_and_critical_structure",
@@ -11,9 +14,6 @@ const FROZEN_REQUIREMENTS: Array[String] = [
 ]
 
 const REQUIRED_DECISIONS: Array[String] = [
-	"damage_and_mitigation",
-	"armor_numeric_mitigation",
-	"armor_penetration",
 	"stamina_cost_table",
 	"stamina_recovery_amount",
 	"stamina_recovery_timing",
