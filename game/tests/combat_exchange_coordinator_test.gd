@@ -26,7 +26,9 @@ func _test_collects_one_intent_per_fighter() -> void:
 	var coordinator = CombatExchangeCoordinatorScript.new()
 	var session: Dictionary = coordinator.start_exchange(_state())
 	_assert_eq(session.get("status"), "collecting", "exchange must start collecting")
-	_assert_eq(session.get("required_actor_ids"), ["a", "b"], "actor ids must serialize deterministically")
+	_assert_eq(
+		session.get("required_actor_ids"), ["a", "b"], "actor ids must serialize deterministically"
+	)
 	_assert_eq(session.get("missing_actor_ids"), ["a", "b"], "both fighters must submit")
 
 	var after_a: Dictionary = coordinator.submit_intent(
@@ -48,7 +50,9 @@ func _test_collects_one_intent_per_fighter() -> void:
 	)
 	var contract: Dictionary = coordinator.get_contract()
 	_assert_eq(contract.get("authority"), "combat_simulator", "coordinator must not own outcomes")
-	_assert_eq(contract.get("default_action_allowed"), false, "coordinator must never invent defaults")
+	_assert_eq(
+		contract.get("default_action_allowed"), false, "coordinator must never invent defaults"
+	)
 	_assert_eq(
 		contract.get("serialization_order_is_priority"),
 		false,
@@ -66,7 +70,9 @@ func _test_duplicate_actor_is_rejected() -> void:
 		session, {"actor_id": "a", "action_id": "heavy", "target_id": "b"}
 	)
 	_assert_eq(duplicate.get("status"), "rejected", "duplicate actor intent must fail closed")
-	_assert_eq(duplicate.get("reason"), "duplicate_actor_intent", "duplicate reason must be explicit")
+	_assert_eq(
+		duplicate.get("reason"), "duplicate_actor_intent", "duplicate reason must be explicit"
+	)
 
 
 func _test_invalid_intent_is_rejected() -> void:
@@ -76,7 +82,9 @@ func _test_invalid_intent_is_rejected() -> void:
 		session, {"actor_id": "a", "action_id": "block", "target_id": "b"}
 	)
 	_assert_eq(invalid.get("status"), "rejected", "invalid D1 target must stop before simulation")
-	_assert_eq(invalid.get("reason"), "invalid_desired_action", "policy rejection must be preserved")
+	_assert_eq(
+		invalid.get("reason"), "invalid_desired_action", "policy rejection must be preserved"
+	)
 
 
 func _test_input_isolation() -> void:
