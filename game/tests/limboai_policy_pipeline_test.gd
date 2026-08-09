@@ -57,8 +57,13 @@ func _test_valid_proposal_reaches_simulator() -> void:
 	_assert_eq(result.get("pending"), true, "valid LimboAI intent must reach simulator boundary")
 	_assert_eq(
 		result.get("reason"),
-		"combat_resolution_rules_not_frozen",
-		"simulator must remain pending until combat formulas are frozen",
+		"complete_exchange_required",
+		"single LimboAI intent must wait for the complete exchange intent set",
+	)
+	_assert_eq(
+		result.get("blocking_requirement"),
+		"complete_exchange_intents",
+		"simulator must not resolve one policy proposal in isolation",
 	)
 	_release_fixture(fixture)
 
