@@ -115,9 +115,7 @@ func _validate_loop_state(loop_state: Dictionary) -> Array[String]:
 	return errors
 
 
-func _rejected(
-	reason: String, errors: Array, state: Dictionary, exchange_index: int
-) -> Dictionary:
+func _rejected(reason: String, errors: Array, state: Dictionary, exchange_index: int) -> Dictionary:
 	return {
 		"status": "rejected",
 		"reason": reason,
