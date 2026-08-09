@@ -43,6 +43,8 @@ func _test_explicit_rival_result_registration() -> void:
 	assert(contract.get("standings_resolution_policy") == "gt1_standings_tiebreak_policy")
 	assert(contract.get("podium_tie_resolution") == "tournament_characteristic_combat")
 	assert(contract.get("non_podium_tie_resolution") == ["head_to_head", "prior_season_position"])
+	assert(contract.get("resolved_non_podium_tie_authority") == "TournamentManager")
+	assert(contract.get("resolved_tiebreak_uses_existing_save_v14_fields") == true)
 	assert(contract.get("alphabetical_fallback_allowed") == false)
 	assert(contract.get("random_fallback_allowed") == false)
 
@@ -92,6 +94,10 @@ func _test_completed_standings_surface_non_podium_tiebreak_requirement() -> void
 	assert(resolution.get("tied_rival_ids") == ["cassianus"])
 	assert(resolution.get("resolution_source_contract") == "gt1_standings_tiebreak_policy")
 
+	var unresolved_summary := TournamentManager.get_gt1_summary()
+	assert(unresolved_summary.get("tiebreak_required") == true)
+	assert(unresolved_summary.get("standings_resolved") == false)
+
 	var resolved := (
 		registry
 		. evaluate_current_standings(
@@ -105,5 +111,21 @@ func _test_completed_standings_surface_non_podium_tiebreak_requirement() -> void
 	assert(str(resolved.get("medal", "x")).is_empty())
 	assert(resolved.get("resolution_source") == "head_to_head_then_prior_season_position")
 	assert(resolved.get("resolution_source_contract") == "gt1_standings_tiebreak_policy")
+	assert(resolved.get("applied_to_tournament_manager") == true)
+
+	var resolved_summary := TournamentManager.get_gt1_summary()
+	assert(resolved_summary.get("tiebreak_required") == false)
+	assert(resolved_summary.get("standings_resolved") == true)
+	assert(int(resolved_summary.get("placement", 0)) == 4)
+	assert(str(resolved_summary.get("medal", "x")).is_empty())
+	assert(TournamentManager.is_gt1_complete())
+
+	var saved_state := TournamentManager.export_state()
+	TournamentManager.import_state(saved_state)
+	var restored_summary := TournamentManager.get_gt1_summary()
+	assert(restored_summary.get("tiebreak_required") == false)
+	assert(restored_summary.get("standings_resolved") == true)
+	assert(int(restored_summary.get("placement", 0)) == 4)
+	assert(str(restored_summary.get("medal", "x")).is_empty())
 
 	TournamentManager.import_state({})
