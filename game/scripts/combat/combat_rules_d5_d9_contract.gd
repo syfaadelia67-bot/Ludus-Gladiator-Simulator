@@ -65,8 +65,23 @@ const CONTRACT := {
 			"RES": ["mitigation", "block"],
 			"PV": ["maximum_health"],
 		},
+		"weights":
+		{
+			"FUE": {"light_damage": 0.35, "heavy_damage": 0.50},
+			"AGI": {"base_evasion": 1.0},
+			"TEC": {"accuracy": 1.0, "parry": 1.0},
+			"RES": {"damage_mitigation": 0.15, "block_reduction": 0.25},
+			"PV": {"maximum_health": 1.0},
+		},
+		"flat_action_modifiers":
+		{
+			"light_accuracy": 1.0,
+			"heavy_accuracy": 0.0,
+			"dodge_evasion": 2.0,
+			"reposition_evasion": 1.0,
+		},
 		"legacy_endurance_substitution_allowed": false,
-		"weights_status": PENDING_STATUS,
+		"weights_status": FROZEN_STATUS,
 	},
 	"D9":
 	{
@@ -95,6 +110,5 @@ func get_contracts() -> Dictionary:
 
 func get_pending_numeric_requirements() -> Array[String]:
 	return [
-		"stat_scaling_weights",
 		"surrender_rules",
 	]
