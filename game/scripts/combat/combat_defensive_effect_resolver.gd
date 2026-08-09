@@ -14,24 +14,16 @@ func resolve_against_attack(
 	accuracy_result: Dictionary,
 	damage_result: Dictionary
 ) -> Dictionary:
-	if not DEFENSE_ACTIONS.has(defense_action_id):
-		return _invalid("unsupported_defense_action")
-	if accuracy_result.get("status") != "resolved":
-		return _invalid("accuracy_result_not_resolved")
-	if damage_result.get("status") != "resolved":
-		return _invalid("damage_result_not_resolved")
-	if str(accuracy_result.get("action_id", "")) != offense_action_id:
-		return _invalid("accuracy_action_mismatch")
-	if str(damage_result.get("action_id", "")) != offense_action_id:
-		return _invalid("damage_action_mismatch")
-
 	var attacker_stats := attacker.get("stats", {}) as Dictionary
 	var defender_stats := defender.get("stats", {}) as Dictionary
-	var errors: Array[String] = []
-	_validate_stat(attacker_stats, "TEC", "attacker", errors)
-	_validate_stat(defender_stats, "AGI", "defender", errors)
-	_validate_stat(defender_stats, "TEC", "defender", errors)
-	_validate_stat(defender_stats, "RES", "defender", errors)
+	var errors: Array[String] = _validate_inputs(
+		attacker_stats,
+		defender_stats,
+		offense_action_id,
+		defense_action_id,
+		accuracy_result,
+		damage_result,
+	)
 	if not errors.is_empty():
 		return {"status": "invalid", "errors": errors}
 
@@ -107,6 +99,32 @@ func get_contract() -> Dictionary:
 	}
 
 
+func _validate_inputs(
+	attacker_stats: Dictionary,
+	defender_stats: Dictionary,
+	offense_action_id: String,
+	defense_action_id: String,
+	accuracy_result: Dictionary,
+	damage_result: Dictionary,
+) -> Array[String]:
+	var errors: Array[String] = []
+	if not DEFENSE_ACTIONS.has(defense_action_id):
+		errors.append("unsupported_defense_action")
+	if accuracy_result.get("status") != "resolved":
+		errors.append("accuracy_result_not_resolved")
+	if damage_result.get("status") != "resolved":
+		errors.append("damage_result_not_resolved")
+	if str(accuracy_result.get("action_id", "")) != offense_action_id:
+		errors.append("accuracy_action_mismatch")
+	if str(damage_result.get("action_id", "")) != offense_action_id:
+		errors.append("damage_action_mismatch")
+	_validate_stat(attacker_stats, "TEC", "attacker", errors)
+	_validate_stat(defender_stats, "AGI", "defender", errors)
+	_validate_stat(defender_stats, "TEC", "defender", errors)
+	_validate_stat(defender_stats, "RES", "defender", errors)
+	return errors
+
+
 func _apply_block(result: Dictionary, defender_stats: Dictionary) -> void:
 	if not bool(result.get("hit", false)):
 		return
@@ -147,10 +165,6 @@ func _validate_stat(
 		return
 	if float(stats[stat_id]) < 0.0:
 		errors.append("%s stat %s cannot be negative" % [role, stat_id])
-
-
-func _invalid(error: String) -> Dictionary:
-	return {"status": "invalid", "errors": [error]}
 
 
 func _is_numeric(value: Variant) -> bool:
