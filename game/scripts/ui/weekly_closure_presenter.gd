@@ -108,18 +108,22 @@ func _render() -> void:
 	var economy: Dictionary = summary.get("economy", {})
 	var lines: Array[String] = []
 	lines.append(
-		"[b]Mes %d → Mes %d[/b]"
-		% [int(summary.get("month", 1)), int(summary.get("next_month", 2))]
+		"[b]Mes %d → Mes %d[/b]" % [int(summary.get("month", 1)), int(summary.get("next_month", 2))]
 	)
 	lines.append("\n[b]PERSONAL Y ASIGNACIONES[/b]")
 	for item in summary.get("assignments", []):
-		lines.append(
-			"• %s: %s · fatiga %d"
-			% [
-				item.get("name", "?"),
-				item.get("job_name", "Sin tarea"),
-				int(item.get("fatigue", 0)),
-			]
+		(
+			lines
+			. append(
+				(
+					"• %s: %s · fatiga %d"
+					% [
+						item.get("name", "?"),
+						item.get("job_name", "Sin tarea"),
+						int(item.get("fatigue", 0)),
+					]
+				)
+			)
 		)
 
 	lines.append("\n[b]ENTRENAMIENTO[/b]")
@@ -127,14 +131,19 @@ func _render() -> void:
 		lines.append("• No hay gladiadores asignados a entrenamiento.")
 	else:
 		for item in summary.get("training", []):
-			lines.append(
-				"• %s: %s · +%d progreso · riesgo %d%%"
-				% [
-					item.get("name", "?"),
-					item.get("focus_name", "Entrenamiento"),
-					int(item.get("monthly_gain", 0)),
-					int(item.get("injury_risk", 0)),
-				]
+			(
+				lines
+				. append(
+					(
+						"• %s: %s · +%d progreso · riesgo %d%%"
+						% [
+							item.get("name", "?"),
+							item.get("focus_name", "Entrenamiento"),
+							int(item.get("monthly_gain", 0)),
+							int(item.get("injury_risk", 0)),
+						]
+					)
+				)
 			)
 
 	lines.append("\n[b]ESTADO MÉDICO[/b]")
@@ -142,36 +151,50 @@ func _render() -> void:
 		lines.append("• No hay gladiadores lesionados.")
 	else:
 		for item in summary.get("injured", []):
-			lines.append(
-				"• %s: %s · gravedad %d · %d mes(es)"
-				% [
-					item.get("name", "?"),
-					item.get("injury", "Herida"),
-					int(item.get("severity", 1)),
-					int(item.get("months", 1)),
-				]
+			(
+				lines
+				. append(
+					(
+						"• %s: %s · gravedad %d · %d mes(es)"
+						% [
+							item.get("name", "?"),
+							item.get("injury", "Herida"),
+							int(item.get("severity", 1)),
+							int(item.get("months", 1)),
+						]
+					)
+				)
 			)
 
 	var fight: Dictionary = summary.get("fight", {})
 	lines.append("\n[b]ARENA[/b]")
-	lines.append(
-		"• %s: %s"
-		% [
-			"PENDIENTE" if bool(summary.get("fight_pending", false)) else "Completado o no requerido",
-			fight.get("name", "Combate del mes"),
-		]
+	(
+		lines
+		. append(
+			(
+				"• %s: %s"
+				% [
+					(
+						"PENDIENTE"
+						if bool(summary.get("fight_pending", false))
+						else "Completado o no requerido"
+					),
+					fight.get("name", "Combate del mes"),
+				]
+			)
+		)
 	)
 
 	lines.append("\n[b]ECONOMÍA PROYECTADA[/b]")
 	lines.append("• Ingresos previstos: %d denarios" % int(economy.get("income", 0)))
-	lines.append(
-		"• Mantenimiento y salarios: %d" % int(economy.get("maintenance_and_wages", 0))
-	)
+	lines.append("• Mantenimiento y salarios: %d" % int(economy.get("maintenance_and_wages", 0)))
 	lines.append("• Cuotas de préstamos: %d" % int(economy.get("loan_payments", 0)))
 	lines.append("• Saldo estimado: %d denarios" % int(summary.get("denarii_after", 0)))
 	lines.append(
-		"• Comida: %d consumida · %d restante"
-		% [int(summary.get("food_consumption", 0)), int(summary.get("food_after", 0))]
+		(
+			"• Comida: %d consumida · %d restante"
+			% [int(summary.get("food_consumption", 0)), int(summary.get("food_after", 0))]
+		)
 	)
 
 	var blockers: Array = summary.get("blockers", [])
