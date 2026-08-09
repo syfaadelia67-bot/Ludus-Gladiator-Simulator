@@ -24,7 +24,9 @@ func _ready() -> void:
 
 	repository.load_all()
 	assert(repository.beasts.size() == 3, "DataRepository must load the three frozen demo beasts")
-	assert(repository.rival_ludi.size() == 7, "DataRepository must load the seven frozen rival Ludi")
+	assert(
+		repository.rival_ludi.size() == 7, "DataRepository must load the seven frozen rival Ludi"
+	)
 	assert(
 		str(repository.get_rival_ludus("cassianus").get("name", "")) == "Ludus Cassianus",
 		"DataRepository must expose canonical rival Ludus identities"
