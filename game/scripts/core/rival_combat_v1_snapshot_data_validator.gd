@@ -27,8 +27,8 @@ func validate_entries(entries: Variant) -> Array[String]:
 		for field_name in entry.keys():
 			if str(field_name) not in ALLOWED_ENTRY_FIELDS:
 				errors.append(
-				"Rival Combat V1 snapshot entry contains unsupported field %s" % field_name
-			)
+					"Rival Combat V1 snapshot entry contains unsupported field %s" % field_name
+				)
 
 		var rival_ludus_id := str(entry.get("rival_ludus_id", ""))
 		if rival_ludus_id not in canonical_rival_ids:
@@ -37,8 +37,10 @@ func validate_entries(entries: Variant) -> Array[String]:
 		var fighter_value: Variant = entry.get("fighter", {})
 		if not fighter_value is Dictionary:
 			errors.append(
-				"Rival Combat V1 snapshot entry for %s must contain a fighter Dictionary"
-				% rival_ludus_id
+				(
+					"Rival Combat V1 snapshot entry for %s must contain a fighter Dictionary"
+					% rival_ludus_id
+				)
 			)
 			continue
 		var fighter := fighter_value as Dictionary
