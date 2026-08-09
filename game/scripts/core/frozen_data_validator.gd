@@ -202,11 +202,15 @@ func _validate_traits(entries: Variant, errors: Array[String]) -> void:
 		for raw_other in entry.get("incompatible_with", []):
 			var other_id := str(raw_other)
 			if not by_id.has(other_id):
-				errors.append("Trait %s references unknown incompatibility: %s" % [trait_id, other_id])
+				errors.append(
+					"Trait %s references unknown incompatibility: %s" % [trait_id, other_id]
+				)
 			continue
 			var other: Dictionary = by_id[other_id]
 			if not other.get("incompatible_with", []).has(trait_id):
-				errors.append("Trait incompatibility must be symmetric: %s <-> %s" % [trait_id, other_id])
+				errors.append(
+					"Trait incompatibility must be symmetric: %s <-> %s" % [trait_id, other_id]
+				)
 
 
 func _validate_beasts(entries: Variant, errors: Array[String]) -> void:
@@ -261,7 +265,9 @@ func _validate_skills(entries: Variant, errors: Array[String]) -> void:
 		expected_ids.append(str(skill_id))
 	expected_ids.sort()
 	if _sorted_ids(typed_entries) != expected_ids:
-		errors.append("Frozen combat skill catalog must contain exactly 8 general + 4 specialized skills")
+		errors.append(
+			"Frozen combat skill catalog must contain exactly 8 general + 4 specialized skills"
+		)
 	for skill_id in GENERAL_SKILL_CONTRACTS.keys():
 		_validate_skill_entry(
 			str(skill_id), str(GENERAL_SKILL_CONTRACTS[skill_id]), "general", by_id, errors
@@ -291,8 +297,8 @@ func _validate_skill_entry(
 		var field_name := str(raw_field)
 		if not SKILL_ALLOWED_FIELDS.has(field_name):
 			errors.append(
-			"Combat skill %s contains unfrozen mechanical field: %s" % [skill_id, field_name]
-		)
+				"Combat skill %s contains unfrozen mechanical field: %s" % [skill_id, field_name]
+			)
 
 
 func _index_by_id(entries: Array) -> Dictionary:
