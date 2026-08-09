@@ -54,8 +54,10 @@ func validate_entries(entries: Variant) -> Array[String]:
 		for field_name in FORBIDDEN_RUNTIME_FIELDS:
 			if entry.has(field_name):
 				errors.append(
-					"Rival Ludus identity %s must not define runtime field %s"
-					% [rival_id, field_name]
+					(
+						"Rival Ludus identity %s must not define runtime field %s"
+						% [rival_id, field_name]
+					)
 				)
 
 	for rival_id in CANONICAL_RIVAL_LUDI.keys():
