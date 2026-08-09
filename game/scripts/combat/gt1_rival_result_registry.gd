@@ -115,22 +115,26 @@ func evaluate_current_standings(non_podium_tiebreak_data: Dictionary = {}) -> Di
 func build_podium_tiebreak_request() -> Dictionary:
 	var standings_resolution := evaluate_current_standings()
 	var summary := TournamentManager.get_gt1_summary()
-	return _podium_tiebreak_contract.build_request(
-		standings_resolution,
-		summary.get("standings", []) as Array,
+	return (
+		_podium_tiebreak_contract
+		. build_request(
+			standings_resolution,
+			summary.get("standings", []) as Array,
+		)
 	)
 
 
-func resolve_podium_tiebreak(
-	combat_result: Dictionary, team_to_ludus: Dictionary
-) -> Dictionary:
+func resolve_podium_tiebreak(combat_result: Dictionary, team_to_ludus: Dictionary) -> Dictionary:
 	var request := build_podium_tiebreak_request()
 	if request.get("status") != "ready":
 		return request
-	var resolution: Dictionary = _podium_tiebreak_contract.resolve_combat_result(
-		request,
-		combat_result,
-		team_to_ludus,
+	var resolution: Dictionary = (
+		_podium_tiebreak_contract
+		. resolve_combat_result(
+			request,
+			combat_result,
+			team_to_ludus,
+		)
 	)
 	if resolution.get("status") == "resolved":
 		resolution["applied_to_tournament_manager"] = (
