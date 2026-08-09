@@ -1,8 +1,12 @@
 extends RefCounted
 
 const CombatContractScript = preload("res://scripts/combat/combat_contract.gd")
-const CombatRosterFighterAdapterScript = preload("res://scripts/combat/combat_roster_fighter_adapter.gd")
-const GT1RosterSelectionContractScript = preload("res://scripts/combat/gt1_roster_selection_contract.gd")
+const CombatRosterFighterAdapterScript = preload(
+	"res://scripts/combat/combat_roster_fighter_adapter.gd"
+)
+const GT1RosterSelectionContractScript = preload(
+	"res://scripts/combat/gt1_roster_selection_contract.gd"
+)
 
 const GT1_MONTHS := [13, 16, 20]
 const BOUT_COUNT := 3
@@ -13,10 +17,7 @@ var _selection_contract = GT1RosterSelectionContractScript.new()
 
 
 func build_from_live_roster(
-	month: int,
-	player_team_id: String,
-	player_ids_by_bout: Array,
-	opponent_fighters_by_bout: Array
+	month: int, player_team_id: String, player_ids_by_bout: Array, opponent_fighters_by_bout: Array
 ) -> Dictionary:
 	var people_by_id: Dictionary = {}
 	var equipment_by_id: Dictionary = {}
@@ -75,7 +76,9 @@ func build_from_sources(
 				person, player_team_id, equipment
 			)
 			if adapted.get("status") != "ready":
-				errors.append("GT I player fighter %s could not build a Combat V1 snapshot" % player_id)
+				errors.append(
+					"GT I player fighter %s could not build a Combat V1 snapshot" % player_id
+				)
 				continue
 			fighters.append((adapted.get("fighter", {}) as Dictionary).duplicate(true))
 
@@ -85,8 +88,10 @@ func build_from_sources(
 		var opponents := opponent_fighters_by_bout[index] as Array
 		if opponents.size() != expected_opponent_count:
 			errors.append(
-				"GT I bout %d requires exactly %d opponent fighter(s)"
-				% [index + 1, expected_opponent_count]
+				(
+					"GT I bout %d requires exactly %d opponent fighter(s)"
+					% [index + 1, expected_opponent_count]
+				)
 			)
 			continue
 		for raw_opponent in opponents:
