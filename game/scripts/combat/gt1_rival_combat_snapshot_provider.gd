@@ -55,8 +55,10 @@ func get_snapshot_from_entries(
 		var fighter_value: Variant = entry.get("fighter", {})
 		if not fighter_value is Dictionary:
 			catalog_errors.append(
-				"Rival Combat V1 catalog entry for %s must contain a fighter Dictionary"
-				% rival_ludus_id
+				(
+					"Rival Combat V1 catalog entry for %s must contain a fighter Dictionary"
+					% rival_ludus_id
+				)
 			)
 			continue
 		var fighter := fighter_value as Dictionary
@@ -64,16 +66,21 @@ func get_snapshot_from_entries(
 		if not entry_fighter_id.is_empty():
 			if matching_ids.has(entry_fighter_id):
 				catalog_errors.append(
-					"Rival Combat V1 catalog contains duplicate fighter id %s for %s"
-					% [entry_fighter_id, rival_ludus_id]
+					(
+						"Rival Combat V1 catalog contains duplicate fighter id %s for %s"
+						% [entry_fighter_id, rival_ludus_id]
+					)
 				)
 			else:
 				matching_ids[entry_fighter_id] = true
 
-		var validation := _snapshot_contract.validate(
-			rival_ludus_id,
-			expected_team_id,
-			fighter,
+		var validation := (
+			_snapshot_contract
+			. validate(
+				rival_ludus_id,
+				expected_team_id,
+				fighter,
+			)
 		)
 		if validation.get("status") != "ready":
 			catalog_errors.append_array(validation.get("errors", []) as Array)
@@ -93,8 +100,10 @@ func get_snapshot_from_entries(
 		return _rejected(
 			"rival_combat_snapshot_unavailable",
 			[
-				"No canonical Combat V1 snapshot is available for rival fighter %s in %s"
-				% [fighter_id, rival_ludus_id]
+				(
+					"No canonical Combat V1 snapshot is available for rival fighter %s in %s"
+					% [fighter_id, rival_ludus_id]
+				)
 			],
 			rival_ludus_id,
 			fighter_id,
