@@ -67,6 +67,13 @@ func _test_valid_proposal_reaches_simulator_as_pending() -> void:
 	_assert_eq(
 		exchange_contract.get("offense_commit"), "simultaneous", "exchange must stay simultaneous"
 	)
+	var combat_end_contract := blocking_context.get("combat_end_contract", {}) as Dictionary
+	_assert_eq(combat_end_contract.get("status"), "frozen", "gateway must expose combat-end contract")
+	_assert_eq(
+		combat_end_contract.get("automatic_surrender"),
+		"disabled_v1",
+		"gateway must expose frozen surrender behavior",
+	)
 	_assert_eq(
 		result.get("desired_action", {}), proposal_before, "gateway must expose validated intent"
 	)
@@ -78,19 +85,18 @@ func _test_valid_proposal_reaches_simulator_as_pending() -> void:
 		"valid proposal must include simulator result"
 	)
 	var pending_requirements := result.get("pending_requirements", []) as Array
-	_assert_true(not pending_requirements.has("target_rules"), "gateway must remove frozen D1")
-	_assert_true(not pending_requirements.has("resolution_order"), "gateway must remove frozen D3")
-	_assert_true(
-		not pending_requirements.has("damage_and_mitigation"), "gateway must remove frozen D4"
-	)
-	_assert_true(
-		not pending_requirements.has("stamina_cost_table"), "gateway must remove frozen D6"
-	)
-	_assert_true(not pending_requirements.has("accuracy_formula"), "gateway must remove frozen D7")
-	_assert_true(not pending_requirements.has("defensive_action_effects"), "defenses are frozen")
-	_assert_true(not pending_requirements.has("stat_scaling_weights"), "D8 weights are frozen")
-	_assert_true(pending_requirements.has("surrender_rules"), "surrender remains unresolved")
-	_assert_true(pending_requirements.has("carryover"), "carryover remains unresolved")
+	_assert_true(pending_requirements.is_empty(), "all mandatory Combat V1 decisions are frozen")
+	var frozen_requirements := result.get("frozen_requirements", []) as Array
+	_assert_true(frozen_requirements.has("target_rules"), "D1 must remain frozen")
+	_assert_true(frozen_requirements.has("resolution_order"), "D3 must remain frozen")
+	_assert_true(frozen_requirements.has("damage_and_mitigation"), "D4 must remain frozen")
+	_assert_true(frozen_requirements.has("stamina_cost_table"), "D6 must remain frozen")
+	_assert_true(frozen_requirements.has("accuracy_formula"), "D7 must remain frozen")
+	_assert_true(frozen_requirements.has("defensive_action_effects"), "defenses are frozen")
+	_assert_true(frozen_requirements.has("stat_scaling_weights"), "D8 weights are frozen")
+	_assert_true(frozen_requirements.has("surrender_rules"), "D9 surrender must be frozen")
+	_assert_true(frozen_requirements.has("combat_end_rules"), "combat-end rules must be frozen")
+	_assert_true(frozen_requirements.has("carryover"), "D10 carryover must be frozen")
 	var conditional_requirements := result.get("conditional_requirements", []) as Array
 	_assert_true(
 		conditional_requirements.has("position_and_distance_model"),
@@ -102,13 +108,13 @@ func _test_valid_proposal_reaches_simulator_as_pending() -> void:
 	var desired_action := result.get("desired_action", {}) as Dictionary
 	desired_action["action_id"] = "heavy"
 	_assert_eq(proposal, proposal_before, "gateway result must be isolated from caller proposal")
-	pending_requirements.clear()
+	frozen_requirements.clear()
+	var nested_frozen := (
+		(result.get("simulation", {}) as Dictionary).get("frozen_requirements", []) as Array
+	)
 	_assert_true(
-		not (
-			((result.get("simulation", {}) as Dictionary).get("pending_requirements", []) as Array)
-			. is_empty()
-		),
-		"gateway readiness arrays must be isolated from nested simulator result"
+		nested_frozen.has("carryover"),
+		"gateway readiness arrays must be isolated from nested simulator result",
 	)
 	(target_context.get("legal_targets", []) as Array).clear()
 	var nested_blocker := (
