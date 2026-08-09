@@ -1,9 +1,11 @@
 extends RefCounted
 
 const CombatContractScript = preload("res://scripts/combat/combat_contract.gd")
+const CombatRuntimeStateBuilderScript = preload("res://scripts/combat/combat_runtime_state_builder.gd")
 const TARGET_RULES_PENDING_REASON := "target_rules_not_frozen"
 
 var _combat_contract = CombatContractScript.new()
+var _runtime_builder = CombatRuntimeStateBuilderScript.new()
 
 
 func get_candidate_groups(state: Dictionary, actor_id: String) -> Dictionary:
@@ -14,6 +16,8 @@ func get_candidate_groups(state: Dictionary, actor_id: String) -> Dictionary:
 	var actor := _find_fighter(state, actor_id)
 	if actor.is_empty():
 		return _rejected("invalid_actor", ["Unknown target-resolution actor: %s" % actor_id])
+	if _runtime_builder.is_knocked_out(actor):
+		return _rejected("inactive_actor", ["Knocked-out actor cannot select targets: %s" % actor_id])
 
 	var allies: Array[String] = []
 	var enemies: Array[String] = []
@@ -23,7 +27,7 @@ func get_candidate_groups(state: Dictionary, actor_id: String) -> Dictionary:
 			continue
 		var fighter := raw_fighter as Dictionary
 		var fighter_id := str(fighter.get("id", ""))
-		if fighter_id == actor_id:
+		if fighter_id == actor_id or _runtime_builder.is_knocked_out(fighter):
 			continue
 		if str(fighter.get("team", "")) == actor_team:
 			allies.append(fighter_id)
