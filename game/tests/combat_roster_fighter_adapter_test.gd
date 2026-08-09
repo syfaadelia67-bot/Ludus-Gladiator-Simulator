@@ -1,6 +1,7 @@
 extends SceneTree
 
 const RosterAdapterScript = preload("res://scripts/combat/combat_roster_fighter_adapter.gd")
+const PersonScript = preload("res://scripts/entities/person.gd")
 
 var _failures: Array[String] = []
 
@@ -9,6 +10,9 @@ func _initialize() -> void:
 	var adapter = RosterAdapterScript.new()
 	_test_missing_resistance_fails_closed(adapter)
 	_test_explicit_resistance_builds_fighter(adapter)
+	_test_live_person_supplies_canonical_resistance(adapter)
+	_test_legacy_person_receives_neutral_resistance_baseline(adapter)
+	_test_resistance_growth_is_independent_from_endurance()
 	if _failures.is_empty():
 		print("Combat roster fighter adapter: OK")
 		quit(0)
@@ -25,12 +29,12 @@ func _test_missing_resistance_fails_closed(adapter) -> void:
 	_assert_eq(
 		result.get("status"),
 		"pending_canonical_stats",
-		"missing explicit resistance must fail closed",
+		"dictionary sources without explicit resistance must still fail closed",
 	)
 	_assert_eq(
 		result.get("pending_stat_ids"),
 		["RES"],
-		"RES must remain the explicit unresolved stat",
+		"RES must remain the explicit unresolved stat for incomplete dictionary sources",
 	)
 	_assert_eq(result.get("fighter"), {}, "incomplete canonical stats must create no fighter")
 	_assert_eq(source, before, "adapter must not mutate roster source")
@@ -68,6 +72,8 @@ func _test_explicit_resistance_builds_fighter(adapter) -> void:
 		"Endurance must remain separate even when canonical RES exists",
 	)
 	var contract: Dictionary = adapter.get_contract()
+	_assert_eq(contract.get("live_roster_res_source"), "person.resistance")
+	_assert_eq(contract.get("legacy_missing_resistance_baseline"), 5)
 	_assert_eq(
 		contract.get("endurance_to_resistance_fallback"),
 		false,
@@ -83,6 +89,56 @@ func _test_explicit_resistance_builds_fighter(adapter) -> void:
 		["intelligence"],
 		"Intelligence must be explicitly removed from the active adapter contract",
 	)
+
+
+func _test_live_person_supplies_canonical_resistance(adapter) -> void:
+	var person = PersonScript.new(
+		{
+			"id": "live_g1",
+			"strength": 7,
+			"agility": 8,
+			"technique": 9,
+			"resistance": 12,
+			"endurance": 88,
+			"health": 60,
+		}
+	)
+	var result: Dictionary = adapter.build_from_person(person, "player", {"power": 2, "defense": 1})
+	_assert_eq(result.get("status"), "ready", "live roster person must build without override")
+	var fighter := result.get("fighter", {}) as Dictionary
+	var stats := fighter.get("stats", {}) as Dictionary
+	_assert_eq(stats.get("RES"), 12, "live person resistance must be Combat V1 RES")
+	_assert_eq(
+		(result.get("legacy_separate", {}) as Dictionary).get("endurance"),
+		88,
+		"live Endurance must remain separate from RES",
+	)
+
+
+func _test_legacy_person_receives_neutral_resistance_baseline(adapter) -> void:
+	var legacy_person = PersonScript.new(
+		{
+			"id": "legacy_g1",
+			"strength": 7,
+			"agility": 8,
+			"technique": 9,
+			"endurance": 99,
+			"health": 60,
+		}
+	)
+	_assert_eq(legacy_person.resistance, 5, "legacy v14 person must receive neutral RES baseline")
+	var result: Dictionary = adapter.build_from_person(legacy_person, "player")
+	var fighter := result.get("fighter", {}) as Dictionary
+	var stats := fighter.get("stats", {}) as Dictionary
+	_assert_eq(stats.get("RES"), 5, "migrated baseline must reach Combat V1")
+	_assert_eq(stats.get("RES") == legacy_person.endurance, false, "Endurance must not become RES")
+
+
+func _test_resistance_growth_is_independent_from_endurance() -> void:
+	var person = PersonScript.new({"id": "growth_g1", "resistance": 6, "endurance": 20})
+	person.apply_growth({"resistance": 3, "endurance": 2})
+	_assert_eq(person.resistance, 9, "RES growth must use resistance growth only")
+	_assert_eq(person.endurance, 22, "legacy Endurance growth remains independent")
 
 
 func _person_source() -> Dictionary:
