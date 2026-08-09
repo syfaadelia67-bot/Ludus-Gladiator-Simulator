@@ -33,13 +33,6 @@ Authoritative rules:
 - the six base actions have no ally-targeting in Combat V1;
 - the same target-relationship rules apply in `1v1`, `1v2`, and `2v2`.
 
-Runtime contract:
-- `combat_action_catalog.gd` stores the frozen target metadata for all six actions;
-- `CombatTargetResolver` exposes `legal_targets` from the authoritative CombatState;
-- `CombatPolicy` rejects illegal target semantics;
-- Policy Context and the LimboAI Blackboard receive isolated copies of `legal_targets`;
-- `target_rules` has been removed from resolution readiness.
-
 ### D2 — Position and distance model
 
 Status: `PENDING / CONDITIONAL`
@@ -55,24 +48,12 @@ Status: `FROZEN`
 
 Authoritative exchange model:
 - every active fighter submits exactly one valid intent per exchange;
-- therefore a complete exchange contains 2 intents in `1v1`, 3 in `1v2`, and 4 in `2v2`;
-- phase 1 is `preparation`: `block`, `parry`, `dodge`, `reposition`;
-- phase 2 is `offense`: `light`, `heavy`;
-- every intent inside one phase is simultaneous and reads the same phase-start snapshot;
-- preparation reads `exchange_start` and commits together at the end of the phase;
-- offense reads `after_preparation_commit` and commits together at the end of the phase;
-- there is no initiative stat, initiative roll, actor-first rule, node-order priority, BehaviorTree priority, frame-order priority, or array-insertion priority in D3;
-- same-phase conflicts use `simultaneous` semantics rather than a tiebreak;
-- canonical actor-id sorting may be used only for deterministic serialization/debug output and never represents gameplay priority;
-- exact effects of defense, damage, accuracy, Stamina and KO remain owned by later freezes.
-
-Runtime contract:
-- `combat_resolution_order_boundary.gd` validates CombatState and every submitted intent through the canonical policy contract;
-- duplicate actor intents and incomplete exchanges fail closed;
-- valid exchanges produce a two-phase resolution plan;
-- `get_contract_status()` exposes D3 as frozen;
-- `CombatSimulator` exposes the frozen D3 contract in blocker context and advances the next required blocker to D4 `damage_and_mitigation`;
-- `resolution_order` has been removed from pending resolution readiness.
+- complete exchanges contain 2 intents in `1v1`, 3 in `1v2`, and 4 in `2v2`;
+- phase 1 `preparation`: `block`, `parry`, `dodge`, `reposition`;
+- phase 2 `offense`: `light`, `heavy`;
+- intents inside the same phase are simultaneous and read the same phase-start snapshot;
+- there is no initiative stat, initiative roll, actor-first rule, BehaviorTree priority, frame-order priority, or insertion-order priority;
+- actor-id sorting is deterministic serialization/debug only, never gameplay priority.
 
 ### D4 — Damage and mitigation
 
@@ -92,12 +73,11 @@ Legacy attack/defense formulas are evidence only and have not been promoted.
 Status: `FROZEN STRUCTURE / NUMERIC SUBRULES PENDING`
 
 Authoritative structural rules:
-- armor comes from canonical equipment `defense` rather than being silently folded into RES;
-- armor and RES remain separate simulator inputs;
+- armor comes from canonical equipment `defense` and remains separate from RES;
 - Combat V1 has no body-part armor model;
-- vulnerability is an explicit runtime combat state owned by `CombatSimulator`;
+- vulnerability is an explicit runtime state owned by `CombatSimulator`;
 - fighters begin combat with `vulnerable = false`;
-- exact armor mitigation and penetration values remain pending D4.
+- exact armor mitigation and penetration remain pending D4.
 
 ### D6 — Stamina
 
@@ -105,34 +85,34 @@ Status: `FROZEN STRUCTURE / NUMERIC SUBRULES PENDING`
 
 Authoritative structural rules:
 - `stamina` is the canonical combat resource;
-- Stamina has a minimum of 0 and negative values are invalid CombatState;
-- an action that lacks the required Stamina must fail closed rather than create debt or negative Stamina;
+- minimum Stamina is 0; negative Stamina makes CombatState invalid;
+- insufficient Stamina rejects the action instead of allowing debt/negative resource;
 - legacy `energy` values are not copied into V1;
-- exact costs for the six actions, recovery amount and recovery timing remain pending.
+- six action costs, recovery amount and recovery timing remain pending.
 
 ### D7 — Accuracy and criticals
 
 Status: `FROZEN STRUCTURE / FORMULA PENDING`
 
 Authoritative structural rules:
-- V1 hit resolution does not use RNG;
-- V1 critical hits are disabled;
+- V1 hit resolution uses no RNG;
+- critical hits are disabled in Combat V1;
 - `CombatSimulator` owns accuracy resolution;
-- the exact deterministic accuracy/avoidance formula remains pending;
-- legacy random hit/critical probabilities are not authoritative.
+- the deterministic accuracy/avoidance formula remains pending;
+- legacy random hit/critical probabilities remain quarantined.
 
 ### D8 — Stat scaling
 
 Status: `FROZEN ROLES / WEIGHTS PENDING`
 
-Authoritative stat roles:
+Authoritative roles:
 - `FUE` -> offensive power;
 - `AGI` -> evasion and reposition;
 - `TEC` -> accuracy and parry;
 - `RES` -> mitigation and block;
 - `PV` -> maximum health;
 - legacy `endurance` cannot silently substitute for RES;
-- exact coefficients/weights remain pending alongside D4/D7 math.
+- exact coefficients/weights remain pending D4/D7 math.
 
 ### D9 — KO and surrender
 
@@ -140,17 +120,17 @@ Status: `FROZEN KO STRUCTURE / SURRENDER RULES PENDING`
 
 Authoritative structural rules:
 - runtime health is `current_pv`, distinct from maximum `stats.PV`;
-- new runtime combat state initializes `current_pv = stats.PV`;
+- runtime combat initializes `current_pv = stats.PV`;
 - `CombatSimulator` owns KO authority;
 - KO occurs when `current_pv <= 0`;
-- surrender is not a seventh base combat action;
+- surrender is not a seventh base action;
 - probabilistic surrender is forbidden in V1;
-- exact surrender eligibility/trigger rules remain pending and cannot declare a winner outside simulator authority.
+- exact surrender eligibility/trigger rules remain pending.
 
 Runtime support:
 - `combat_runtime_state_builder.gd` creates isolated runtime state with `current_pv` and `vulnerable`;
-- `combat_rules_d5_d9_contract.gd` is the central structural ledger for D5-D9;
-- resolution readiness now distinguishes frozen structure from unresolved numeric/eligibility subrules.
+- `combat_rules_d5_d9_contract.gd` centralizes D5-D9 structural contracts;
+- resolution readiness distinguishes frozen structure from numeric/eligibility subrules.
 
 ### D10 — Carryover
 
@@ -158,12 +138,12 @@ Status: `PENDING`
 
 Question:
 - which runtime state persists across consecutive GT fights;
-- how `current_pv`, Stamina, vulnerability and future statuses reset or carry;
+- how `current_pv`, Stamina, vulnerability and later statuses reset/carry;
 - how the Month XX substitution interacts with carryover.
 
-## Resolution readiness after D5-D9 structural freeze
+## Resolution readiness
 
-Frozen structural requirements:
+Frozen structure:
 - `target_rules`;
 - `resolution_order`;
 - `armor_and_vulnerability_structure`;
@@ -189,29 +169,28 @@ Conditional:
 
 ## Action-level freeze checklist
 
-| Action | Target rule | Resolution timing | Stamina | Stat roles | Effect/math | Status |
-| --- | --- | --- | --- | --- | --- | --- |
-| `light` | exactly 1 enemy | offense / simultaneous | resource semantics frozen; cost TBD | FUE offense, TEC accuracy | damage TBD | D1 + D3 + D6-D8 STRUCTURE |
-| `heavy` | exactly 1 enemy | offense / simultaneous | resource semantics frozen; cost TBD | FUE offense, TEC accuracy | damage TBD | D1 + D3 + D6-D8 STRUCTURE |
-| `block` | no explicit target | preparation / simultaneous | resource semantics frozen; cost TBD | RES block | exact mitigation TBD | D1 + D3 + D5-D8 STRUCTURE |
-| `parry` | no explicit target | preparation / simultaneous | resource semantics frozen; cost TBD | TEC parry | exact effect TBD | D1 + D3 + D6-D8 STRUCTURE |
-| `dodge` | no explicit target | preparation / simultaneous | resource semantics frozen; cost TBD | AGI evasion | exact effect TBD | D1 + D3 + D6-D8 STRUCTURE |
-| `reposition` | no explicit target | preparation / simultaneous | resource semantics frozen; cost TBD | AGI reposition | D2/effect TBD | D1 + D3 + D6-D8 STRUCTURE |
+| Action | Target | Timing | Stamina | Stat roles | Math/effect |
+| --- | --- | --- | --- | --- | --- |
+| `light` | 1 enemy | offense / simultaneous | semantics frozen; cost TBD | FUE offense, TEC accuracy | damage TBD |
+| `heavy` | 1 enemy | offense / simultaneous | semantics frozen; cost TBD | FUE offense, TEC accuracy | damage TBD |
+| `block` | none explicit | preparation / simultaneous | semantics frozen; cost TBD | RES block | mitigation TBD |
+| `parry` | none explicit | preparation / simultaneous | semantics frozen; cost TBD | TEC parry | effect TBD |
+| `dodge` | none explicit | preparation / simultaneous | semantics frozen; cost TBD | AGI evasion | effect TBD |
+| `reposition` | none explicit | preparation / simultaneous | semantics frozen; cost TBD | AGI reposition | D2/effect TBD |
 
 ## Validation checkpoint
 
-Runtime head `7c5cd9551877ac686d3defc0e05f2abfca8dbc53` was validated with:
-
+Runtime head `7c5cd9551877ac686d3defc0e05f2abfca8dbc53`:
 - Core systems suite: **80/80 passed**;
-- UI/integration suite: passed;
-- GUT behavior suite: passed;
+- UI/integration: passed;
+- GUT: passed;
 - Godot 4.5.2 import/compile/smoke: passed;
 - gdformat/gdlint: passed;
 - Gitleaks: passed;
 - CI Gate: passed.
 
-The subsequent commits only update this decision ledger and do not change runtime contracts.
+Subsequent commits only update this decision ledger and do not change runtime contracts.
 
 ## Freeze rule
 
-A design item must not become authoritative merely because it appears in legacy code, an ability description, a test fixture, a temporary AI proposal, a tuning experiment, or this worksheet. It becomes frozen only when explicitly approved, reflected in code/data contracts, and protected by tests.
+Legacy code, descriptions, fixtures, AI proposals or tuning experiments do not become authority automatically. A decision is frozen only when explicitly approved, reflected in runtime/data contracts, and protected by tests.
