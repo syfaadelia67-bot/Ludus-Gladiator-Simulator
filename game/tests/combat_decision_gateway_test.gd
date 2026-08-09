@@ -64,7 +64,9 @@ func _test_valid_proposal_reaches_simulator_as_pending() -> void:
 	_assert_eq(defense_contract.get("status"), "frozen", "gateway must expose frozen defenses")
 	var exchange_contract := blocking_context.get("exchange_contract", {}) as Dictionary
 	_assert_eq(exchange_contract.get("status"), "frozen", "gateway must expose exchange contract")
-	_assert_eq(exchange_contract.get("offense_commit"), "simultaneous", "exchange must stay simultaneous")
+	_assert_eq(
+		exchange_contract.get("offense_commit"), "simultaneous", "exchange must stay simultaneous"
+	)
 	_assert_eq(
 		result.get("desired_action", {}), proposal_before, "gateway must expose validated intent"
 	)
@@ -78,8 +80,12 @@ func _test_valid_proposal_reaches_simulator_as_pending() -> void:
 	var pending_requirements := result.get("pending_requirements", []) as Array
 	_assert_true(not pending_requirements.has("target_rules"), "gateway must remove frozen D1")
 	_assert_true(not pending_requirements.has("resolution_order"), "gateway must remove frozen D3")
-	_assert_true(not pending_requirements.has("damage_and_mitigation"), "gateway must remove frozen D4")
-	_assert_true(not pending_requirements.has("stamina_cost_table"), "gateway must remove frozen D6")
+	_assert_true(
+		not pending_requirements.has("damage_and_mitigation"), "gateway must remove frozen D4"
+	)
+	_assert_true(
+		not pending_requirements.has("stamina_cost_table"), "gateway must remove frozen D6"
+	)
 	_assert_true(not pending_requirements.has("accuracy_formula"), "gateway must remove frozen D7")
 	_assert_true(not pending_requirements.has("defensive_action_effects"), "defenses are frozen")
 	_assert_true(not pending_requirements.has("stat_scaling_weights"), "D8 weights are frozen")
@@ -145,12 +151,20 @@ func _test_invalid_proposal_stops_before_simulator() -> void:
 
 	_assert_eq(result.get("status"), "policy_rejected", "invalid proposal must stop at policy")
 	_assert_eq(result.get("pending"), false, "policy rejection must not be marked pending")
-	_assert_eq(result.get("desired_action", {}), {}, "invalid proposal must expose no desired action")
+	_assert_eq(
+		result.get("desired_action", {}), {}, "invalid proposal must expose no desired action"
+	)
 	_assert_eq(result.get("simulation", {}), {}, "invalid proposal must never reach simulator")
 	_assert_eq(result.get("blocking_requirement"), "", "policy rejection must expose no blocker")
-	_assert_eq(result.get("blocking_context", {}), {}, "policy rejection must expose no blocker context")
+	_assert_eq(
+		result.get("blocking_context", {}), {}, "policy rejection must expose no blocker context"
+	)
 	_assert_eq(result.get("pending_requirements", []), [], "policy rejection has no readiness")
-	_assert_eq(result.get("conditional_requirements", []), [], "policy rejection has no conditional readiness")
+	_assert_eq(
+		result.get("conditional_requirements", []),
+		[],
+		"policy rejection has no conditional readiness"
+	)
 	fixture.owner.free()
 
 
@@ -165,11 +179,17 @@ func _test_unknown_actor_stops_before_simulator() -> void:
 		fixture.owner
 	)
 
-	_assert_eq(result.get("status"), "policy_rejected", "unknown actor must stop at policy boundary")
-	_assert_eq(result.get("reason"), "invalid_actor", "gateway must preserve policy rejection reason")
+	_assert_eq(
+		result.get("status"), "policy_rejected", "unknown actor must stop at policy boundary"
+	)
+	_assert_eq(
+		result.get("reason"), "invalid_actor", "gateway must preserve policy rejection reason"
+	)
 	_assert_eq(result.get("simulation", {}), {}, "unknown actor must never reach simulator")
 	_assert_eq(result.get("blocking_requirement"), "", "unknown actor must expose no blocker")
-	_assert_eq(result.get("blocking_context", {}), {}, "unknown actor must expose no blocker context")
+	_assert_eq(
+		result.get("blocking_context", {}), {}, "unknown actor must expose no blocker context"
+	)
 	_assert_eq(result.get("pending_requirements", []), [], "unknown actor has no readiness")
 	fixture.owner.free()
 
