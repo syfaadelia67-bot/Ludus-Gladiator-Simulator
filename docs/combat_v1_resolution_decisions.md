@@ -2,34 +2,17 @@
 
 Status: **PARTIALLY FROZEN**
 
-Frozen runtime structure:
-- D1 target rules;
-- D3 exchange resolution order;
-- D5 armor/vulnerability structure;
-- D6 Stamina structure;
-- D7 accuracy/critical structure;
-- D8 canonical stat roles;
-- D9 KO structure.
-
-Still pending by design:
-- D2 position/distance (conditional);
-- D4 damage/mitigation math (next blocker);
-- D5 armor mitigation/penetration numbers;
-- D6 Stamina costs/recovery numbers and timing;
-- D7 deterministic accuracy formula;
-- D8 exact stat weights;
-- D9 surrender eligibility/trigger rules;
-- D10 carryover.
+D1 target rules and D3 exchange resolution order are frozen. D5-D9 now also have frozen structural contracts while their exact numeric/eligibility subrules remain pending.
 
 ## D5 — Armor and vulnerability
 
 Status: `FROZEN STRUCTURE / NUMERIC SUBRULES PENDING`
 
-- armor source: canonical equipment `defense`;
+- armor source is canonical equipment `defense`;
 - armor and RES are separate simulator inputs;
 - no body-part armor model in Combat V1;
-- vulnerability is explicit runtime state owned by `CombatSimulator`;
-- fighters start with `vulnerable = false`;
+- vulnerability is an explicit runtime state owned by `CombatSimulator`;
+- fighters start `vulnerable = false`;
 - exact armor mitigation and penetration remain pending D4.
 
 ## D6 — Stamina
@@ -37,19 +20,18 @@ Status: `FROZEN STRUCTURE / NUMERIC SUBRULES PENDING`
 Status: `FROZEN STRUCTURE / NUMERIC SUBRULES PENDING`
 
 - `stamina` is canonical;
-- minimum is 0;
-- negative Stamina invalidates CombatState;
+- minimum is 0; negative Stamina invalidates CombatState;
 - insufficient Stamina rejects the action;
 - legacy `energy` is not promoted;
-- exact action costs/recovery amount/recovery timing remain pending.
+- exact action costs, recovery amount and recovery timing remain pending.
 
 ## D7 — Accuracy and criticals
 
 Status: `FROZEN STRUCTURE / FORMULA PENDING`
 
 - no RNG for V1 hit resolution;
-- critical hits disabled in V1;
-- accuracy is owned by `CombatSimulator`;
+- critical hits are disabled in V1;
+- `CombatSimulator` owns accuracy resolution;
 - deterministic accuracy formula remains pending.
 
 ## D8 — Stat roles
@@ -61,8 +43,8 @@ Status: `FROZEN ROLES / WEIGHTS PENDING`
 - TEC -> accuracy + parry;
 - RES -> mitigation + block;
 - PV -> maximum health;
-- `endurance` cannot silently substitute for RES;
-- exact weights remain pending.
+- legacy `endurance` cannot silently substitute for RES;
+- exact stat weights remain pending.
 
 ## D9 — KO and surrender
 
@@ -75,28 +57,30 @@ Status: `FROZEN KO STRUCTURE / SURRENDER RULES PENDING`
 - KO authority belongs to `CombatSimulator`;
 - surrender is not a seventh base action;
 - probabilistic surrender is forbidden;
-- exact surrender rules remain pending.
+- exact surrender eligibility/trigger rules remain pending.
 
 ## Runtime support
 
 - `combat_rules_d5_d9_contract.gd` centralizes D5-D9 structure;
-- `combat_runtime_state_builder.gd` creates isolated `current_pv` and `vulnerable` runtime fields;
+- `combat_runtime_state_builder.gd` creates isolated `current_pv` and `vulnerable` fields;
 - `combat_contract.gd` rejects negative Stamina;
-- `combat_resolution_readiness.gd` separates frozen structure from pending math/eligibility;
-- `CombatSimulator` and `CombatDecisionGateway` expose this separation without inventing resolution values.
+- readiness distinguishes frozen structure from pending math/eligibility;
+- `CombatSimulator` and `CombatDecisionGateway` expose this separation.
+
+## Remaining blockers
+
+- D2 position/distance: conditional;
+- D4 damage/mitigation math: **next required blocker**;
+- D5 armor mitigation/penetration values;
+- D6 Stamina costs/recovery;
+- D7 deterministic accuracy formula;
+- D8 exact stat weights;
+- D9 surrender rules;
+- D10 carryover.
 
 ## Validation
 
-Runtime head `7c5cd9551877ac686d3defc0e05f2abfca8dbc53` passed:
-- Core **80/80**;
-- UI/integration;
-- GUT;
-- Godot 4.5.2 import/compile/smoke;
-- gdformat/gdlint;
-- Gitleaks;
-- CI Gate.
-
-Later commits in this file are documentation-only.
+Runtime head `7c5cd9551877ac686d3defc0e05f2abfca8dbc53` passed Core **80/80**, UI/integration, GUT, Godot 4.5.2 compile/smoke, gdformat/gdlint, Gitleaks and CI Gate. Later commits to this file are documentation-only.
 
 ## Freeze rule
 
