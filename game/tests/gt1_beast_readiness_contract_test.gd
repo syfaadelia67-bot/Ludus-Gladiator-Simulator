@@ -26,9 +26,7 @@ func _test_current_canonical_beasts_are_blocked(contract) -> void:
 	assert(result.get("beast_selection_ready") == false)
 	assert(result.get("canonical_beast_stats_ready") == false)
 	assert(result.get("runtime_beast_adapter_ready") == false)
-	assert(
-		result.get("reason") == "missing_canonical_beast_combat_stats_and_runtime_adapter"
-	)
+	assert(result.get("reason") == "missing_canonical_beast_combat_stats_and_runtime_adapter")
 	assert(result.get("missing_beast_ids") == [])
 	var missing := result.get("missing_stats_by_beast", {}) as Dictionary
 	for beast_id in ["bear", "boar", "lion"]:
@@ -68,14 +66,17 @@ func _test_contract_forbids_invented_fallbacks(contract) -> void:
 func _explicit_numeric_beasts() -> Array:
 	var result: Array = []
 	for beast_id in ["bear", "boar", "lion"]:
-		result.append(
-			{
-				"id": beast_id,
-				"FUE": 1,
-				"AGI": 1,
-				"TEC": 1,
-				"RES": 1,
-				"PV": 1,
-			}
+		(
+			result
+			. append(
+				{
+					"id": beast_id,
+					"FUE": 1,
+					"AGI": 1,
+					"TEC": 1,
+					"RES": 1,
+					"PV": 1,
+				}
+			)
 		)
 	return result
