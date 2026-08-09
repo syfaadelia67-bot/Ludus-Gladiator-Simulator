@@ -1,4 +1,4 @@
-extends SceneTree
+extends Node
 
 const RosterAdapterScript = preload("res://scripts/combat/combat_roster_fighter_adapter.gd")
 const PersonScript = preload("res://scripts/entities/person.gd")
@@ -6,7 +6,7 @@ const PersonScript = preload("res://scripts/entities/person.gd")
 var _failures: Array[String] = []
 
 
-func _initialize() -> void:
+func _ready() -> void:
 	var adapter = RosterAdapterScript.new()
 	_test_missing_resistance_fails_closed(adapter)
 	_test_explicit_resistance_builds_fighter(adapter)
@@ -15,11 +15,11 @@ func _initialize() -> void:
 	_test_resistance_growth_is_independent_from_endurance()
 	if _failures.is_empty():
 		print("Combat roster fighter adapter: OK")
-		quit(0)
+		get_tree().quit(0)
 		return
 	for failure in _failures:
 		push_error(failure)
-	quit(1)
+	get_tree().quit(1)
 
 
 func _test_missing_resistance_fails_closed(adapter) -> void:
