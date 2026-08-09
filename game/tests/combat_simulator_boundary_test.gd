@@ -60,8 +60,13 @@ func _assert_valid_intent_stays_pending(simulator) -> void:
 	assert(frozen_requirements.has("ko_structure"))
 	var pending_requirements := result.get("pending_requirements", []) as Array
 	assert(not pending_requirements.has("target_rules"), "Frozen D1 must leave pending readiness")
-	assert(not pending_requirements.has("resolution_order"), "Frozen D3 must leave pending readiness")
-	assert(not pending_requirements.has("damage_and_mitigation"), "Frozen D4 must leave pending readiness")
+	assert(
+		not pending_requirements.has("resolution_order"), "Frozen D3 must leave pending readiness"
+	)
+	assert(
+		not pending_requirements.has("damage_and_mitigation"),
+		"Frozen D4 must leave pending readiness"
+	)
 	assert(not pending_requirements.has("armor_numeric_mitigation"))
 	assert(not pending_requirements.has("armor_penetration"))
 	assert(pending_requirements.has("stamina_cost_table"))
