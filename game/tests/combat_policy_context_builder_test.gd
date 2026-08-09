@@ -13,7 +13,6 @@ const EXPECTED_ACTION_IDS: Array[String] = [
 	"reposition",
 ]
 const PENDING_ACTION_FIELDS: Array[String] = [
-	"target_rule_status",
 	"stamina_cost_status",
 	"resolution_timing_status",
 	"stat_scaling_status",
@@ -57,6 +56,11 @@ func _test_1v1_context(builder) -> void:
 	var candidates := context.get("target_candidates") as Dictionary
 	_assert_eq(candidates.get("allies"), [], "1v1 ally candidates must be empty")
 	_assert_eq(candidates.get("enemies"), ["b"], "1v1 enemy candidates must expose opponent")
+	var legal_targets := context.get("legal_targets", {}) as Dictionary
+	_assert_eq(legal_targets.get("light"), ["b"], "light must expose enemy target")
+	_assert_eq(legal_targets.get("heavy"), ["b"], "heavy must expose enemy target")
+	for action_id in ["block", "parry", "dodge", "reposition"]:
+		_assert_eq(legal_targets.get(action_id), [], "%s must expose no explicit targets" % action_id)
 	var isolated_actor := context.get("actor") as Dictionary
 	isolated_actor["stamina"] = 0
 	_assert_eq(
@@ -64,13 +68,19 @@ func _test_1v1_context(builder) -> void:
 	)
 	var action_contracts := context.get("action_contracts") as Array
 	var first_contract := action_contracts[0] as Dictionary
-	first_contract["target_rule_status"] = "invented"
+	first_contract["target_relationship"] = "invented"
+	(legal_targets.get("light") as Array).clear()
 	var rebuilt := builder.build_context(state, "a").get("context", {}) as Dictionary
 	var rebuilt_contracts := rebuilt.get("action_contracts") as Array
 	_assert_eq(
-		(rebuilt_contracts[0] as Dictionary).get("target_rule_status"),
-		"pending",
-		"mutating policy action metadata must not alter canonical catalog",
+		(rebuilt_contracts[0] as Dictionary).get("target_relationship"),
+		"enemy",
+		"mutating policy target metadata must not alter canonical catalog",
+	)
+	_assert_eq(
+		(rebuilt.get("legal_targets", {}) as Dictionary).get("light"),
+		["b"],
+		"mutating legal target view must not alter rebuilt context",
 	)
 
 
@@ -87,6 +97,9 @@ func _test_2v2_relationships(builder) -> void:
 	var context := builder.build_context(state, "a").get("context", {}) as Dictionary
 	_assert_eq(_ids(context.get("allies") as Array), ["a2"], "2v2 must classify ally")
 	_assert_eq(_ids(context.get("enemies") as Array), ["b", "b2"], "2v2 must classify enemies")
+	var legal_targets := context.get("legal_targets", {}) as Dictionary
+	_assert_eq(legal_targets.get("light"), ["b", "b2"], "2v2 light targets both enemies")
+	_assert_eq(legal_targets.get("heavy"), ["b", "b2"], "2v2 heavy targets both enemies")
 
 
 func _test_1v2_relationships(builder) -> void:
@@ -101,6 +114,11 @@ func _test_1v2_relationships(builder) -> void:
 	var context := builder.build_context(state, "b").get("context", {}) as Dictionary
 	_assert_eq(_ids(context.get("allies") as Array), ["b2"], "1v2 larger team must expose ally")
 	_assert_eq(_ids(context.get("enemies") as Array), ["a"], "1v2 larger team must expose enemy")
+	_assert_eq(
+		(context.get("legal_targets", {}) as Dictionary).get("light"),
+		["a"],
+		"1v2 larger side may target solo enemy",
+	)
 
 
 func _test_invalid_inputs(builder) -> void:
@@ -133,6 +151,11 @@ func _assert_action_contracts(value: Variant) -> void:
 			action_contract.get("id"),
 			EXPECTED_ACTION_IDS[index],
 			"action contract order must match canonical ids",
+		)
+		_assert_eq(
+			action_contract.get("target_rule_status"),
+			"frozen",
+			"D1 target rules must be frozen in policy context",
 		)
 		for field in PENDING_ACTION_FIELDS:
 			_assert_eq(
