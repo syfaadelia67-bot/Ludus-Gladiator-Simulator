@@ -46,7 +46,7 @@ func _test_2v2_candidates(resolver) -> void:
 	var candidates := resolver.get_candidate_groups(state, "a").get("candidates", {}) as Dictionary
 	_assert_eq(candidates.get("allies"), ["a2"], "2v2 actor sees ally candidate")
 	_assert_eq(candidates.get("enemies"), ["b", "b2"], "2v2 actor sees enemy candidates")
-	var light := resolver.inspect_action_targets(state, "a", "light")
+	var light: Dictionary = resolver.inspect_action_targets(state, "a", "light")
 	_assert_eq(light.get("legal_targets"), ["b", "b2"], "2v2 light may target either enemy")
 
 
