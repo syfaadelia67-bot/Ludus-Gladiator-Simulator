@@ -64,8 +64,16 @@ func _test_month_20_builds_real_2v2_snapshots() -> void:
 		_assert_eq(state.get("format"), "2v2", "every month XX bout must remain 2v2")
 		_assert_eq((state.get("fighters", []) as Array).size(), 4, "2v2 requires four fighters")
 	var first_a := _fighter_by_id(states[0] as Dictionary, "a")
-	_assert_eq((first_a.get("equipment", {}) as Dictionary).get("power"), 12, "equipment power must snapshot from live equipment")
-	_assert_eq((first_a.get("stats", {}) as Dictionary).get("RES"), 7, "RES must come from person.resistance")
+	_assert_eq(
+		(first_a.get("equipment", {}) as Dictionary).get("power"),
+		12,
+		"equipment power must snapshot from live equipment"
+	)
+	_assert_eq(
+		(first_a.get("stats", {}) as Dictionary).get("RES"),
+		7,
+		"RES must come from person.resistance"
+	)
 	var third_ids := _team_ids(states[2] as Dictionary, "player")
 	_assert_eq(third_ids, ["a", "c"], "single month XX substitution must materialize")
 
@@ -73,38 +81,62 @@ func _test_month_20_builds_real_2v2_snapshots() -> void:
 func _test_month_13_requires_same_live_gladiator() -> void:
 	var builder = BuilderScript.new()
 	var people := {"a": FakePerson.new("a"), "b": FakePerson.new("b")}
-	var result: Dictionary = builder.build_from_sources(
-		13,
-		"player",
-		[["a"], ["b"], ["a"]],
-		[[_opponent("x", "rival", 0)], [_opponent("y", "rival", 0)], [_opponent("z", "rival", 0)]],
-		people,
-		{},
+	var result: Dictionary = (
+		builder
+		. build_from_sources(
+			13,
+			"player",
+			[["a"], ["b"], ["a"]],
+			[
+				[_opponent("x", "rival", 0)],
+				[_opponent("y", "rival", 0)],
+				[_opponent("z", "rival", 0)]
+			],
+			people,
+			{},
+		)
 	)
 	_assert_eq(result.get("status"), "invalid", "month XIII roster change must fail closed")
-	_assert_true(_contains(result.get("errors", []), "same gladiator"), "month XIII violation must be explicit")
+	_assert_true(
+		_contains(result.get("errors", []), "same gladiator"),
+		"month XIII violation must be explicit"
+	)
 
 
 func _test_unavailable_gladiator_fails_closed() -> void:
 	var builder = BuilderScript.new()
 	var people := {"a": FakePerson.new("a")}
-	var result: Dictionary = builder.build_from_sources(
-		16,
-		"player",
-		[["a"], ["missing"], ["a"]],
-		[[_opponent("x", "rival", 0)], [_opponent("y", "rival", 0)], [_opponent("z", "rival", 0)]],
-		people,
-		{},
+	var result: Dictionary = (
+		builder
+		. build_from_sources(
+			16,
+			"player",
+			[["a"], ["missing"], ["a"]],
+			[
+				[_opponent("x", "rival", 0)],
+				[_opponent("y", "rival", 0)],
+				[_opponent("z", "rival", 0)]
+			],
+			people,
+			{},
+		)
 	)
 	_assert_eq(result.get("status"), "invalid", "unavailable live fighter must fail closed")
-	_assert_true(_contains(result.get("errors", []), "unavailable gladiator missing"), "missing roster id must be reported")
+	_assert_true(
+		_contains(result.get("errors", []), "unavailable gladiator missing"),
+		"missing roster id must be reported"
+	)
 
 
 func _test_opponents_are_explicit_and_not_generated() -> void:
 	var builder = BuilderScript.new()
 	var contract: Dictionary = builder.get_contract()
 	_assert_eq(contract.get("rival_generation_allowed"), false, "builder must never invent rivals")
-	_assert_eq(contract.get("opponent_source"), "explicit_external_combat_v1_snapshots", "opponents must remain explicit")
+	_assert_eq(
+		contract.get("opponent_source"),
+		"explicit_external_combat_v1_snapshots",
+		"opponents must remain explicit"
+	)
 
 
 func _opponent(fighter_id: String, team_id: String, power: int) -> Dictionary:
