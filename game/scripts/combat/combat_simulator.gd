@@ -51,7 +51,8 @@ func resolve_intent(state: Dictionary, desired_action: Dictionary) -> Dictionary
 		"reason": PENDING_REASON,
 		"errors": [],
 		"blocking_requirement": NEXT_BLOCKER_ID,
-		"blocking_context": {
+		"blocking_context":
+		{
 			"resolved_target_context": target_inspection.duplicate(true),
 			"resolution_order_contract": _resolution_order.get_contract_status().duplicate(true),
 		},
