@@ -1,5 +1,16 @@
 extends Node
 
+const GT1RivalResultRegistryScript = preload("res://scripts/combat/gt1_rival_result_registry.gd")
+const RIVAL_IDS: Array[String] = [
+	"cassianus",
+	"flavianus",
+	"drusus",
+	"aurelius",
+	"severus",
+	"marcellus",
+	"varro",
+]
+
 
 func run() -> void:
 	_test_normal_month_schedule()
@@ -91,17 +102,14 @@ func _test_gt1_tie_requires_tiebreak() -> void:
 
 
 func _register_rivals(points: Array, wins: Array) -> void:
-	for index in range(7):
-		var registered := (
-			TournamentManager
-			. register_gt1_rival_result(
-				"rival_%d" % index,
-				"Rival %d" % index,
-				int(points[index]),
-				int(wins[index]),
-			)
+	var registry = GT1RivalResultRegistryScript.new()
+	for index in range(RIVAL_IDS.size()):
+		var result := registry.register_result(
+			RIVAL_IDS[index],
+			int(points[index]),
+			int(wins[index]),
 		)
-		assert(registered)
+		assert(result.get("status") == "registered")
 
 
 func _count_competition(schedule: Array, competition: String) -> int:
