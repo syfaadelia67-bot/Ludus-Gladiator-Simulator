@@ -290,11 +290,13 @@ func register_gt1_rival_result(
 
 
 func apply_gt1_standings_resolution(resolution: Dictionary) -> bool:
-	if gt1_player_bouts < GT1_TOTAL_BOUTS or gt1_rival_scores.size() != GT1_RIVAL_COUNT:
-		return false
-	if gt1_standings_resolved or not gt1_tiebreak_required:
-		return false
-	if str(resolution.get("status", "")) != "resolved":
+	if (
+		gt1_player_bouts < GT1_TOTAL_BOUTS
+		or gt1_rival_scores.size() != GT1_RIVAL_COUNT
+		or gt1_standings_resolved
+		or not gt1_tiebreak_required
+		or str(resolution.get("status", "")) != "resolved"
+	):
 		return false
 
 	var resolution_source := str(resolution.get("resolution_source", ""))
@@ -308,9 +310,14 @@ func apply_gt1_standings_resolution(resolution: Dictionary) -> bool:
 		return false
 
 	var placement := int(resolution.get("placement", 0))
-	if placement < 1 or placement > GT1_RIVAL_COUNT + 1:
-		return false
-	if resolution_source == "head_to_head_then_prior_season_position" and placement <= 3:
+	if (
+		placement < 1
+		or placement > GT1_RIVAL_COUNT + 1
+		or (
+			resolution_source == "head_to_head_then_prior_season_position"
+			and placement <= 3
+		)
+	):
 		return false
 
 	var expected_medal := ""
