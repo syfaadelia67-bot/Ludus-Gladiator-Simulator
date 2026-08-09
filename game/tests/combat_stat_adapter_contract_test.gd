@@ -31,12 +31,17 @@ func _assert_complete_mapping(adapter) -> void:
 	assert(stats.get("TEC") == 13, "TEC must read legacy technique")
 	assert(stats.get("RES") == 14, "RES must read explicit legacy resistance")
 	assert(stats.get("PV") == 15, "PV must read legacy health")
+	assert(not stats.has("endurance"), "Endurance must never enter canonical Combat V1 stats")
+	assert(not stats.has("intelligence"), "Intelligence must not exist in canonical Combat V1 stats")
 	assert(adapter.is_complete(adapted), "Explicit canonical sources must produce a complete view")
 	assert(source == before, "The adapter must never mutate Save v14 legacy input")
-	var unmapped: Dictionary = adapted.get("legacy_unmapped", {})
-	assert(unmapped.get("endurance") == 16, "Legacy endurance must remain visible but unmapped")
+	var separate: Dictionary = adapted.get("legacy_separate", {})
+	assert(separate == {"endurance": 16}, "Endurance must remain visible only as a legacy separate stat")
+	assert(not separate.has("intelligence"), "Intelligence must be removed from legacy separate output")
+	var compatibility: Dictionary = adapted.get("legacy_unmapped", {})
 	assert(
-		unmapped.get("intelligence") == 17, "Legacy intelligence must remain visible but unmapped"
+		compatibility == {"endurance": 16},
+		"Compatibility legacy_unmapped alias must expose only Endurance",
 	)
 
 
@@ -62,6 +67,10 @@ func _assert_resistance_is_not_invented(adapter) -> void:
 	)
 	assert(
 		not adapter.is_complete(adapted), "An unresolved RES mapping must keep the view incomplete"
+	)
+	assert(
+		adapted.get("legacy_separate", {}) == {"endurance": 99},
+		"Endurance must stay available only in the separate legacy bucket",
 	)
 
 
