@@ -36,12 +36,20 @@ func run() -> void:
 		"La señal diaria heredada debe conservarse temporalmente."
 	)
 	_assert(
-		game_state_source.contains("RivalManager.process_week()"),
-		"Rivales deben resolver una vez por mes aunque el método legado conserve su nombre."
+		game_state_source.contains("RivalManager.process_month()"),
+		"Rivales deben resolver mediante la entrada mensual canónica."
 	)
 	_assert(
-		game_state_source.contains("EconomyManager.process_week()"),
-		"Economía debe resolver una vez por mes aunque el método legado conserve su nombre."
+		not game_state_source.contains("RivalManager.process_week()"),
+		"El cierre mensual no debe entrar a Rivales por la API semanal heredada."
+	)
+	_assert(
+		game_state_source.contains("EconomyManager.process_month()"),
+		"Economía debe resolver mediante la entrada mensual canónica."
+	)
+	_assert(
+		not game_state_source.contains("EconomyManager.process_week()"),
+		"El cierre mensual no debe entrar a Economía por la API semanal heredada."
 	)
 	_assert(
 		game_state_source.contains("TournamentManager.process_month()"),
@@ -51,9 +59,15 @@ func run() -> void:
 		not game_state_source.contains("TournamentManager.process_day()"),
 		"Torneos no deben conservar una resolución diaria dentro del cierre mensual."
 	)
+	_assert(
+		game_state_source.contains("EventManager.process_month()"),
+		"Eventos deben resolver mediante la entrada mensual canónica."
+	)
+	_assert(
+		not game_state_source.contains("EventManager.process_week()"),
+		"El cierre mensual no debe entrar a Eventos por la API semanal heredada."
+	)
 
-	# Presentation is migrated in a later UI slice. It may still carry weekly
-	# labels, but it must not expose a seven-day internal simulation anymore.
 	_assert(
 		not weekly_ui_source.contains("Procesa siete días internos"),
 		"La interfaz no debe exponer una simulación diaria que ya no existe."
@@ -61,6 +75,14 @@ func run() -> void:
 	_assert(
 		weekly_ui_source.contains("Compatibility cleanup"),
 		"La normalización de logs antiguos debe permanecer explícita."
+	)
+	_assert(
+		weekly_ui_source.contains("GameState.month_advanced.connect"),
+		"La presentación funcional debe escuchar el avance mensual canónico."
+	)
+	_assert(
+		not weekly_ui_source.contains("GameState.week_advanced.connect"),
+		"La presentación funcional no debe depender del scheduler semanal heredado."
 	)
 
 	print("monthly_report_contract_test: OK")
