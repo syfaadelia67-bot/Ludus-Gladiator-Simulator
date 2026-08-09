@@ -102,9 +102,9 @@ func evaluate_current_standings(non_podium_tiebreak_data: Dictionary = {}) -> Di
 		result.get("status") == "resolved"
 		and result.get("resolution_source") == "head_to_head_then_prior_season_position"
 	):
-		result["applied_to_tournament_manager"] = (
-			TournamentManager.apply_gt1_standings_resolution(result)
-		)
+		result["applied_to_tournament_manager"] = (TournamentManager.apply_gt1_standings_resolution(
+			result
+		))
 	return result
 
 
