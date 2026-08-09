@@ -42,12 +42,16 @@ func _test_live_roster_starts_authoritative_gt1_runtime() -> void:
 	var player_fighter := _fighter_by_id(templates[0] as Dictionary, player_id)
 	assert(not player_fighter.is_empty())
 	assert(
-		(player_fighter.get("equipment", {}) as Dictionary)
-		== EquipmentManager.get_equipped_stats(person)
+		(
+			(player_fighter.get("equipment", {}) as Dictionary)
+			== EquipmentManager.get_equipped_stats(person)
+		)
 	)
 	assert(
-		int((player_fighter.get("stats", {}) as Dictionary).get("RES", -1))
-		== int(person.resistance)
+		(
+			int((player_fighter.get("stats", {}) as Dictionary).get("RES", -1))
+			== int(person.resistance)
+		)
 	)
 
 	var contract: Dictionary = runtime.get_contract()
