@@ -1,0 +1,30 @@
+[
+  {
+    "id": "cassianus",
+    "name": "Ludus Cassianus"
+  },
+  {
+    "id": "flavianus",
+    "name": "Ludus Flavianus"
+  },
+  {
+    "id": "drusus",
+    "name": "Ludus Drusus"
+  },
+  {
+    "id": "aurelius",
+    "name": "Ludus Aurelius"
+  },
+  {
+    "id": "severus",
+    "name": "Ludus Severus"
+  },
+  {
+    "id": "marcellus",
+    "name": "Ludus Marcellus"
+  },
+  {
+    "id": "varro",
+    "name": "Ludus Varro"
+  }
+]
