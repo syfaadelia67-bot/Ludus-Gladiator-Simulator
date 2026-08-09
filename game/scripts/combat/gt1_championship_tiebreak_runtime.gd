@@ -102,17 +102,10 @@ func start_from_sources(
 		"format": "1v1",
 		"fighters": [player_fighter, rival_fighter],
 	}
-	var state_errors: Array[String] = _combat_contract.validate_state(state)
-	if not state_errors.is_empty():
-		return _rejected("invalid_tiebreak_combat_state", state_errors, request)
-
-	var loop_state := _loop.start(state)
-	if loop_state.get("status") != "running":
-		return _rejected(
-			"tiebreak_combat_start_failed",
-			loop_state.get("errors", []) as Array,
-			request,
-		)
+	var loop_start := _start_validated_loop(state, request)
+	if loop_start.get("status") != "running":
+		return loop_start
+	var loop_state := loop_start.get("loop_state", {}) as Dictionary
 
 	var rival_ludus_id := str(request.get("rival_ludus_id", ""))
 	return {
@@ -205,6 +198,23 @@ func get_contract() -> Dictionary:
 		"points_awarded": 0,
 		"double_ko": "rematch_required",
 		"save_version_change_required": false,
+	}
+
+
+func _start_validated_loop(state: Dictionary, request: Dictionary) -> Dictionary:
+	var state_errors: Array[String] = _combat_contract.validate_state(state)
+	if not state_errors.is_empty():
+		return _rejected("invalid_tiebreak_combat_state", state_errors, request)
+	var loop_state := _loop.start(state)
+	if loop_state.get("status") != "running":
+		return _rejected(
+			"tiebreak_combat_start_failed",
+			loop_state.get("errors", []) as Array,
+			request,
+		)
+	return {
+		"status": "running",
+		"loop_state": loop_state.duplicate(true),
 	}
 
 
