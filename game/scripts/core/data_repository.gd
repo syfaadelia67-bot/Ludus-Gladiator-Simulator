@@ -2,6 +2,7 @@ extends Node
 
 const FrozenDataValidatorScript = preload("res://scripts/core/frozen_data_validator.gd")
 const EquipmentDataValidatorScript = preload("res://scripts/core/equipment_data_validator.gd")
+const RivalLudiDataValidatorScript = preload("res://scripts/core/rival_ludi_data_validator.gd")
 
 var traits: Array = []
 var buildings: Array = []
@@ -35,8 +36,10 @@ func load_all() -> void:
 func _validate_frozen_contracts() -> void:
 	var frozen_validator = FrozenDataValidatorScript.new()
 	var equipment_validator = EquipmentDataValidatorScript.new()
+	var rival_ludi_validator = RivalLudiDataValidatorScript.new()
 	frozen_contract_errors = frozen_validator.validate_repository(self)
 	frozen_contract_errors.append_array(equipment_validator.validate_repository(self))
+	frozen_contract_errors.append_array(rival_ludi_validator.validate_repository(self))
 	for error_message in frozen_contract_errors:
 		push_error("Frozen data contract: %s" % error_message)
 
