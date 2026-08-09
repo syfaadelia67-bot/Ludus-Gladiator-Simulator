@@ -47,8 +47,14 @@ func _test_live_autoload_roster_uses_real_equipment_snapshots() -> void:
 	if roster_manager == null or equipment_manager == null:
 		return
 
+	var original_people: Array = roster_manager.people.duplicate()
+	var original_inventory: Array = equipment_manager.inventory.duplicate(true)
+	var original_serial: int = int(equipment_manager.serial)
+	if roster_manager.get_people().is_empty():
+		roster_manager._seed_initial_roster()
+
 	var live_people: Array = roster_manager.get_people()
-	_assert_true(not live_people.is_empty(), "live RosterManager must expose a seeded real person")
+	_assert_true(not live_people.is_empty(), "real RosterManager seeding must create LudusPerson entries")
 	if live_people.is_empty():
 		return
 	var live_person = live_people[0]
@@ -58,8 +64,6 @@ func _test_live_autoload_roster_uses_real_equipment_snapshots() -> void:
 
 	var original_role := str(live_person.role)
 	var original_slots: Dictionary = live_person.get_equipped_slots()
-	var original_inventory: Array = equipment_manager.inventory.duplicate(true)
-	var original_serial: int = int(equipment_manager.serial)
 
 	live_person.role = "gladiator"
 	equipment_manager.inventory.clear()
@@ -161,6 +165,9 @@ func _test_live_autoload_roster_uses_real_equipment_snapshots() -> void:
 	for slot_id in equipment_manager.get_slot_ids():
 		live_person.set_equipped_item_id(slot_id, str(original_slots.get(slot_id, "")))
 	live_person.role = original_role
+	roster_manager.people.clear()
+	for original_person in original_people:
+		roster_manager.people.append(original_person)
 
 
 func _test_month_20_builds_real_2v2_snapshots() -> void:
