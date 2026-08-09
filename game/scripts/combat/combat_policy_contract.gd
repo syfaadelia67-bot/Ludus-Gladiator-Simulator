@@ -1,8 +1,10 @@
 extends RefCounted
 
 const CombatContractScript = preload("res://scripts/combat/combat_contract.gd")
+const CombatTargetResolverScript = preload("res://scripts/combat/combat_target_resolver.gd")
 
 var _combat_contract = CombatContractScript.new()
+var _target_resolver = CombatTargetResolverScript.new()
 
 
 func validate_desired_action(state: Dictionary, desired_action: Dictionary) -> Array[String]:
@@ -24,8 +26,35 @@ func validate_desired_action(state: Dictionary, desired_action: Dictionary) -> A
 	elif not _combat_contract.is_action_id_valid(action_id):
 		errors.append("Desired action uses unsupported action: %s" % action_id)
 
-	if not target_id.is_empty() and not _fighter_exists(state, target_id):
-		errors.append("Desired action references unknown target: %s" % target_id)
+	if not errors.is_empty():
+		return errors
+
+	var target_result: Dictionary = _target_resolver.inspect_action_targets(
+		state, actor_id, action_id
+	)
+	if target_result.get("status") != "ready":
+		errors.append(
+			"Desired action target rules are unavailable: %s" % str(target_result.get("status", ""))
+		)
+		return errors
+
+	var target_required := bool(target_result.get("target_required", false))
+	var relationship := str(target_result.get("target_relationship", ""))
+	var legal_targets := target_result.get("legal_targets", []) as Array
+	if target_required:
+		if target_id.is_empty():
+			errors.append(
+				"Desired action %s requires exactly one %s target" % [action_id, relationship]
+			)
+		elif not _fighter_exists(state, target_id):
+			errors.append("Desired action references unknown target: %s" % target_id)
+		elif not legal_targets.has(target_id):
+			errors.append(
+				"Desired action %s target %s is not a legal %s target"
+				% [action_id, target_id, relationship]
+			)
+	elif not target_id.is_empty():
+		errors.append("Desired action %s does not accept an explicit target" % action_id)
 	return errors
 
 
