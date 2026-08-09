@@ -42,7 +42,9 @@ func _initialize() -> void:
 			_assert_true(objects.get("behavior_tree") != null, "BehaviorTree must initialize")
 			_assert_true(objects.get("blackboard") != null, "Blackboard must initialize")
 			if context_value is Dictionary:
-				_test_blackboard_bridge(adapter, runtime, objects, context_value as Dictionary)
+				_test_blackboard_bridge(
+					adapter, runtime, objects, (context_value as Dictionary).duplicate(true)
+				)
 		adapter.release_runtime_objects(runtime)
 	else:
 		_assert_eq(runtime.get("status"), "unavailable", "missing extension must degrade safely")
