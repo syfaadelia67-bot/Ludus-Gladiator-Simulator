@@ -32,7 +32,10 @@ func _assert_valid_intent_stays_pending(simulator) -> void:
 	var blocking_context := result.get("blocking_context", {}) as Dictionary
 	var target_context := blocking_context.get("resolved_target_context", {}) as Dictionary
 	assert(target_context.get("status") == "ready", "D1 target context must be fully resolved")
-	assert(target_context.get("legal_targets") == ["b1"], "resolved D1 context must expose enemy target")
+	assert(
+		target_context.get("legal_targets") == ["b1"],
+		"resolved D1 context must expose enemy target"
+	)
 	assert(target_context.get("target_relationship") == "enemy")
 	var pending_requirements := result.get("pending_requirements", []) as Array
 	assert(not pending_requirements.has("target_rules"), "Frozen D1 must leave pending readiness")
@@ -51,7 +54,8 @@ func _assert_valid_intent_stays_pending(simulator) -> void:
 	)
 	(target_context.get("legal_targets", []) as Array).clear()
 	var nested_target_context := (
-		(result.get("blocking_context", {}) as Dictionary).get("resolved_target_context", {}) as Dictionary
+		(result.get("blocking_context", {}) as Dictionary).get("resolved_target_context", {})
+		as Dictionary
 	)
 	assert(
 		(nested_target_context.get("legal_targets", []) as Array).is_empty(),
