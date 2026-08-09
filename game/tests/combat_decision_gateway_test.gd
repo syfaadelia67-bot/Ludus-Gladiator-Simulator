@@ -49,7 +49,11 @@ func _test_valid_proposal_reaches_simulator_as_pending() -> void:
 	_assert_eq(target_context.get("legal_targets"), ["b"], "gateway must expose legal enemy target")
 	var order_contract := blocking_context.get("resolution_order_contract", {}) as Dictionary
 	_assert_eq(order_contract.get("status"), "frozen", "gateway must expose frozen D3 contract")
-	_assert_eq(order_contract.get("phase_order"), ["preparation", "offense"], "D3 phases must survive gateway")
+	_assert_eq(
+		order_contract.get("phase_order"),
+		["preparation", "offense"],
+		"D3 phases must survive gateway"
+	)
 	_assert_eq(
 		result.get("desired_action", {}), proposal_before, "gateway must expose validated intent"
 	)
@@ -127,12 +131,20 @@ func _test_invalid_proposal_stops_before_simulator() -> void:
 
 	_assert_eq(result.get("status"), "policy_rejected", "invalid proposal must stop at policy")
 	_assert_eq(result.get("pending"), false, "policy rejection must not be marked pending")
-	_assert_eq(result.get("desired_action", {}), {}, "invalid proposal must expose no desired action")
+	_assert_eq(
+		result.get("desired_action", {}), {}, "invalid proposal must expose no desired action"
+	)
 	_assert_eq(result.get("simulation", {}), {}, "invalid proposal must never reach simulator")
 	_assert_eq(result.get("blocking_requirement"), "", "policy rejection must expose no blocker")
-	_assert_eq(result.get("blocking_context", {}), {}, "policy rejection must expose no blocker context")
+	_assert_eq(
+		result.get("blocking_context", {}), {}, "policy rejection must expose no blocker context"
+	)
 	_assert_eq(result.get("pending_requirements", []), [], "policy rejection has no readiness")
-	_assert_eq(result.get("conditional_requirements", []), [], "policy rejection has no conditional readiness")
+	_assert_eq(
+		result.get("conditional_requirements", []),
+		[],
+		"policy rejection has no conditional readiness"
+	)
 	fixture.owner.free()
 
 
@@ -147,11 +159,17 @@ func _test_unknown_actor_stops_before_simulator() -> void:
 		fixture.owner
 	)
 
-	_assert_eq(result.get("status"), "policy_rejected", "unknown actor must stop at policy boundary")
-	_assert_eq(result.get("reason"), "invalid_actor", "gateway must preserve policy rejection reason")
+	_assert_eq(
+		result.get("status"), "policy_rejected", "unknown actor must stop at policy boundary"
+	)
+	_assert_eq(
+		result.get("reason"), "invalid_actor", "gateway must preserve policy rejection reason"
+	)
 	_assert_eq(result.get("simulation", {}), {}, "unknown actor must never reach simulator")
 	_assert_eq(result.get("blocking_requirement"), "", "unknown actor must expose no blocker")
-	_assert_eq(result.get("blocking_context", {}), {}, "unknown actor must expose no blocker context")
+	_assert_eq(
+		result.get("blocking_context", {}), {}, "unknown actor must expose no blocker context"
+	)
 	_assert_eq(result.get("pending_requirements", []), [], "unknown actor has no readiness")
 	fixture.owner.free()
 
