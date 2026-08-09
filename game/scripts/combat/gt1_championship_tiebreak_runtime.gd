@@ -5,10 +5,10 @@ const CombatContractScript = preload("res://scripts/combat/combat_contract.gd")
 const CombatRosterFighterAdapterScript = preload(
 	"res://scripts/combat/combat_roster_fighter_adapter.gd"
 )
-const GT1RivalResultRegistryScript = preload("res://scripts/combat/gt1_rival_result_registry.gd")
 const GT1RivalCombatSnapshotContractScript = preload(
 	"res://scripts/combat/gt1_rival_combat_snapshot_contract.gd"
 )
+const GT1RivalResultRegistryScript = preload("res://scripts/combat/gt1_rival_result_registry.gd")
 
 var _loop = Combat1v1LoopScript.new()
 var _combat_contract = CombatContractScript.new()
