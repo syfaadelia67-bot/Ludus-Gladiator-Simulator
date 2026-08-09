@@ -40,8 +40,8 @@ func _test_valid_proposal_reaches_simulator_as_pending() -> void:
 	)
 	_assert_eq(
 		result.get("blocking_requirement"),
-		"damage_and_mitigation",
-		"gateway must expose D4 as current required blocker after D3 freeze",
+		"accuracy_formula",
+		"gateway must expose D7 accuracy as current required blocker after D4/D6 freeze",
 	)
 	var blocking_context := result.get("blocking_context", {}) as Dictionary
 	var target_context := blocking_context.get("resolved_target_context", {}) as Dictionary
@@ -54,6 +54,10 @@ func _test_valid_proposal_reaches_simulator_as_pending() -> void:
 		["preparation", "offense"],
 		"D3 phases must survive gateway"
 	)
+	var damage_contract := blocking_context.get("damage_contract", {}) as Dictionary
+	_assert_eq(damage_contract.get("status"), "frozen", "gateway must expose frozen D4 contract")
+	var stamina_contract := blocking_context.get("stamina_contract", {}) as Dictionary
+	_assert_eq(stamina_contract.get("status"), "frozen", "gateway must expose frozen D6 contract")
 	_assert_eq(
 		result.get("desired_action", {}), proposal_before, "gateway must expose validated intent"
 	)
@@ -67,9 +71,11 @@ func _test_valid_proposal_reaches_simulator_as_pending() -> void:
 	var pending_requirements := result.get("pending_requirements", []) as Array
 	_assert_true(not pending_requirements.has("target_rules"), "gateway must remove frozen D1")
 	_assert_true(not pending_requirements.has("resolution_order"), "gateway must remove frozen D3")
+	_assert_true(not pending_requirements.has("damage_and_mitigation"), "gateway must remove frozen D4")
+	_assert_true(not pending_requirements.has("stamina_cost_table"), "gateway must remove frozen D6")
 	_assert_true(
-		pending_requirements.has("damage_and_mitigation"),
-		"gateway must surface unresolved D4 combat math"
+		pending_requirements.has("accuracy_formula"),
+		"gateway must surface unresolved D7 accuracy"
 	)
 	var conditional_requirements := result.get("conditional_requirements", []) as Array
 	_assert_true(
