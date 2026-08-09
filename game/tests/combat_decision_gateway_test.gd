@@ -59,7 +59,8 @@ func _test_valid_proposal_reaches_simulator_as_pending() -> void:
 	)
 	var pending_requirements := result.get("pending_requirements", []) as Array
 	_assert_true(
-		not pending_requirements.has("target_rules"), "gateway must remove resolved D1 from readiness"
+		not pending_requirements.has("target_rules"),
+		"gateway must remove resolved D1 from readiness"
 	)
 	_assert_true(
 		pending_requirements.has("resolution_order"), "gateway must surface unresolved D3 order"
@@ -133,7 +134,9 @@ func _test_invalid_proposal_stops_before_simulator() -> void:
 	)
 	_assert_eq(result.get("simulation", {}), {}, "invalid proposal must never reach simulator")
 	_assert_eq(result.get("blocking_requirement"), "", "policy rejection must expose no blocker")
-	_assert_eq(result.get("blocking_context", {}), {}, "policy rejection must expose no blocker context")
+	_assert_eq(
+		result.get("blocking_context", {}), {}, "policy rejection must expose no blocker context"
+	)
 	_assert_eq(result.get("pending_requirements", []), [], "policy rejection has no readiness")
 	_assert_eq(
 		result.get("conditional_requirements", []),
@@ -154,11 +157,17 @@ func _test_unknown_actor_stops_before_simulator() -> void:
 		fixture.owner
 	)
 
-	_assert_eq(result.get("status"), "policy_rejected", "unknown actor must stop at policy boundary")
-	_assert_eq(result.get("reason"), "invalid_actor", "gateway must preserve policy rejection reason")
+	_assert_eq(
+		result.get("status"), "policy_rejected", "unknown actor must stop at policy boundary"
+	)
+	_assert_eq(
+		result.get("reason"), "invalid_actor", "gateway must preserve policy rejection reason"
+	)
 	_assert_eq(result.get("simulation", {}), {}, "unknown actor must never reach simulator")
 	_assert_eq(result.get("blocking_requirement"), "", "unknown actor must expose no blocker")
-	_assert_eq(result.get("blocking_context", {}), {}, "unknown actor must expose no blocker context")
+	_assert_eq(
+		result.get("blocking_context", {}), {}, "unknown actor must expose no blocker context"
+	)
 	_assert_eq(result.get("pending_requirements", []), [], "unknown actor has no readiness")
 	fixture.owner.free()
 
