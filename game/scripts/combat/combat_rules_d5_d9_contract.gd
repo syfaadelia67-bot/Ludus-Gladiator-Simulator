@@ -1,7 +1,6 @@
 extends RefCounted
 
 const FROZEN_STATUS := "frozen"
-const PENDING_STATUS := "pending"
 
 const CONTRACT := {
 	"D5":
@@ -91,9 +90,12 @@ const CONTRACT := {
 		"maximum_health_source": "stats.PV",
 		"ko_condition": "current_pv_lte_zero",
 		"ko_authority": "combat_simulator",
+		"combat_end_condition": "team_elimination",
+		"double_ko_outcome": "double_ko",
 		"surrender_is_base_action": false,
 		"surrender_rng_allowed": false,
-		"surrender_rules_status": PENDING_STATUS,
+		"automatic_surrender": "disabled_v1",
+		"surrender_rules_status": FROZEN_STATUS,
 	},
 }
 
@@ -109,6 +111,4 @@ func get_contracts() -> Dictionary:
 
 
 func get_pending_numeric_requirements() -> Array[String]:
-	return [
-		"surrender_rules",
-	]
+	return []
