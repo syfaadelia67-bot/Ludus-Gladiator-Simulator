@@ -8,7 +8,8 @@ const LEGACY_SOURCE_FIELDS := {
 	"RES": "resistance",
 	"PV": "health",
 }
-const LEGACY_UNMAPPED_FIELDS: Array[String] = ["endurance", "intelligence"]
+const LEGACY_SEPARATE_FIELDS: Array[String] = ["endurance"]
+const REMOVED_LEGACY_FIELDS: Array[String] = ["intelligence"]
 
 
 func from_legacy(source: Dictionary) -> Dictionary:
@@ -22,15 +23,17 @@ func from_legacy(source: Dictionary) -> Dictionary:
 			stats[canonical_id] = null
 			pending.append(canonical_id)
 
-	var legacy_unmapped: Dictionary = {}
-	for legacy_field in LEGACY_UNMAPPED_FIELDS:
+	var legacy_separate: Dictionary = {}
+	for legacy_field in LEGACY_SEPARATE_FIELDS:
 		if source.has(legacy_field):
-			legacy_unmapped[legacy_field] = source[legacy_field]
+			legacy_separate[legacy_field] = source[legacy_field]
 
 	return {
 		"stats": stats,
 		"pending": pending,
-		"legacy_unmapped": legacy_unmapped,
+		"legacy_separate": legacy_separate,
+		# Compatibility alias while callers migrate to the explicit separate bucket.
+		"legacy_unmapped": legacy_separate.duplicate(true),
 	}
 
 
