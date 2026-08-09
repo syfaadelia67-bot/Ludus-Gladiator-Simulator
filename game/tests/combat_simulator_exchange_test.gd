@@ -6,7 +6,7 @@ const CombatSimulatorScript = preload("res://scripts/combat/combat_simulator.gd"
 func _ready() -> void:
 	var simulator = CombatSimulatorScript.new()
 	_assert_simulator_resolves_complete_exchange(simulator)
-	_assert_simulator_keeps_combat_completion_pending(simulator)
+	_assert_simulator_exposes_frozen_combat_end_readiness(simulator)
 	_assert_simulator_rejects_incomplete_exchange(simulator)
 	print("Combat Simulator complete exchange authority: OK")
 	get_tree().quit(0)
@@ -25,13 +25,19 @@ func _assert_simulator_resolves_complete_exchange(simulator) -> void:
 	assert(result.get("ok") == true)
 	assert((result.get("attack_results", []) as Array).size() == 1)
 	assert((result.get("frozen_requirements", []) as Array).has("complete_exchange_resolution"))
-	assert((result.get("frozen_requirements", []) as Array).has("defensive_action_effects"))
-	assert((result.get("frozen_requirements", []) as Array).has("stat_scaling_weights"))
+	assert((result.get("frozen_requirements", []) as Array).has("combat_end_rules"))
+	assert((result.get("frozen_requirements", []) as Array).has("carryover"))
+	assert(result.get("combat_completion_pending") == false)
+	assert((result.get("pending_requirements", []) as Array).is_empty())
+	assert(result.get("surrender_resolved") == true)
+	assert(result.get("surrender_occurred") == false)
+	assert(result.get("outcome") == "ongoing")
+	assert(result.get("combat_end_resolved") == false)
 	assert(state == before_state)
 	assert(intents == before_intents)
 
 
-func _assert_simulator_keeps_combat_completion_pending(simulator) -> void:
+func _assert_simulator_exposes_frozen_combat_end_readiness(simulator) -> void:
 	var result: Dictionary = (
 		simulator
 		. resolve_exchange(
@@ -43,12 +49,12 @@ func _assert_simulator_keeps_combat_completion_pending(simulator) -> void:
 		)
 	)
 	assert(result.get("status") == "resolved")
-	assert(result.get("combat_completion_pending") == true)
-	var pending := result.get("pending_requirements", []) as Array
-	assert(pending == ["surrender_rules", "carryover"])
+	assert(result.get("combat_completion_pending") == false)
+	assert((result.get("pending_requirements", []) as Array).is_empty())
 	assert((result.get("conditional_requirements", []) as Array).has("position_and_distance_model"))
-	assert(result.get("surrender_resolved") == false)
-	assert(result.get("combat_end_resolved") == false)
+	var combat_end := result.get("combat_end_result", {}) as Dictionary
+	assert(combat_end.get("status") == "resolved")
+	assert(combat_end.get("surrender_resolved") == true)
 
 
 func _assert_simulator_rejects_incomplete_exchange(simulator) -> void:
