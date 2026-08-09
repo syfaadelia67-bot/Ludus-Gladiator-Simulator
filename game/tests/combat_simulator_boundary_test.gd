@@ -23,8 +23,8 @@ func _assert_valid_intent_stays_pending(simulator) -> void:
 	assert(str(result.get("reason", "")) == simulator.PENDING_REASON)
 	assert((result.get("errors", []) as Array).is_empty())
 	assert(
-		str(result.get("blocking_requirement", "")) == "damage_and_mitigation",
-		"D4 damage/mitigation must remain the first required blocker",
+		str(result.get("blocking_requirement", "")) == "stamina_cost_table",
+		"D6 Stamina costs must become the first required blocker after frozen D4",
 	)
 	var blocking_context := result.get("blocking_context", {}) as Dictionary
 	var target_context := blocking_context.get("resolved_target_context", {}) as Dictionary
@@ -35,6 +35,10 @@ func _assert_valid_intent_stays_pending(simulator) -> void:
 	assert(order_contract.get("phase_order") == ["preparation", "offense"])
 	assert(order_contract.get("initiative_mode") == "none")
 	assert(order_contract.get("tie_break_mode") == "simultaneous")
+	var damage_contract := blocking_context.get("damage_contract", {}) as Dictionary
+	assert(damage_contract.get("status") == "frozen", "D4 contract must be exposed as frozen")
+	assert(damage_contract.get("deterministic") == true)
+	assert(damage_contract.get("armor_penetration_enabled") == false)
 	var d5_d9_contracts := blocking_context.get("d5_d9_contracts", {}) as Dictionary
 	assert((d5_d9_contracts.get("D5", {}) as Dictionary).get("status") == "frozen")
 	assert((d5_d9_contracts.get("D7", {}) as Dictionary).get("critical_hits_enabled") == false)
@@ -46,6 +50,9 @@ func _assert_valid_intent_stays_pending(simulator) -> void:
 	assert(runtime_fighter.get("current_pv") == 10.0)
 	assert(runtime_fighter.get("vulnerable") == false)
 	var frozen_requirements := result.get("frozen_requirements", []) as Array
+	assert(frozen_requirements.has("damage_and_mitigation"))
+	assert(frozen_requirements.has("armor_numeric_mitigation"))
+	assert(frozen_requirements.has("armor_penetration_disabled_v1"))
 	assert(frozen_requirements.has("armor_and_vulnerability_structure"))
 	assert(frozen_requirements.has("stamina_structure"))
 	assert(frozen_requirements.has("accuracy_and_critical_structure"))
@@ -53,11 +60,10 @@ func _assert_valid_intent_stays_pending(simulator) -> void:
 	assert(frozen_requirements.has("ko_structure"))
 	var pending_requirements := result.get("pending_requirements", []) as Array
 	assert(not pending_requirements.has("target_rules"), "Frozen D1 must leave pending readiness")
-	assert(
-		not pending_requirements.has("resolution_order"), "Frozen D3 must leave pending readiness"
-	)
-	assert(pending_requirements.has("damage_and_mitigation"))
-	assert(pending_requirements.has("armor_numeric_mitigation"))
+	assert(not pending_requirements.has("resolution_order"), "Frozen D3 must leave pending readiness")
+	assert(not pending_requirements.has("damage_and_mitigation"), "Frozen D4 must leave pending readiness")
+	assert(not pending_requirements.has("armor_numeric_mitigation"))
+	assert(not pending_requirements.has("armor_penetration"))
 	assert(pending_requirements.has("stamina_cost_table"))
 	assert(pending_requirements.has("accuracy_formula"))
 	assert(pending_requirements.has("stat_scaling_weights"))
