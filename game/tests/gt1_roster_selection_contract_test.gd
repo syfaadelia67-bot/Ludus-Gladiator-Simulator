@@ -47,11 +47,19 @@ func _test_month_20(contract) -> void:
 		"month XX must allow one unilateral substitution",
 	)
 	_assert_true(
-		not contract.validate_selection(20, [["a", "b"], ["a", "c"], ["a", "d"]], available).is_empty(),
+		not (
+			contract
+			. validate_selection(20, [["a", "b"], ["a", "c"], ["a", "d"]], available)
+			. is_empty()
+		),
 		"month XX must reject more than one substitution",
 	)
 	_assert_true(
-		not contract.validate_selection(20, [["a", "b"], ["c", "d"], ["c", "d"]], available).is_empty(),
+		not (
+			contract
+			. validate_selection(20, [["a", "b"], ["c", "d"], ["c", "d"]], available)
+			. is_empty()
+		),
 		"month XX substitution must keep exactly one fighter",
 	)
 
@@ -59,11 +67,19 @@ func _test_month_20(contract) -> void:
 func _test_unavailable_and_duplicate(contract) -> void:
 	var available: Array[String] = ["a", "b"]
 	_assert_true(
-		not contract.validate_selection(20, [["a", "a"], ["a", "b"], ["a", "b"]], available).is_empty(),
+		not (
+			contract
+			. validate_selection(20, [["a", "a"], ["a", "b"], ["a", "b"]], available)
+			. is_empty()
+		),
 		"same fighter cannot fill both 2v2 slots",
 	)
 	_assert_true(
-		not contract.validate_selection(13, [["missing"], ["missing"], ["missing"]], available).is_empty(),
+		not (
+			contract
+			. validate_selection(13, [["missing"], ["missing"], ["missing"]], available)
+			. is_empty()
+		),
 		"unavailable roster ids must be rejected",
 	)
 
