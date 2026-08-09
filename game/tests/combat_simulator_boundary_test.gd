@@ -37,7 +37,9 @@ func _assert_valid_intent_stays_pending(simulator) -> void:
 	assert(order_contract.get("tie_break_mode") == "simultaneous")
 	var pending_requirements := result.get("pending_requirements", []) as Array
 	assert(not pending_requirements.has("target_rules"), "Frozen D1 must leave pending readiness")
-	assert(not pending_requirements.has("resolution_order"), "Frozen D3 must leave pending readiness")
+	assert(
+		not pending_requirements.has("resolution_order"), "Frozen D3 must leave pending readiness"
+	)
 	assert(pending_requirements.has("damage_and_mitigation"))
 	assert(pending_requirements.has("stamina_costs"))
 	var conditional_requirements := result.get("conditional_requirements", []) as Array
