@@ -33,6 +33,7 @@ func _policy_rejected(policy_result: Dictionary) -> Dictionary:
 		"reason": str(policy_result.get("status", "policy_rejected")),
 		"blocking_requirement": "",
 		"blocking_context": {},
+		"frozen_requirements": [],
 		"pending_requirements": [],
 		"conditional_requirements": [],
 		"desired_action": {},
@@ -56,6 +57,7 @@ func _simulation_result(
 		"reason": str(simulation_result.get("reason", "")),
 		"blocking_requirement": str(simulation_result.get("blocking_requirement", "")),
 		"blocking_context": _duplicate_dictionary(simulation_result.get("blocking_context", {})),
+		"frozen_requirements": _duplicate_array(simulation_result.get("frozen_requirements", [])),
 		"pending_requirements": _duplicate_array(simulation_result.get("pending_requirements", [])),
 		"conditional_requirements":
 		_duplicate_array(simulation_result.get("conditional_requirements", [])),
