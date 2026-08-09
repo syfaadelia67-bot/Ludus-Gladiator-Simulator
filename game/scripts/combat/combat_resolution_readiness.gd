@@ -18,12 +18,12 @@ const FROZEN_REQUIREMENTS: Array[String] = [
 	"stat_scaling_weights",
 	"complete_exchange_resolution",
 	"ko_structure",
-]
-
-const REQUIRED_DECISIONS: Array[String] = [
 	"surrender_rules",
+	"combat_end_rules",
 	"carryover",
 ]
+
+const REQUIRED_DECISIONS: Array[String] = []
 
 const CONDITIONAL_DECISIONS: Array[String] = [
 	"position_and_distance_model",
@@ -44,7 +44,7 @@ func get_conditional_requirements() -> Array[String]:
 
 func get_status() -> Dictionary:
 	return {
-		"frozen": false,
+		"frozen": true,
 		"frozen_requirements": get_frozen_requirements(),
 		"pending_requirements": get_pending_requirements(),
 		"conditional_requirements": get_conditional_requirements(),
