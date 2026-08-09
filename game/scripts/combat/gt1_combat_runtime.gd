@@ -21,11 +21,14 @@ var _live_state_builder = GT1LiveRosterStateBuilderScript.new()
 func start_encounter_from_live_roster(
 	month: int, player_team_id: String, player_ids_by_bout: Array, opponent_fighters_by_bout: Array
 ) -> Dictionary:
-	var build_result: Dictionary = _live_state_builder.build_from_live_roster(
-		month,
-		player_team_id,
-		player_ids_by_bout,
-		opponent_fighters_by_bout,
+	var build_result: Dictionary = (
+		_live_state_builder
+		. build_from_live_roster(
+			month,
+			player_team_id,
+			player_ids_by_bout,
+			opponent_fighters_by_bout,
+		)
 	)
 	if build_result.get("status") != "ready":
 		return _rejected(
