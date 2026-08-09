@@ -203,10 +203,13 @@ func _append_gt1_tiebreak_status(lines: Array[String], summary: Dictionary) -> v
 	var podium_request: Dictionary = {}
 	if standings_resolution.get("status") == "podium_combat_required":
 		podium_request = _gt1_rival_result_registry.build_podium_tiebreak_request()
-	var snapshot: Dictionary = _gt1_tiebreak_presentation_snapshot.build(
-		summary,
-		standings_resolution,
-		podium_request,
+	var snapshot: Dictionary = (
+		_gt1_tiebreak_presentation_snapshot
+		. build(
+			summary,
+			standings_resolution,
+			podium_request,
+		)
 	)
 
 	match str(snapshot.get("status", "")):
@@ -215,24 +218,32 @@ func _append_gt1_tiebreak_status(lines: Array[String], summary: Dictionary) -> v
 			lines.append("[b]Desempate por el campeonato[/b]")
 			lines.append("Rival: %s" % str(snapshot.get("rival_ludus_name", "Ludus rival")))
 			lines.append(
-				"Formato: %s especial · %d PTS"
-				% [snapshot.get("format", "1v1"), int(snapshot.get("points_awarded", 0))]
+				(
+					"Formato: %s especial · %d PTS"
+					% [snapshot.get("format", "1v1"), int(snapshot.get("points_awarded", 0))]
+				)
 			)
 			lines.append("Participa un gladiador disponible por Ludus.")
 			if bool(snapshot.get("requires_external_rival_snapshot", false)):
 				lines.append(
-					"[i]Pendiente del snapshot Combat V1 explícito del rival; "
-					+ "no se generarán estadísticas rivales.[/i]"
+					(
+						"[i]Pendiente del snapshot Combat V1 explícito del rival; "
+						+ "no se generarán estadísticas rivales.[/i]"
+					)
 				)
 		"non_podium_data_required":
 			lines.append(
-				"[i]Desempate fuera del podio pendiente: faltan el resultado directo "
-				+ "y/o la posición de la temporada previa.[/i]"
+				(
+					"[i]Desempate fuera del podio pendiente: faltan el resultado directo "
+					+ "y/o la posición de la temporada previa.[/i]"
+				)
 			)
 		"pending_exact_rule":
 			lines.append(
-				"[i]Desempate de podio pendiente: esta forma de empate todavía no tiene "
-				+ "una regla exacta congelada.[/i]"
+				(
+					"[i]Desempate de podio pendiente: esta forma de empate todavía no tiene "
+					+ "una regla exacta congelada.[/i]"
+				)
 			)
 		_:
 			lines.append("[i]Desempate pendiente: la posición final todavía no está resuelta.[/i]")
