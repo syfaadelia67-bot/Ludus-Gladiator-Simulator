@@ -14,8 +14,9 @@ func _ready() -> void:
 	_assert_changed_demo_facility_contract_is_rejected(validator)
 	_assert_changed_starting_denarii_is_rejected(validator)
 	_assert_seventeenth_trait_is_rejected(validator)
+	_assert_thirteenth_skill_is_rejected(validator)
+	_assert_unfrozen_skill_mechanics_are_rejected(validator)
 	_assert_duplicate_ids_are_rejected(validator)
-	_assert_broken_references_are_rejected(validator)
 
 	print("Frozen Part 3 data validator contract: OK")
 	get_tree().quit(0)
@@ -26,8 +27,7 @@ func _snapshot() -> Dictionary:
 		"traits": DataRepository.traits.duplicate(true),
 		"buildings": DataRepository.buildings.duplicate(true),
 		"weapons": DataRepository.weapons.duplicate(true),
-		"abilities": DataRepository.abilities.duplicate(true),
-		"specializations": DataRepository.specializations.duplicate(true),
+		"skills": DataRepository.skills.duplicate(true),
 		"beasts": DataRepository.beasts.duplicate(true),
 		"economy_rules": DataRepository.economy_rules.duplicate(true),
 	}
@@ -114,15 +114,29 @@ func _assert_changed_starting_denarii_is_rejected(validator) -> void:
 	)
 
 
-func _assert_broken_references_are_rejected(validator) -> void:
+func _assert_thirteenth_skill_is_rejected(validator) -> void:
 	var snapshot := _snapshot()
-	var specializations := snapshot["specializations"] as Array
-	var broken_specialization := specializations[1] as Dictionary
-	broken_specialization["class_ability"] = "missing_ability"
+	var skills := snapshot["skills"] as Array
+	skills.append({"id": "invalid_skill_13", "name": "Invalid Skill", "category": "general"})
 	var errors: Array[String] = validator.validate_snapshot(snapshot)
 	assert(
-		_contains_error(errors, "unknown class ability"),
-		"Broken cross-catalog references must fail the frozen contract"
+		_contains_error(errors, "exactly 8 general + 4 specialized skills"),
+		"A thirteenth combat skill must fail the frozen contract"
+	)
+
+
+func _assert_unfrozen_skill_mechanics_are_rejected(validator) -> void:
+	var snapshot := _snapshot()
+	var skills := snapshot["skills"] as Array
+	for raw_entry in skills:
+		var entry := raw_entry as Dictionary
+		if str(entry.get("id", "")) == "counterattack":
+			entry["damage_multiplier"] = 1.25
+			break
+	var errors: Array[String] = validator.validate_snapshot(snapshot)
+	assert(
+		_contains_error(errors, "unfrozen mechanical field"),
+		"Part 3 must reject invented skill mechanics"
 	)
 
 
