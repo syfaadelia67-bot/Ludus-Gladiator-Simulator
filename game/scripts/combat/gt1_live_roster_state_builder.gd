@@ -168,7 +168,9 @@ func _resolve_live_sources() -> Dictionary:
 	if roster_manager == null or not roster_manager.has_method("get_gladiators"):
 		errors.append("GT I live roster builder could not resolve RosterManager.get_gladiators")
 	if equipment_manager == null or not equipment_manager.has_method("get_equipped_stats"):
-		errors.append("GT I live roster builder could not resolve EquipmentManager.get_equipped_stats")
+		errors.append(
+			"GT I live roster builder could not resolve EquipmentManager.get_equipped_stats"
+		)
 	if not errors.is_empty():
 		return {"status": "invalid", "errors": errors}
 	return {
