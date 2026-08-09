@@ -62,7 +62,9 @@ func _assert_valid_intent_requires_complete_exchange(simulator) -> void:
 	assert((d5_d9_contracts.get("D5", {}) as Dictionary).get("status") == "frozen")
 	assert((d5_d9_contracts.get("D7", {}) as Dictionary).get("accuracy_formula_status") == "frozen")
 	assert((d5_d9_contracts.get("D8", {}) as Dictionary).get("weights_status") == "frozen")
-	assert((d5_d9_contracts.get("D9", {}) as Dictionary).get("ko_condition") == "current_pv_lte_zero")
+	assert(
+		(d5_d9_contracts.get("D9", {}) as Dictionary).get("ko_condition") == "current_pv_lte_zero"
+	)
 	var runtime_preview := blocking_context.get("runtime_state_preview", {}) as Dictionary
 	var runtime_fighter := (runtime_preview.get("fighters", []) as Array)[0] as Dictionary
 	assert(runtime_fighter.get("current_pv") == 10.0)
