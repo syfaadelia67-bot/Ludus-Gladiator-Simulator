@@ -80,12 +80,15 @@ func collect(
 				)
 			var agent := ai_request.get("agent", null) as Node
 			var instance_owner := ai_request.get("instance_owner", null) as Node
-			var ai_result: Dictionary = _limboai_runner.evaluate_proposal(
-				state,
-				actor_id,
-				proposal_value as Dictionary,
-				agent,
-				instance_owner,
+			var ai_result: Dictionary = (
+				_limboai_runner
+				. evaluate_proposal(
+					state,
+					actor_id,
+					proposal_value as Dictionary,
+					agent,
+					instance_owner,
+				)
 			)
 			if ai_result.get("status") != "ready":
 				return _rejected(
@@ -149,7 +152,9 @@ func _validate_source_keys(
 	for raw_actor_id in player_intents_by_actor.keys():
 		var actor_id := str(raw_actor_id)
 		if not active_ids.has(actor_id):
-			errors.append("Player intent source references inactive or unknown fighter %s" % actor_id)
+			errors.append(
+				"Player intent source references inactive or unknown fighter %s" % actor_id
+			)
 		elif not player_ids.has(actor_id):
 			errors.append("Player intent source references non-player fighter %s" % actor_id)
 	for raw_actor_id in ai_requests_by_actor.keys():
