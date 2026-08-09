@@ -138,6 +138,7 @@ func _generate_offer(index: int) -> Dictionary:
 		"strength": rng.randi_range(3, 9),
 		"agility": rng.randi_range(3, 9),
 		"endurance": rng.randi_range(3, 9),
+		"resistance": 5,
 		"intelligence": rng.randi_range(3, 9),
 		"technique": rng.randi_range(3, 9),
 		"health": rng.randi_range(45, 65) if role == "gladiator" else rng.randi_range(40, 58),
