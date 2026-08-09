@@ -3,12 +3,16 @@ extends RefCounted
 const GT1StandingsTiebreakPolicyScript = preload(
 	"res://scripts/combat/gt1_standings_tiebreak_policy.gd"
 )
+const GT1PodiumTiebreakContractScript = preload(
+	"res://scripts/combat/gt1_podium_tiebreak_contract.gd"
+)
 
 const MAX_GT1_POINTS := 27
 const MAX_GT1_WINS := 9
 const REQUIRED_RIVAL_RESULTS := 7
 
 var _tiebreak_policy = GT1StandingsTiebreakPolicyScript.new()
+var _podium_tiebreak_contract = GT1PodiumTiebreakContractScript.new()
 
 
 func register_result(rival_id: String, points: int, wins: int) -> Dictionary:
@@ -108,6 +112,33 @@ func evaluate_current_standings(non_podium_tiebreak_data: Dictionary = {}) -> Di
 	return result
 
 
+func build_podium_tiebreak_request() -> Dictionary:
+	var standings_resolution := evaluate_current_standings()
+	var summary := TournamentManager.get_gt1_summary()
+	return _podium_tiebreak_contract.build_request(
+		standings_resolution,
+		summary.get("standings", []) as Array,
+	)
+
+
+func resolve_podium_tiebreak(
+	combat_result: Dictionary, team_to_ludus: Dictionary
+) -> Dictionary:
+	var request := build_podium_tiebreak_request()
+	if request.get("status") != "ready":
+		return request
+	var resolution: Dictionary = _podium_tiebreak_contract.resolve_combat_result(
+		request,
+		combat_result,
+		team_to_ludus,
+	)
+	if resolution.get("status") == "resolved":
+		resolution["applied_to_tournament_manager"] = (
+			TournamentManager.apply_gt1_standings_resolution(resolution)
+		)
+	return resolution
+
+
 func get_contract() -> Dictionary:
 	return {
 		"status": "frozen",
@@ -121,8 +152,12 @@ func get_contract() -> Dictionary:
 		"required_rival_results": REQUIRED_RIVAL_RESULTS,
 		"standings_resolution_policy": "gt1_standings_tiebreak_policy",
 		"podium_tie_resolution": "tournament_characteristic_combat",
+		"podium_tiebreak_contract": "gt1_podium_tiebreak_contract",
+		"exact_championship_tiebreak": "two_ludi_tied_first_at_27_points",
+		"exact_championship_format": "1v1",
+		"exact_championship_points_awarded": 0,
 		"non_podium_tie_resolution": ["head_to_head", "prior_season_position"],
-		"resolved_non_podium_tie_authority": "TournamentManager",
+		"resolved_tiebreak_authority": "TournamentManager",
 		"resolved_tiebreak_uses_existing_save_v14_fields": true,
 		"alphabetical_fallback_allowed": false,
 		"random_fallback_allowed": false,
