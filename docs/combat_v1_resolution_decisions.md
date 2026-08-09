@@ -2,86 +2,66 @@
 
 Status: **PARTIALLY FROZEN**
 
-D1 target rules and D3 exchange resolution order are frozen. D5-D9 now also have frozen structural contracts while their exact numeric/eligibility subrules remain pending.
+Frozen: D1 target rules, D3 exchange order, and D5-D9 structural contracts. Exact combat coefficients remain pending until explicitly frozen and tested.
 
 ## D5 — Armor and vulnerability
-
-Status: `FROZEN STRUCTURE / NUMERIC SUBRULES PENDING`
-
-- armor source is canonical equipment `defense`;
-- armor and RES are separate simulator inputs;
-- no body-part armor model in Combat V1;
-- vulnerability is an explicit runtime state owned by `CombatSimulator`;
-- fighters start `vulnerable = false`;
-- exact armor mitigation and penetration remain pending D4.
+- armor source: canonical equipment `defense`;
+- armor and RES remain separate;
+- no body-part armor in V1;
+- vulnerability is explicit simulator-owned runtime state;
+- initial `vulnerable = false`;
+- mitigation/penetration numbers remain pending D4.
 
 ## D6 — Stamina
-
-Status: `FROZEN STRUCTURE / NUMERIC SUBRULES PENDING`
-
-- `stamina` is canonical;
-- minimum is 0; negative Stamina invalidates CombatState;
+- canonical field: `stamina`;
+- minimum 0; negative values invalidate CombatState;
 - insufficient Stamina rejects the action;
-- legacy `energy` is not promoted;
-- exact action costs, recovery amount and recovery timing remain pending.
+- legacy `energy` is not authoritative;
+- costs/recovery amount/recovery timing remain pending.
 
 ## D7 — Accuracy and criticals
-
-Status: `FROZEN STRUCTURE / FORMULA PENDING`
-
 - no RNG for V1 hit resolution;
-- critical hits are disabled in V1;
-- `CombatSimulator` owns accuracy resolution;
+- critical hits disabled in V1;
+- accuracy owned by `CombatSimulator`;
 - deterministic accuracy formula remains pending.
 
 ## D8 — Stat roles
-
-Status: `FROZEN ROLES / WEIGHTS PENDING`
-
 - FUE -> offensive power;
 - AGI -> evasion + reposition;
 - TEC -> accuracy + parry;
 - RES -> mitigation + block;
 - PV -> maximum health;
-- legacy `endurance` cannot silently substitute for RES;
-- exact stat weights remain pending.
+- legacy `endurance` cannot silently become RES;
+- exact weights remain pending.
 
 ## D9 — KO and surrender
-
-Status: `FROZEN KO STRUCTURE / SURRENDER RULES PENDING`
-
-- runtime health field: `current_pv`;
-- maximum health source: `stats.PV`;
-- combat initializes `current_pv = stats.PV`;
-- KO occurs at `current_pv <= 0`;
-- KO authority belongs to `CombatSimulator`;
+- runtime health: `current_pv`;
+- max health: `stats.PV`;
+- runtime initializes `current_pv = stats.PV`;
+- KO at `current_pv <= 0` under `CombatSimulator` authority;
 - surrender is not a seventh base action;
-- probabilistic surrender is forbidden;
-- exact surrender eligibility/trigger rules remain pending.
+- probabilistic surrender forbidden;
+- exact surrender rules remain pending.
 
 ## Runtime support
-
 - `combat_rules_d5_d9_contract.gd` centralizes D5-D9 structure;
 - `combat_runtime_state_builder.gd` creates isolated `current_pv` and `vulnerable` fields;
 - `combat_contract.gd` rejects negative Stamina;
-- readiness distinguishes frozen structure from pending math/eligibility;
-- `CombatSimulator` and `CombatDecisionGateway` expose this separation.
+- resolution readiness separates frozen structure from pending math/eligibility;
+- simulator/gateway expose both states without inventing values.
 
 ## Remaining blockers
-
-- D2 position/distance: conditional;
-- D4 damage/mitigation math: **next required blocker**;
-- D5 armor mitigation/penetration values;
-- D6 Stamina costs/recovery;
-- D7 deterministic accuracy formula;
-- D8 exact stat weights;
-- D9 surrender rules;
-- D10 carryover.
+1. D4 damage/mitigation math — next required blocker.
+2. D5 armor numeric mitigation/penetration.
+3. D6 Stamina cost/recovery values.
+4. D7 deterministic accuracy formula.
+5. D8 exact stat weights.
+6. D9 surrender eligibility/trigger rules.
+7. D10 carryover.
+8. D2 position/distance remains conditional.
 
 ## Validation
-
-Runtime head `7c5cd9551877ac686d3defc0e05f2abfca8dbc53` passed Core **80/80**, UI/integration, GUT, Godot 4.5.2 compile/smoke, gdformat/gdlint, Gitleaks and CI Gate. Later commits to this file are documentation-only.
+Runtime head `7c5cd9551877ac686d3defc0e05f2abfca8dbc53` passed Core **80/80**, UI/integration, GUT, Godot 4.5.2 compile/smoke, gdformat/gdlint, Gitleaks and CI Gate. Later edits to this ledger are documentation-only.
 
 ## Freeze rule
-
-Legacy code, descriptions, fixtures, AI proposals and tuning experiments are never authority by themselves. Exact numerical values remain pending until explicitly frozen and contract-tested.
+Legacy code, descriptions, fixtures, AI proposals and tuning experiments never become authority automatically. Numeric values remain pending until explicitly frozen and contract-tested.
