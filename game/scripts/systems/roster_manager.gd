@@ -16,15 +16,15 @@ const JOBS := {
 }
 const JOB_DESCRIPTIONS := {
 	"idle":
-	"La asignación queda registrada. La recuperación mensual está pendiente de balance canónico.",
+	"Asignación registrada. La recuperación mensual espera balance canónico.",
 	"mining":
-	"La asignación queda registrada. La producción mensual de mineral está pendiente de balance canónico.",
+	"Asignación registrada. La producción mensual de mineral espera balance canónico.",
 	"security":
-	"La asignación queda registrada. El aporte mensual de seguridad está pendiente de balance canónico.",
+	"Asignación registrada. El aporte mensual de seguridad espera balance canónico.",
 	"espionage":
-	"La asignación queda registrada. La generación mensual de información está pendiente de balance canónico.",
+	"Asignación registrada. La información mensual espera balance canónico.",
 	"training":
-	"La asignación queda registrada. La progresión mensual y la promoción están pendientes de balance canónico."
+	"Asignación registrada. Progresión y promoción mensuales esperan balance canónico."
 }
 
 var people: Array = []
