@@ -62,17 +62,19 @@ func _refresh() -> void:
 				)
 			)
 	lines.append("")
-	(
-		lines
-		. append(
-			"[color=orange]Combat V1 con bestias permanece bloqueado hasta congelar sus stats y adapter canónicos.[/color]"
-		)
+	var combat_warning := (
+		"[color=orange]Combat V1 con bestias permanece bloqueado hasta congelar "
+		+ "sus stats y adapter canónicos.[/color]"
 	)
+	lines.append(combat_warning)
 	status.text = "\n".join(lines)
 
 
 func _beast_name(beast_id: String) -> String:
 	for raw_beast in DataRepository.beasts:
-		if raw_beast is Dictionary and str((raw_beast as Dictionary).get("id", "")) == beast_id:
+		if (
+			raw_beast is Dictionary
+			and str((raw_beast as Dictionary).get("id", "")) == beast_id
+		):
 			return str((raw_beast as Dictionary).get("name", beast_id))
 	return beast_id if not beast_id.is_empty() else "Bestia desconocida"
