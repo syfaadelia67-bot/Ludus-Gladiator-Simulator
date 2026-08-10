@@ -103,16 +103,23 @@ func _refresh_status() -> void:
 	var slots := EquipmentManager.get_equipped_slots(person)
 	var lines: Array[String] = [
 		"[b]%s[/b]" % person.display_name,
-		"FUE %d | AGI %d | TEC %d | RES %d | PV %d"
-		% [person.strength, person.agility, person.technique, person.resistance, person.health],
+		(
+			"FUE %d | AGI %d | TEC %d | RES %d | PV %d"
+			% [person.strength, person.agility, person.technique, person.resistance, person.health]
+		),
 		"",
 		"[b]EQUIPO ESTRUCTURAL[/b]",
 	]
 	for slot_id in ACTIVE_SLOTS:
 		var item_id := str(slots.get(slot_id, ""))
 		lines.append(
-			"%s: %s"
-			% [EquipmentManager.get_slot_label(slot_id), EquipmentManager.get_item_name(item_id)]
+			(
+				"%s: %s"
+				% [
+					EquipmentManager.get_slot_label(slot_id),
+					EquipmentManager.get_item_name(item_id)
+				]
+			)
 		)
 	lines.append("")
 	lines.append("Montura: Próximamente")
