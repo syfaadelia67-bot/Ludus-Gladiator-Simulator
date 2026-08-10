@@ -112,13 +112,18 @@ func _render() -> void:
 	)
 	lines.append("\n[b]PERSONAL Y ASIGNACIONES[/b]")
 	for item in summary.get("assignments", []):
-		lines.append(
-			"• %s: %s · fatiga actual %d"
-			% [
-				item.get("name", "?"),
-				item.get("job_name", "Sin tarea"),
-				int(item.get("fatigue", 0)),
-			]
+		(
+			lines
+			. append(
+				(
+					"• %s: %s · fatiga actual %d"
+					% [
+						item.get("name", "?"),
+						item.get("job_name", "Sin tarea"),
+						int(item.get("fatigue", 0)),
+					]
+				)
+			)
 		)
 
 	lines.append("\n[b]ENTRENAMIENTO[/b]")
@@ -128,18 +133,25 @@ func _render() -> void:
 		for item in summary.get("training", []):
 			if not bool(item.get("balance_ready", false)):
 				lines.append(
-					"• %s: %s · progreso y riesgo pendientes de balance mensual."
-					% [item.get("name", "?"), item.get("focus_name", "Entrenamiento")]
+					(
+						"• %s: %s · progreso y riesgo pendientes de balance mensual."
+						% [item.get("name", "?"), item.get("focus_name", "Entrenamiento")]
+					)
 				)
 				continue
-			lines.append(
-				"• %s: %s · +%d progreso · riesgo %d%%"
-				% [
-					item.get("name", "?"),
-					item.get("focus_name", "Entrenamiento"),
-					int(item.get("monthly_gain", 0)),
-					int(item.get("injury_risk", 0)),
-				]
+			(
+				lines
+				. append(
+					(
+						"• %s: %s · +%d progreso · riesgo %d%%"
+						% [
+							item.get("name", "?"),
+							item.get("focus_name", "Entrenamiento"),
+							int(item.get("monthly_gain", 0)),
+							int(item.get("injury_risk", 0)),
+						]
+					)
+				)
 			)
 
 	lines.append("\n[b]ESTADO MÉDICO[/b]")
@@ -147,25 +159,39 @@ func _render() -> void:
 		lines.append("• No hay gladiadores lesionados.")
 	else:
 		for item in summary.get("injured", []):
-			lines.append(
-				"• %s: %s · gravedad %d · %d mes(es) registrados"
-				% [
-					item.get("name", "?"),
-					item.get("injury", "Herida"),
-					int(item.get("severity", 1)),
-					int(item.get("months", 1)),
-				]
+			(
+				lines
+				. append(
+					(
+						"• %s: %s · gravedad %d · %d mes(es) registrados"
+						% [
+							item.get("name", "?"),
+							item.get("injury", "Herida"),
+							int(item.get("severity", 1)),
+							int(item.get("months", 1)),
+						]
+					)
+				)
 			)
 		lines.append("• La recuperación automática permanece pendiente de balance mensual.")
 
 	var fight: Dictionary = summary.get("fight", {})
 	lines.append("\n[b]ARENA[/b]")
-	lines.append(
-		"• %s: %s"
-		% [
-			"PENDIENTE" if bool(summary.get("fight_pending", false)) else "Completado o no requerido",
-			fight.get("name", "Combate del mes"),
-		]
+	(
+		lines
+		. append(
+			(
+				"• %s: %s"
+				% [
+					(
+						"PENDIENTE"
+						if bool(summary.get("fight_pending", false))
+						else "Completado o no requerido"
+					),
+					fight.get("name", "Combate del mes"),
+				]
+			)
+		)
 	)
 
 	lines.append("\n[b]ECONOMÍA PROYECTADA[/b]")
@@ -174,8 +200,10 @@ func _render() -> void:
 	lines.append("• Cuotas de préstamos: %d" % int(economy.get("loan_payments", 0)))
 	lines.append("• Saldo estimado: %d denarios" % int(summary.get("denarii_after", 0)))
 	lines.append(
-		"• Comida: %d consumida · %d restante"
-		% [int(summary.get("food_consumption", 0)), int(summary.get("food_after", 0))]
+		(
+			"• Comida: %d consumida · %d restante"
+			% [int(summary.get("food_consumption", 0)), int(summary.get("food_after", 0))]
+		)
 	)
 
 	var blockers: Array = summary.get("blockers", [])
