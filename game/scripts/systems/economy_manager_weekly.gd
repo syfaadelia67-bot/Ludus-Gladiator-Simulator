@@ -161,18 +161,15 @@ func get_monthly_population_snapshot() -> Dictionary:
 				slave_count += 1
 			"gladiator":
 				gladiator_count += 1
-
-	# There is no canonical owned-beast runtime state or Save-v14 field yet.
-	# The catalog in DataRepository describes possible beast identities, not player
-	# ownership, so it must never be counted as owned population.
+	var beast_count := OwnedBeastRegistry.get_owned_count()
 	return {
 		"slave_count": slave_count,
 		"gladiator_count": gladiator_count,
-		"beast_count": 0,
+		"beast_count": beast_count,
 		"slave_count_source": "RosterManager.people",
 		"gladiator_count_source": "RosterManager.people",
-		"beast_count_source": "unavailable_no_owned_beast_runtime",
-		"beast_count_source_ready": false,
+		"beast_count_source": "OwnedBeastRegistry.owned_beast_ids",
+		"beast_count_source_ready": true,
 	}
 
 
