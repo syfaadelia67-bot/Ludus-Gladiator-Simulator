@@ -17,10 +17,24 @@ func run() -> void:
 		"Debe emitir un informe mensual de rivalidad."
 	)
 	_assert(
-		rival_source.contains('result["month"]'), "Las operaciones deben registrar el mes canónico."
+		rival_source.contains('"month": month'),
+		"Las operaciones bloqueadas deben registrar el mes canónico."
 	)
 	_assert(
-		rival_source.contains('event["month"]'), "Las represalias deben registrar el mes canónico."
+		rival_source.contains('"legacy_balance_quarantined": true'),
+		"Las operaciones legacy deben quedar explícitamente en cuarentena."
+	)
+	_assert(
+		rival_source.contains('"gt1_mutation_allowed": false'),
+		"La gestión rival no puede mutar GT I."
+	)
+	_assert(
+		not rival_source.contains("super.run_operation"),
+		"El runtime mensual no debe ejecutar costes/riesgos legacy."
+	)
+	_assert(
+		not rival_source.contains("super.process_day()"),
+		"El cierre mensual no debe ejecutar la represalia diaria legacy."
 	)
 	_assert(
 		(
