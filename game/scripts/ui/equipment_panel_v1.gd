@@ -62,8 +62,8 @@ func _refresh() -> void:
 	gladiator_ids.clear()
 	for person in RosterManager.get_gladiators():
 		gladiator_ids.append(str(person.id))
-		var availability := (
-			"Disponible" if person.is_available_for_combat() else person.get_injury_summary()
+		var availability: String = (
+			"Disponible" if person.is_available_for_combat() else str(person.get_injury_summary())
 		)
 		gladiator_selector.add_item("%s — %s" % [person.display_name, availability])
 	if gladiator_ids.is_empty():
