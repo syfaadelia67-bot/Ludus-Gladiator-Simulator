@@ -11,7 +11,8 @@ const PENDING_AUTHORITY_BOUNDARIES := {
 	"Legacy cadence is quarantined; market rotation and refresh await monthly balance.",
 	"monthly_roster_work_recovery":
 	"Monthly authority is canonical; work, training, fatigue and recovery balance remain pending.",
-	"equipment_catalog_and_forge_balance": (
+	"equipment_catalog_and_forge_balance":
+	(
 		"Six-slot inventory, equip and Save v14 authority are canonical; final catalog breadth, "
 		+ "crafting costs, quality and Combat V1 item power/defense remain pending."
 	),
