@@ -1,5 +1,8 @@
 extends HSplitContainer
 
+var selected_person_id := ""
+var job_ids: Array[String] = []
+
 @onready var back_to_finca: Button = $Left/Header/BackToFinca
 @onready var roster_list: ItemList = $Left/RosterList
 @onready var details: RichTextLabel = $Left/Details
@@ -7,9 +10,6 @@ extends HSplitContainer
 @onready var assign_button: Button = $Left/JobRow/AssignJob
 @onready var open_dossier_button: Button = $Left/OpenDossier
 @onready var activity_log: RichTextLabel = $Log
-
-var selected_person_id := ""
-var job_ids: Array[String] = []
 
 
 func _ready() -> void:
