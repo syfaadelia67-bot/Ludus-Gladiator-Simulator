@@ -95,8 +95,14 @@ func _refresh_inventory() -> void:
 		if not owner.is_empty():
 			equipped_text = " · equipado por %s" % owner
 		lines.append(
-			"• %s · %s%s"
-			% [item.get("name", "Objeto"), EquipmentManager.get_slot_label(slot_id), equipped_text]
+			(
+				"• %s · %s%s"
+				% [
+					item.get("name", "Objeto"),
+					EquipmentManager.get_slot_label(slot_id),
+					equipped_text
+				]
+			)
 		)
 	inventory.text = "\n".join(lines)
 
