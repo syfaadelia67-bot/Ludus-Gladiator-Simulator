@@ -11,9 +11,7 @@ func _ready() -> void:
 	var mastery := FileAccess.get_file_as_string(
 		"res://scripts/systems/specialization_mastery_controller.gd"
 	)
-	var dossier := FileAccess.get_file_as_string(
-		"res://scripts/ui/gladiator_dossier_presenter.gd"
-	)
+	var dossier := FileAccess.get_file_as_string("res://scripts/ui/gladiator_dossier_presenter.gd")
 	var project := FileAccess.get_file_as_string("res://project.godot")
 
 	assert(hud_bootstrap.contains("FincaHubController.prepare_scene()"))
@@ -48,9 +46,7 @@ func _ready() -> void:
 	assert(dossier.contains("RETRATO PENDIENTE"))
 	assert(dossier.contains("SpecializationMasteryController.get_progress"))
 
-	assert(
-		project.contains('AllTabsUIBootstrap="*res://scripts/ui/main_ui_bootstrap.gd"')
-	)
+	assert(project.contains('AllTabsUIBootstrap="*res://scripts/ui/main_ui_bootstrap.gd"'))
 	assert(not project.contains("all_tabs_ui_bootstrap.gd"))
 	assert(project.contains("SpecializationMasteryController="))
 	assert(project.contains("GladiatorDossierPresenter="))
