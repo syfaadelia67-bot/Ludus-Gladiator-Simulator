@@ -11,8 +11,8 @@ func _initialize() -> void:
 
 	assert(project.contains("window/size/viewport_width=1920"))
 	assert(project.contains("window/size/viewport_height=1080"))
-	assert(project.contains("window/stretch/mode=\"canvas_items\""))
-	assert(project.contains("window/stretch/aspect=\"expand\""))
+	assert(project.contains('window/stretch/mode="canvas_items"'))
+	assert(project.contains('window/stretch/aspect="expand"'))
 
 	for required_node in [
 		"RosterPanel",
@@ -32,7 +32,12 @@ func _initialize() -> void:
 		"CombatLog",
 		"BackToFinca",
 	]:
-		assert(scene.contains('name="%s"' % required_node) or scene.contains('name = "%s"' % required_node))
+		assert(
+			(
+				scene.contains('name="%s"' % required_node)
+				or scene.contains('name = "%s"' % required_node)
+			)
+		)
 
 	assert(scene.contains('[node name="Body" type="HBoxContainer"'))
 	assert(not scene.contains("HSplitContainer"))
