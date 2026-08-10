@@ -21,7 +21,10 @@ const PENDING_AUTHORITY_BOUNDARIES := {
 	"monthly_planning_turn_closure":
 	"Planning is month-native; non-GT activity blockers are not fully frozen yet.",
 	"playable_combat_v1_ui":
-	"Combat V1 has runtime contracts but no complete player-facing placeholder combat flow yet.",
+	(
+		"Combat V1 placeholder UI is canonical; month-specific GT I roster, opponent and policy "
+		+ "host wiring remains pending for Months XIII, XVI and XX."
+	),
 	"gt1_rival_results_provider":
 	"GT I rival standings still require explicit external results without a campaign-owned provider.",
 	"months_without_gt1_loop":
