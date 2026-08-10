@@ -149,26 +149,28 @@ func _building_effect_text(data: Dictionary) -> String:
 		return "Sin efecto durante la demo."
 	var building_id := str(data.get("id", ""))
 	var level := int(data.get("level", 0))
+	var effect_text := "Efecto reservado para una actualización posterior."
 	match building_id:
 		"dominus_house":
-			return "Centro administrativo y acceso a la campaña."
+			effect_text = "Centro administrativo y acceso a la campaña."
 		"barracks":
-			return "Capacidad estructural de personal %s." % RosterManager.get_capacity_summary()
+			effect_text = (
+				"Capacidad estructural de personal %s." % RosterManager.get_capacity_summary()
+			)
 		"training_yard":
-			return "Planificación disponible; ganancia, fatiga y riesgo mensual pendientes."
+			effect_text = "Planificación disponible; ganancia, fatiga y riesgo mensual pendientes."
 		"forge":
-			return "Nivel estructural de Forja %d; desbloqueos según catálogo vigente." % level
+			effect_text = "Nivel estructural de Forja %d; desbloqueos según catálogo vigente." % level
 		"infirmary":
-			return "Consulta y prioridad médica disponibles; recuperación y costos pendientes."
+			effect_text = "Consulta y prioridad médica disponibles; recuperación y costos pendientes."
 		"mine":
-			return "Asignación disponible; producción y costo de mejora mensual pendientes."
+			effect_text = "Asignación disponible; producción y costo de mejora mensual pendientes."
 		"beast_area":
-			return (
+			effect_text = (
 				"Registro de propiedad disponible · %d bestia(s); capacidad y combate pendientes."
 				% OwnedBeastRegistry.get_owned_count()
 			)
-		_:
-			return "Efecto reservado para una actualización posterior."
+	return effect_text
 
 
 func _entry_button_text(building_id: String) -> String:
