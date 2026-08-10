@@ -12,78 +12,6 @@ const ACTION_LABELS := {
 	"reposition": "Reposicionarse",
 }
 
-@onready var center_scroll: ScrollContainer = $Body/CenterPanel/Margin/Scroll
-@onready var back_button: Button = $Body/CenterPanel/Margin/Scroll/Content/TopBar/BackToFinca
-@onready var event_header: Label = $Body/CenterPanel/Margin/Scroll/Content/TopBar/WeekEvent
-@onready
-var event_conditions: RichTextLabel = $Body/CenterPanel/Margin/Scroll/Content/EventBanner/Margin/Row/EventConditions
-@onready var roster_count: Label = $Body/RosterPanel/Margin/Scroll/Content/Header/Count
-@onready var roster_list: ItemList = $Body/RosterPanel/Margin/Scroll/Content/RosterList
-@onready var fighter_info: RichTextLabel = $Body/RosterPanel/Margin/Scroll/Content/FighterInfo
-@onready var manage_button: Button = $Body/RosterPanel/Margin/Scroll/Content/ManageGladiators
-
-@onready
-var preparation_view: VBoxContainer = $Body/CenterPanel/Margin/Scroll/Content/PreparationView
-@onready var result_view: VBoxContainer = $Body/CenterPanel/Margin/Scroll/Content/ResultView
-@onready
-var player_name: Label = $Body/CenterPanel/Margin/Scroll/Content/PreparationView/ArenaVisual/Margin/VisualContent/Battlefield/PlayerName
-@onready
-var player_health: ProgressBar = $Body/CenterPanel/Margin/Scroll/Content/PreparationView/ArenaVisual/Margin/VisualContent/Battlefield/PlayerHealth
-@onready
-var player_stamina: ProgressBar = $Body/CenterPanel/Margin/Scroll/Content/PreparationView/ArenaVisual/Margin/VisualContent/Battlefield/PlayerEnergy
-@onready
-var enemy_name: Label = $Body/CenterPanel/Margin/Scroll/Content/PreparationView/ArenaVisual/Margin/VisualContent/Battlefield/EnemyName
-@onready
-var enemy_health: ProgressBar = $Body/CenterPanel/Margin/Scroll/Content/PreparationView/ArenaVisual/Margin/VisualContent/Battlefield/EnemyHealth
-@onready
-var enemy_stamina: ProgressBar = $Body/CenterPanel/Margin/Scroll/Content/PreparationView/ArenaVisual/Margin/VisualContent/Battlefield/EnemyEnergy
-@onready
-var action_text: Label = $Body/CenterPanel/Margin/Scroll/Content/PreparationView/ArenaVisual/Margin/VisualContent/Battlefield/ActionText
-@onready
-var selected_prep: RichTextLabel = $Body/CenterPanel/Margin/Scroll/Content/PreparationView/Preparation/Margin/Content/SelectedPrep
-@onready
-var action_selector: OptionButton = $Body/CenterPanel/Margin/Scroll/Content/PreparationView/Preparation/Margin/Content/Options/TacticSelector
-@onready
-var target_selector: OptionButton = $Body/CenterPanel/Margin/Scroll/Content/PreparationView/Preparation/Margin/Content/Options/EnergySelector
-@onready
-var legacy_surrender_selector: OptionButton = $Body/CenterPanel/Margin/Scroll/Content/PreparationView/Preparation/Margin/Content/Options/SurrenderSelector
-@onready
-var legacy_finisher_toggle: CheckButton = $Body/CenterPanel/Margin/Scroll/Content/PreparationView/Preparation/Margin/Content/Options/FinisherToggle
-@onready
-var plan_summary: RichTextLabel = $Body/CenterPanel/Margin/Scroll/Content/PreparationView/Preparation/Margin/Content/PlanSummary
-@onready
-var edit_plan_button: Button = $Body/CenterPanel/Margin/Scroll/Content/PreparationView/ActionRow/EditPlan
-@onready
-var equipment_button: Button = $Body/CenterPanel/Margin/Scroll/Content/PreparationView/ActionRow/Equipment
-@onready
-var start_button: Button = $Body/CenterPanel/Margin/Scroll/Content/PreparationView/ActionRow/StartCombat
-@onready
-var view_result_button: Button = $Body/CenterPanel/Margin/Scroll/Content/PreparationView/ActionRow/ViewResult
-
-@onready
-var back_to_preparation_button: Button = $Body/CenterPanel/Margin/Scroll/Content/ResultView/ResultHeader/BackToPreparation
-@onready
-var result_summary: RichTextLabel = $Body/CenterPanel/Margin/Scroll/Content/ResultView/ResultSummary
-@onready
-var replay_button: Button = $Body/CenterPanel/Margin/Scroll/Content/ResultView/ReplayControls/Replay
-@onready
-var pause_button: Button = $Body/CenterPanel/Margin/Scroll/Content/ResultView/ReplayControls/Pause
-@onready
-var step_button: Button = $Body/CenterPanel/Margin/Scroll/Content/ResultView/ReplayControls/Step
-@onready
-var skip_button: Button = $Body/CenterPanel/Margin/Scroll/Content/ResultView/ReplayControls/Skip
-@onready
-var speed_selector: OptionButton = $Body/CenterPanel/Margin/Scroll/Content/ResultView/ReplayControls/Speed
-@onready var combat_log: RichTextLabel = $Body/CenterPanel/Margin/Scroll/Content/ResultView/CombatLog
-
-@onready var opponent_info: RichTextLabel = $Body/EncounterPanel/Margin/Scroll/Content/OpponentInfo
-@onready
-var difficulty: RichTextLabel = $Body/EncounterPanel/Margin/Scroll/Content/DifficultyRow/Difficulty
-@onready var rewards: RichTextLabel = $Body/EncounterPanel/Margin/Scroll/Content/RewardsRow/Rewards
-@onready var entry_info: RichTextLabel = $Body/EncounterPanel/Margin/Scroll/Content/EntryRow/Entry
-@onready
-var combat_conditions: RichTextLabel = $Body/EncounterPanel/Margin/Scroll/Content/ConditionsRow/CombatConditions
-
 var _arena_runtime = CombatV1ArenaRuntimeScript.new()
 var _stat_adapter = CombatStatAdapterScript.new()
 var _session: Dictionary = {}
@@ -93,6 +21,71 @@ var _action_ids: Array[String] = []
 var _target_ids: Array[String] = []
 var _selected_fighter_id := ""
 var _ai_request_provider: Callable = Callable()
+
+@onready var center_scroll: ScrollContainer = $Body/CenterPanel/Margin/Scroll
+@onready var center_content: Control = center_scroll.get_node("Content")
+@onready var roster_content: Control = $Body/RosterPanel/Margin/Scroll/Content
+@onready var encounter_content: Control = $Body/EncounterPanel/Margin/Scroll/Content
+
+@onready var back_button: Button = center_content.get_node("TopBar/BackToFinca")
+@onready var event_header: Label = center_content.get_node("TopBar/WeekEvent")
+@onready var event_conditions: RichTextLabel = center_content.get_node(
+	"EventBanner/Margin/Row/EventConditions"
+)
+@onready var roster_count: Label = roster_content.get_node("Header/Count")
+@onready var roster_list: ItemList = roster_content.get_node("RosterList")
+@onready var fighter_info: RichTextLabel = roster_content.get_node("FighterInfo")
+@onready var manage_button: Button = roster_content.get_node("ManageGladiators")
+
+@onready var preparation_view: VBoxContainer = center_content.get_node("PreparationView")
+@onready var battlefield: Control = preparation_view.get_node(
+	"ArenaVisual/Margin/VisualContent/Battlefield"
+)
+@onready var preparation_content: Control = preparation_view.get_node("Preparation/Margin/Content")
+@onready var action_row: Control = preparation_view.get_node("ActionRow")
+@onready var result_view: VBoxContainer = center_content.get_node("ResultView")
+@onready var replay_controls: Control = result_view.get_node("ReplayControls")
+
+@onready var player_name: Label = battlefield.get_node("PlayerName")
+@onready var player_health: ProgressBar = battlefield.get_node("PlayerHealth")
+@onready var player_stamina: ProgressBar = battlefield.get_node("PlayerEnergy")
+@onready var enemy_name: Label = battlefield.get_node("EnemyName")
+@onready var enemy_health: ProgressBar = battlefield.get_node("EnemyHealth")
+@onready var enemy_stamina: ProgressBar = battlefield.get_node("EnemyEnergy")
+@onready var action_text: Label = battlefield.get_node("ActionText")
+@onready var selected_prep: RichTextLabel = preparation_content.get_node("SelectedPrep")
+@onready var action_selector: OptionButton = preparation_content.get_node("Options/TacticSelector")
+@onready var target_selector: OptionButton = preparation_content.get_node("Options/EnergySelector")
+@onready var legacy_surrender_selector: OptionButton = preparation_content.get_node(
+	"Options/SurrenderSelector"
+)
+@onready var legacy_finisher_toggle: CheckButton = preparation_content.get_node(
+	"Options/FinisherToggle"
+)
+@onready var plan_summary: RichTextLabel = preparation_content.get_node("PlanSummary")
+@onready var edit_plan_button: Button = action_row.get_node("EditPlan")
+@onready var equipment_button: Button = action_row.get_node("Equipment")
+@onready var start_button: Button = action_row.get_node("StartCombat")
+@onready var view_result_button: Button = action_row.get_node("ViewResult")
+
+@onready var back_to_preparation_button: Button = result_view.get_node(
+	"ResultHeader/BackToPreparation"
+)
+@onready var result_summary: RichTextLabel = result_view.get_node("ResultSummary")
+@onready var replay_button: Button = replay_controls.get_node("Replay")
+@onready var pause_button: Button = replay_controls.get_node("Pause")
+@onready var step_button: Button = replay_controls.get_node("Step")
+@onready var skip_button: Button = replay_controls.get_node("Skip")
+@onready var speed_selector: OptionButton = replay_controls.get_node("Speed")
+@onready var combat_log: RichTextLabel = result_view.get_node("CombatLog")
+
+@onready var opponent_info: RichTextLabel = encounter_content.get_node("OpponentInfo")
+@onready var difficulty: RichTextLabel = encounter_content.get_node("DifficultyRow/Difficulty")
+@onready var rewards: RichTextLabel = encounter_content.get_node("RewardsRow/Rewards")
+@onready var entry_info: RichTextLabel = encounter_content.get_node("EntryRow/Entry")
+@onready var combat_conditions: RichTextLabel = encounter_content.get_node(
+	"ConditionsRow/CombatConditions"
+)
 
 
 func _ready() -> void:
@@ -415,12 +408,19 @@ func _clear_stage() -> void:
 func _refresh_encounter_panel() -> void:
 	var encounter := TournamentManager.get_gt1_encounter(GameState.get_month())
 	if encounter.is_empty():
-		opponent_info.text = "[b]SIN ENCUENTRO GT I ESTE MES[/b]\nNo se genera un rival de forma automática."
-		combat_conditions.text = "[b]AUTORIDAD[/b]\nCombatSimulator resuelve combate; TournamentManager registra puntos."
+		opponent_info.text = (
+			"[b]SIN ENCUENTRO GT I ESTE MES[/b]\n"
+			+ "No se genera un rival de forma automática."
+		)
+		combat_conditions.text = (
+			"[b]AUTORIDAD[/b]\n"
+			+ "CombatSimulator resuelve combate; TournamentManager registra puntos."
+		)
 	else:
 		opponent_info.text = (
 			"[b]RIVAL COMBAT V1[/b]\n"
-			+ "Debe llegar como snapshot canónico explícito. La Arena no genera ni elige rivales."
+			+ "Debe llegar como snapshot canónico explícito. "
+			+ "La Arena no genera ni elige rivales."
 		)
 		combat_conditions.text = (
 			"[b]FORMATO %s[/b]\n%s"
@@ -430,7 +430,10 @@ func _refresh_encounter_panel() -> void:
 			]
 		)
 	difficulty.text = "[b]DIFICULTAD[/b]\nNo calculada por la UI."
-	rewards.text = "[b]PUNTUACIÓN[/b]\n3 puntos por victoria GT I. Sin premios económicos inventados."
+	rewards.text = (
+		"[b]PUNTUACIÓN[/b]\n"
+		+ "3 puntos por victoria GT I. Sin premios económicos inventados."
+	)
 	entry_info.text = "[b]ENTRADA[/b]\nSin coste automático definido por esta pantalla."
 
 
@@ -539,9 +542,13 @@ func _render_error(result: Dictionary) -> void:
 	if errors.is_empty():
 		errors.append(str(result.get("reason", "Operación rechazada por contrato Combat V1")))
 	result_summary.text = (
-		"[color=orange][b]COMBAT V1 RECHAZÓ LA OPERACIÓN[/b][/color]\n%s" % "\n".join(errors)
+		"[color=orange][b]COMBAT V1 RECHAZÓ LA OPERACIÓN[/b][/color]\n%s"
+		% "\n".join(errors)
 	)
-	combat_log.text = "[b]Sin mutación de combate[/b]\nLa operación falló antes de resolver el intercambio."
+	combat_log.text = (
+		"[b]Sin mutación de combate[/b]\n"
+		+ "La operación falló antes de resolver el intercambio."
+	)
 	view_result_button.disabled = false
 	_show_result_view()
 
