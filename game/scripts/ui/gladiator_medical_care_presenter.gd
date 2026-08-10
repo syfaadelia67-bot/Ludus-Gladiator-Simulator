@@ -109,9 +109,12 @@ func _render(person_id: String) -> void:
 	status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	if person.injury_days <= 0:
 		status.text = (
-			"Enfermería nivel %d · No requiere tratamiento. "
-			+ "Las cicatrices permanentes no se eliminan con atención común."
-		) % infirmary_level
+			(
+				"Enfermería nivel %d · No requiere tratamiento. "
+				+ "Las cicatrices permanentes no se eliminan con atención común."
+			)
+			% infirmary_level
+		)
 		section.add_child(status)
 		_finish_render(person_id)
 		return
@@ -140,8 +143,9 @@ func _render(person_id: String) -> void:
 	var priority_label := Label.new()
 	priority_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	var priority_id := GladiatorMedicalCareController.get_priority_person_id()
-	priority_label.text = "Prioridad registrada: %s" % (
-		_person_name(priority_id) if not priority_id.is_empty() else "Ninguna"
+	priority_label.text = (
+		"Prioridad registrada: %s"
+		% (_person_name(priority_id) if not priority_id.is_empty() else "Ninguna")
 	)
 	priority_row.add_child(priority_label)
 
@@ -154,9 +158,7 @@ func _render(person_id: String) -> void:
 	priority_button.disabled = (
 		GladiatorMedicalCareController.is_priority(person_id) or CampaignManager.campaign_over
 	)
-	priority_button.tooltip_text = (
-		"La prioridad puede registrarse, pero no reduce recuperación hasta congelar el balance mensual."
-	)
+	priority_button.tooltip_text = ("La prioridad puede registrarse, pero no reduce recuperación hasta congelar el balance mensual.")
 	priority_button.pressed.connect(_set_priority.bind(person_id))
 	priority_row.add_child(priority_button)
 
@@ -172,10 +174,13 @@ func _render(person_id: String) -> void:
 		var description := Label.new()
 		description.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		description.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-		description.text = "%s · efecto y costo pendientes\n%s" % [
-			treatment.get("name", treatment_id),
-			treatment.get("description", ""),
-		]
+		description.text = (
+			"%s · efecto y costo pendientes\n%s"
+			% [
+				treatment.get("name", treatment_id),
+				treatment.get("description", ""),
+			]
+		)
 		row.add_child(description)
 
 		var button := Button.new()
@@ -187,9 +192,10 @@ func _render(person_id: String) -> void:
 	var history := GladiatorMedicalCareController.get_treatment_history(person_id)
 	if not history.is_empty():
 		var history_label := Label.new()
-		history_label.text = "Tratamientos legacy registrados: %d · último en mes %d" % [
-			history.size(), int(history[0].get("month", history[0].get("week", 1)))
-		]
+		history_label.text = (
+			"Tratamientos legacy registrados: %d · último en mes %d"
+			% [history.size(), int(history[0].get("month", history[0].get("week", 1)))]
+		)
 		section.add_child(history_label)
 
 	if not feedback_text.is_empty():
@@ -223,14 +229,17 @@ func _build_signature(person_id: String) -> String:
 	var person = RosterManager.get_person(person_id)
 	if person == null:
 		return ""
-	return "%d|%d|%d|%d|%s|%d" % [
-		person.injury_days,
-		person.injury_severity,
-		EstateManager.get_level("infirmary"),
-		GameState.denarii,
-		GladiatorMedicalCareController.get_priority_person_id(),
-		GladiatorMedicalCareController.get_treatment_history(person_id).size(),
-	]
+	return (
+		"%d|%d|%d|%d|%s|%d"
+		% [
+			person.injury_days,
+			person.injury_severity,
+			EstateManager.get_level("infirmary"),
+			GameState.denarii,
+			GladiatorMedicalCareController.get_priority_person_id(),
+			GladiatorMedicalCareController.get_treatment_history(person_id).size(),
+		]
+	)
 
 
 func _person_name(person_id: String) -> String:
