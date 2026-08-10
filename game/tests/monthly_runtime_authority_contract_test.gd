@@ -6,6 +6,7 @@ func _ready() -> void:
 	_assert_monthly_consumers()
 	_assert_legacy_entrypoints_are_adapters()
 	_assert_social_autoloads_use_monthly_wrappers()
+	_assert_roster_training_recovery_authority()
 	print("Monthly runtime authority contract: OK")
 	get_tree().quit(0)
 
@@ -76,6 +77,8 @@ func _assert_legacy_entrypoints_are_adapters() -> void:
 
 	assert(roster.contains("func process_day()"))
 	assert(roster.contains("return process_month()"))
+	assert(roster.contains("var last_processed_month: int = 0"))
+	assert(roster.contains('cached["duplicate_call_ignored"] = true'))
 	assert(rivals.contains("func process_week()"))
 	assert(rivals.contains("func process_day()"))
 	assert(rivals.count("return process_month()") >= 2)
@@ -103,3 +106,32 @@ func _assert_social_autoloads_use_monthly_wrappers() -> void:
 			'RelationshipManager="*res://scripts/systems/relationship_manager_monthly.gd"'
 		)
 	)
+
+
+func _assert_roster_training_recovery_authority() -> void:
+	var policy := FileAccess.get_file_as_string(
+		"res://scripts/systems/monthly_roster_work_policy.gd"
+	)
+	var person := FileAccess.get_file_as_string("res://scripts/entities/person.gd")
+	var training := FileAccess.get_file_as_string(
+		"res://scripts/systems/gladiator_training_controller.gd"
+	)
+	var injury := FileAccess.get_file_as_string(
+		"res://scripts/systems/gladiator_injury_controller.gd"
+	)
+
+	assert(policy.contains("WORK_OUTPUTS_ENABLED := false"))
+	assert(policy.contains("TRAINING_PROGRESS_ENABLED := false"))
+	assert(policy.contains("FATIGUE_MUTATION_ENABLED := false"))
+	assert(policy.contains("INJURY_AUTO_RECOVERY_ENABLED := false"))
+	assert(not person.contains("fatigue += 8"))
+	assert(not person.contains("fatigue += 7"))
+	assert(not person.contains("training += gained"))
+	assert(not person.contains("injury_days = maxi(0, injury_days -"))
+	assert(not training.contains("GameState.week_advanced.connect"))
+	assert(not training.contains("GameState.month_advanced.connect"))
+	assert(not training.contains("_calculate_gain"))
+	assert(not training.contains("_injury_risk"))
+	assert(injury.contains("GameState.month_advanced.connect"))
+	assert(not injury.contains("GameState.week_advanced.connect"))
+	assert(not injury.contains("CombatManager.combat_finished.connect"))
