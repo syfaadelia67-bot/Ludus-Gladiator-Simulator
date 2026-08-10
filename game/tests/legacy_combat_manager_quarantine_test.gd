@@ -37,15 +37,35 @@ func _test_project_autoload_uses_quarantine_facade() -> void:
 func _test_quarantine_contract_blocks_legacy_authority() -> void:
 	var manager := QuarantineManager.new()
 	var contract := manager.get_quarantine_contract()
-	_assert_eq(contract.get("legacy_runtime_authority"), false, "legacy runtime authority must be false")
-	_assert_eq(contract.get("combat_v1_authority"), "CombatSimulator", "CombatSimulator must remain authority")
-	_assert_eq(contract.get("legacy_scheduling_enabled"), false, "legacy scheduling must be disabled")
-	_assert_eq(contract.get("legacy_ability_mechanics_enabled"), false, "legacy abilities must be disabled")
-	_assert_eq(contract.get("legacy_beast_combat_enabled"), false, "legacy beast combat must be disabled")
+	_assert_eq(
+		contract.get("legacy_runtime_authority"), false, "legacy runtime authority must be false"
+	)
+	_assert_eq(
+		contract.get("combat_v1_authority"),
+		"CombatSimulator",
+		"CombatSimulator must remain authority"
+	)
+	_assert_eq(
+		contract.get("legacy_scheduling_enabled"), false, "legacy scheduling must be disabled"
+	)
+	_assert_eq(
+		contract.get("legacy_ability_mechanics_enabled"), false, "legacy abilities must be disabled"
+	)
+	_assert_eq(
+		contract.get("legacy_beast_combat_enabled"), false, "legacy beast combat must be disabled"
+	)
 	_assert_eq(contract.get("legacy_rewards_enabled"), false, "legacy rewards must be disabled")
 	_assert_eq(contract.get("legacy_injuries_enabled"), false, "legacy injuries must be disabled")
-	_assert_eq(contract.get("legacy_fatigue_mutation_enabled"), false, "legacy fatigue mutation must be disabled")
-	_assert_eq(contract.get("save_v14_compatibility_state_preserved"), true, "v14 compatibility state must survive")
+	_assert_eq(
+		contract.get("legacy_fatigue_mutation_enabled"),
+		false,
+		"legacy fatigue mutation must be disabled"
+	)
+	_assert_eq(
+		contract.get("save_v14_compatibility_state_preserved"),
+		true,
+		"v14 compatibility state must survive"
+	)
 	manager.free()
 
 
@@ -56,10 +76,21 @@ func _test_legacy_simulation_fails_closed() -> void:
 	manager.next_battle_config = {"legacy": true}
 	var result := manager.simulate_duel("fighter", "balanced")
 	_assert_true(result.is_empty(), "legacy simulate_duel must never produce a playable result")
-	_assert_eq(manager.last_combat_day, 9, "failed legacy simulation must not mutate combat timestamp")
-	_assert_eq(manager.last_result, {"legacy": true}, "failed legacy simulation must not mutate persisted result")
-	_assert_true(manager.get_ability_ids().is_empty(), "legacy abilities must not be exposed by active manager")
-	_assert_true(manager.get_tactic_ids().is_empty(), "legacy tactics must not be exposed by active manager")
+	_assert_eq(
+		manager.last_combat_day, 9, "failed legacy simulation must not mutate combat timestamp"
+	)
+	_assert_eq(
+		manager.last_result,
+		{"legacy": true},
+		"failed legacy simulation must not mutate persisted result"
+	)
+	_assert_true(
+		manager.get_ability_ids().is_empty(),
+		"legacy abilities must not be exposed by active manager"
+	)
+	_assert_true(
+		manager.get_tactic_ids().is_empty(), "legacy tactics must not be exposed by active manager"
+	)
 	manager.free()
 
 
