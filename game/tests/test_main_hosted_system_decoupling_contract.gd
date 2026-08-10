@@ -4,9 +4,7 @@ extends Node
 func run() -> void:
 	var scene := FileAccess.get_file_as_string("res://scenes/Main.tscn")
 	var hud := FileAccess.get_file_as_string("res://scripts/ui/unified_hud_shell.gd")
-	var closure := FileAccess.get_file_as_string(
-		"res://scripts/ui/weekly_closure_presenter.gd"
-	)
+	var closure := FileAccess.get_file_as_string("res://scripts/ui/weekly_closure_presenter.gd")
 	var menu := FileAccess.get_file_as_string("res://scripts/ui/main_menu_return_controller.gd")
 
 	assert(not FileAccess.file_exists("res://scripts/ui/main.gd"))
