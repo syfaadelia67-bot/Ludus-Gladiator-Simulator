@@ -54,6 +54,7 @@ func _build_payload() -> Dictionary:
 	# Save v14 accepts additive dictionaries. Beast ownership stores identity only;
 	# Combat V1 beast stats remain separately blocked until they are frozen.
 	payload["owned_beasts"] = OwnedBeastRegistry.export_state()
+	_inject_monthly_market_state(payload)
 	return payload
 
 
@@ -72,6 +73,19 @@ func _inject_canonical_resistance(payload: Dictionary) -> void:
 	payload["roster"] = roster_data
 
 
+func _inject_monthly_market_state(payload: Dictionary) -> void:
+	var market_data := payload.get("market", {}) as Dictionary
+	var rotation_month := MarketManager.last_market_rotation_month
+	market_data["last_market_rotation_month"] = rotation_month
+	market_data["last_auto_refresh_month"] = rotation_month
+	# Save-v14 compatibility alias only.
+	market_data["last_auto_refresh_week"] = rotation_month
+	market_data["monthly_policy_status"] = str(
+		MarketManager.get_market_rotation_policy().get("status", "")
+	)
+	payload["market"] = market_data
+
+
 func _apply_payload(data: Dictionary) -> bool:
 	if not super._apply_payload(data):
 		return false
@@ -79,6 +93,19 @@ func _apply_payload(data: Dictionary) -> bool:
 	var game_data: Dictionary = data.get("game_state", {})
 	GameState.day = maxi(
 		1, int(game_data.get("month", game_data.get("week", game_data.get("day", 1))))
+	)
+	var market_data: Dictionary = data.get("market", {})
+	MarketManager.last_market_rotation_month = maxi(
+		1,
+		int(
+			market_data.get(
+				"last_market_rotation_month",
+				market_data.get(
+					"last_auto_refresh_month",
+					market_data.get("last_auto_refresh_week", GameState.get_month())
+				),
+			)
+		),
 	)
 	var owned_beast_data: Variant = data.get("owned_beasts", {})
 	OwnedBeastRegistry.import_state(owned_beast_data if owned_beast_data is Dictionary else {})
