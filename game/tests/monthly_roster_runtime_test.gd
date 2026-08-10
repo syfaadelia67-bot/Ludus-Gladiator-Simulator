@@ -21,52 +21,64 @@ func _ready() -> void:
 	RosterManager.intelligence_points = 0
 	RosterManager.reset_monthly_runtime_state()
 
-	var miner = PERSON_SCRIPT.new(
-		{
-			"id": "monthly_miner",
-			"name": "Miner",
-			"role": "slave",
-			"job": "mining",
-			"strength": 9,
-			"endurance": 9,
-			"fatigue": 41,
-			"traits": [],
-		}
+	var miner = (
+		PERSON_SCRIPT
+		. new(
+			{
+				"id": "monthly_miner",
+				"name": "Miner",
+				"role": "slave",
+				"job": "mining",
+				"strength": 9,
+				"endurance": 9,
+				"fatigue": 41,
+				"traits": [],
+			}
+		)
 	)
-	var trainee = PERSON_SCRIPT.new(
-		{
-			"id": "monthly_trainee",
-			"name": "Trainee",
-			"role": "slave",
-			"job": "training",
-			"training": 99,
-			"fatigue": 50,
-			"traits": [],
-		}
+	var trainee = (
+		PERSON_SCRIPT
+		. new(
+			{
+				"id": "monthly_trainee",
+				"name": "Trainee",
+				"role": "slave",
+				"job": "training",
+				"training": 99,
+				"fatigue": 50,
+				"traits": [],
+			}
+		)
 	)
-	var fighter = PERSON_SCRIPT.new(
-		{
-			"id": "monthly_fighter",
-			"name": "Fighter",
-			"role": "gladiator",
-			"job": "training",
-			"training": 20,
-			"fatigue": 100,
-			"traits": [],
-		}
+	var fighter = (
+		PERSON_SCRIPT
+		. new(
+			{
+				"id": "monthly_fighter",
+				"name": "Fighter",
+				"role": "gladiator",
+				"job": "training",
+				"training": 20,
+				"fatigue": 100,
+				"traits": [],
+			}
+		)
 	)
-	var injured = PERSON_SCRIPT.new(
-		{
-			"id": "monthly_injured",
-			"name": "Injured",
-			"role": "gladiator",
-			"job": "training",
-			"fatigue": 70,
-			"injury_name": "Herida de prueba",
-			"injury_severity": 2,
-			"injury_days": 3,
-			"traits": [],
-		}
+	var injured = (
+		PERSON_SCRIPT
+		. new(
+			{
+				"id": "monthly_injured",
+				"name": "Injured",
+				"role": "gladiator",
+				"job": "training",
+				"fatigue": 70,
+				"injury_name": "Herida de prueba",
+				"injury_severity": 2,
+				"injury_days": 3,
+				"traits": [],
+			}
+		)
 	)
 	RosterManager.people.assign([miner, trainee, fighter, injured])
 
