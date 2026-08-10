@@ -28,24 +28,33 @@ func evaluate(
 	var event_pending := not pending_event.is_empty()
 
 	if campaign_over:
-		blocker_details.append(
-			_blocker(
-				BLOCKER_CAMPAIGN_OVER,
-				"La campaña terminó. La partida permanece disponible en modo de consulta.",
+		(
+			blocker_details
+			. append(
+				_blocker(
+					BLOCKER_CAMPAIGN_OVER,
+					"La campaña terminó. La partida permanece disponible en modo de consulta.",
+				)
 			)
 		)
 	if event_pending:
-		blocker_details.append(
-			_blocker(
-				BLOCKER_EVENT_PENDING,
-				"Hay un evento mensual pendiente de resolución.",
+		(
+			blocker_details
+			. append(
+				_blocker(
+					BLOCKER_EVENT_PENDING,
+					"Hay un evento mensual pendiente de resolución.",
+				)
 			)
 		)
 	if bool(fight.get("pending", false)):
-		blocker_details.append(
-			_blocker(
-				BLOCKER_GT1_INCOMPLETE,
-				"El encuentro del Gran Torneo de este mes todavía no fue completado.",
+		(
+			blocker_details
+			. append(
+				_blocker(
+					BLOCKER_GT1_INCOMPLETE,
+					"El encuentro del Gran Torneo de este mes todavía no fue completado.",
+				)
 			)
 		)
 
@@ -71,7 +80,8 @@ func get_contract() -> Dictionary:
 	return {
 		"status": "frozen",
 		"period": "month",
-		"canonical_blocker_codes": [
+		"canonical_blocker_codes":
+		[
 			BLOCKER_CAMPAIGN_OVER,
 			BLOCKER_EVENT_PENDING,
 			BLOCKER_GT1_INCOMPLETE,
