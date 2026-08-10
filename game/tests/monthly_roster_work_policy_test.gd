@@ -1,15 +1,12 @@
 extends Node
 
-const MONTHLY_ROSTER_WORK_POLICY = preload(
-	"res://scripts/systems/monthly_roster_work_policy.gd"
-)
+const MONTHLY_ROSTER_WORK_POLICY = preload("res://scripts/systems/monthly_roster_work_policy.gd")
 
 
 func _ready() -> void:
 	var contract := MONTHLY_ROSTER_WORK_POLICY.get_contract()
 	assert(
-		contract.get("status")
-		== "pending_frozen_monthly_work_training_fatigue_recovery_balance"
+		contract.get("status") == "pending_frozen_monthly_work_training_fatigue_recovery_balance"
 	)
 	assert(contract.get("work_outputs_enabled") == false)
 	assert(contract.get("training_progress_enabled") == false)
