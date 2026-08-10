@@ -98,12 +98,15 @@ func _apply_payload(data: Dictionary) -> bool:
 	MarketManager.last_market_rotation_month = maxi(
 		1,
 		int(
-			market_data.get(
-				"last_market_rotation_month",
-				market_data.get(
-					"last_auto_refresh_month",
-					market_data.get("last_auto_refresh_week", GameState.get_month())
-				),
+			(
+				market_data
+				. get(
+					"last_market_rotation_month",
+					market_data.get(
+						"last_auto_refresh_month",
+						market_data.get("last_auto_refresh_week", GameState.get_month())
+					),
+				)
 			)
 		),
 	)
