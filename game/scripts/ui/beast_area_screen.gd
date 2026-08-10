@@ -35,13 +35,17 @@ func _refresh() -> void:
 	lines.append("")
 	if level <= 0:
 		lines.append(
-			"La instalación todavía está en nivel 0. El registro de propiedad se conserva, "
-			+ "pero no se aplica una capacidad numérica no congelada."
+			(
+				"La instalación todavía está en nivel 0. El registro de propiedad se conserva, "
+				+ "pero no se aplica una capacidad numérica no congelada."
+			)
 		)
 	else:
 		lines.append(
-			"La instalación está construida. El alojamiento existe como estructura, pero la "
-			+ "capacidad por nivel sigue pendiente de balance."
+			(
+				"La instalación está construida. El alojamiento existe como estructura, pero la "
+				+ "capacidad por nivel sigue pendiente de balance."
+			)
 		)
 	lines.append("")
 	lines.append("[b]BESTIAS PROPIEDAD DEL LUDUS[/b]")
@@ -52,12 +56,17 @@ func _refresh() -> void:
 		for entry in owned:
 			var beast_id := str(entry.get("beast_id", ""))
 			lines.append(
-				"• %s · instancia %s"
-				% [_beast_name(beast_id), str(entry.get("instance_id", "sin_id"))]
+				(
+					"• %s · instancia %s"
+					% [_beast_name(beast_id), str(entry.get("instance_id", "sin_id"))]
+				)
 			)
 	lines.append("")
-	lines.append(
-		"[color=orange]Combat V1 con bestias permanece bloqueado hasta congelar sus stats y adapter canónicos.[/color]"
+	(
+		lines
+		. append(
+			"[color=orange]Combat V1 con bestias permanece bloqueado hasta congelar sus stats y adapter canónicos.[/color]"
+		)
 	)
 	status.text = "\n".join(lines)
 
