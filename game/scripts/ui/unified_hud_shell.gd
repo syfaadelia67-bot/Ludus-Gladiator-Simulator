@@ -25,6 +25,9 @@ const MORE_SYSTEMS := [
 	{"id": "historial", "label": "Historial"}
 ]
 
+var primary_buttons: Dictionary = {}
+var more_ids: Array[String] = []
+
 @onready var resource_summary: Label = $TopHUD/Margin/Row/Resources
 @onready var section_label: Label = $TopHUD/Margin/Row/Section
 # Node/variable names remain for scene compatibility; displayed semantics are monthly.
@@ -37,9 +40,6 @@ const MORE_SYSTEMS := [
 @onready var social_alert: Label = $BottomStatusBar/Margin/Row/Social
 @onready var event_alert: Label = $BottomStatusBar/Margin/Row/Event
 @onready var combat_alert: Label = $BottomStatusBar/Margin/Row/Combat
-
-var primary_buttons: Dictionary = {}
-var more_ids: Array[String] = []
 
 
 func _ready() -> void:
