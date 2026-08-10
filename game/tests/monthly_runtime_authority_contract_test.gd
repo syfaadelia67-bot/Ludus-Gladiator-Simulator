@@ -82,6 +82,8 @@ func _assert_legacy_entrypoints_are_adapters() -> void:
 	assert(rivals.contains("func process_week()"))
 	assert(rivals.contains("func process_day()"))
 	assert(rivals.count("return process_month()") >= 2)
+	assert(not rivals.contains("super.process_day()"))
+	assert(not rivals.contains("super.run_operation"))
 	assert(economy.contains("func process_week()"))
 	assert(economy.contains("func process_day()"))
 	assert(economy.count("return process_month()") >= 2)
@@ -92,6 +94,7 @@ func _assert_legacy_entrypoints_are_adapters() -> void:
 	assert(events.contains("func process_week()"))
 	assert(events.contains("func process_day()"))
 	assert(events.count("return process_month()") >= 2)
+	assert(not events.contains("super.process_week()"))
 
 
 func _assert_social_autoloads_use_monthly_wrappers() -> void:
