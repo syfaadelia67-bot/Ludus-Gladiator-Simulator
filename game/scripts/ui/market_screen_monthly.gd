@@ -42,7 +42,10 @@ func _open_fighters() -> void:
 	equipment_view.visible = false
 	equipment_view.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	section_title.text = "MERCADO DE LUCHADORES"
-	feedback.text = ("Las ofertas canónicas permanecen hasta que se congele la cadencia mensual del mercado.")
+	feedback.text = (
+		"Las ofertas canónicas permanecen hasta que se congele "
+		+ "la cadencia mensual del mercado."
+	)
 	_refresh_fighter_offers()
 
 
