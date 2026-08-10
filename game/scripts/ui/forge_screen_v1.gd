@@ -1,12 +1,12 @@
 extends HSplitContainer
 
+var selected_recipe_id := ""
+
 @onready var back_to_finca: Button = $ForgePanel/Header/BackToFinca
 @onready var recipe_list: ItemList = $RecipeList
 @onready var recipe_details: RichTextLabel = $ForgePanel/RecipeDetails
 @onready var craft_button: Button = $ForgePanel/CraftItem
 @onready var inventory: RichTextLabel = $ForgePanel/Inventory
-
-var selected_recipe_id := ""
 
 
 func _ready() -> void:
