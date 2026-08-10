@@ -8,6 +8,7 @@ const GT1CombatPresentationSnapshotScript = preload(
 )
 const GT1CombatRuntimeScript = preload("res://scripts/combat/gt1_combat_runtime.gd")
 const GT1Month13HostScript = preload("res://scripts/combat/gt1_month_13_host.gd")
+const GT1Month16HostScript = preload("res://scripts/combat/gt1_month_16_host.gd")
 
 var _action_catalog = CombatActionCatalogScript.new()
 var _policy_contract = CombatPolicyContractScript.new()
@@ -15,6 +16,7 @@ var _intent_bridge = GT1CombatIntentBridgeScript.new()
 var _presentation = GT1CombatPresentationSnapshotScript.new()
 var _runtime = GT1CombatRuntimeScript.new()
 var _month_13_host = GT1Month13HostScript.new()
+var _month_16_host = GT1Month16HostScript.new()
 
 
 func start_gt1_session(
@@ -41,6 +43,24 @@ func prepare_month_13_request(
 	player_gladiator_id: String, player_team_id: String, opponent_fighters: Array
 ) -> Dictionary:
 	return _month_13_host.prepare_request(player_gladiator_id, player_team_id, opponent_fighters)
+
+
+func start_month_16_human_session(
+	player_gladiator_ids: Array, player_team_id: String, opponent_fighters: Array
+) -> Dictionary:
+	return _month_16_host.start_human(player_gladiator_ids, player_team_id, opponent_fighters)
+
+
+func prepare_month_16_human_request(
+	player_gladiator_ids: Array, player_team_id: String, opponent_fighters: Array
+) -> Dictionary:
+	return _month_16_host.prepare_human_request(
+		player_gladiator_ids, player_team_id, opponent_fighters
+	)
+
+
+func get_month_16_beast_readiness() -> Dictionary:
+	return _month_16_host.get_beast_readiness()
 
 
 func advance_exchange(
@@ -169,6 +189,7 @@ func get_contract() -> Dictionary:
 		"intent_authority": "gt1_combat_intent_bridge",
 		"presentation_authority": "gt1_combat_presentation_snapshot",
 		"month_13_host": "gt1_month_13_host",
+		"month_16_host": "gt1_month_16_host",
 		"combat_authority": "combat_simulator",
 		"scoring_authority": "tournament_manager",
 		"opponent_selection_authority": "external_explicit_snapshots",
