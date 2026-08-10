@@ -2,13 +2,46 @@ extends "res://scripts/systems/campaign_manager.gd"
 
 signal objective_failed(objective: Dictionary)
 
+const MonthlyNonGTActivityPolicyScript = preload(
+	"res://scripts/systems/monthly_non_gt_activity_policy.gd"
+)
+
 var failed_objectives: Array[String] = []
+var _non_gt_activity_policy = MonthlyNonGTActivityPolicyScript.new()
+
+
+func _ready() -> void:
+	GameState.month_advanced.connect(_on_month_advanced)
+	if TournamentManager.has_signal("grand_tournament_changed"):
+		TournamentManager.connect(
+			"grand_tournament_changed", Callable(self, "_on_grand_tournament_changed")
+		)
+	_sync_approved_combat_progress()
+	evaluate_progress()
+
+
+func _on_grand_tournament_changed(_summary: Dictionary) -> void:
+	_sync_approved_combat_progress()
+	evaluate_progress()
+	_evaluate_campaign_finale()
+
+
+func evaluate_progress() -> void:
+	if campaign_over:
+		return
+	_sync_approved_combat_progress()
+	_evaluate_chapter()
+	_evaluate_rank()
+	_evaluate_objectives()
+	campaign_changed.emit()
 
 
 func _evaluate_objectives() -> void:
 	_mark_expired_objectives()
 	for objective in OBJECTIVES:
 		var objective_id := str(objective.get("id", ""))
+		if _non_gt_activity_policy.is_objective_design_blocked(objective_id):
+			continue
 		if completed_objectives.has(objective_id) or failed_objectives.has(objective_id):
 			continue
 		if GameState.get_month() > _deadline_for_objective(objective):
@@ -31,11 +64,18 @@ func get_objectives(chapter_id: String = "") -> Array:
 		var data: Dictionary = objective.duplicate(true)
 		var objective_id := str(objective.get("id", ""))
 		var deadline := _deadline_for_objective(objective)
+		var design_blocked := _non_gt_activity_policy.is_objective_design_blocked(objective_id)
 		data["progress"] = _objective_progress(objective)
 		data["completed"] = completed_objectives.has(objective_id)
+		data["design_blocked"] = design_blocked
+		data["available"] = not design_blocked
+		data["blocked_reason"] = _non_gt_activity_policy.get_objective_block_reason(objective_id)
 		data["failed"] = (
-			failed_objectives.has(objective_id)
-			or (GameState.get_month() > deadline and not bool(data["completed"]))
+			not design_blocked
+			and (
+				failed_objectives.has(objective_id)
+				or (GameState.get_month() > deadline and not bool(data["completed"]))
+			)
 		)
 		data["deadline_month"] = deadline
 		data["months_remaining"] = maxi(0, deadline - GameState.get_month() + 1)
@@ -44,6 +84,21 @@ func get_objectives(chapter_id: String = "") -> Array:
 		data["weeks_remaining"] = data["months_remaining"]
 		result.append(data)
 	return result
+
+
+func get_current_rank() -> Dictionary:
+	return _decorate_rank(super.get_current_rank())
+
+
+func get_next_rank() -> Dictionary:
+	return _decorate_rank(super.get_next_rank())
+
+
+func get_summary() -> Dictionary:
+	var data := super.get_summary()
+	data["approved_combat_progress_source"] = "gt1_combat_v1"
+	data["non_gt_activity"] = _non_gt_activity_policy.evaluate_month(GameState.get_month())
+	return data
 
 
 func export_state() -> Dictionary:
@@ -63,6 +118,7 @@ func import_state(data: Dictionary) -> void:
 			and not failed_objectives.has(objective_id)
 		):
 			failed_objectives.append(objective_id)
+	_sync_approved_combat_progress()
 	_mark_expired_objectives()
 	campaign_changed.emit()
 
@@ -70,6 +126,8 @@ func import_state(data: Dictionary) -> void:
 func _mark_expired_objectives() -> void:
 	for objective in OBJECTIVES:
 		var objective_id := str(objective.get("id", ""))
+		if _non_gt_activity_policy.is_objective_design_blocked(objective_id):
+			continue
 		if completed_objectives.has(objective_id) or failed_objectives.has(objective_id):
 			continue
 		if GameState.get_month() > _deadline_for_objective(objective):
@@ -82,6 +140,7 @@ func _fail_objective(objective: Dictionary) -> void:
 		objective_id.is_empty()
 		or completed_objectives.has(objective_id)
 		or failed_objectives.has(objective_id)
+		or _non_gt_activity_policy.is_objective_design_blocked(objective_id)
 	):
 		return
 	failed_objectives.append(objective_id)
@@ -105,3 +164,21 @@ func _objective_exists(objective_id: String) -> bool:
 		if str(objective.get("id", "")) == objective_id:
 			return true
 	return false
+
+
+func _sync_approved_combat_progress() -> void:
+	var summary: Dictionary = TournamentManager.get_gt1_summary()
+	var approved_bouts := clampi(int(summary.get("player_bouts", 0)), 0, 9)
+	var approved_wins := clampi(int(summary.get("player_wins", 0)), 0, approved_bouts)
+	total_wins = approved_wins
+	total_losses = approved_bouts - approved_wins
+
+
+func _decorate_rank(rank: Dictionary) -> Dictionary:
+	if rank.is_empty():
+		return {}
+	var data := rank.duplicate(true)
+	data["combat_progress_source"] = "gt1_combat_v1"
+	data["legacy_arena_unlock_active"] = false
+	data["unlock_status"] = "design_pending_non_gt_arena"
+	return data
