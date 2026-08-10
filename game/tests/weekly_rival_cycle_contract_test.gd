@@ -25,9 +25,11 @@ func run() -> void:
 		"Las represalias deben registrar el mes canónico."
 	)
 	_assert(
-		rival_source.contains("func process_week()")
-		and rival_source.contains("func process_day()")
-		and rival_source.count("return process_month()") >= 2,
+		(
+			rival_source.contains("func process_week()")
+			and rival_source.contains("func process_day()")
+			and rival_source.count("return process_month()") >= 2
+		),
 		"Las APIs week/day deben conservarse solo como aliases mensuales."
 	)
 	_assert(
@@ -43,7 +45,9 @@ func run() -> void:
 		"GameState no debe usar la API diaria rival."
 	)
 	_assert(
-		project_source.contains('RivalManager="*res://scripts/systems/rival_manager_weekly.gd"'),
+		project_source.contains(
+			'RivalManager="*res://scripts/systems/rival_manager_weekly.gd"'
+		),
 		"La ruta legacy del manager rival debe permanecer estable por compatibilidad."
 	)
 
