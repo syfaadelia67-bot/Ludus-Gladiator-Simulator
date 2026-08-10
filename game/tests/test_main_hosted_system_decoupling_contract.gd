@@ -22,9 +22,7 @@ func run() -> void:
 	assert(hud.contains("RosterManager.get_capacity_summary()"))
 	assert(hud.contains("@onready var advance_week_button"))
 
-	assert(
-		closure.contains('const BUTTON_PATH := "UnifiedHudShell/TopHUD/Margin/Row/AdvanceWeek"')
-	)
+	assert(closure.contains('const BUTTON_PATH := "UnifiedHudShell/TopHUD/Margin/Row/AdvanceWeek"'))
 	assert(closure.contains("advance_button.pressed.connect(open_summary)"))
 	assert(closure.contains("GameState.advance_month()"))
 	assert(not closure.contains("GameState.advance_week()"))
