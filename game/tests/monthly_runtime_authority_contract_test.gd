@@ -5,6 +5,7 @@ func _ready() -> void:
 	_assert_monthly_scheduler_authority()
 	_assert_monthly_consumers()
 	_assert_monthly_turn_closure_authority()
+	_assert_non_gt_tournament_authority()
 	_assert_legacy_entrypoints_are_adapters()
 	_assert_social_autoloads_use_monthly_wrappers()
 	_assert_roster_training_recovery_authority()
@@ -93,12 +94,34 @@ func _assert_monthly_turn_closure_authority() -> void:
 	assert(not planning.contains("blockers.append("))
 
 
+func _assert_non_gt_tournament_authority() -> void:
+	var project := FileAccess.get_file_as_string("res://project.godot")
+	var tournaments := FileAccess.get_file_as_string(
+		"res://scripts/systems/tournament_manager_demo_monthly.gd"
+	)
+	var campaign := FileAccess.get_file_as_string(
+		"res://scripts/systems/campaign_manager_demo.gd"
+	)
+	assert(
+		project.contains(
+			'TournamentManager="*res://scripts/systems/tournament_manager_demo_monthly.gd"'
+		)
+	)
+	assert(tournaments.contains("_build_canonical_month_schedule"))
+	assert(tournaments.contains("return []"))
+	assert(tournaments.contains("return [_build_gt1_event(month)]"))
+	assert(not tournaments.contains("_build_underworld_event(month)"))
+	assert(not tournaments.contains("_build_minor_event(month"))
+	assert(not campaign.contains("CombatManager.combat_finished.connect"))
+	assert(campaign.contains("_sync_approved_combat_progress"))
+
+
 func _assert_legacy_entrypoints_are_adapters() -> void:
 	var roster := FileAccess.get_file_as_string("res://scripts/systems/roster_manager.gd")
 	var rivals := FileAccess.get_file_as_string("res://scripts/systems/rival_manager_weekly.gd")
 	var economy := FileAccess.get_file_as_string("res://scripts/systems/economy_manager_weekly.gd")
 	var tournaments := FileAccess.get_file_as_string(
-		"res://scripts/systems/tournament_manager_weekly.gd"
+		"res://scripts/systems/tournament_manager_demo_monthly.gd"
 	)
 	var events := FileAccess.get_file_as_string("res://scripts/systems/event_manager_demo.gd")
 
