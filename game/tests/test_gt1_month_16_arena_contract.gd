@@ -28,6 +28,7 @@ func _run() -> void:
 	assert(host.contains('"carryover": []'))
 	assert(host.contains('"beasts_allowed_by_design": true'))
 	assert(host.contains("gt1_beast_readiness_contract"))
+	assert(host.contains('"human_selection_remains_available": true'))
 	assert(host.contains('"invent_beast_stats_allowed": false'))
 	assert(host.contains('"max_points": 9'))
 	assert(host.contains('"rival_generation_allowed": false'))
@@ -39,7 +40,7 @@ func _run() -> void:
 	assert(arena_runtime.contains("get_month_16_beast_readiness"))
 	assert(arena_runtime.contains('"month_16_host": "gt1_month_16_host"'))
 
-	assert(combat_runtime.contains('if month in [13, 20]:'))
+	assert(combat_runtime.contains("if month in [13, 20]:"))
 	assert(combat_runtime.contains('"month_16"'))
 	assert(combat_runtime.contains('"carryover": []'))
 	assert(roster_contract.contains("month_16_current_selection"))
