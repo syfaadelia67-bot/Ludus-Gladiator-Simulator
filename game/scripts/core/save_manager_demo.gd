@@ -51,6 +51,9 @@ func _build_payload() -> Dictionary:
 	payload["game_state"] = game_data
 	_inject_canonical_resistance(payload)
 	payload["unique_gladiators"] = UniqueGladiatorManager.export_state()
+	# Save v14 accepts additive dictionaries. Beast ownership stores identity only;
+	# Combat V1 beast stats remain separately blocked until they are frozen.
+	payload["owned_beasts"] = OwnedBeastRegistry.export_state()
 	return payload
 
 
@@ -77,6 +80,8 @@ func _apply_payload(data: Dictionary) -> bool:
 	GameState.day = maxi(
 		1, int(game_data.get("month", game_data.get("week", game_data.get("day", 1))))
 	)
+	var owned_beast_data: Variant = data.get("owned_beasts", {})
+	OwnedBeastRegistry.import_state(owned_beast_data if owned_beast_data is Dictionary else {})
 
 	var unique_data: Variant = data.get("unique_gladiators", null)
 	if unique_data is Dictionary and not unique_data.is_empty():
