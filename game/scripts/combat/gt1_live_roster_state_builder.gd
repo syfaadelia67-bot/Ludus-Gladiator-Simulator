@@ -37,7 +37,7 @@ func build_from_live_roster(
 			continue
 		var person_id := str(person.id)
 		people_by_id[person_id] = person
-		var equipped_stats = equipment_manager.call("get_equipped_stats", person)
+		var equipped_stats = equipment_manager.call("get_combat_v1_equipped_stats", person)
 		if not equipped_stats is Dictionary:
 			return _invalid(
 				["GT I equipment source returned invalid stats for gladiator %s" % person_id]
@@ -143,7 +143,9 @@ func get_contract() -> Dictionary:
 	return {
 		"status": "frozen",
 		"player_source": "RosterManager.get_gladiators",
-		"equipment_source": "EquipmentManager.get_equipped_stats",
+		"equipment_source": "EquipmentManager.get_combat_v1_equipped_stats",
+		"equipment_balance_status": "pending_frozen_equipment_catalog",
+		"legacy_item_power_defense_allowed": false,
 		"fighter_adapter": "CombatRosterFighterAdapter.build_from_person",
 		"opponent_source": "explicit_external_combat_v1_snapshots",
 		"rival_generation_allowed": false,
@@ -167,9 +169,12 @@ func _resolve_live_sources() -> Dictionary:
 	var errors: Array[String] = []
 	if roster_manager == null or not roster_manager.has_method("get_gladiators"):
 		errors.append("GT I live roster builder could not resolve RosterManager.get_gladiators")
-	if equipment_manager == null or not equipment_manager.has_method("get_equipped_stats"):
+	if (
+		equipment_manager == null
+		or not equipment_manager.has_method("get_combat_v1_equipped_stats")
+	):
 		errors.append(
-			"GT I live roster builder could not resolve EquipmentManager.get_equipped_stats"
+			"GT I live roster builder could not resolve canonical Combat V1 equipment snapshots"
 		)
 	if not errors.is_empty():
 		return {"status": "invalid", "errors": errors}
