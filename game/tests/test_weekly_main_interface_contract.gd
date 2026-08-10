@@ -18,7 +18,9 @@ func _ready() -> void:
 	assert(not main_scene.contains("AdvanceDay"))
 	assert(not main_scene.contains("Avanzar un día"))
 	assert(personal_scene.contains("Registro mensual"))
-	assert(arena_scene.contains('name="StartCombat"') or arena_scene.contains('name = "StartCombat"'))
+	assert(
+		arena_scene.contains('name="StartCombat"') or arena_scene.contains('name = "StartCombat"')
+	)
 
 	assert(hud_script.contains("@onready var advance_week_button"))
 	assert(hud_script.contains("GameState.month_advanced.connect"))
