@@ -71,7 +71,10 @@ func _initialize() -> void:
 	assert(instance.get_node_or_null("Landing/Cards/FightersCard") is TextureButton)
 	assert(instance.get_node_or_null("Landing/Cards/EquipmentCard") is TextureButton)
 	assert(instance.get_node_or_null("ContentShell/SectionHeader/BackToMarketHome") is Button)
-	assert(instance.get_node_or_null("ContentShell/FightersView/OffersPanel/Margin/Content/List") is ItemList)
+	assert(
+		instance.get_node_or_null("ContentShell/FightersView/OffersPanel/Margin/Content/List")
+		is ItemList
+	)
 	assert(
 		instance.get_node_or_null("ContentShell/EquipmentView/OffersPanel/Margin/Content/Header/Refresh")
 		is Button
