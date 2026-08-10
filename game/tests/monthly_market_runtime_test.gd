@@ -23,7 +23,9 @@ func _assert_active_monthly_sources() -> void:
 	assert(manager.contains("var last_market_rotation_month: int = 1"))
 
 	var month_handler_start := manager.find("func _on_month_advanced")
-	var month_handler_end := manager.find("\n\nfunc get_market_rotation_policy", month_handler_start)
+	var month_handler_end := manager.find(
+		"\n\nfunc get_market_rotation_policy", month_handler_start
+	)
 	assert(month_handler_start >= 0 and month_handler_end > month_handler_start)
 	var month_handler := manager.substr(
 		month_handler_start, month_handler_end - month_handler_start
