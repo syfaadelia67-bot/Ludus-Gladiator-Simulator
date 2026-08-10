@@ -27,15 +27,18 @@ func get_summary() -> Dictionary:
 	var roster_policy := RosterManager.get_monthly_work_policy()
 
 	for person in RosterManager.get_people():
-		assignments.append(
-			{
-				"id": person.id,
-				"name": person.display_name,
-				"role": person.role,
-				"job": person.job,
-				"job_name": RosterManager.get_job_name(person.job),
-				"fatigue": person.fatigue,
-			}
+		(
+			assignments
+			. append(
+				{
+					"id": person.id,
+					"name": person.display_name,
+					"role": person.role,
+					"job": person.job,
+					"job_name": RosterManager.get_job_name(person.job),
+					"fatigue": person.fatigue,
+				}
+			)
 		)
 		if person.role == "gladiator":
 			if person.is_available_for_combat():
@@ -46,14 +49,17 @@ func get_summary() -> Dictionary:
 				preview["name"] = person.display_name
 				training.append(preview)
 			if person.injury_days > 0:
-				injured.append(
-					{
-						"id": person.id,
-						"name": person.display_name,
-						"injury": person.injury_name,
-						"severity": person.injury_severity,
-						"months": person.get_injury_recovery_months(),
-					}
+				(
+					injured
+					. append(
+						{
+							"id": person.id,
+							"name": person.display_name,
+							"injury": person.injury_name,
+							"severity": person.injury_severity,
+							"months": person.get_injury_recovery_months(),
+						}
+					)
 				)
 		elif person.role == "retired":
 			retired_staff += 1
@@ -98,8 +104,11 @@ func get_summary() -> Dictionary:
 	if available_gladiators == 0 and RosterManager.has_gladiator():
 		warnings.append("No hay gladiadores disponibles para combatir.")
 	if not bool(roster_policy.get("work_outputs_enabled", false)):
-		warnings.append(
-			"Trabajo, entrenamiento, fatiga y recuperación no aplicarán cambios numéricos hasta congelar su balance mensual."
+		(
+			warnings
+			. append(
+				"Trabajo, entrenamiento, fatiga y recuperación no aplicarán cambios numéricos hasta congelar su balance mensual."
+			)
 		)
 
 	return {
