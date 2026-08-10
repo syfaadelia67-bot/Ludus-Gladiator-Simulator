@@ -1,8 +1,6 @@
 extends "res://scripts/systems/personality_manager.gd"
 
-const MONTHLY_ROSTER_WORK_POLICY = preload(
-	"res://scripts/systems/monthly_roster_work_policy.gd"
-)
+const MONTHLY_ROSTER_WORK_POLICY = preload("res://scripts/systems/monthly_roster_work_policy.gd")
 
 
 func _ready() -> void:
