@@ -3,45 +3,49 @@ extends Node
 signal training_focus_changed(person_id: String, focus_id: String)
 signal training_completed(person_id: String, result: Dictionary)
 
-const MONTHLY_ROSTER_WORK_POLICY = preload(
-	"res://scripts/systems/monthly_roster_work_policy.gd"
-)
+const MONTHLY_ROSTER_WORK_POLICY = preload("res://scripts/systems/monthly_roster_work_policy.gd")
 const FOCUSES := {
 	"balanced":
 	{
 		"name": "Formación equilibrada",
 		"attribute": "",
-		"description": "El foco queda registrado; su progreso mensual está pendiente de balance canónico."
+		"description":
+		"El foco queda registrado; su progreso mensual está pendiente de balance canónico."
 	},
 	"strength":
 	{
 		"name": "Fuerza",
 		"attribute": "strength",
-		"description": "El foco queda registrado; su progreso mensual está pendiente de balance canónico."
+		"description":
+		"El foco queda registrado; su progreso mensual está pendiente de balance canónico."
 	},
 	"agility":
 	{
 		"name": "Agilidad",
 		"attribute": "agility",
-		"description": "El foco queda registrado; su progreso mensual está pendiente de balance canónico."
+		"description":
+		"El foco queda registrado; su progreso mensual está pendiente de balance canónico."
 	},
 	"endurance":
 	{
 		"name": "Aguante",
 		"attribute": "endurance",
-		"description": "El foco queda registrado; su progreso mensual está pendiente de balance canónico."
+		"description":
+		"El foco queda registrado; su progreso mensual está pendiente de balance canónico."
 	},
 	"technique":
 	{
 		"name": "Técnica",
 		"attribute": "technique",
-		"description": "El foco queda registrado; su progreso mensual está pendiente de balance canónico."
+		"description":
+		"El foco queda registrado; su progreso mensual está pendiente de balance canónico."
 	},
 	"specialization":
 	{
 		"name": "Dominio de especialización",
 		"attribute": "",
-		"description": "El foco queda registrado; su progreso mensual está pendiente de mecánicas congeladas."
+		"description":
+		"El foco queda registrado; su progreso mensual está pendiente de mecánicas congeladas."
 	}
 }
 
@@ -161,9 +165,12 @@ func _sanitize_record(record: Dictionary) -> void:
 	var last_month := maxi(
 		0,
 		int(
-			record.get(
-				"last_individual_training_month",
-				record.get("last_individual_training_week", 0),
+			(
+				record
+				. get(
+					"last_individual_training_month",
+					record.get("last_individual_training_week", 0),
+				)
 			)
 		),
 	)
