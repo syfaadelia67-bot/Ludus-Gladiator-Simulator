@@ -10,7 +10,7 @@ const PENDING_AUTHORITY_BOUNDARIES := {
 	"monthly_market_cadence":
 	"Legacy cadence is quarantined; market rotation and refresh await monthly balance.",
 	"monthly_roster_work_recovery":
-	"One monthly tick is canonical; work, fatigue and recovery still await monthly balance.",
+	"Monthly authority is canonical; work, training, fatigue and recovery balance remain pending.",
 	"monthly_event_cadence":
 	"Event chains schedule by month; cooldown and timed effects still await monthly balance.",
 	"monthly_planning_turn_closure":
