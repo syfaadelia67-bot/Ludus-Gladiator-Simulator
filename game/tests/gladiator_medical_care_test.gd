@@ -48,12 +48,8 @@ func run() -> void:
 	}
 
 	var basic := GladiatorMedicalCareController.get_treatment("basic", fighter.id)
-	_assert(
-		basic.get("balance_ready") == false, "Tratamientos deben declarar balance pendiente."
-	)
-	_assert(
-		int(basic.get("cost", -1)) == 0, "No debe exponerse un costo mensual no congelado."
-	)
+	_assert(basic.get("balance_ready") == false, "Tratamientos deben declarar balance pendiente.")
+	_assert(int(basic.get("cost", -1)) == 0, "No debe exponerse un costo mensual no congelado.")
 	_assert(
 		int(basic.get("recovery_months", -1)) == 0,
 		"No debe exponerse reducción mensual no congelada.",
@@ -67,9 +63,7 @@ func run() -> void:
 		not GladiatorMedicalCareController.purchase_treatment(fighter.id, "basic"),
 		"La compra debe fallar cerrado mientras el balance mensual esté pendiente.",
 	)
-	_assert(
-		fighter.injury_days == 4, "El tratamiento bloqueado no puede reducir recuperación."
-	)
+	_assert(fighter.injury_days == 4, "El tratamiento bloqueado no puede reducir recuperación.")
 	_assert(
 		GameState.denarii == denarii_before, "El tratamiento bloqueado no puede cobrar denarios."
 	)
