@@ -18,13 +18,13 @@ const SLOT_PATHS := {
 	"accessory": "AccessoryRow",
 }
 
-@onready var back_to_finca: Button = $Header/BackToFinca
-@onready var gladiator_selector: OptionButton = $GladiatorSelector
-@onready var status: RichTextLabel = $Status
-
 var gladiator_ids: Array[String] = []
 var selectors: Dictionary = {}
 var item_ids_by_slot: Dictionary = {}
+
+@onready var back_to_finca: Button = $Header/BackToFinca
+@onready var gladiator_selector: OptionButton = $GladiatorSelector
+@onready var status: RichTextLabel = $Status
 
 
 func _ready() -> void:
