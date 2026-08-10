@@ -21,7 +21,7 @@ class FakePerson:
 
 
 func _initialize() -> void:
-	_test_live_autoload_roster_uses_real_equipment_snapshots()
+	_test_live_autoload_roster_quarantines_legacy_equipment_stats()
 	_test_month_20_builds_real_2v2_snapshots()
 	_test_month_13_requires_same_live_gladiator()
 	_test_unavailable_gladiator_fails_closed()
@@ -35,7 +35,7 @@ func _initialize() -> void:
 	quit(1)
 
 
-func _test_live_autoload_roster_uses_real_equipment_snapshots() -> void:
+func _test_live_autoload_roster_quarantines_legacy_equipment_stats() -> void:
 	var roster_manager = root.get_node_or_null("RosterManager")
 	var equipment_manager = root.get_node_or_null("EquipmentManager")
 	_assert_true(
@@ -97,6 +97,17 @@ func _test_live_autoload_roster_uses_real_equipment_snapshots() -> void:
 	)
 
 	var builder = BuilderScript.new()
+	var contract: Dictionary = builder.get_contract()
+	_assert_eq(
+		contract.get("equipment_source"),
+		"EquipmentManager.get_combat_v1_equipped_stats",
+		"GT I must consume the Combat V1-safe equipment boundary",
+	)
+	_assert_eq(
+		contract.get("legacy_item_power_defense_allowed"),
+		false,
+		"legacy item power/defense must remain quarantined from Combat V1",
+	)
 	var opponents := [
 		[_opponent("live_x", "rival", 0)],
 		[_opponent("live_y", "rival", 0)],
@@ -116,14 +127,16 @@ func _test_live_autoload_roster_uses_real_equipment_snapshots() -> void:
 	var first_states := first_result.get("bout_states", []) as Array
 	var first_fighter := _fighter_by_id(first_states[0] as Dictionary, live_id)
 	var first_equipment := first_fighter.get("equipment", {}) as Dictionary
-	var first_expected: Dictionary = equipment_manager.get_equipped_stats(live_person)
+	var first_expected: Dictionary = equipment_manager.get_combat_v1_equipped_stats(live_person)
 	_assert_eq(
 		first_equipment,
 		first_expected,
-		"GT I builder must snapshot power/defense from the real EquipmentManager",
+		"GT I builder must snapshot the canonical Combat V1-safe equipment state",
 	)
 	_assert_eq(
-		first_equipment.get("power"), 9, "first live equipment snapshot must use current power"
+		first_equipment,
+		{"power": 0, "defense": 0},
+		"legacy item power/defense must be neutral while equipment balance is pending",
 	)
 
 	var stored_item: Dictionary = equipment_manager.get_item(item_id)
@@ -143,15 +156,17 @@ func _test_live_autoload_roster_uses_real_equipment_snapshots() -> void:
 	var second_equipment := second_fighter.get("equipment", {}) as Dictionary
 	_assert_eq(
 		second_equipment,
-		equipment_manager.get_equipped_stats(live_person),
-		"a new GT I build must read the updated real equipment state",
+		equipment_manager.get_combat_v1_equipped_stats(live_person),
+		"a new GT I build must re-read the canonical equipment boundary",
 	)
 	_assert_eq(
-		second_equipment.get("power"), 17, "second live snapshot must reflect equipment change"
+		second_equipment,
+		{"power": 0, "defense": 0},
+		"changing quarantined legacy item power must not alter Combat V1",
 	)
 	_assert_eq(
-		first_equipment.get("power"),
-		9,
+		first_equipment,
+		{"power": 0, "defense": 0},
 		"previous GT I state must remain an immutable build-time equipment snapshot",
 	)
 	_assert_eq(
@@ -205,7 +220,7 @@ func _test_month_20_builds_real_2v2_snapshots() -> void:
 	_assert_eq(
 		(first_a.get("equipment", {}) as Dictionary).get("power"),
 		12,
-		"equipment power must snapshot from live equipment",
+		"explicit source snapshots must remain unchanged for isolated builder tests",
 	)
 	_assert_eq(
 		(first_a.get("stats", {}) as Dictionary).get("RES"),
