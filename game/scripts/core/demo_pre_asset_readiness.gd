@@ -17,7 +17,15 @@ const PENDING_AUTHORITY_BOUNDARIES := {
 		+ "crafting costs, quality and Combat V1 item power/defense remain pending."
 	),
 	"monthly_event_cadence":
-	"Event chains schedule by month; cooldown and timed effects still await monthly balance.",
+	(
+		"Event chains use month-native follow-up scheduling. Legacy random cadence, cooldowns and "
+		+ "timed-effect durations are quarantined until monthly balance is frozen."
+	),
+	"monthly_rival_management":
+	(
+		"Legacy sabotage, espionage and retaliation RNG are quarantined. Monthly operation "
+		+ "cadence, costs and risk rules still require frozen design values."
+	),
 	"monthly_planning_turn_closure":
 	"Planning is month-native; non-GT activity blockers are not fully frozen yet.",
 	"playable_combat_v1_ui":
