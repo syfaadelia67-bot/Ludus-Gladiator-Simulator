@@ -50,12 +50,15 @@ func get_week() -> int:
 
 
 func get_month_closure_status() -> Dictionary:
-	return _monthly_turn_closure_policy.evaluate(
-		get_month(),
-		CampaignManager.campaign_over,
-		EventManager.get_pending_event(),
-		TournamentManager.get_gt1_encounter(get_month()),
-		TournamentManager.get_gt1_summary(),
+	return (
+		_monthly_turn_closure_policy
+		. evaluate(
+			get_month(),
+			CampaignManager.campaign_over,
+			EventManager.get_pending_event(),
+			TournamentManager.get_gt1_encounter(get_month()),
+			TournamentManager.get_gt1_summary(),
+		)
 	)
 
 
