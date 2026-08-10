@@ -16,8 +16,12 @@ func run() -> void:
 		rival_source.contains("monthly_rivalry_processed"),
 		"Debe emitir un informe mensual de rivalidad."
 	)
-	_assert(rival_source.contains('result["month"]'), "Las operaciones deben registrar el mes canónico.")
-	_assert(rival_source.contains('event["month"]'), "Las represalias deben registrar el mes canónico.")
+	_assert(
+		rival_source.contains('result["month"]'), "Las operaciones deben registrar el mes canónico."
+	)
+	_assert(
+		rival_source.contains('event["month"]'), "Las represalias deben registrar el mes canónico."
+	)
 	_assert(
 		(
 			rival_source.contains("func process_week()")
