@@ -32,12 +32,11 @@ func accept_event(event_id: String, fighter_id: String) -> bool:
 		contract_failed.emit("El evento seleccionado ya no está disponible.")
 		return false
 	if str(event.get("competition", "")) != "grand_tournament":
-		(
-			contract_failed
-			. emit(
-				"Las competiciones fuera del Gran Torneo de Roma están en pausa hasta congelar sus reglas mensuales."
-			)
+		var reason := (
+			"Las competiciones fuera del Gran Torneo de Roma están en pausa "
+			+ "hasta congelar sus reglas mensuales."
 		)
+		contract_failed.emit(reason)
 		return false
 	return super.accept_event(event_id, fighter_id)
 
