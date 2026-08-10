@@ -3,7 +3,10 @@ extends SceneTree
 
 func _initialize() -> void:
 	var scene_text := FileAccess.get_file_as_string("res://scenes/FincaScreen.tscn")
-	var controller_text := FileAccess.get_file_as_string("res://scripts/ui/finca_screen.gd")
+	var legacy_controller_text := FileAccess.get_file_as_string("res://scripts/ui/finca_screen.gd")
+	var active_controller_text := FileAccess.get_file_as_string(
+		"res://scripts/ui/finca_screen_monthly.gd"
+	)
 	var bootstrap_text := FileAccess.get_file_as_string("res://scripts/ui/main_ui_bootstrap.gd")
 	var hub_text := FileAccess.get_file_as_string("res://scripts/ui/finca_hub_controller.gd")
 	var shell_scene_text := FileAccess.get_file_as_string("res://scenes/UnifiedHudShell.tscn")
@@ -24,7 +27,7 @@ func _initialize() -> void:
 	for building_id in [
 		"dominus_house", "barracks", "training_yard", "forge", "infirmary", "mine", "beast_area"
 	]:
-		assert(controller_text.contains('"%s"' % building_id))
+		assert(legacy_controller_text.contains('"%s"' % building_id))
 	for removed_id in [
 		"kitchen",
 		"warehouse",
@@ -34,12 +37,17 @@ func _initialize() -> void:
 		"private_arena",
 		"stable"
 	]:
-		assert(not controller_text.contains('"id":"%s"' % removed_id))
+		assert(not legacy_controller_text.contains('"id":"%s"' % removed_id))
 
-	assert(controller_text.contains("const BUILDING_LAYOUT"))
-	assert(controller_text.contains("const HOTSPOT_NAMES"))
-	assert(controller_text.contains("_build_hotspots()"))
-	assert(controller_text.contains("EstateManager.can_upgrade"))
+	assert(legacy_controller_text.contains("const BUILDING_LAYOUT"))
+	assert(legacy_controller_text.contains("const HOTSPOT_NAMES"))
+	assert(legacy_controller_text.contains("_build_hotspots()"))
+	assert(active_controller_text.contains("EstateManager.get_building_data"))
+	assert(active_controller_text.contains("GameState.month_advanced.connect"))
+	assert(not active_controller_text.contains("GameState.week_advanced.connect"))
+	assert(active_controller_text.contains("FincaHubController.open_building_system"))
+	assert(scene_text.contains('path="res://scripts/ui/finca_screen_monthly.gd"'))
+	assert(scene_text.contains('text = "FINCA DEL LUDUS · 7 INSTALACIONES DE DEMO"'))
 
 	assert(bootstrap_text.contains("FincaHubController.prepare_scene()"))
 	assert(bootstrap_text.contains("FincaHubController.show_finca()"))
@@ -52,6 +60,7 @@ func _initialize() -> void:
 
 	assert(hub_text.contains('const SCREEN_HOST_NAME := "ScreenHost"'))
 	assert(hub_text.contains('"finca": "res://scenes/FincaScreen.tscn"'))
+	assert(hub_text.contains('"bestias": "res://scenes/BeastAreaScreen.tscn"'))
 	assert(hub_text.contains("var packed := load(scene_path) as PackedScene"))
 	assert(hub_text.contains("func _show_hosted_screen"))
 	assert(not hub_text.contains("func _show_legacy_screen"))
@@ -59,6 +68,7 @@ func _initialize() -> void:
 	assert(hub_text.contains("if not SCREEN_SCENES.has(normalized_id):"))
 	assert(hub_text.contains("return current_system_id"))
 	assert(hub_text.contains('"mine": "economia"'))
+	assert(hub_text.contains('"beast_area": "bestias"'))
 
 	for required_shell_node in [
 		"TopHUD", "MainNavigation", "BottomStatusBar", "More", "Section", "Barracks"
@@ -76,7 +86,7 @@ func _initialize() -> void:
 	assert(shell_controller_text.contains("FincaHubController.open_system"))
 
 	var finca_scene := load("res://scenes/FincaScreen.tscn")
-	var finca_script := load("res://scripts/ui/finca_screen.gd")
+	var finca_script := load("res://scripts/ui/finca_screen_monthly.gd")
 	var shell_scene := load("res://scenes/UnifiedHudShell.tscn")
 	var shell_script := load("res://scripts/ui/unified_hud_shell.gd")
 	assert(finca_scene is PackedScene)
@@ -101,5 +111,5 @@ func _initialize() -> void:
 	assert(shell_instance.get_node_or_null("BottomStatusBar") != null)
 	shell_instance.free()
 
-	print("Finca central ScreenHost and seven-facility HUD contract: OK")
+	print("Finca central monthly ScreenHost and seven-facility HUD contract: OK")
 	quit()
