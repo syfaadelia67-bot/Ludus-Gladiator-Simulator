@@ -4,7 +4,7 @@
 ;
 ; Format:
 ;   [section]
-;   param=value
+; param=value
 
 config_version=5
 
@@ -64,7 +64,7 @@ UniqueGladiatorManager="*res://scripts/systems/unique_gladiator_manager.gd"
 LudusOwnerManager="*res://scripts/systems/ludus_owner_manager.gd"
 MarketManager="*res://scripts/systems/market_manager.gd"
 EstateManager="*res://scripts/systems/estate_manager.gd"
-EquipmentManager="*res://scripts/systems/equipment_manager.gd"
+EquipmentManager="*res://scripts/systems/equipment_manager_monthly.gd"
 CombatManager="*res://scripts/systems/combat_manager_weekly.gd"
 CombatHistoryManager="*res://scripts/systems/combat_history_manager_weekly.gd"
 SaveManager="*res://scripts/core/save_manager_demo.gd"
