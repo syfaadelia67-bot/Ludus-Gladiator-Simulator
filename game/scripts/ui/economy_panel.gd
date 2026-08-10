@@ -110,12 +110,14 @@ func _refresh() -> void:
 		var sponsor := EconomyManager.get_sponsor(sponsor_ids[sponsor_selector.selected])
 		sign_button.disabled = not bool(sponsor.get("eligible", false))
 		sign_button.tooltip_text = (
-			"Anticipo %d | Ingreso mensual %d | Duración %d meses"
-			% [
-				int(sponsor.get("upfront", 0)),
-				int(sponsor.get("monthly_income", sponsor.get("weekly_income", 0))),
-				int(sponsor.get("duration_months", sponsor.get("duration_weeks", 0))),
-			]
+			(
+				"Anticipo %d | Ingreso mensual %d | Duración %d meses"
+				% [
+					int(sponsor.get("upfront", 0)),
+					int(sponsor.get("monthly_income", sponsor.get("weekly_income", 0))),
+					int(sponsor.get("duration_months", sponsor.get("duration_weeks", 0))),
+				]
+			)
 		)
 
 
