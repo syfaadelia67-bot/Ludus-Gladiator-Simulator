@@ -18,20 +18,23 @@ func run() -> void:
 	CampaignManager.campaign_over = false
 	EstateManager.levels["infirmary"] = 1
 
-	var fighter: LudusPerson = PERSON_SCRIPT.new(
-		{
-			"id": "medical_test_fighter",
-			"name": "Paciente",
-			"role": "gladiator",
-			"origin": "Hispania",
-			"strength": 6,
-			"agility": 6,
-			"endurance": 6,
-			"intelligence": 5,
-			"technique": 5,
-			"health": 50,
-			"traits": [],
-		}
+	var fighter: LudusPerson = (
+		PERSON_SCRIPT
+		. new(
+			{
+				"id": "medical_test_fighter",
+				"name": "Paciente",
+				"role": "gladiator",
+				"origin": "Hispania",
+				"strength": 6,
+				"agility": 6,
+				"endurance": 6,
+				"intelligence": 5,
+				"technique": 5,
+				"health": 50,
+				"traits": [],
+			}
+		)
 	)
 	fighter.apply_injury("Fractura de costillas", 3, 4)
 	RosterManager.people.append(fighter)
@@ -45,8 +48,12 @@ func run() -> void:
 	}
 
 	var basic := GladiatorMedicalCareController.get_treatment("basic", fighter.id)
-	_assert(basic.get("balance_ready") == false, "Tratamientos deben declarar balance pendiente.")
-	_assert(int(basic.get("cost", -1)) == 0, "No debe exponerse un costo mensual no congelado.")
+	_assert(
+		basic.get("balance_ready") == false, "Tratamientos deben declarar balance pendiente."
+	)
+	_assert(
+		int(basic.get("cost", -1)) == 0, "No debe exponerse un costo mensual no congelado."
+	)
 	_assert(
 		int(basic.get("recovery_months", -1)) == 0,
 		"No debe exponerse reducción mensual no congelada.",
@@ -60,8 +67,12 @@ func run() -> void:
 		not GladiatorMedicalCareController.purchase_treatment(fighter.id, "basic"),
 		"La compra debe fallar cerrado mientras el balance mensual esté pendiente.",
 	)
-	_assert(fighter.injury_days == 4, "El tratamiento bloqueado no puede reducir recuperación.")
-	_assert(GameState.denarii == denarii_before, "El tratamiento bloqueado no puede cobrar denarios.")
+	_assert(
+		fighter.injury_days == 4, "El tratamiento bloqueado no puede reducir recuperación."
+	)
+	_assert(
+		GameState.denarii == denarii_before, "El tratamiento bloqueado no puede cobrar denarios."
+	)
 
 	_assert(
 		GladiatorMedicalCareController.set_priority(fighter.id),
