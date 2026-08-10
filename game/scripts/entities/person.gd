@@ -1,6 +1,9 @@
 class_name LudusPerson
 extends RefCounted
 
+const MONTHLY_ROSTER_WORK_POLICY = preload(
+	"res://scripts/systems/monthly_roster_work_policy.gd"
+)
 const EQUIPMENT_SLOT_IDS: Array[String] = [
 	"head",
 	"torso",
@@ -133,6 +136,7 @@ func assign_job(new_job: String) -> void:
 
 
 func process_month() -> Dictionary:
+	var policy := MONTHLY_ROSTER_WORK_POLICY.get_contract()
 	var result := {
 		"period": "month",
 		"ore": 0,
@@ -141,45 +145,22 @@ func process_month() -> Dictionary:
 		"intel": 0,
 		"training": 0,
 		"personality": {},
+		"policy_status": str(policy.get("status", "")),
+		"work_balance_applied": false,
+		"training_balance_applied": false,
+		"fatigue_balance_applied": false,
+		"injury_recovery_balance_applied": false,
 	}
+
+	# Injury state remains authoritative for availability and job assignment, but
+	# its countdown does not advance until a canonical monthly recovery formula is
+	# frozen. This avoids treating the former daily decrement as one month.
 	if injury_days > 0:
 		job = "idle"
-		var recovery_month_bonus := floori(float(EstateManager.get_recovery_bonus()) / 4.0)
-		injury_days = maxi(0, injury_days - 1 - recovery_month_bonus)
-		fatigue = maxi(0, fatigue - 10 - EstateManager.get_recovery_bonus())
-		morale = mini(100, morale + 3)
-		if injury_days == 0:
-			injury_severity = 0
-			injury_name = ""
-		result.personality = PersonalityManager.process_person_month(self, result)
-		return result
-	match job:
-		"mining":
-			result.ore = maxi(1, strength + floori(float(endurance) / 2.0))
-			fatigue += 8
-		"security":
-			result.security = maxi(1, strength + floori(float(loyalty) / 20.0))
-			fatigue += 4
-		"espionage":
-			result.intel = maxi(1, intelligence + floori(float(agility) / 2.0))
-			fatigue += 6
-		"training":
-			var base_gain := maxi(1, endurance + floori(float(strength) / 2.0))
-			var multiplier := (
-				EstateManager.get_training_multiplier() * EventManager.get_training_multiplier()
-			)
-			var gained := int(round(base_gain * multiplier))
-			training += gained
-			result.training = gained
-			fatigue += 7
-			if role == "slave" and training >= 100:
-				role = "gladiator"
-				job = "idle"
-		_:
-			fatigue = maxi(0, fatigue - 6 - EstateManager.get_recovery_bonus())
-			morale = mini(100, morale + 2)
+
+	# Personality remains a separate monthly subsystem. The monthly wrapper
+	# protects disabled work/training outputs from legacy trait bonuses.
 	result.personality = PersonalityManager.process_person_month(self, result)
-	morale = clampi(morale - floori(float(fatigue) / 25.0), 0, 100)
 	loyalty = clampi(loyalty, 0, 100)
 	fatigue = clampi(fatigue, 0, 100)
 	return result
@@ -207,8 +188,15 @@ func apply_injury(name_value: String, severity: int, recovery_months: int) -> vo
 	job = "idle"
 
 
+func get_injury_recovery_months() -> int:
+	# `injury_days` is the Save-v14 storage alias; runtime semantics are months.
+	return injury_days
+
+
 func is_available_for_combat() -> bool:
-	return role == "gladiator" and injury_days <= 0 and fatigue < 90
+	# Fatigue is persisted for compatibility, but cannot affect Combat V1
+	# availability until that cross-system rule is explicitly frozen.
+	return role == "gladiator" and injury_days <= 0
 
 
 func get_max_health() -> int:
@@ -223,11 +211,15 @@ func get_max_energy() -> int:
 
 
 func get_base_attack() -> int:
-	return maxi(1, strength * 2 + agility + floori(float(technique) / 2.0) - injury_severity * 3)
+	return maxi(
+		1, strength * 2 + agility + floori(float(technique) / 2.0) - injury_severity * 3
+	)
 
 
 func get_base_defense() -> int:
-	return maxi(1, endurance + agility + floori(float(technique) / 2.0) - injury_severity * 2)
+	return maxi(
+		1, endurance + agility + floori(float(technique) / 2.0) - injury_severity * 2
+	)
 
 
 func get_injury_summary() -> String:
