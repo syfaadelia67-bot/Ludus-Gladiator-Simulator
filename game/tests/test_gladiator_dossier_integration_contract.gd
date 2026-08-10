@@ -91,7 +91,7 @@ func _initialize() -> void:
 		)
 	)
 
-	assert(hud_text.contains('"gladiator_dossier":"Ficha del gladiador"'))
+	assert(hud_text.contains('"gladiator_dossier": "Ficha del gladiador"'))
 	assert(not hud_text.contains('{"id":"equipamiento", "label":"Equipamiento"}'))
 	assert(save_text.contains("const SAVE_VERSION := 14"))
 	assert(save_text.contains('"equipped_weapon_id":person.equipped_weapon_id'))
