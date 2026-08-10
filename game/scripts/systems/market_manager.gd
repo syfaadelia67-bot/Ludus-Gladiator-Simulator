@@ -21,6 +21,11 @@ var refresh_cost: int = EQUIPMENT_REFRESH_COST
 var offer_count: int = 4
 var equipment_offers: Array[Dictionary] = []
 var last_auto_refresh_month: int = 1
+var last_auto_refresh_week: int:
+	get:
+		return last_auto_refresh_month
+	set(value):
+		last_auto_refresh_month = value
 var names := [
 	"Aelia",
 	"Brutus",
