@@ -101,12 +101,12 @@ custom_minimum_size = Vector2(120, 0)
 layout_mode = 2
 horizontal_alignment = 2
 vertical_alignment = 1
-text = "SEMANA 1"
+text = "MES 1"
 
 [node name="AdvanceWeek" type="Button" parent="TopHUD/Margin/Row"]
 layout_mode = 2
-text = "Cerrar semana"
-tooltip_text = "Procesar trabajos, economía, recuperación y eventos de la semana."
+text = "Cerrar mes"
+tooltip_text = "Procesar trabajos, economía, recuperación y eventos del mes."
 
 [node name="MainNavigation" type="PanelContainer" parent="."]
 layout_mode = 1
