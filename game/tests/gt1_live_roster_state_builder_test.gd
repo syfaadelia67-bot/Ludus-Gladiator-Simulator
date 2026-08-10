@@ -127,7 +127,9 @@ func _test_live_autoload_roster_quarantines_legacy_equipment_stats() -> void:
 	var first_states := first_result.get("bout_states", []) as Array
 	var first_fighter := _fighter_by_id(first_states[0] as Dictionary, live_id)
 	var first_equipment := first_fighter.get("equipment", {}) as Dictionary
-	var first_policy_snapshot: Dictionary = equipment_manager.get_combat_v1_equipped_stats(live_person)
+	var first_policy_snapshot: Dictionary = equipment_manager.get_combat_v1_equipped_stats(
+		live_person
+	)
 	var first_expected := {
 		"power": int(first_policy_snapshot.get("power", 0)),
 		"defense": int(first_policy_snapshot.get("defense", 0)),
@@ -158,7 +160,9 @@ func _test_live_autoload_roster_quarantines_legacy_equipment_stats() -> void:
 	var second_states := second_result.get("bout_states", []) as Array
 	var second_fighter := _fighter_by_id(second_states[0] as Dictionary, live_id)
 	var second_equipment := second_fighter.get("equipment", {}) as Dictionary
-	var second_policy_snapshot: Dictionary = equipment_manager.get_combat_v1_equipped_stats(live_person)
+	var second_policy_snapshot: Dictionary = equipment_manager.get_combat_v1_equipped_stats(
+		live_person
+	)
 	var second_expected := {
 		"power": int(second_policy_snapshot.get("power", 0)),
 		"defense": int(second_policy_snapshot.get("defense", 0)),
