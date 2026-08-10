@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3]
 
-[ext_resource path="res://scripts/ui/equipment_panel.gd" type="Script" id="1"]
+[ext_resource path="res://scripts/ui/equipment_panel_v1.gd" type="Script" id="1"]
 
 [node name="EquipmentScreen" type="VBoxContainer"]
 layout_mode = 3
@@ -19,7 +19,7 @@ layout_mode = 2
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 26
-text = "EQUIPAMIENTO"
+text = "EQUIPAMIENTO · 6 RANURAS"
 
 [node name="BackToFinca" type="Button" parent="Header"]
 layout_mode = 2
@@ -30,68 +30,109 @@ tooltip_text = "Regresar al centro del ludus."
 layout_mode = 2
 
 [node name="Status" type="RichTextLabel" parent="."]
-custom_minimum_size = Vector2(0, 170)
+custom_minimum_size = Vector2(0, 260)
 layout_mode = 2
+size_flags_vertical = 3
 bbcode_enabled = true
 text = "Seleccioná un gladiador."
 
-[node name="WeaponRow" type="HBoxContainer" parent="."]
+[node name="HeadRow" type="HBoxContainer" parent="."]
 layout_mode = 2
-
-[node name="WeaponLabel" type="Label" parent="WeaponRow"]
+[node name="Label" type="Label" parent="HeadRow"]
+custom_minimum_size = Vector2(140, 0)
 layout_mode = 2
-text = "Arma"
-
-[node name="WeaponSelector" type="OptionButton" parent="WeaponRow"]
+text = "Cabeza"
+[node name="Selector" type="OptionButton" parent="HeadRow"]
 layout_mode = 2
 size_flags_horizontal = 3
-
-[node name="EquipWeapon" type="Button" parent="WeaponRow"]
+[node name="Equip" type="Button" parent="HeadRow"]
 layout_mode = 2
 text = "Equipar"
+[node name="Unequip" type="Button" parent="HeadRow"]
+layout_mode = 2
+text = "Quitar"
 
 [node name="ArmorRow" type="HBoxContainer" parent="."]
 layout_mode = 2
-
-[node name="ArmorLabel" type="Label" parent="ArmorRow"]
+[node name="Label" type="Label" parent="ArmorRow"]
+custom_minimum_size = Vector2(140, 0)
 layout_mode = 2
-text = "Armadura"
-
-[node name="ArmorSelector" type="OptionButton" parent="ArmorRow"]
+text = "Torso"
+[node name="Selector" type="OptionButton" parent="ArmorRow"]
 layout_mode = 2
 size_flags_horizontal = 3
-
-[node name="EquipArmor" type="Button" parent="ArmorRow"]
+[node name="Equip" type="Button" parent="ArmorRow"]
 layout_mode = 2
 text = "Equipar"
+[node name="Unequip" type="Button" parent="ArmorRow"]
+layout_mode = 2
+text = "Quitar"
+
+[node name="WeaponRow" type="HBoxContainer" parent="."]
+layout_mode = 2
+[node name="Label" type="Label" parent="WeaponRow"]
+custom_minimum_size = Vector2(140, 0)
+layout_mode = 2
+text = "Mano derecha"
+[node name="Selector" type="OptionButton" parent="WeaponRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+[node name="Equip" type="Button" parent="WeaponRow"]
+layout_mode = 2
+text = "Equipar"
+[node name="Unequip" type="Button" parent="WeaponRow"]
+layout_mode = 2
+text = "Quitar"
 
 [node name="ShieldRow" type="HBoxContainer" parent="."]
 layout_mode = 2
-
-[node name="ShieldLabel" type="Label" parent="ShieldRow"]
+[node name="Label" type="Label" parent="ShieldRow"]
+custom_minimum_size = Vector2(140, 0)
 layout_mode = 2
-text = "Escudo"
-
-[node name="ShieldSelector" type="OptionButton" parent="ShieldRow"]
+text = "Mano izquierda"
+[node name="Selector" type="OptionButton" parent="ShieldRow"]
 layout_mode = 2
 size_flags_horizontal = 3
-
-[node name="EquipShield" type="Button" parent="ShieldRow"]
+[node name="Equip" type="Button" parent="ShieldRow"]
 layout_mode = 2
 text = "Equipar"
-
-[node name="UnequipRow" type="HBoxContainer" parent="."]
+[node name="Unequip" type="Button" parent="ShieldRow"]
 layout_mode = 2
-alignment = 1
+text = "Quitar"
 
-[node name="UnequipWeapon" type="Button" parent="UnequipRow"]
+[node name="LowerBodyRow" type="HBoxContainer" parent="."]
 layout_mode = 2
-text = "Quitar arma"
+[node name="Label" type="Label" parent="LowerBodyRow"]
+custom_minimum_size = Vector2(140, 0)
+layout_mode = 2
+text = "Parte inferior"
+[node name="Selector" type="OptionButton" parent="LowerBodyRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+[node name="Equip" type="Button" parent="LowerBodyRow"]
+layout_mode = 2
+text = "Equipar"
+[node name="Unequip" type="Button" parent="LowerBodyRow"]
+layout_mode = 2
+text = "Quitar"
 
-[node name="UnequipArmor" type="Button" parent="UnequipRow"]
+[node name="AccessoryRow" type="HBoxContainer" parent="."]
 layout_mode = 2
-text = "Quitar armadura"
+[node name="Label" type="Label" parent="AccessoryRow"]
+custom_minimum_size = Vector2(140, 0)
+layout_mode = 2
+text = "Accesorio"
+[node name="Selector" type="OptionButton" parent="AccessoryRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+[node name="Equip" type="Button" parent="AccessoryRow"]
+layout_mode = 2
+text = "Equipar"
+[node name="Unequip" type="Button" parent="AccessoryRow"]
+layout_mode = 2
+text = "Quitar"
 
-[node name="UnequipShield" type="Button" parent="UnequipRow"]
+[node name="MountNotice" type="Label" parent="."]
 layout_mode = 2
-text = "Quitar escudo"
+text = "Montura: próximamente · fuera del alcance de la demo"
+horizontal_alignment = 1
