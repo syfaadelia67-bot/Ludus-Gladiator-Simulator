@@ -168,7 +168,7 @@ func get_monthly_population_snapshot() -> Dictionary:
 		"beast_count": beast_count,
 		"slave_count_source": "RosterManager.people",
 		"gladiator_count_source": "RosterManager.people",
-		"beast_count_source": "OwnedBeastRegistry.owned_beast_ids",
+		"beast_count_source": "OwnedBeastRegistry.owned_beasts",
 		"beast_count_source_ready": true,
 	}
 
