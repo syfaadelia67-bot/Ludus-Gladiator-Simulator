@@ -8,24 +8,29 @@ signal equipment_purchase_completed(item_name: String, price: int)
 signal equipment_purchase_failed(reason: String)
 
 const PERSON_SCRIPT = preload("res://scripts/entities/person.gd")
-# Transitional cadence inherited from the old turn count. Part 3 will freeze
-# the actual market refresh balance; this constant is not a weekly scheduler.
+const MONTHLY_MARKET_POLICY_SCRIPT = preload("res://scripts/systems/monthly_market_policy.gd")
+# Save/source compatibility evidence only. Neither value is active monthly balance.
 const LEGACY_AUTO_REFRESH_TURNS := 3
-const EQUIPMENT_REFRESH_COST := 100
+const LEGACY_EQUIPMENT_REFRESH_COST := 100
 const EQUIPMENT_OFFER_COUNT := 6
 
 var offers: Array = []
-# Conservado para compatibilidad con scripts antiguos. La renovación manual de
-# luchadores ya no está disponible: solo el equipamiento se renueva por 100.
-var refresh_cost: int = EQUIPMENT_REFRESH_COST
+# Legacy compatibility field. Manual refresh has no canonical price until the
+# monthly market balance is frozen.
+var refresh_cost: int = -1
 var offer_count: int = 4
 var equipment_offers: Array[Dictionary] = []
-var last_auto_refresh_month: int = 1
+var last_market_rotation_month: int = 1
+var last_auto_refresh_month: int:
+	get:
+		return last_market_rotation_month
+	set(value):
+		last_market_rotation_month = maxi(1, value)
 var last_auto_refresh_week: int:
 	get:
-		return last_auto_refresh_month
+		return last_market_rotation_month
 	set(value):
-		last_auto_refresh_month = value
+		last_market_rotation_month = maxi(1, value)
 var names := [
 	"Aelia",
 	"Brutus",
@@ -45,6 +50,7 @@ var origins := [
 ]
 var _serial: int = 0
 var _equipment_offer_serial: int = 0
+var _monthly_policy = MONTHLY_MARKET_POLICY_SCRIPT.new()
 
 
 func _ready() -> void:
@@ -54,7 +60,7 @@ func _ready() -> void:
 		refresh_market(false)
 	if equipment_offers.is_empty():
 		refresh_equipment_market(false)
-	last_auto_refresh_month = maxi(1, last_auto_refresh_month)
+	last_market_rotation_month = maxi(1, last_market_rotation_month)
 
 
 func refresh_market(charge: bool = true) -> bool:
@@ -63,7 +69,7 @@ func refresh_market(charge: bool = true) -> bool:
 		return false
 	if charge:
 		purchase_failed.emit(
-			"Las ofertas de luchadores se renuevan automáticamente por la cadencia de campaña."
+			"La renovación manual de luchadores no tiene balance mensual congelado."
 		)
 		return false
 	if not UniqueGladiatorManager.first_purchase_completed:
@@ -72,8 +78,9 @@ func refresh_market(charge: bool = true) -> bool:
 		return true
 	offers.clear()
 	offers.append_array(UniqueGladiatorManager.get_available_market_offers())
-	for index in range(offer_count):
-		offers.append(_generate_offer(index))
+	if _monthly_policy.can_generate_procedural_recruits():
+		for index in range(offer_count):
+			offers.append(_generate_offer(index))
 	market_changed.emit()
 	return true
 
@@ -84,10 +91,14 @@ func refresh_equipment_market(charge: bool = true) -> bool:
 			"La campaña terminó. El mercado está disponible solo para consulta."
 		)
 		return false
-	if charge and not GameState.spend_denarii(EQUIPMENT_REFRESH_COST):
+	if charge:
 		equipment_purchase_failed.emit(
-			"Se necesitan %d denarios para renovar el equipamiento." % EQUIPMENT_REFRESH_COST
+			"La renovación manual de equipamiento espera balance mensual congelado."
 		)
+		return false
+	if not _monthly_policy.can_generate_procedural_equipment():
+		equipment_offers.clear()
+		equipment_market_changed.emit()
 		return false
 	equipment_offers.clear()
 	var recipe_ids := EquipmentManager.get_recipe_ids()
@@ -100,31 +111,54 @@ func refresh_equipment_market(charge: bool = true) -> bool:
 
 
 func _on_month_advanced(month: int) -> void:
-	if month < last_auto_refresh_month:
-		last_auto_refresh_month = month
-	if month - last_auto_refresh_month < LEGACY_AUTO_REFRESH_TURNS:
-		return
-	last_auto_refresh_month = month
-	refresh_market(false)
-	refresh_equipment_market(false)
+	if month < last_market_rotation_month:
+		last_market_rotation_month = month
+	# Month advancement may expose/hide authored unique gladiators, but it cannot
+	# rotate procedural stock while the cadence and generation balance are pending.
+	sync_unique_offers()
+
+
+func get_market_rotation_policy() -> Dictionary:
+	return _monthly_policy.get_contract()
+
+
+func has_scheduled_auto_rotation() -> bool:
+	return bool(get_market_rotation_policy().get("auto_rotation_enabled", false))
 
 
 func get_next_auto_refresh_month() -> int:
-	return last_auto_refresh_month + LEGACY_AUTO_REFRESH_TURNS
+	# No canonical refresh month exists until the cadence is frozen.
+	return -1
 
 
 func get_months_until_auto_refresh() -> int:
-	return maxi(0, get_next_auto_refresh_month() - GameState.get_month())
+	return -1
 
 
 func get_next_auto_refresh_week() -> int:
-	# Legacy UI adapter.
+	# Save/UI compatibility adapter only. No weekly scheduler exists.
 	return get_next_auto_refresh_month()
 
 
 func get_weeks_until_auto_refresh() -> int:
-	# Legacy UI adapter.
+	# Save/UI compatibility adapter only. No weekly scheduler exists.
 	return get_months_until_auto_refresh()
+
+
+func get_manual_equipment_refresh_cost() -> int:
+	return -1
+
+
+func reset_for_new_campaign() -> void:
+	offers.clear()
+	equipment_offers.clear()
+	_serial = 0
+	_equipment_offer_serial = 0
+	last_market_rotation_month = GameState.get_month()
+	refresh_market(false)
+	refresh_equipment_market(false)
+	market_changed.emit()
+	equipment_market_changed.emit()
 
 
 func sync_unique_offers() -> void:
@@ -138,11 +172,15 @@ func sync_unique_offers() -> void:
 			random_offers.append(offer)
 	offers.clear()
 	offers.append_array(UniqueGladiatorManager.get_available_market_offers())
+	# Existing legacy generic offers remain load-compatible, but no new generic
+	# offers are generated while their canonical stat policy is pending.
 	offers.append_array(random_offers)
 	market_changed.emit()
 
 
 func _generate_offer(index: int) -> Dictionary:
+	# Legacy generator retained only for migration/reference. The monthly market
+	# policy keeps this path unreachable until recruit generation is frozen.
 	_serial += 1
 	var rng := RandomNumberGenerator.new()
 	rng.seed = int(Time.get_unix_time_from_system()) + _serial * 7919 + index * 131
@@ -207,6 +245,8 @@ func _traits_are_compatible(
 
 
 func _generate_equipment_offer(recipe_id: String, index: int) -> Dictionary:
+	# Legacy procedural quality/price generator. It is intentionally unreachable
+	# from canonical monthly market runtime until equipment-market balance freezes.
 	_equipment_offer_serial += 1
 	var recipe := EquipmentManager.get_recipe(recipe_id)
 	var rng := RandomNumberGenerator.new()
