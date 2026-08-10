@@ -23,14 +23,18 @@ func run() -> void:
 	)
 	assert(calendar_source.contains("DEMO_FINAL_MONTH := 20"))
 	assert(calendar_source.contains("GameState.month_advanced.connect"))
-	assert(calendar_source.contains("TournamentManager.is_grand_tournament_month(month)"))
+	assert(
+		calendar_source.contains("TournamentManager.is_grand_tournament_month(month)")
+	)
 	assert(calendar_source.contains("TournamentManager.get_gt1_encounter(month)"))
 	assert(calendar_source.contains("CALENDARIO MENSUAL"))
 	assert(not calendar_source.contains("DEMO_FINAL_WEEK"))
 	assert(not calendar_source.contains("CombatManager.get_event_details_for_week"))
 
 	var game_state_source := FileAccess.get_file_as_string("res://scripts/core/game_state.gd")
-	assert(game_state_source.contains("TournamentManager.get_gt1_encounter(get_month())"))
+	assert(
+		game_state_source.contains("TournamentManager.get_gt1_encounter(get_month())")
+	)
 	assert(not game_state_source.contains("CombatManager.get_current_event_details()"))
 
 	print("Monthly campaign calendar and GT I contract: OK")
