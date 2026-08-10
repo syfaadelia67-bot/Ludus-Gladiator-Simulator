@@ -6,9 +6,7 @@ signal monthly_results(results: Dictionary)
 signal daily_results(results: Dictionary)
 
 const PERSON_SCRIPT = preload("res://scripts/entities/person.gd")
-const MONTHLY_ROSTER_WORK_POLICY = preload(
-	"res://scripts/systems/monthly_roster_work_policy.gd"
-)
+const MONTHLY_ROSTER_WORK_POLICY = preload("res://scripts/systems/monthly_roster_work_policy.gd")
 const JOBS := {
 	"idle": "Descanso — asignación mensual",
 	"mining": "Minería — asignación mensual",
@@ -17,11 +15,16 @@ const JOBS := {
 	"training": "Entrenamiento — asignación mensual"
 }
 const JOB_DESCRIPTIONS := {
-	"idle": "La asignación queda registrada. La recuperación mensual está pendiente de balance canónico.",
-	"mining": "La asignación queda registrada. La producción mensual de mineral está pendiente de balance canónico.",
-	"security": "La asignación queda registrada. El aporte mensual de seguridad está pendiente de balance canónico.",
-	"espionage": "La asignación queda registrada. La generación mensual de información está pendiente de balance canónico.",
-	"training": "La asignación queda registrada. La progresión mensual y la promoción están pendientes de balance canónico."
+	"idle":
+	"La asignación queda registrada. La recuperación mensual está pendiente de balance canónico.",
+	"mining":
+	"La asignación queda registrada. La producción mensual de mineral está pendiente de balance canónico.",
+	"security":
+	"La asignación queda registrada. El aporte mensual de seguridad está pendiente de balance canónico.",
+	"espionage":
+	"La asignación queda registrada. La generación mensual de información está pendiente de balance canónico.",
+	"training":
+	"La asignación queda registrada. La progresión mensual y la promoción están pendientes de balance canónico."
 }
 
 var people: Array = []
