@@ -31,10 +31,13 @@ func _test_player_intent_requires_explicit_target() -> void:
 	assert(rejected.get("status") == "rejected")
 	assert(rejected.get("reason") == "invalid_player_intent")
 
-	var ready: Dictionary = runtime.build_player_intents(
-		session,
-		"light",
-		{"player": "rival"},
+	var ready: Dictionary = (
+		runtime
+		. build_player_intents(
+			session,
+			"light",
+			{"player": "rival"},
+		)
 	)
 	assert(ready.get("status") == "ready")
 	var intents := ready.get("player_intents_by_actor", {}) as Dictionary
@@ -47,7 +50,9 @@ func _test_defensive_action_needs_no_target() -> void:
 	var runtime = CombatV1ArenaRuntimeScript.new()
 	var ready: Dictionary = runtime.build_player_intents(_session(), "block")
 	assert(ready.get("status") == "ready")
-	var desired := (ready.get("player_intents_by_actor", {}) as Dictionary).get("player", {}) as Dictionary
+	var desired := (
+		(ready.get("player_intents_by_actor", {}) as Dictionary).get("player", {}) as Dictionary
+	)
 	assert(desired.get("action_id") == "block")
 	assert(str(desired.get("target_id", "")).is_empty())
 	assert(runtime.get_active_enemy_ids(_session()) == ["rival"])
