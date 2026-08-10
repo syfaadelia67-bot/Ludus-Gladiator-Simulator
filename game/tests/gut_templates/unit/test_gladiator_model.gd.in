@@ -52,11 +52,11 @@ func test_injury_blocks_combat_and_forces_idle_work() -> void:
     assert_eq(person.injury_days, 3)
     assert_true(person.get_injury_summary().contains("Fractura menor"))
 
-func test_fatigue_threshold_controls_combat_availability() -> void:
+func test_unfrozen_fatigue_does_not_control_combat_v1_availability() -> void:
     var person = PERSON_SCRIPT.new({"id":"gut_fatigue", "name":"Lucius", "role":"gladiator", "fatigue":89})
     assert_true(person.is_available_for_combat())
-    person.fatigue = 90
-    assert_false(person.is_available_for_combat())
+    person.fatigue = 100
+    assert_true(person.is_available_for_combat())
 
 func test_growth_updates_primary_stats_and_health() -> void:
     var person = PERSON_SCRIPT.new({
