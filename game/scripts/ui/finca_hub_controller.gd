@@ -15,6 +15,7 @@ const ARENA_EQUIPMENT_PATH := (
 const SCREEN_SCENES := {
 	"finca": "res://scenes/FincaScreen.tscn",
 	"barracks": "res://scenes/BarracksScreen.tscn",
+	"bestias": "res://scenes/BeastAreaScreen.tscn",
 	"mercado": "res://scenes/MarketScreen.tscn",
 	"arena": "res://scenes/ArenaScreen.tscn",
 	"equipamiento": "res://scenes/EquipmentScreen.tscn",
@@ -36,10 +37,11 @@ const SCREEN_SCENES := {
 const BUILDING_SYSTEMS := {
 	"dominus_house": "campana",
 	"barracks": "barracks",
-	"training_yard": "personal",
+	"training_yard": "barracks",
 	"forge": "forja",
 	"infirmary": "personal",
-	"mine": "economia"
+	"mine": "economia",
+	"beast_area": "bestias"
 }
 
 var current_system_id := "finca"
