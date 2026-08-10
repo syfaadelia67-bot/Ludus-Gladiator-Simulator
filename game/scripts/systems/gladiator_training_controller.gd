@@ -47,7 +47,8 @@ const FOCUSES := {
 
 
 func _ready() -> void:
-	GameState.month_advanced.connect(func(month: int): call_deferred("process_month", month))
+	# No calendar signal is connected here. RosterManager owns the single monthly
+	# management tick; this controller cannot schedule a second training tick.
 	RosterManager.roster_changed.connect(_ensure_records)
 	SaveManager.load_completed.connect(func(_path: String): _ensure_records())
 	call_deferred("_ensure_records")
