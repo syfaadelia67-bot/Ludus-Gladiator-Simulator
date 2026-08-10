@@ -15,16 +15,11 @@ const JOBS := {
 	"training": "Entrenamiento — asignación mensual"
 }
 const JOB_DESCRIPTIONS := {
-	"idle":
-	"Asignación registrada. La recuperación mensual espera balance canónico.",
-	"mining":
-	"Asignación registrada. La producción mensual de mineral espera balance canónico.",
-	"security":
-	"Asignación registrada. El aporte mensual de seguridad espera balance canónico.",
-	"espionage":
-	"Asignación registrada. La información mensual espera balance canónico.",
-	"training":
-	"Asignación registrada. Progresión y promoción mensuales esperan balance canónico."
+	"idle": "Asignación registrada. La recuperación mensual espera balance canónico.",
+	"mining": "Asignación registrada. La producción mensual de mineral espera balance canónico.",
+	"security": "Asignación registrada. El aporte mensual de seguridad espera balance canónico.",
+	"espionage": "Asignación registrada. La información mensual espera balance canónico.",
+	"training": "Asignación registrada. Progresión y promoción mensuales esperan balance canónico."
 }
 
 var people: Array = []
