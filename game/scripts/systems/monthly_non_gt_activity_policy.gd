@@ -19,7 +19,8 @@ func evaluate_month(month: int) -> Dictionary:
 		"non_gt_combat_optional": false,
 		"legacy_non_gt_schedule_allowed": false,
 		"campaign_combat_progress_source": "gt1_combat_v1",
-		"approved_management_surfaces": [
+		"approved_management_surfaces":
+		[
 			"roster",
 			"estate",
 			"market",
@@ -28,7 +29,8 @@ func evaluate_month(month: int) -> Dictionary:
 			"monthly_events",
 		],
 		"design_pending": not is_gt1,
-		"design_pending_reason": (
+		"design_pending_reason":
+		(
 			"Las oportunidades de Arena fuera del GT I todavía requieren reglas congeladas."
 			if not is_gt1
 			else ""
