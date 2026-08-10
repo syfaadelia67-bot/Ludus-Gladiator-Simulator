@@ -1,5 +1,7 @@
 extends "res://scripts/systems/relationship_manager.gd"
 
+const MONTHLY_ROSTER_WORK_POLICY = preload("res://scripts/systems/monthly_roster_work_policy.gd")
+
 
 func _ready() -> void:
 	RosterManager.roster_changed.connect(_ensure_all_pairs)
@@ -14,10 +16,13 @@ func _on_month_advanced(month: int) -> void:
 
 
 func process_month(totals: Dictionary) -> Array:
-	# The inherited social kernel is evaluated once for the canonical month.
-	# GameState.get_week() is a Save-v14 alias of get_month(), so it cannot create
-	# an additional weekly simulation tick.
-	return super.process_day(totals)
+	# Social state is still evaluated by the compatibility kernel, but its
+	# job-linked training bonus cannot bypass the fail-closed roster policy.
+	var training_before := int(totals.get("training", 0))
+	var events: Array = super.process_day(totals)
+	if not MONTHLY_ROSTER_WORK_POLICY.TRAINING_PROGRESS_ENABLED:
+		totals["training"] = training_before
+	return events
 
 
 func process_day(totals: Dictionary) -> Array:
