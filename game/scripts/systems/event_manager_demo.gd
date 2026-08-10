@@ -225,7 +225,9 @@ func _queue_followup(event_id: String, choice_id: String) -> void:
 		queued_chain_event = "veteran_trial"
 	else:
 		return
-	queued_chain_month = GameState.get_month() + MonthlyEventRuntimePolicyScript.CHAIN_FOLLOWUP_DELAY_MONTHS
+	queued_chain_month = (
+		GameState.get_month() + MonthlyEventRuntimePolicyScript.CHAIN_FOLLOWUP_DELAY_MONTHS
+	)
 	events_changed.emit()
 
 
