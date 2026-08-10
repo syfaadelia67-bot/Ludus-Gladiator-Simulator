@@ -10,7 +10,9 @@ var _data_repository: Node = null
 
 func _initialize() -> void:
 	_data_repository = root.get_node_or_null("DataRepository")
-	_assert_true(_data_repository != null, "DataRepository autoload must exist for reconciliation tests")
+	_assert_true(
+		_data_repository != null, "DataRepository autoload must exist for reconciliation tests"
+	)
 	if _data_repository == null:
 		_finish()
 		return
