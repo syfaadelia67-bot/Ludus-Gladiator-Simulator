@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3]
 
-[ext_resource path="res://scripts/ui/finca_screen.gd" type="Script" id="1"]
+[ext_resource path="res://scripts/ui/finca_screen_monthly.gd" type="Script" id="1"]
 
 [node name="FincaScreen" type="VBoxContainer"]
 layout_mode = 2
@@ -37,12 +37,12 @@ text = "Recursos"
 custom_minimum_size = Vector2(130, 0)
 layout_mode = 2
 horizontal_alignment = 2
-text = "SEMANA 1"
+text = "MES 1"
 
 [node name="AdvanceWeek" type="Button" parent="TopHUD/Margin/Row"]
 layout_mode = 2
-text = "Cerrar semana"
-tooltip_text = "Procesar trabajos, economía, recuperación y eventos de la semana."
+text = "Cerrar mes"
+tooltip_text = "Cerrar el turno mensual y avanzar la campaña."
 
 [node name="MainNavigation" type="PanelContainer" parent="."]
 visible = false
@@ -125,7 +125,7 @@ offset_top = 10.0
 offset_right = 620.0
 offset_bottom = 42.0
 theme_override_font_sizes/font_size = 22
-text = "FINCA DEL LUDUS · 6 INSTALACIONES ACTIVAS"
+text = "FINCA DEL LUDUS · 7 INSTALACIONES DE DEMO"
 
 [node name="MapHint" type="Label" parent="Center/WorldPanel/WorldMargin/WorldArea"]
 layout_mode = 0
@@ -134,7 +134,7 @@ offset_top = 43.0
 offset_right = 860.0
 offset_bottom = 70.0
 theme_override_font_sizes/font_size = 14
-text = "Seleccioná un edificio para consultar su estado, mejorarlo o entrar. Los edificios oscuros pertenecen al juego completo."
+text = "Seleccioná un edificio para consultar su estado, mejorarlo o entrar. La demo llega hasta nivel III."
 
 [node name="BuildingDetailsPanel" type="PanelContainer" parent="Center"]
 visible = false
@@ -219,7 +219,7 @@ custom_minimum_size = Vector2(280, 68)
 layout_mode = 2
 theme_override_font_sizes/font_size = 24
 text = "ARENA"
-tooltip_text = "Preparar y disputar el combate de la semana."
+tooltip_text = "Consultar y preparar los combates del calendario mensual."
 
 [node name="Personal" type="Button" parent="QuickAccess/Margin/Center/Row"]
 custom_minimum_size = Vector2(190, 54)
