@@ -141,6 +141,8 @@ func _on_assign_job() -> void:
 		activity_log.append_text(
 			"\n%s fue asignado a %s." % [person.display_name, RosterManager.get_job_name(job_id)]
 		)
+	else:
+		_append_warning("La asignación no está disponible para este personaje.")
 
 
 func _open_selected_dossier() -> void:
@@ -159,6 +161,13 @@ func _on_month_advanced(month: int) -> void:
 
 
 func _on_monthly_report(report: Dictionary) -> void:
+	var policy := RosterManager.get_monthly_work_policy()
+	if not bool(policy.get("work_outputs_enabled", false)):
+		activity_log.append_text(
+			"\n[color=orange]Asignaciones procesadas sin cambios numéricos: "
+			+ "trabajo, entrenamiento, fatiga y recuperación esperan balance mensual.[/color]"
+		)
+		return
 	activity_log.append_text("\nMineral producido: %d" % int(report.get("ore", 0)))
 	activity_log.append_text("\nSeguridad generada: %d" % int(report.get("security", 0)))
 	activity_log.append_text("\nInformación obtenida: %d" % int(report.get("intel", 0)))
