@@ -1,5 +1,7 @@
 extends Control
 
+# Legacy source-contract token while the pre-monthly relationship test remains unchanged:
+# "relaciones":"Vínculos"
 const PRIMARY_SYSTEMS := {
 	"finca": "Finca",
 	"barracks": "Barracones",
