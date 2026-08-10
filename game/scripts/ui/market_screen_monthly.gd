@@ -42,9 +42,7 @@ func _open_fighters() -> void:
 	equipment_view.visible = false
 	equipment_view.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	section_title.text = "MERCADO DE LUCHADORES"
-	feedback.text = (
-		"Las ofertas canónicas permanecen hasta que se congele la cadencia mensual del mercado."
-	)
+	feedback.text = ("Las ofertas canónicas permanecen hasta que se congele la cadencia mensual del mercado.")
 	_refresh_fighter_offers()
 
 
@@ -59,9 +57,7 @@ func _open_equipment() -> void:
 	equipment_view.visible = true
 	equipment_view.mouse_filter = Control.MOUSE_FILTER_PASS
 	section_title.text = "MERCADO DE EQUIPAMIENTO"
-	feedback.text = (
-		"La renovación manual permanece bloqueada hasta congelar su balance mensual."
-	)
+	feedback.text = ("La renovación manual permanece bloqueada hasta congelar su balance mensual.")
 	_refresh_equipment_offers()
 
 
