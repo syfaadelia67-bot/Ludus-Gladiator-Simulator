@@ -25,13 +25,18 @@ func run() -> void:
 		controller_source.contains("fights >= 8 or level >= 6"),
 		"Veterano debe alcanzarse por experiencia real dentro de la demo.",
 	)
-	_assert(controller_source.contains("fights >= 14"), "Declive debe depender de una carrera extensa.")
+	_assert(
+		controller_source.contains("fights >= 14"), "Declive debe depender de una carrera extensa."
+	)
 	_assert(
 		controller_source.contains("scars >= 2 or level >= 9"),
 		"Declive debe considerar desgaste o nivel alto.",
 	)
 	_assert(controller_source.contains("func can_retire"), "Debe validarse el retiro voluntario.")
-	_assert(controller_source.contains("func retire_to_staff"), "Debe poder retirarse hacia un rol del ludus.")
+	_assert(
+		controller_source.contains("func retire_to_staff"),
+		"Debe poder retirarse hacia un rol del ludus."
+	)
 	_assert(
 		controller_source.contains('STAFF_ROLES := ["trainer", "mentor"]'),
 		"El retiro debe conservar los roles entrenador y mentor.",
@@ -62,7 +67,10 @@ func run() -> void:
 		"CombatManager legacy conserva sus modificadores solo como compatibilidad.",
 	)
 
-	_assert(presenter_source.contains("ESTADO DE CARRERA"), "La ficha debe mostrar el estado de carrera.")
+	_assert(
+		presenter_source.contains("ESTADO DE CARRERA"),
+		"La ficha debe mostrar el estado de carrera."
+	)
 	_assert(
 		presenter_source.contains("Retirar como entrenador"),
 		"La ficha debe ofrecer retiro como entrenador.",
@@ -81,8 +89,11 @@ func run() -> void:
 	)
 
 	_assert(
-		project_source.contains(
-			'GladiatorCareerStateController="*res://scripts/systems/gladiator_career_state_controller.gd"'
+		(
+			project_source
+			. contains(
+				'GladiatorCareerStateController="*res://scripts/systems/gladiator_career_state_controller.gd"'
+			)
 		),
 		"El controlador debe estar registrado.",
 	)
@@ -93,13 +104,17 @@ func run() -> void:
 		"El presentador debe estar registrado.",
 	)
 	_assert(
-		project_source.find("GladiatorCareerStateController=")
-		< project_source.find("GladiatorTrainingController="),
+		(
+			project_source.find("GladiatorCareerStateController=")
+			< project_source.find("GladiatorTrainingController=")
+		),
 		"Carrera debe cargarse antes que Entrenamiento.",
 	)
 	_assert(
-		project_source.find("GladiatorCareerStateController=")
-		< project_source.find("GladiatorCareerStatePresenter="),
+		(
+			project_source.find("GladiatorCareerStateController=")
+			< project_source.find("GladiatorCareerStatePresenter=")
+		),
 		"El controlador debe cargarse antes que su interfaz.",
 	)
 
