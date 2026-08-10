@@ -5,6 +5,7 @@ func _ready() -> void:
 	var coordinator := FileAccess.get_file_as_string(
 		"res://scripts/core/new_campaign_coordinator.gd"
 	)
+	var save_manager := FileAccess.get_file_as_string("res://scripts/core/save_manager_demo.gd")
 	var start_screen := FileAccess.get_file_as_string("res://scripts/ui/start_screen_controller.gd")
 	var project := FileAccess.get_file_as_string("res://project.godot")
 
@@ -19,10 +20,13 @@ func _ready() -> void:
 	assert(coordinator.contains("DataRepository.get_economy_rule"))
 	assert(coordinator.contains('starting_resources.get("denarii", 0)'))
 	assert(coordinator.contains('"people": []'))
+	assert(coordinator.contains('"owned_beasts": {"entries": []}'))
 	assert(coordinator.contains('"combat_history": {"entries": []}'))
 	assert(coordinator.contains("SaveManager._apply_payload(reset_payload)"))
 	assert(coordinator.contains("SaveManager.autosave_enabled = previous_autosave"))
 	assert(coordinator.contains("reset_in_progress = false"))
+	assert(save_manager.contains('payload["owned_beasts"] = OwnedBeastRegistry.export_state()'))
+	assert(save_manager.contains("OwnedBeastRegistry.import_state"))
 
 	assert(start_screen.contains("NewCampaignCoordinator.reset_campaign_state()"))
 	assert(
@@ -34,6 +38,7 @@ func _ready() -> void:
 	assert(
 		project.contains('NewCampaignCoordinator="*res://scripts/core/new_campaign_coordinator.gd"')
 	)
+	assert(project.contains('OwnedBeastRegistry="*res://scripts/systems/owned_beast_registry.gd"'))
 	assert(project.find("SaveManager=") < project.find("NewCampaignCoordinator="))
 
 	print("New campaign reset contract: OK")
