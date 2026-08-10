@@ -53,9 +53,7 @@ func run() -> void:
 	fighter.injury_severity = 0
 	fighter.injury_name = ""
 	var agility_before := fighter.agility
-	GladiatorInjuryController._complete_recovery(
-		fighter, record, record.get("active_injury", {})
-	)
+	GladiatorInjuryController._complete_recovery(fighter, record, record.get("active_injury", {}))
 
 	var scars := GladiatorInjuryController.get_scars(fighter.id)
 	_assert(scars.size() == 1, "Una lesión grave debe dejar una cicatriz permanente.")
