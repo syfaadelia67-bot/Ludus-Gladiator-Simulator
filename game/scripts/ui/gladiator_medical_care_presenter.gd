@@ -158,7 +158,7 @@ func _render(person_id: String) -> void:
 	priority_button.disabled = (
 		GladiatorMedicalCareController.is_priority(person_id) or CampaignManager.campaign_over
 	)
-	priority_button.tooltip_text = ("La prioridad puede registrarse, pero no reduce recuperación hasta congelar el balance mensual.")
+	priority_button.tooltip_text = "Prioridad registrada sin efecto hasta congelar el balance mensual."
 	priority_button.pressed.connect(_set_priority.bind(person_id))
 	priority_row.add_child(priority_button)
 
