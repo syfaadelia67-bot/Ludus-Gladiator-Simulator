@@ -19,8 +19,11 @@ func get_recipe(recipe_id: String) -> Dictionary:
 
 
 func craft(_recipe_id: String) -> bool:
-	craft_failed.emit(
-		"La fabricación está bloqueada hasta congelar el catálogo, los costos y la calidad de Forja."
+	(
+		craft_failed
+		. emit(
+			"La fabricación está bloqueada hasta congelar el catálogo, los costos y la calidad de Forja."
+		)
 	)
 	return false
 
@@ -35,14 +38,18 @@ func get_legacy_equipped_stats(person) -> Dictionary:
 
 func equip_item_to_slot(person_id: String, item_id: String, slot_id: String) -> bool:
 	if CampaignManager.campaign_over:
-		equipment_failed.emit("La campaña terminó. El equipamiento está disponible solo para consulta.")
+		equipment_failed.emit(
+			"La campaña terminó. El equipamiento está disponible solo para consulta."
+		)
 		return false
 	return super.equip_item_to_slot(person_id, item_id, slot_id)
 
 
 func unequip_equipment_slot(person_id: String, slot_id: String) -> bool:
 	if CampaignManager.campaign_over:
-		equipment_failed.emit("La campaña terminó. El equipamiento está disponible solo para consulta.")
+		equipment_failed.emit(
+			"La campaña terminó. El equipamiento está disponible solo para consulta."
+		)
 		return false
 	return super.unequip_equipment_slot(person_id, slot_id)
 
