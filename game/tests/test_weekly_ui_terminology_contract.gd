@@ -4,13 +4,17 @@ extends Node
 func _ready() -> void:
 	var hud_scene := FileAccess.get_file_as_string("res://scenes/UnifiedHudShell.tscn")
 	var hud_script := FileAccess.get_file_as_string("res://scripts/ui/unified_hud_shell.gd")
-	var closure := FileAccess.get_file_as_string("res://scripts/ui/weekly_closure_presenter.gd")
+	var closure := FileAccess.get_file_as_string(
+		"res://scripts/ui/weekly_closure_presenter.gd"
+	)
 	var personal_ui := FileAccess.get_file_as_string("res://scripts/ui/personal_screen.gd")
 	var personal_scene := FileAccess.get_file_as_string("res://scenes/PersonalScreen.tscn")
 	var main_scene := FileAccess.get_file_as_string("res://scenes/Main.tscn")
 
 	assert(hud_scene.contains("Cerrar mes"))
-	assert(hud_scene.contains("Procesar trabajos, economía, recuperación y eventos del mes."))
+	assert(
+		hud_scene.contains("Procesar trabajos, economía, recuperación y eventos del mes.")
+	)
 	assert(hud_scene.contains('text = "MES 1"'))
 	assert(not hud_scene.contains("Cerrar semana"))
 	assert(not hud_scene.contains("Avanzar un día"))
