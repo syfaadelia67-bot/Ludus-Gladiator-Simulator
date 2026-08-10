@@ -6,9 +6,7 @@ func _ready() -> void:
 	var wrapper := FileAccess.get_file_as_string(
 		"res://scripts/systems/tournament_manager_demo_monthly.gd"
 	)
-	var campaign := FileAccess.get_file_as_string(
-		"res://scripts/systems/campaign_manager_demo.gd"
-	)
+	var campaign := FileAccess.get_file_as_string("res://scripts/systems/campaign_manager_demo.gd")
 	var objectives := FileAccess.get_file_as_string(
 		"res://scripts/systems/chapter_objective_controller.gd"
 	)
