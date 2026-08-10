@@ -106,8 +106,7 @@ func get_key_prices() -> Array[Dictionary]:
 				}
 			)
 	result.sort_custom(
-		func(a: Dictionary, b: Dictionary):
-			return int(a.get("price", 0)) < int(b.get("price", 0))
+		func(a: Dictionary, b: Dictionary): return int(a.get("price", 0)) < int(b.get("price", 0))
 	)
 	return result
 
@@ -137,9 +136,7 @@ func _cheapest_treatment_cost() -> int:
 	var cheapest := 999999
 	for treatment_id in GladiatorMedicalCareController.get_treatment_ids():
 		var treatment := GladiatorMedicalCareController.get_treatment(treatment_id)
-		cheapest = mini(
-			cheapest, int(treatment.get("cost", treatment.get("base_cost", 999999)))
-		)
+		cheapest = mini(cheapest, int(treatment.get("cost", treatment.get("base_cost", 999999))))
 	return 0 if cheapest == 999999 else cheapest
 
 
