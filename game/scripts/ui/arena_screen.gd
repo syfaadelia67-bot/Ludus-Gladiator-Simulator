@@ -402,11 +402,14 @@ func _clear_stage() -> void:
 func _refresh_encounter_panel() -> void:
 	var encounter := TournamentManager.get_gt1_encounter(GameState.get_month())
 	if encounter.is_empty():
-		opponent_info.text = "\n".join(
-			[
-				"[b]SIN ENCUENTRO GT I ESTE MES[/b]",
-				"No se genera un rival de forma automática.",
-			]
+		opponent_info.text = (
+			"\n"
+			. join(
+				[
+					"[b]SIN ENCUENTRO GT I ESTE MES[/b]",
+					"No se genera un rival de forma automática.",
+				]
+			)
 		)
 		combat_conditions.text = (
 			"[b]AUTORIDAD[/b]\n"
@@ -426,11 +429,14 @@ func _refresh_encounter_panel() -> void:
 			]
 		)
 	difficulty.text = "[b]DIFICULTAD[/b]\nNo calculada por la UI."
-	rewards.text = "\n".join(
-		[
-			"[b]PUNTUACIÓN[/b]",
-			"3 puntos por victoria GT I. Sin premios económicos inventados.",
-		]
+	rewards.text = (
+		"\n"
+		. join(
+			[
+				"[b]PUNTUACIÓN[/b]",
+				"3 puntos por victoria GT I. Sin premios económicos inventados.",
+			]
+		)
 	)
 	entry_info.text = "[b]ENTRADA[/b]\nSin coste automático definido por esta pantalla."
 
@@ -541,11 +547,14 @@ func _render_error(result: Dictionary) -> void:
 		errors.append(str(result.get("reason", "Operación rechazada por contrato Combat V1")))
 	var error_header := "[color=orange][b]COMBAT V1 RECHAZÓ LA OPERACIÓN[/b][/color]"
 	result_summary.text = "%s\n%s" % [error_header, "\n".join(errors)]
-	combat_log.text = "\n".join(
-		[
-			"[b]Sin mutación de combate[/b]",
-			"La operación falló antes de resolver el intercambio.",
-		]
+	combat_log.text = (
+		"\n"
+		. join(
+			[
+				"[b]Sin mutación de combate[/b]",
+				"La operación falló antes de resolver el intercambio.",
+			]
+		)
 	)
 	view_result_button.disabled = false
 	_show_result_view()
