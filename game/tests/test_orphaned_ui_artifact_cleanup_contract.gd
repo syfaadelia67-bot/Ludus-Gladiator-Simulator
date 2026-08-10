@@ -29,7 +29,7 @@ func run() -> void:
 
 	assert(FileAccess.file_exists("res://scripts/ui/equipment_panel.gd"))
 	assert(FileAccess.file_exists("res://scripts/ui/equipment_panel_v1.gd"))
-	assert(equipment_scene.contains('res://scripts/ui/equipment_panel_v1.gd'))
-	assert(not equipment_scene.contains('res://scripts/ui/equipment_panel.gd'))
+	assert(equipment_scene.contains("res://scripts/ui/equipment_panel_v1.gd"))
+	assert(not equipment_scene.contains("res://scripts/ui/equipment_panel.gd"))
 
 	print("Orphaned UI artifact cleanup contract: OK")
