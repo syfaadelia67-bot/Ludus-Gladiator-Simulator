@@ -13,23 +13,31 @@ func run() -> void:
 
 func _test_request_reuses_same_gladiator_for_all_bouts() -> void:
 	var host = GT1Month13HostScript.new()
-	var result: Dictionary = host.prepare_request(
-		"player_gladiator",
-		"player_team",
-		[
-			_fighter("rival_1", "rival_team"),
-			_fighter("rival_2", "rival_team"),
-			_fighter("rival_3", "rival_team"),
-		],
+	var result: Dictionary = (
+		host
+		. prepare_request(
+			"player_gladiator",
+			"player_team",
+			[
+				_fighter("rival_1", "rival_team"),
+				_fighter("rival_2", "rival_team"),
+				_fighter("rival_3", "rival_team"),
+			],
+		)
 	)
 	assert(result.get("status") == "ready")
 	assert(int(result.get("month", 0)) == 13)
 	assert(result.get("format") == "1v1")
-	assert(result.get("player_ids_by_bout") == [
-		["player_gladiator"],
-		["player_gladiator"],
-		["player_gladiator"],
-	])
+	assert(
+		(
+			result.get("player_ids_by_bout")
+			== [
+				["player_gladiator"],
+				["player_gladiator"],
+				["player_gladiator"],
+			]
+		)
+	)
 	assert((result.get("opponent_fighters_by_bout", []) as Array).size() == 3)
 	assert(result.get("carryover") == ["current_pv", "stamina"])
 	assert(result.get("beasts_allowed") == false)
@@ -38,10 +46,13 @@ func _test_request_reuses_same_gladiator_for_all_bouts() -> void:
 
 func _test_request_requires_three_explicit_rivals() -> void:
 	var host = GT1Month13HostScript.new()
-	var result: Dictionary = host.prepare_request(
-		"player_gladiator",
-		"player_team",
-		[_fighter("rival_1", "rival_team")],
+	var result: Dictionary = (
+		host
+		. prepare_request(
+			"player_gladiator",
+			"player_team",
+			[_fighter("rival_1", "rival_team")],
+		)
 	)
 	assert(result.get("status") == "rejected")
 	assert(_contains_error(result, "exactly three explicit rival"))
@@ -51,14 +62,17 @@ func _test_request_rejects_beasts() -> void:
 	var host = GT1Month13HostScript.new()
 	var beast := _fighter("lion_1", "rival_team")
 	beast["beast_id"] = "lion"
-	var result: Dictionary = host.prepare_request(
-		"player_gladiator",
-		"player_team",
-		[
-			_fighter("rival_1", "rival_team"),
-			beast,
-			_fighter("rival_3", "rival_team"),
-		],
+	var result: Dictionary = (
+		host
+		. prepare_request(
+			"player_gladiator",
+			"player_team",
+			[
+				_fighter("rival_1", "rival_team"),
+				beast,
+				_fighter("rival_3", "rival_team"),
+			],
+		)
 	)
 	assert(result.get("status") == "rejected")
 	assert(_contains_error(result, "does not allow beasts"))
