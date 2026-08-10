@@ -5,7 +5,9 @@ func run() -> void:
 	var catalog_text := FileAccess.get_file_as_string("res://data/buildings.json")
 	var scene_text := FileAccess.get_file_as_string("res://scenes/FincaScreen.tscn")
 	var legacy_controller := FileAccess.get_file_as_string("res://scripts/ui/finca_screen.gd")
-	var active_controller := FileAccess.get_file_as_string("res://scripts/ui/finca_screen_monthly.gd")
+	var active_controller := FileAccess.get_file_as_string(
+		"res://scripts/ui/finca_screen_monthly.gd"
+	)
 	var parsed: Variant = JSON.parse_string(catalog_text)
 
 	assert(parsed is Array)
@@ -50,7 +52,12 @@ func run() -> void:
 		assert(catalog_text.contains('"id": "%s"' % full_game_id))
 		assert(not legacy_controller.contains('"id": "%s"' % full_game_id))
 
-	assert(active_controller.contains("BLUR_SHADER_CODE") or legacy_controller.contains("BLUR_SHADER_CODE"))
+	assert(
+		(
+			active_controller.contains("BLUR_SHADER_CODE")
+			or legacy_controller.contains("BLUR_SHADER_CODE")
+		)
+	)
 	assert(legacy_controller.contains("hint_screen_texture"))
 	assert(legacy_controller.contains("textureLod"))
 	assert(legacy_controller.contains("func _build_building_modal()"))
