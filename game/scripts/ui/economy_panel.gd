@@ -91,8 +91,10 @@ func _show_error(reason: String) -> void:
 func _refresh() -> void:
 	var data := EconomyManager.get_summary()
 	summary.text = (
-		"[b]TESORERÍA[/b]\nCosto fijo mensual: %d | Deuda: %d | Contratos: %d | Préstamos: %d\n"
-		+ "Ingresos históricos: %d | Gastos históricos: %d\n[color=orange]%s[/color]"
+		(
+			"[b]TESORERÍA[/b]\nCosto fijo mensual: %d | Deuda: %d | Contratos: %d | Préstamos: %d\n"
+			+ "Ingresos históricos: %d | Gastos históricos: %d\n[color=orange]%s[/color]"
+		)
 		% [
 			int(data.get("monthly_fixed_costs", data.get("weekly_fixed_costs", 0))),
 			int(data.get("total_debt", 0)),
