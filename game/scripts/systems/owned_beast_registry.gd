@@ -54,7 +54,11 @@ func import_state(data: Dictionary) -> void:
 		var entry := raw_entry as Dictionary
 		var instance_id := str(entry.get("instance_id", ""))
 		var beast_id := str(entry.get("beast_id", ""))
-		if instance_id.is_empty() or owns_instance(instance_id) or not _is_canonical_beast_id(beast_id):
+		if (
+			instance_id.is_empty()
+			or owns_instance(instance_id)
+			or not _is_canonical_beast_id(beast_id)
+		):
 			continue
 		owned_beasts.append({"instance_id": instance_id, "beast_id": beast_id})
 	owned_beasts_changed.emit()
