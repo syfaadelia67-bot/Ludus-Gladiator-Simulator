@@ -1,5 +1,8 @@
 extends VBoxContainer
 
+var sponsor_ids: Array[String] = []
+var loan_ids: Array[String] = []
+
 @onready var back_button: Button = $Navigation/BackToFinca
 @onready var status: Label = $Navigation/Status
 @onready var scroll: ScrollContainer = $Scroll
@@ -11,9 +14,6 @@ extends VBoxContainer
 @onready var contracts: RichTextLabel = $Scroll/Content/Columns/Contracts
 @onready var loans: RichTextLabel = $Scroll/Content/Columns/Loans
 @onready var ledger: RichTextLabel = $Scroll/Content/Ledger
-
-var sponsor_ids: Array[String] = []
-var loan_ids: Array[String] = []
 
 
 func _ready() -> void:
