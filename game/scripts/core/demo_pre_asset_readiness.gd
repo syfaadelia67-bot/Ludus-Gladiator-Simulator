@@ -8,7 +8,7 @@ const PENDING_AUTHORITY_BOUNDARIES := {
 	"monthly_economy_runtime":
 	"Costs and beast ownership are canonical; sponsor, loan and bankruptcy balance remain pending.",
 	"monthly_market_cadence":
-	"Legacy market cadence is quarantined; rotation, procedural stock and manual refresh remain fail-closed until monthly market balance is frozen.",
+	"Legacy cadence is quarantined; market rotation and refresh await monthly balance.",
 	"monthly_roster_work_recovery":
 	"One monthly tick is canonical; work, fatigue and recovery still await monthly balance.",
 	"monthly_event_cadence":
