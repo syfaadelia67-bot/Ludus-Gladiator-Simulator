@@ -74,9 +74,8 @@ func start_month_20_session(
 func prepare_month_20_request(
 	player_ids_by_bout: Array, player_team_id: String, opponent_fighters_by_bout: Array
 ) -> Dictionary:
-	return (
-		_month_20_host
-		. prepare_request(player_ids_by_bout, player_team_id, opponent_fighters_by_bout)
+	return _month_20_host.prepare_request(
+		player_ids_by_bout, player_team_id, opponent_fighters_by_bout
 	)
 
 
