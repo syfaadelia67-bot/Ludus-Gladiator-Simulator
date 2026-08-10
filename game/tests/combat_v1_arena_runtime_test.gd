@@ -6,6 +6,7 @@ const CombatV1ArenaRuntimeScript = preload("res://scripts/ui/combat_v1_arena_run
 func run() -> void:
 	_test_runtime_contract()
 	_test_month_13_request_bridge()
+	_test_month_16_request_bridge()
 	_test_player_intent_requires_explicit_target()
 	_test_defensive_action_needs_no_target()
 	print("Combat V1 Arena runtime bridge: OK")
@@ -18,6 +19,7 @@ func _test_runtime_contract() -> void:
 	assert(contract.get("intent_authority") == "gt1_combat_intent_bridge")
 	assert(contract.get("presentation_authority") == "gt1_combat_presentation_snapshot")
 	assert(contract.get("month_13_host") == "gt1_month_13_host")
+	assert(contract.get("month_16_host") == "gt1_month_16_host")
 	assert(contract.get("combat_authority") == "combat_simulator")
 	assert(contract.get("scoring_authority") == "tournament_manager")
 	assert(contract.get("default_player_action_allowed") == false)
@@ -28,20 +30,50 @@ func _test_runtime_contract() -> void:
 
 func _test_month_13_request_bridge() -> void:
 	var runtime = CombatV1ArenaRuntimeScript.new()
-	var request: Dictionary = runtime.prepare_month_13_request(
-		"player",
-		"alpha",
-		[
-			_fighter("rival_1", "beta"),
-			_fighter("rival_2", "beta"),
-			_fighter("rival_3", "beta"),
-		],
+	var request: Dictionary = (
+		runtime
+		. prepare_month_13_request(
+			"player",
+			"alpha",
+			[
+				_fighter("rival_1", "beta"),
+				_fighter("rival_2", "beta"),
+				_fighter("rival_3", "beta"),
+			],
+		)
 	)
 	assert(request.get("status") == "ready")
 	assert(request.get("player_ids_by_bout") == [["player"], ["player"], ["player"]])
 	assert(request.get("carryover") == ["current_pv", "stamina"])
 	assert(request.get("beasts_allowed") == false)
 	assert(int(request.get("max_points", 0)) == 9)
+
+
+func _test_month_16_request_bridge() -> void:
+	var runtime = CombatV1ArenaRuntimeScript.new()
+	var request: Dictionary = (
+		runtime
+		. prepare_month_16_human_request(
+			["player_1", "player_2", "player_3"],
+			"alpha",
+			[
+				_fighter("rival_1", "beta"),
+				_fighter("rival_2", "beta"),
+				_fighter("rival_3", "beta"),
+			],
+		)
+	)
+	assert(request.get("status") == "ready")
+	assert(request.get("player_ids_by_bout") == [["player_1"], ["player_2"], ["player_3"]])
+	assert(request.get("carryover") == [])
+	assert(request.get("independent_bouts") == true)
+	assert(request.get("beasts_allowed_by_design") == true)
+	assert(request.get("beast_selection_ready") == false)
+	assert(int(request.get("max_points", 0)) == 9)
+	var readiness: Dictionary = runtime.get_month_16_beast_readiness()
+	assert(readiness.get("month") == 16)
+	assert(readiness.get("beast_selection_ready") == false)
+	assert(readiness.get("invent_stats_allowed") == false)
 
 
 func _test_player_intent_requires_explicit_target() -> void:
