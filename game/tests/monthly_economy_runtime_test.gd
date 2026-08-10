@@ -6,6 +6,7 @@ const PERSON_SCRIPT = preload("res://scripts/entities/person.gd")
 func run() -> void:
 	DataRepository.load_all()
 	var previous_people: Array = RosterManager.people.duplicate()
+	var previous_owned_beasts := OwnedBeastRegistry.export_state()
 	var previous_day := GameState.day
 	var previous_denarii := GameState.denarii
 	var previous_reputation := GameState.reputation
@@ -18,16 +19,19 @@ func run() -> void:
 			{"id": "economy_gladiator_1", "name": "Gladiador I", "role": "gladiator"}
 		),
 	]
+	OwnedBeastRegistry.reset_state()
 	_reset_economy_runtime()
 	GameState.day = 5
 	GameState.denarii = 1000
 
 	_test_frozen_population_cost()
+	_test_owned_beast_cost_and_persistence()
 	_test_exactly_once_per_month()
 	_test_processed_month_persists()
 	_test_insufficient_funds_uses_monthly_cost()
 
 	EconomyManager.import_state(previous_economy)
+	OwnedBeastRegistry.import_state(previous_owned_beasts)
 	RosterManager.people = previous_people
 	GameState.day = previous_day
 	GameState.denarii = previous_denarii
@@ -42,22 +46,42 @@ func _test_frozen_population_cost() -> void:
 		int(population.get("gladiator_count", -1)) == 1,
 		"Debe contar gladiadores del roster vivo."
 	)
-	_assert(int(population.get("beast_count", -1)) == 0, "No debe inventar bestias poseídas.")
+	_assert(int(population.get("beast_count", -1)) == 0, "Una campaña nueva no posee bestias.")
 	_assert(
-		population.get("beast_count_source_ready") == false,
-		"La fuente de bestias debe permanecer explícitamente pendiente."
+		population.get("beast_count_source_ready") == true,
+		"La propiedad de bestias debe tener una fuente canónica explícita."
+	)
+	_assert(
+		population.get("beast_count_source") == "OwnedBeastRegistry.owned_beast_ids",
+		"Economía debe leer bestias poseídas, no el catálogo completo."
 	)
 	var breakdown := EconomyManager.get_monthly_operating_cost_breakdown()
 	_assert(breakdown.get("status") == "ready", "La fórmula congelada debe estar disponible.")
 	_assert(int(breakdown.get("fixed_expense", 0)) == 88, "El costo fijo mensual debe ser 88.")
 	_assert(int(breakdown.get("slave_cost", 0)) == 10, "Dos esclavos deben costar 10.")
 	_assert(int(breakdown.get("gladiator_cost", 0)) == 20, "Un gladiador debe costar 20.")
-	_assert(int(breakdown.get("beast_cost", -1)) == 0, "Sin propiedad de bestias el costo debe ser 0.")
+	_assert(int(breakdown.get("beast_cost", -1)) == 0, "Sin bestias poseídas el costo debe ser 0.")
 	_assert(int(breakdown.get("total", 0)) == 118, "El costo mensual total debe ser 118.")
 	_assert(
 		breakdown.get("legacy_daily_formula_used") == false,
 		"La fórmula diaria heredada no puede participar."
 	)
+
+
+func _test_owned_beast_cost_and_persistence() -> void:
+	_assert(not OwnedBeastRegistry.register_owned_beast("unknown"), "No debe registrar IDs inventados.")
+	_assert(OwnedBeastRegistry.register_owned_beast("boar"), "Debe aceptar una bestia canónica.")
+	_assert(OwnedBeastRegistry.get_owned_count() == 1, "Debe registrar una bestia poseída.")
+	var breakdown := EconomyManager.get_monthly_operating_cost_breakdown()
+	_assert(int(breakdown.get("beast_cost", 0)) == 10, "Una bestia poseída debe costar 10/mes.")
+	_assert(int(breakdown.get("total", 0)) == 128, "La bestia debe elevar el costo total a 128.")
+
+	var exported := OwnedBeastRegistry.export_state()
+	OwnedBeastRegistry.reset_state()
+	OwnedBeastRegistry.import_state(exported)
+	_assert(OwnedBeastRegistry.owns("boar"), "La propiedad de bestias debe persistir.")
+	_assert(OwnedBeastRegistry.release_owned_beast("boar"), "Debe poder liberar la bestia registrada.")
+	_assert(OwnedBeastRegistry.get_owned_count() == 0, "El registro debe volver a quedar vacío.")
 
 
 func _test_exactly_once_per_month() -> void:
