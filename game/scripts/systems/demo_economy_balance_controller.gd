@@ -6,6 +6,8 @@ signal economy_balance_changed
 # freezes economy balance. They are no longer weekly scheduler constants.
 const LEGACY_SAFE_RUNWAY_TURNS := 3
 const LEGACY_CRITICAL_RUNWAY_TURNS := 1
+# Compatibility name for pre-monthly contracts only; it is not scheduler authority.
+const SAFE_RUNWAY_WEEKS := LEGACY_SAFE_RUNWAY_TURNS
 
 
 func _ready() -> void:
@@ -45,9 +47,7 @@ func get_audit() -> Dictionary:
 	if runway_months <= LEGACY_CRITICAL_RUNWAY_TURNS:
 		warnings.append("La tesorería tiene una autonomía crítica de %d mes(es)." % runway_months)
 	elif runway_months < LEGACY_SAFE_RUNWAY_TURNS:
-		warnings.append(
-			"La autonomía económica es inferior a %d meses." % LEGACY_SAFE_RUNWAY_TURNS
-		)
+		warnings.append("La autonomía económica es inferior a %d meses." % LEGACY_SAFE_RUNWAY_TURNS)
 	if EconomyManager.get_bankruptcy_level() >= 2:
 		warnings.append(EconomyManager.get_bankruptcy_message())
 	if not UniqueGladiatorManager.first_purchase_completed:
