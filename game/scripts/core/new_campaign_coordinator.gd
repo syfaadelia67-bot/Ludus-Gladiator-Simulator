@@ -27,6 +27,7 @@ func reset_campaign_state() -> bool:
 		"saved_at_unix": 0,
 		"game_state":
 		{
+			"month": 1,
 			"day": 1,
 			"week": 1,
 			"denarii": int(starting_resources.get("denarii", 0)),
@@ -39,7 +40,16 @@ func reset_campaign_state() -> bool:
 		"owned_beasts": {"entries": []},
 		"estate": {"levels": {}},
 		"equipment": {"inventory": [], "serial": 0},
-		"market": {"offers": [], "serial": 0},
+		"market":
+		{
+			"offers": [],
+			"serial": 0,
+			"equipment_offers": [],
+			"equipment_offer_serial": 0,
+			"last_market_rotation_month": 1,
+			"last_auto_refresh_month": 1,
+			"last_auto_refresh_week": 1,
+		},
 		"rivals":
 		{"entries": [], "hostility_heat": 0, "operations_completed": 0, "operations_detected": 0},
 		"combat": {"last_combat_day": -1, "last_result": {}, "next_battle_config": {}},
