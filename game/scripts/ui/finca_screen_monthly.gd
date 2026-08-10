@@ -160,7 +160,9 @@ func _building_effect_text(data: Dictionary) -> String:
 		"training_yard":
 			effect_text = "Planificación disponible; ganancia, fatiga y riesgo mensual pendientes."
 		"forge":
-			effect_text = "Nivel estructural de Forja %d; desbloqueos según catálogo vigente." % level
+			effect_text = (
+				"Nivel estructural de Forja %d; desbloqueos según catálogo vigente." % level
+			)
 		"infirmary":
 			effect_text = "Consulta y prioridad médica disponibles; recuperación y costos pendientes."
 		"mine":
