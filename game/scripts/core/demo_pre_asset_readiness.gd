@@ -36,7 +36,11 @@ const PENDING_AUTHORITY_BOUNDARIES := {
 	"gt1_rival_results_provider":
 	"GT I rival standings still require explicit external results without a campaign-owned provider.",
 	"months_without_gt1_loop":
-	"The approved arena/management loop outside Months XIII, XVI and XX is not yet frozen and wired.",
+	(
+		"Months outside XIII, XVI and XX now have an explicit management-only canonical loop and "
+		+ "legacy arena schedules are quarantined. The blocker remains until optional/mandatory "
+		+ "non-GT Arena opportunities and replacement objectives are frozen by design."
+	),
 	"in_progress_combat_save_policy":
 	"Saving/quitting during a Combat V1 series or tiebreak has no final persistence policy.",
 	"month_20_end_to_end_gate":
