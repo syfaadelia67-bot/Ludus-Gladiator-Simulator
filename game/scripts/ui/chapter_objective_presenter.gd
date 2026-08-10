@@ -46,22 +46,31 @@ func _refresh() -> void:
 	var chapter: Dictionary = overview.get("chapter", {})
 	var lines: Array[String] = []
 	lines.append(
-		"[font_size=22][b]CAPÍTULO %d · %s[/b][/font_size]"
-		% [int(chapter.get("number", 1)), str(chapter.get("name", "Campaña"))]
+		(
+			"[font_size=22][b]CAPÍTULO %d · %s[/b][/font_size]"
+			% [int(chapter.get("number", 1)), str(chapter.get("name", "Campaña"))]
+		)
 	)
 	lines.append(str(chapter.get("description", "")))
-	lines.append(
-		"[b]Plazo:[/b] mes %d · quedan %d mes(es)"
-		% [
-			int(overview.get("deadline_month", 0)),
-			int(overview.get("months_remaining", 0)),
-		]
+	(
+		lines
+		. append(
+			(
+				"[b]Plazo:[/b] mes %d · quedan %d mes(es)"
+				% [
+					int(overview.get("deadline_month", 0)),
+					int(overview.get("months_remaining", 0)),
+				]
+			)
+		)
 	)
 	lines.append("")
 	for objective in overview.get("objectives", []):
 		var status := str(objective.get("status", "en_progreso"))
 		var icon := _icon_for_status(status)
-		var role := "OBJETIVO PRINCIPAL" if bool(objective.get("primary", false)) else "Objetivo secundario"
+		var role := (
+			"OBJETIVO PRINCIPAL" if bool(objective.get("primary", false)) else "Objetivo secundario"
+		)
 		lines.append("[b]%s %s · %s[/b]" % [icon, role, str(objective.get("title", "Objetivo"))])
 		lines.append(str(objective.get("description", "")))
 		if status == "bloqueado_diseno":
@@ -69,22 +78,29 @@ func _refresh() -> void:
 				"[color=orange]En pausa: %s[/color]" % str(objective.get("blocked_reason", ""))
 			)
 		else:
-			lines.append(
-				"Progreso: %d/%d · recompensa: %d denarios y %d reputación"
-				% [
-					int(objective.get("progress", 0)),
-					int(objective.get("target", 1)),
-					int(objective.get("reward_denarii", 0)),
-					int(objective.get("reward_reputation", 0)),
-				]
+			(
+				lines
+				. append(
+					(
+						"Progreso: %d/%d · recompensa: %d denarios y %d reputación"
+						% [
+							int(objective.get("progress", 0)),
+							int(objective.get("target", 1)),
+							int(objective.get("reward_denarii", 0)),
+							int(objective.get("reward_reputation", 0)),
+						]
+					)
+				)
 			)
 		lines.append("")
 	lines.append("[b]HITOS DEL CALENDARIO[/b]")
 	for milestone in overview.get("milestones", []):
 		if int(milestone.get("month", 0)) >= GameState.get_month():
 			lines.append(
-				"Mes %d · %s"
-				% [int(milestone.get("month", 0)), str(milestone.get("label", "Hito"))]
+				(
+					"Mes %d · %s"
+					% [int(milestone.get("month", 0)), str(milestone.get("label", "Hito"))]
+				)
 			)
 	text.text = "\n".join(lines)
 
