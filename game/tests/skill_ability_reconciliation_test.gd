@@ -5,34 +5,34 @@ const ReconciliationPolicy = preload("res://scripts/core/skill_ability_reconcili
 const DemoPreAssetReadiness = preload("res://scripts/core/demo_pre_asset_readiness.gd")
 
 var _failures: Array[String] = []
+var _data_repository: Node = null
 
 
 func _initialize() -> void:
+	_data_repository = root.get_node_or_null("DataRepository")
+	_assert_true(_data_repository != null, "DataRepository autoload must exist for reconciliation tests")
+	if _data_repository == null:
+		_finish()
+		return
 	_test_canonical_catalog_is_exact_and_identity_only()
 	_test_legacy_abilities_cannot_resolve_as_combat_v1_skills()
 	_test_shared_ids_do_not_inherit_legacy_mechanics()
 	_test_specialization_class_abilities_stay_legacy()
 	_test_progression_fails_closed_until_skill_mechanics_are_frozen()
 	_test_readiness_closes_reconciliation_without_hiding_design_blocker()
-	if _failures.is_empty():
-		print("Skill / ability reconciliation: OK")
-		quit(0)
-		return
-	for failure in _failures:
-		push_error(failure)
-	quit(1)
+	_finish()
 
 
 func _test_canonical_catalog_is_exact_and_identity_only() -> void:
-	var skills := CanonicalSkillCatalog.get_skills()
+	var skills := CanonicalSkillCatalog.get_skills(_data_repository)
 	_assert_eq(skills.size(), 12, "Combat V1 must expose exactly twelve canonical skills")
 	_assert_eq(
-		CanonicalSkillCatalog.get_general_skills().size(),
+		CanonicalSkillCatalog.get_general_skills(_data_repository).size(),
 		8,
 		"Combat V1 must expose exactly eight general skills",
 	)
 	_assert_eq(
-		CanonicalSkillCatalog.get_specialized_skills().size(),
+		CanonicalSkillCatalog.get_specialized_skills(_data_repository).size(),
 		4,
 		"Combat V1 must expose exactly four specialized skills",
 	)
@@ -45,12 +45,13 @@ func _test_canonical_catalog_is_exact_and_identity_only() -> void:
 
 
 func _test_legacy_abilities_cannot_resolve_as_combat_v1_skills() -> void:
+	var legacy_abilities: Variant = _data_repository.get("abilities")
 	_assert_true(
-		not DataRepository.abilities.is_empty(),
+		legacy_abilities is Array and not (legacy_abilities as Array).is_empty(),
 		"legacy abilities must remain available for compatibility until legacy combat is retired",
 	)
 	_assert_true(
-		CanonicalSkillCatalog.get_skill("precise_strike").is_empty(),
+		CanonicalSkillCatalog.get_skill(_data_repository, "precise_strike").is_empty(),
 		"legacy-only precise_strike must not become a canonical skill",
 	)
 	_assert_true(
@@ -65,7 +66,7 @@ func _test_legacy_abilities_cannot_resolve_as_combat_v1_skills() -> void:
 
 
 func _test_shared_ids_do_not_inherit_legacy_mechanics() -> void:
-	var canonical_feint := CanonicalSkillCatalog.get_skill("feint")
+	var canonical_feint := CanonicalSkillCatalog.get_skill(_data_repository, "feint")
 	var legacy_feint := _legacy_ability("feint")
 	_assert_true(not canonical_feint.is_empty(), "canonical Finta must exist")
 	_assert_true(not legacy_feint.is_empty(), "legacy Finta compatibility data must still exist")
@@ -94,7 +95,11 @@ func _test_shared_ids_do_not_inherit_legacy_mechanics() -> void:
 
 
 func _test_specialization_class_abilities_stay_legacy() -> void:
-	for raw_specialization in DataRepository.specializations:
+	var raw_specializations: Variant = _data_repository.get("specializations")
+	if not raw_specializations is Array:
+		_assert_true(false, "DataRepository specializations compatibility catalog must be an Array")
+		return
+	for raw_specialization in raw_specializations as Array:
 		if not raw_specialization is Dictionary:
 			continue
 		var specialization := raw_specialization as Dictionary
@@ -102,7 +107,7 @@ func _test_specialization_class_abilities_stay_legacy() -> void:
 		if class_ability.is_empty():
 			continue
 		_assert_true(
-			CanonicalSkillCatalog.get_skill(class_ability).is_empty(),
+			CanonicalSkillCatalog.get_skill(_data_repository, class_ability).is_empty(),
 			(
 				"legacy specialization class_ability must not silently become a canonical skill: %s"
 				% class_ability
@@ -154,10 +159,23 @@ func _test_readiness_closes_reconciliation_without_hiding_design_blocker() -> vo
 
 
 func _legacy_ability(ability_id: String) -> Dictionary:
-	for raw_entry in DataRepository.abilities:
+	var raw_abilities: Variant = _data_repository.get("abilities")
+	if not raw_abilities is Array:
+		return {}
+	for raw_entry in raw_abilities as Array:
 		if raw_entry is Dictionary and str((raw_entry as Dictionary).get("id", "")) == ability_id:
 			return (raw_entry as Dictionary).duplicate(true)
 	return {}
+
+
+func _finish() -> void:
+	if _failures.is_empty():
+		print("Skill / ability reconciliation: OK")
+		quit(0)
+		return
+	for failure in _failures:
+		push_error(failure)
+	quit(1)
 
 
 func _assert_true(condition: bool, message: String) -> void:
