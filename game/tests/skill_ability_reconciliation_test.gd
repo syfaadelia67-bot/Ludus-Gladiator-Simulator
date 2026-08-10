@@ -103,8 +103,10 @@ func _test_specialization_class_abilities_stay_legacy() -> void:
 			continue
 		_assert_true(
 			CanonicalSkillCatalog.get_skill(class_ability).is_empty(),
-			"legacy specialization class_ability must not silently become a canonical skill: %s"
-			% class_ability,
+			(
+				"legacy specialization class_ability must not silently become a canonical skill: %s"
+				% class_ability
+			),
 		)
 	_assert_eq(
 		ReconciliationPolicy.get_contract().get(
