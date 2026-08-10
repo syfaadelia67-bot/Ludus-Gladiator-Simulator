@@ -22,9 +22,10 @@ const PENDING_AUTHORITY_BOUNDARIES := {
 	"Planning is month-native; non-GT activity blockers are not fully frozen yet.",
 	"playable_combat_v1_ui":
 	(
-		"Combat V1 Arena and the Month XIII/XVI human hosts are canonical; Month XX host wiring "
-		+ "remains pending. XIII/XVI fail closed without rival snapshots, and XVI beast selection "
-		+ "stays blocked until canonical beast stats and its runtime adapter are ready."
+		"Combat V1 Arena and the Month XIII/XVI/XX hosts are canonical. GT I still fails closed "
+		+ "without rival snapshots, and XVI beast selection stays blocked until canonical beast "
+		+ "stats and its runtime adapter are ready. Final player-facing series setup still needs "
+		+ "to consume those canonical sources without placeholder opponent data."
 	),
 	"gt1_rival_results_provider":
 	"GT I rival standings still require explicit external results without a campaign-owned provider.",
