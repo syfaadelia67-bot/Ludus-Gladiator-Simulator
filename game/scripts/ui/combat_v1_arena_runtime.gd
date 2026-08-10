@@ -16,39 +16,40 @@ var _runtime = GT1CombatRuntimeScript.new()
 
 
 func start_gt1_session(
-	month: int,
-	player_team_id: String,
-	player_ids_by_bout: Array,
-	opponent_fighters_by_bout: Array
+	month: int, player_team_id: String, player_ids_by_bout: Array, opponent_fighters_by_bout: Array
 ) -> Dictionary:
-	return _runtime.start_encounter_from_live_roster(
-		month,
-		player_team_id,
-		player_ids_by_bout,
-		opponent_fighters_by_bout,
+	return (
+		_runtime
+		. start_encounter_from_live_roster(
+			month,
+			player_team_id,
+			player_ids_by_bout,
+			opponent_fighters_by_bout,
+		)
 	)
 
 
 func advance_exchange(
-	session: Dictionary,
-	player_intents_by_actor: Dictionary,
-	ai_requests_by_actor: Dictionary
+	session: Dictionary, player_intents_by_actor: Dictionary, ai_requests_by_actor: Dictionary
 ) -> Dictionary:
-	return _intent_bridge.advance_exchange(
-		session,
-		player_intents_by_actor,
-		ai_requests_by_actor,
+	return (
+		_intent_bridge
+		. advance_exchange(
+			session,
+			player_intents_by_actor,
+			ai_requests_by_actor,
+		)
 	)
 
 
 func build_player_intents(
-	session: Dictionary,
-	action_id: String,
-	targets_by_actor: Dictionary = {}
+	session: Dictionary, action_id: String, targets_by_actor: Dictionary = {}
 ) -> Dictionary:
 	var state := _active_state(session)
 	if state.is_empty():
-		return _rejected("missing_active_combat_state", ["Combat V1 Arena requires an active GT I state"])
+		return _rejected(
+			"missing_active_combat_state", ["Combat V1 Arena requires an active GT I state"]
+		)
 	if not _action_catalog.is_action_id_valid(action_id):
 		return _rejected("invalid_action", ["Unsupported Combat V1 action: %s" % action_id])
 
@@ -63,7 +64,10 @@ func build_player_intents(
 		var fighter := raw_fighter as Dictionary
 		if str(fighter.get("team", "")) != player_team_id:
 			continue
-		if int(fighter.get("current_pv", (fighter.get("stats", {}) as Dictionary).get("PV", 0))) <= 0:
+		if (
+			int(fighter.get("current_pv", (fighter.get("stats", {}) as Dictionary).get("PV", 0)))
+			<= 0
+		):
 			continue
 		var actor_id := str(fighter.get("id", ""))
 		var desired_action := {
@@ -77,7 +81,9 @@ func build_player_intents(
 		intents[actor_id] = desired_action
 
 	if intents.is_empty():
-		return _rejected("no_active_player_fighters", ["Combat V1 Arena found no active player fighters"])
+		return _rejected(
+			"no_active_player_fighters", ["Combat V1 Arena found no active player fighters"]
+		)
 	return {
 		"status": "ready",
 		"reason": "",
@@ -104,7 +110,10 @@ func get_active_enemy_ids(session: Dictionary) -> Array[String]:
 		var fighter := raw_fighter as Dictionary
 		if str(fighter.get("team", "")) == player_team_id:
 			continue
-		if int(fighter.get("current_pv", (fighter.get("stats", {}) as Dictionary).get("PV", 0))) <= 0:
+		if (
+			int(fighter.get("current_pv", (fighter.get("stats", {}) as Dictionary).get("PV", 0)))
+			<= 0
+		):
 			continue
 		var fighter_id := str(fighter.get("id", ""))
 		if not fighter_id.is_empty():
@@ -123,7 +132,10 @@ func get_active_player_ids(session: Dictionary) -> Array[String]:
 		var fighter := raw_fighter as Dictionary
 		if str(fighter.get("team", "")) != player_team_id:
 			continue
-		if int(fighter.get("current_pv", (fighter.get("stats", {}) as Dictionary).get("PV", 0))) <= 0:
+		if (
+			int(fighter.get("current_pv", (fighter.get("stats", {}) as Dictionary).get("PV", 0)))
+			<= 0
+		):
 			continue
 		var fighter_id := str(fighter.get("id", ""))
 		if not fighter_id.is_empty():
