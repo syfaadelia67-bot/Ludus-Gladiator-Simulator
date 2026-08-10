@@ -10,13 +10,24 @@ func run() -> void:
 	)
 	var project_source := FileAccess.get_file_as_string("res://project.godot")
 
-	_assert(controller_source.contains("const FOCUSES"), "El sistema debe definir focos de entrenamiento.")
+	_assert(
+		controller_source.contains("const FOCUSES"),
+		"El sistema debe definir focos de entrenamiento."
+	)
 	for focus_id in ["balanced", "strength", "agility", "endurance", "technique", "specialization"]:
 		_assert(controller_source.contains('"%s"' % focus_id), "Falta el foco %s." % focus_id)
 	_assert(controller_source.contains("func set_focus"), "Debe poder elegirse un foco individual.")
-	_assert(controller_source.contains("func get_preview"), "Debe existir una previsualización mensual.")
-	_assert(controller_source.contains("func process_month"), "Debe existir la entrada mensual explícita.")
-	_assert(controller_source.contains("func process_week"), "La API semanal debe quedar como adaptador legacy.")
+	_assert(
+		controller_source.contains("func get_preview"), "Debe existir una previsualización mensual."
+	)
+	_assert(
+		controller_source.contains("func process_month"),
+		"Debe existir la entrada mensual explícita."
+	)
+	_assert(
+		controller_source.contains("func process_week"),
+		"La API semanal debe quedar como adaptador legacy."
+	)
 	_assert(
 		not controller_source.contains("GameState.week_advanced.connect"),
 		"Entrenamiento no puede conservar scheduler semanal.",
@@ -88,8 +99,10 @@ func run() -> void:
 		"El presentador debe estar registrado como autoload.",
 	)
 	_assert(
-		project_source.find("GladiatorTrainingController=")
-		< project_source.find("GladiatorTrainingPresenter="),
+		(
+			project_source.find("GladiatorTrainingController=")
+			< project_source.find("GladiatorTrainingPresenter=")
+		),
 		"El controlador debe cargarse antes que la interfaz.",
 	)
 
