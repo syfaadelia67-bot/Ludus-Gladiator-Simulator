@@ -24,6 +24,7 @@ func get_summary() -> Dictionary:
 	var injured: Array[Dictionary] = []
 	var available_gladiators := 0
 	var retired_staff := 0
+	var roster_policy := RosterManager.get_monthly_work_policy()
 
 	for person in RosterManager.get_people():
 		assignments.append(
@@ -33,7 +34,7 @@ func get_summary() -> Dictionary:
 				"role": person.role,
 				"job": person.job,
 				"job_name": RosterManager.get_job_name(person.job),
-				"fatigue": person.fatigue
+				"fatigue": person.fatigue,
 			}
 		)
 		if person.role == "gladiator":
@@ -43,9 +44,6 @@ func get_summary() -> Dictionary:
 				var preview: Dictionary = GladiatorTrainingController.get_preview(person.id)
 				preview["id"] = person.id
 				preview["name"] = person.display_name
-				preview["monthly_gain"] = int(
-					preview.get("monthly_gain", preview.get("weekly_gain", 0))
-				)
 				training.append(preview)
 			if person.injury_days > 0:
 				injured.append(
@@ -54,7 +52,7 @@ func get_summary() -> Dictionary:
 						"name": person.display_name,
 						"injury": person.injury_name,
 						"severity": person.injury_severity,
-						"months": person.injury_days
+						"months": person.get_injury_recovery_months(),
 					}
 				)
 		elif person.role == "retired":
@@ -99,14 +97,10 @@ func get_summary() -> Dictionary:
 		warnings.append("La tesorería proyectada no alcanza para todos los pagos.")
 	if available_gladiators == 0 and RosterManager.has_gladiator():
 		warnings.append("No hay gladiadores disponibles para combatir.")
-	for item in training:
-		if int(item.get("injury_risk", 0)) >= 20:
-			warnings.append(
-				(
-					"%s tiene %d%% de riesgo de lesión por entrenamiento."
-					% [item.get("name", "Gladiador"), int(item.get("injury_risk", 0))]
-				)
-			)
+	if not bool(roster_policy.get("work_outputs_enabled", false)):
+		warnings.append(
+			"Trabajo, entrenamiento, fatiga y recuperación no aplicarán cambios numéricos hasta congelar su balance mensual."
+		)
 
 	return {
 		"period": "month",
@@ -117,6 +111,7 @@ func get_summary() -> Dictionary:
 		"injured": injured,
 		"retired_staff": retired_staff,
 		"available_gladiators": available_gladiators,
+		"roster_policy": roster_policy,
 		"food_consumption": food_consumption,
 		"food_after": maxi(0, GameState.food - food_consumption),
 		"economy": economy,
@@ -126,5 +121,5 @@ func get_summary() -> Dictionary:
 		"event_pending": event_pending,
 		"blockers": blockers,
 		"warnings": warnings,
-		"can_close": blockers.is_empty() and not CampaignManager.campaign_over
+		"can_close": blockers.is_empty() and not CampaignManager.campaign_over,
 	}
