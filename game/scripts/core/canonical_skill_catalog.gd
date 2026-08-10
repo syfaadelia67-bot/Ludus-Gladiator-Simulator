@@ -7,31 +7,41 @@ static func get_contract() -> Dictionary:
 	return ReconciliationPolicy.get_contract()
 
 
-static func get_skills() -> Array[Dictionary]:
+static func get_skills(repository: Object) -> Array[Dictionary]:
 	var result: Array[Dictionary] = []
-	for raw_entry in DataRepository.get_skills():
+	if repository == null or not repository.has_method("get_skills"):
+		return result
+	var raw_skills: Variant = repository.call("get_skills")
+	if not raw_skills is Array:
+		return result
+	for raw_entry in raw_skills as Array:
 		if raw_entry is Dictionary:
 			result.append(ReconciliationPolicy.canonical_skill_identity(raw_entry as Dictionary))
 	return result
 
 
-static func get_skill(skill_id: String) -> Dictionary:
-	var entry: Dictionary = DataRepository.get_skill(skill_id)
+static func get_skill(repository: Object, skill_id: String) -> Dictionary:
+	if repository == null or not repository.has_method("get_skill"):
+		return {}
+	var raw_entry: Variant = repository.call("get_skill", skill_id)
+	if not raw_entry is Dictionary:
+		return {}
+	var entry := raw_entry as Dictionary
 	if entry.is_empty():
 		return {}
 	return ReconciliationPolicy.canonical_skill_identity(entry)
 
 
-static func has_skill(skill_id: String) -> bool:
-	return not get_skill(skill_id).is_empty()
+static func has_skill(repository: Object, skill_id: String) -> bool:
+	return not get_skill(repository, skill_id).is_empty()
 
 
-static func get_general_skills() -> Array[Dictionary]:
-	return _by_category("general")
+static func get_general_skills(repository: Object) -> Array[Dictionary]:
+	return _by_category(repository, "general")
 
 
-static func get_specialized_skills() -> Array[Dictionary]:
-	return _by_category("specialized")
+static func get_specialized_skills(repository: Object) -> Array[Dictionary]:
+	return _by_category(repository, "specialized")
 
 
 static func resolve_legacy_ability_as_skill(_ability_id: String) -> Dictionary:
@@ -44,9 +54,9 @@ static func can_progress_skills() -> bool:
 	return ReconciliationPolicy.can_progress_canonical_skills()
 
 
-static func _by_category(category: String) -> Array[Dictionary]:
+static func _by_category(repository: Object, category: String) -> Array[Dictionary]:
 	var result: Array[Dictionary] = []
-	for entry in get_skills():
+	for entry in get_skills(repository):
 		if str(entry.get("category", "")) == category:
 			result.append(entry)
 	return result
