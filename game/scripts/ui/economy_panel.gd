@@ -90,16 +90,22 @@ func _show_error(reason: String) -> void:
 
 func _refresh() -> void:
 	var data := EconomyManager.get_summary()
+	var breakdown: Dictionary = data.get("monthly_operating_cost_breakdown", {})
 	summary.text = (
 		(
-			"[b]TESORERÍA[/b]\nCosto fijo mensual: %d | Deuda: %d | Contratos: %d | Préstamos: %d\n"
+			"[b]TESORERÍA[/b]\nCosto operativo mensual: %d | Deuda: %d | Contratos: %d | Préstamos: %d\n"
+			+ "Base: %d | Esclavos: %d | Gladiadores: %d | Bestias: %d\n"
 			+ "Ingresos históricos: %d | Gastos históricos: %d\n[color=orange]%s[/color]"
 		)
 		% [
-			int(data.get("monthly_fixed_costs", data.get("weekly_fixed_costs", 0))),
+			int(data.get("monthly_operating_costs", data.get("monthly_fixed_costs", 0))),
 			int(data.get("total_debt", 0)),
 			int(data.get("contracts", 0)),
 			int(data.get("loans", 0)),
+			int(breakdown.get("fixed_expense", 0)),
+			int(breakdown.get("slave_cost", 0)),
+			int(breakdown.get("gladiator_cost", 0)),
+			int(breakdown.get("beast_cost", 0)),
 			int(data.get("total_income", 0)),
 			int(data.get("total_expenses", 0)),
 			data.get("message", ""),
