@@ -3,9 +3,7 @@ extends SceneTree
 
 func _initialize() -> void:
 	var scene_text := FileAccess.get_file_as_string("res://scenes/MarketScreen.tscn")
-	var screen_text := FileAccess.get_file_as_string(
-		"res://scripts/ui/market_screen_monthly.gd"
-	)
+	var screen_text := FileAccess.get_file_as_string("res://scripts/ui/market_screen_monthly.gd")
 	var market_text := FileAccess.get_file_as_string("res://scripts/systems/market_manager.gd")
 	var policy_text := FileAccess.get_file_as_string(
 		"res://scripts/systems/monthly_market_policy.gd"
