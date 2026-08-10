@@ -13,7 +13,10 @@ func run() -> void:
 	)
 	var project_source := FileAccess.get_file_as_string("res://project.godot")
 
-	_assert(controller_source.contains("func get_summary"), "Debe existir un resumen previo al cierre.")
+	_assert(
+		controller_source.contains("func get_summary"),
+		"Debe existir un resumen previo al cierre."
+	)
 	_assert(
 		controller_source.contains("assignments"),
 		"El resumen debe incluir asignaciones del personal."
@@ -56,7 +59,10 @@ func run() -> void:
 		controller_source.contains("El encuentro del Gran Torneo de este mes"),
 		"Un encuentro GT I pendiente debe bloquear el cierre mensual."
 	)
-	_assert(controller_source.contains("can_close"), "El resumen debe exponer si el mes puede cerrarse.")
+	_assert(
+		controller_source.contains("can_close"),
+		"El resumen debe exponer si el mes puede cerrarse."
+	)
 
 	_assert(
 		presenter_source.contains("MonthlyClosureSummary"),
