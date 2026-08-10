@@ -50,6 +50,7 @@ func _build_payload() -> Dictionary:
 	game_data["week"] = month
 	payload["game_state"] = game_data
 	_inject_canonical_resistance(payload)
+	_inject_monthly_roster_state(payload)
 	payload["unique_gladiators"] = UniqueGladiatorManager.export_state()
 	# Save v14 accepts additive dictionaries. Beast ownership stores identity only;
 	# Combat V1 beast stats remain separately blocked until they are frozen.
@@ -70,6 +71,16 @@ func _inject_canonical_resistance(payload: Dictionary) -> void:
 		var live_person = live_people[index]
 		serialized_person["resistance"] = maxi(1, int(live_person.resistance))
 	roster_data["people"] = people_data
+	payload["roster"] = roster_data
+
+
+func _inject_monthly_roster_state(payload: Dictionary) -> void:
+	var roster_data := payload.get("roster", {}) as Dictionary
+	roster_data["last_processed_month"] = RosterManager.last_processed_month
+	roster_data["last_monthly_result"] = RosterManager.last_monthly_result.duplicate(true)
+	roster_data["monthly_policy_status"] = str(
+		RosterManager.get_monthly_work_policy().get("status", "")
+	)
 	payload["roster"] = roster_data
 
 
@@ -94,6 +105,13 @@ func _apply_payload(data: Dictionary) -> bool:
 	GameState.day = maxi(
 		1, int(game_data.get("month", game_data.get("week", game_data.get("day", 1))))
 	)
+	var roster_data: Dictionary = data.get("roster", {})
+	RosterManager.last_processed_month = maxi(0, int(roster_data.get("last_processed_month", 0)))
+	var last_roster_result: Variant = roster_data.get("last_monthly_result", {})
+	RosterManager.last_monthly_result = (
+		last_roster_result.duplicate(true) if last_roster_result is Dictionary else {}
+	)
+
 	var market_data: Dictionary = data.get("market", {})
 	MarketManager.last_market_rotation_month = maxi(
 		1,
