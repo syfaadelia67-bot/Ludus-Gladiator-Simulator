@@ -50,12 +50,14 @@ func _build_payload() -> Dictionary:
 	game_data["week"] = month
 	payload["game_state"] = game_data
 	_inject_canonical_resistance(payload)
+	_inject_equipment_slots(payload)
 	_inject_monthly_roster_state(payload)
 	payload["unique_gladiators"] = UniqueGladiatorManager.export_state()
 	# Save v14 accepts additive dictionaries. Beast ownership stores identity only;
 	# Combat V1 beast stats remain separately blocked until they are frozen.
 	payload["owned_beasts"] = OwnedBeastRegistry.export_state()
 	_inject_monthly_market_state(payload)
+	_inject_equipment_runtime_state(payload)
 	return payload
 
 
@@ -70,6 +72,26 @@ func _inject_canonical_resistance(payload: Dictionary) -> void:
 		var serialized_person := people_data[index] as Dictionary
 		var live_person = live_people[index]
 		serialized_person["resistance"] = maxi(1, int(live_person.resistance))
+	roster_data["people"] = people_data
+	payload["roster"] = roster_data
+
+
+func _inject_equipment_slots(payload: Dictionary) -> void:
+	var roster_data := payload.get("roster", {}) as Dictionary
+	var people_data := roster_data.get("people", []) as Array
+	var live_people := RosterManager.get_people()
+	var people_by_id: Dictionary = {}
+	for person in live_people:
+		people_by_id[str(person.id)] = person
+	for raw_person_data in people_data:
+		if not raw_person_data is Dictionary:
+			continue
+		var person_data := raw_person_data as Dictionary
+		var person_id := str(person_data.get("id", ""))
+		if not people_by_id.has(person_id):
+			continue
+		var live_person = people_by_id[person_id]
+		person_data["equipped_slots"] = live_person.get_equipped_slots()
 	roster_data["people"] = people_data
 	payload["roster"] = roster_data
 
@@ -95,6 +117,15 @@ func _inject_monthly_market_state(payload: Dictionary) -> void:
 		MarketManager.get_market_rotation_policy().get("status", "")
 	)
 	payload["market"] = market_data
+
+
+func _inject_equipment_runtime_state(payload: Dictionary) -> void:
+	var equipment_data := payload.get("equipment", {}) as Dictionary
+	equipment_data["runtime_policy_status"] = str(
+		EquipmentManager.get_runtime_policy().get("status", "")
+	)
+	equipment_data["canonical_slots_persisted"] = true
+	payload["equipment"] = equipment_data
 
 
 func _apply_payload(data: Dictionary) -> bool:
@@ -130,6 +161,7 @@ func _apply_payload(data: Dictionary) -> bool:
 	)
 	var owned_beast_data: Variant = data.get("owned_beasts", {})
 	OwnedBeastRegistry.import_state(owned_beast_data if owned_beast_data is Dictionary else {})
+	EquipmentManager.reconcile_inventory_ownership()
 
 	var unique_data: Variant = data.get("unique_gladiators", null)
 	if unique_data is Dictionary and not unique_data.is_empty():
