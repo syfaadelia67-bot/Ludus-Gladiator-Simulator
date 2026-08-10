@@ -22,7 +22,9 @@ func _ready() -> void:
 	assert(arena_screen.contains("FincaHubController.show_finca()"))
 	assert(arena_screen.contains('FincaHubController.open_system("personal")'))
 	assert(arena_screen.contains("ui_cancel"))
-	assert(arena_screen.contains("CombatManager.last_result"))
+	assert(arena_screen.contains("CombatV1ArenaRuntimeScript"))
+	assert(arena_screen.contains("_arena_runtime.build_snapshot"))
+	assert(not arena_screen.contains("CombatManager"))
 
 	assert(event_modal.contains("MonthlyEventModal"))
 	assert(event_modal.contains("set_tab_hidden"))
@@ -53,5 +55,5 @@ func _ready() -> void:
 	assert(not project.contains("ArenaOpponentPreviewPresenter="))
 	assert(not project.contains("ArenaFinaleWarningPresenter="))
 
-	print("Hosted monthly visual flow corrections contract: OK")
+	print("Hosted monthly Combat V1 visual flow corrections contract: OK")
 	get_tree().quit()
