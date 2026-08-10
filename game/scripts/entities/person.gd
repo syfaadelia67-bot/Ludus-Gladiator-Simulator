@@ -1,9 +1,7 @@
 class_name LudusPerson
 extends RefCounted
 
-const MONTHLY_ROSTER_WORK_POLICY = preload(
-	"res://scripts/systems/monthly_roster_work_policy.gd"
-)
+const MONTHLY_ROSTER_WORK_POLICY = preload("res://scripts/systems/monthly_roster_work_policy.gd")
 const EQUIPMENT_SLOT_IDS: Array[String] = [
 	"head",
 	"torso",
@@ -211,15 +209,11 @@ func get_max_energy() -> int:
 
 
 func get_base_attack() -> int:
-	return maxi(
-		1, strength * 2 + agility + floori(float(technique) / 2.0) - injury_severity * 3
-	)
+	return maxi(1, strength * 2 + agility + floori(float(technique) / 2.0) - injury_severity * 3)
 
 
 func get_base_defense() -> int:
-	return maxi(
-		1, endurance + agility + floori(float(technique) / 2.0) - injury_severity * 2
-	)
+	return maxi(1, endurance + agility + floori(float(technique) / 2.0) - injury_severity * 2)
 
 
 func get_injury_summary() -> String:
