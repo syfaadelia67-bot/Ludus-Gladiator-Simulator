@@ -20,8 +20,6 @@ const PENDING_AUTHORITY_BOUNDARIES := {
 	"Event chains schedule by month; cooldown and timed effects still await monthly balance.",
 	"monthly_planning_turn_closure":
 	"Planning is month-native; non-GT activity blockers are not fully frozen yet.",
-	"legacy_combat_manager_quarantine":
-	"Legacy CombatManager still exposes old scheduling and non-Combat-V1 formulas.",
 	"playable_combat_v1_ui":
 	"Combat V1 has runtime contracts but no complete player-facing placeholder combat flow yet.",
 	"gt1_rival_results_provider":
