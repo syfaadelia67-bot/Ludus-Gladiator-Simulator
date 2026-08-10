@@ -1,12 +1,12 @@
 extends "res://scripts/systems/rival_manager.gd"
 
-const MonthlyRivalManagementPolicyScript = preload(
-	"res://scripts/systems/monthly_rival_management_policy.gd"
-)
-
 signal monthly_rivalry_processed(month: int, events: Array)
 # Compatibility signal only. It mirrors the same monthly result.
 signal weekly_rivalry_processed(week: int, events: Array)
+
+const MonthlyRivalManagementPolicyScript = preload(
+	"res://scripts/systems/monthly_rival_management_policy.gd"
+)
 
 var _monthly_policy = MonthlyRivalManagementPolicyScript.new()
 
