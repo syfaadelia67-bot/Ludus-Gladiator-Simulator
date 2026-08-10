@@ -5,6 +5,9 @@ func run() -> void:
 	var controller_source := FileAccess.get_file_as_string(
 		"res://scripts/systems/weekly_planning_controller.gd"
 	)
+	var closure_policy_source := FileAccess.get_file_as_string(
+		"res://scripts/systems/monthly_turn_closure_policy.gd"
+	)
 	var economy_source := FileAccess.get_file_as_string(
 		"res://scripts/systems/economy_manager_weekly.gd"
 	)
@@ -47,15 +50,24 @@ func run() -> void:
 		economy_source.contains("active_contracts"), "La proyección debe considerar patrocinadores."
 	)
 	_assert(
-		controller_source.contains("Hay un evento mensual pendiente"),
+		controller_source.contains("GameState.get_month_closure_status()"),
+		"El planificador debe consumir la autoridad canónica de cierre mensual."
+	)
+	_assert(
+		closure_policy_source.contains("Hay un evento mensual pendiente"),
 		"Un evento mensual sin resolver debe bloquear el cierre."
 	)
 	_assert(
-		controller_source.contains("El encuentro del Gran Torneo de este mes"),
+		closure_policy_source.contains("El encuentro del Gran Torneo de este mes"),
 		"Un encuentro GT I pendiente debe bloquear el cierre mensual."
 	)
 	_assert(
-		controller_source.contains("can_close"), "El resumen debe exponer si el mes puede cerrarse."
+		closure_policy_source.contains('"non_gt_combat_required": false'),
+		"Los meses sin GT I no deben inventar un combate obligatorio."
+	)
+	_assert(
+		controller_source.contains('"can_close": bool(closure.get("can_close", false))'),
+		"El resumen debe exponer la decisión canónica de cierre."
 	)
 
 	_assert(
