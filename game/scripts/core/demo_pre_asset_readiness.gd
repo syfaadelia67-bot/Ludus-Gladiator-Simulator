@@ -6,7 +6,7 @@ const GT1BeastReadinessContractScript = preload(
 
 const PENDING_AUTHORITY_BOUNDARIES := {
 	"monthly_economy_runtime":
-	"Month scheduling is canonical; inherited cost formulas still await frozen monthly rules.",
+	"Frozen operating costs are authoritative and owned-beast counts persist; sponsor/loan cadence and exact monthly bankruptcy thresholds still await frozen balance.",
 	"monthly_market_cadence":
 	"Month signaling is canonical; refresh cadence is still an unfrozen legacy turn count.",
 	"monthly_roster_work_recovery":
