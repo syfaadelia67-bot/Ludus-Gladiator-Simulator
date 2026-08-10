@@ -6,21 +6,24 @@ signal priority_changed(person_id: String)
 
 const MONTHLY_ROSTER_WORK_POLICY = preload("res://scripts/systems/monthly_roster_work_policy.gd")
 const TREATMENTS := {
-	"basic": {
+	"basic":
+	{
 		"name": "Atención básica",
 		"description": "Limpieza, vendaje y reposo supervisado.",
 		"legacy_base_cost": 45,
 		"legacy_recovery_units": 1,
 		"required_infirmary_level": 1,
 	},
-	"intensive": {
+	"intensive":
+	{
 		"name": "Tratamiento intensivo",
 		"description": "Atención dedicada para una recuperación prolongada.",
 		"legacy_base_cost": 95,
 		"legacy_recovery_units": 2,
 		"required_infirmary_level": 1,
 	},
-	"specialist": {
+	"specialist":
+	{
 		"name": "Especialista externo",
 		"description": "Intervención para lesiones graves y complejas.",
 		"legacy_base_cost": 180,
@@ -83,7 +86,9 @@ func purchase_treatment(person_id: String, treatment_id: String) -> bool:
 		treatment_failed.emit("Tratamientos pendientes de balance mensual canónico.")
 		return false
 	if CampaignManager.campaign_over:
-		treatment_failed.emit("La campaña terminó. La atención médica está disponible solo para consulta.")
+		treatment_failed.emit(
+			"La campaña terminó. La atención médica está disponible solo para consulta."
+		)
 		return false
 	if not TREATMENTS.has(treatment_id):
 		treatment_failed.emit("Tratamiento desconocido.")
@@ -163,8 +168,9 @@ func _on_injury_state_changed(person_id: String) -> void:
 func _is_treatment_unlocked(treatment_id: String) -> bool:
 	if not TREATMENTS.has(treatment_id):
 		return false
-	return EstateManager.get_level("infirmary") >= int(
-		TREATMENTS[treatment_id].get("required_infirmary_level", 1)
+	return (
+		EstateManager.get_level("infirmary")
+		>= int(TREATMENTS[treatment_id].get("required_infirmary_level", 1))
 	)
 
 
@@ -187,9 +193,12 @@ func _sanitize_record(record: Dictionary) -> void:
 	var last_month := maxi(
 		0,
 		int(
-			record.get(
-				"last_medical_treatment_month",
-				record.get("last_medical_treatment_week", 0),
+			(
+				record
+				. get(
+					"last_medical_treatment_month",
+					record.get("last_medical_treatment_week", 0),
+				)
 			)
 		),
 	)
@@ -206,14 +215,17 @@ func _sanitize_record(record: Dictionary) -> void:
 				0,
 				int(raw.get("months_reduced", raw.get("weeks_reduced", 0))),
 			)
-			clean_history.append(
-				{
-					"month": month,
-					"week": month,
-					"treatment_id": str(raw.get("treatment_id", "basic")),
-					"months_reduced": reduced,
-					"weeks_reduced": reduced,
-					"cost": maxi(0, int(raw.get("cost", 0))),
-				}
+			(
+				clean_history
+				. append(
+					{
+						"month": month,
+						"week": month,
+						"treatment_id": str(raw.get("treatment_id", "basic")),
+						"months_reduced": reduced,
+						"weeks_reduced": reduced,
+						"cost": maxi(0, int(raw.get("cost", 0))),
+					}
+				)
 			)
 	record["medical_treatments"] = clean_history
