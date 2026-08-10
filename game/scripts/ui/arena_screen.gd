@@ -15,46 +15,74 @@ const ACTION_LABELS := {
 @onready var center_scroll: ScrollContainer = $Body/CenterPanel/Margin/Scroll
 @onready var back_button: Button = $Body/CenterPanel/Margin/Scroll/Content/TopBar/BackToFinca
 @onready var event_header: Label = $Body/CenterPanel/Margin/Scroll/Content/TopBar/WeekEvent
-@onready var event_conditions: RichTextLabel = $Body/CenterPanel/Margin/Scroll/Content/EventBanner/Margin/Row/EventConditions
+@onready
+var event_conditions: RichTextLabel = $Body/CenterPanel/Margin/Scroll/Content/EventBanner/Margin/Row/EventConditions
 @onready var roster_count: Label = $Body/RosterPanel/Margin/Scroll/Content/Header/Count
 @onready var roster_list: ItemList = $Body/RosterPanel/Margin/Scroll/Content/RosterList
 @onready var fighter_info: RichTextLabel = $Body/RosterPanel/Margin/Scroll/Content/FighterInfo
 @onready var manage_button: Button = $Body/RosterPanel/Margin/Scroll/Content/ManageGladiators
 
-@onready var preparation_view: VBoxContainer = $Body/CenterPanel/Margin/Scroll/Content/PreparationView
+@onready
+var preparation_view: VBoxContainer = $Body/CenterPanel/Margin/Scroll/Content/PreparationView
 @onready var result_view: VBoxContainer = $Body/CenterPanel/Margin/Scroll/Content/ResultView
-@onready var player_name: Label = $Body/CenterPanel/Margin/Scroll/Content/PreparationView/ArenaVisual/Margin/VisualContent/Battlefield/PlayerName
-@onready var player_health: ProgressBar = $Body/CenterPanel/Margin/Scroll/Content/PreparationView/ArenaVisual/Margin/VisualContent/Battlefield/PlayerHealth
-@onready var player_stamina: ProgressBar = $Body/CenterPanel/Margin/Scroll/Content/PreparationView/ArenaVisual/Margin/VisualContent/Battlefield/PlayerEnergy
-@onready var enemy_name: Label = $Body/CenterPanel/Margin/Scroll/Content/PreparationView/ArenaVisual/Margin/VisualContent/Battlefield/EnemyName
-@onready var enemy_health: ProgressBar = $Body/CenterPanel/Margin/Scroll/Content/PreparationView/ArenaVisual/Margin/VisualContent/Battlefield/EnemyHealth
-@onready var enemy_stamina: ProgressBar = $Body/CenterPanel/Margin/Scroll/Content/PreparationView/ArenaVisual/Margin/VisualContent/Battlefield/EnemyEnergy
-@onready var action_text: Label = $Body/CenterPanel/Margin/Scroll/Content/PreparationView/ArenaVisual/Margin/VisualContent/Battlefield/ActionText
-@onready var selected_prep: RichTextLabel = $Body/CenterPanel/Margin/Scroll/Content/PreparationView/Preparation/Margin/Content/SelectedPrep
-@onready var action_selector: OptionButton = $Body/CenterPanel/Margin/Scroll/Content/PreparationView/Preparation/Margin/Content/Options/TacticSelector
-@onready var target_selector: OptionButton = $Body/CenterPanel/Margin/Scroll/Content/PreparationView/Preparation/Margin/Content/Options/EnergySelector
-@onready var legacy_surrender_selector: OptionButton = $Body/CenterPanel/Margin/Scroll/Content/PreparationView/Preparation/Margin/Content/Options/SurrenderSelector
-@onready var legacy_finisher_toggle: CheckButton = $Body/CenterPanel/Margin/Scroll/Content/PreparationView/Preparation/Margin/Content/Options/FinisherToggle
-@onready var plan_summary: RichTextLabel = $Body/CenterPanel/Margin/Scroll/Content/PreparationView/Preparation/Margin/Content/PlanSummary
-@onready var edit_plan_button: Button = $Body/CenterPanel/Margin/Scroll/Content/PreparationView/ActionRow/EditPlan
-@onready var equipment_button: Button = $Body/CenterPanel/Margin/Scroll/Content/PreparationView/ActionRow/Equipment
-@onready var start_button: Button = $Body/CenterPanel/Margin/Scroll/Content/PreparationView/ActionRow/StartCombat
-@onready var view_result_button: Button = $Body/CenterPanel/Margin/Scroll/Content/PreparationView/ActionRow/ViewResult
+@onready
+var player_name: Label = $Body/CenterPanel/Margin/Scroll/Content/PreparationView/ArenaVisual/Margin/VisualContent/Battlefield/PlayerName
+@onready
+var player_health: ProgressBar = $Body/CenterPanel/Margin/Scroll/Content/PreparationView/ArenaVisual/Margin/VisualContent/Battlefield/PlayerHealth
+@onready
+var player_stamina: ProgressBar = $Body/CenterPanel/Margin/Scroll/Content/PreparationView/ArenaVisual/Margin/VisualContent/Battlefield/PlayerEnergy
+@onready
+var enemy_name: Label = $Body/CenterPanel/Margin/Scroll/Content/PreparationView/ArenaVisual/Margin/VisualContent/Battlefield/EnemyName
+@onready
+var enemy_health: ProgressBar = $Body/CenterPanel/Margin/Scroll/Content/PreparationView/ArenaVisual/Margin/VisualContent/Battlefield/EnemyHealth
+@onready
+var enemy_stamina: ProgressBar = $Body/CenterPanel/Margin/Scroll/Content/PreparationView/ArenaVisual/Margin/VisualContent/Battlefield/EnemyEnergy
+@onready
+var action_text: Label = $Body/CenterPanel/Margin/Scroll/Content/PreparationView/ArenaVisual/Margin/VisualContent/Battlefield/ActionText
+@onready
+var selected_prep: RichTextLabel = $Body/CenterPanel/Margin/Scroll/Content/PreparationView/Preparation/Margin/Content/SelectedPrep
+@onready
+var action_selector: OptionButton = $Body/CenterPanel/Margin/Scroll/Content/PreparationView/Preparation/Margin/Content/Options/TacticSelector
+@onready
+var target_selector: OptionButton = $Body/CenterPanel/Margin/Scroll/Content/PreparationView/Preparation/Margin/Content/Options/EnergySelector
+@onready
+var legacy_surrender_selector: OptionButton = $Body/CenterPanel/Margin/Scroll/Content/PreparationView/Preparation/Margin/Content/Options/SurrenderSelector
+@onready
+var legacy_finisher_toggle: CheckButton = $Body/CenterPanel/Margin/Scroll/Content/PreparationView/Preparation/Margin/Content/Options/FinisherToggle
+@onready
+var plan_summary: RichTextLabel = $Body/CenterPanel/Margin/Scroll/Content/PreparationView/Preparation/Margin/Content/PlanSummary
+@onready
+var edit_plan_button: Button = $Body/CenterPanel/Margin/Scroll/Content/PreparationView/ActionRow/EditPlan
+@onready
+var equipment_button: Button = $Body/CenterPanel/Margin/Scroll/Content/PreparationView/ActionRow/Equipment
+@onready
+var start_button: Button = $Body/CenterPanel/Margin/Scroll/Content/PreparationView/ActionRow/StartCombat
+@onready
+var view_result_button: Button = $Body/CenterPanel/Margin/Scroll/Content/PreparationView/ActionRow/ViewResult
 
-@onready var back_to_preparation_button: Button = $Body/CenterPanel/Margin/Scroll/Content/ResultView/ResultHeader/BackToPreparation
-@onready var result_summary: RichTextLabel = $Body/CenterPanel/Margin/Scroll/Content/ResultView/ResultSummary
-@onready var replay_button: Button = $Body/CenterPanel/Margin/Scroll/Content/ResultView/ReplayControls/Replay
-@onready var pause_button: Button = $Body/CenterPanel/Margin/Scroll/Content/ResultView/ReplayControls/Pause
-@onready var step_button: Button = $Body/CenterPanel/Margin/Scroll/Content/ResultView/ReplayControls/Step
-@onready var skip_button: Button = $Body/CenterPanel/Margin/Scroll/Content/ResultView/ReplayControls/Skip
-@onready var speed_selector: OptionButton = $Body/CenterPanel/Margin/Scroll/Content/ResultView/ReplayControls/Speed
+@onready
+var back_to_preparation_button: Button = $Body/CenterPanel/Margin/Scroll/Content/ResultView/ResultHeader/BackToPreparation
+@onready
+var result_summary: RichTextLabel = $Body/CenterPanel/Margin/Scroll/Content/ResultView/ResultSummary
+@onready
+var replay_button: Button = $Body/CenterPanel/Margin/Scroll/Content/ResultView/ReplayControls/Replay
+@onready
+var pause_button: Button = $Body/CenterPanel/Margin/Scroll/Content/ResultView/ReplayControls/Pause
+@onready
+var step_button: Button = $Body/CenterPanel/Margin/Scroll/Content/ResultView/ReplayControls/Step
+@onready
+var skip_button: Button = $Body/CenterPanel/Margin/Scroll/Content/ResultView/ReplayControls/Skip
+@onready
+var speed_selector: OptionButton = $Body/CenterPanel/Margin/Scroll/Content/ResultView/ReplayControls/Speed
 @onready var combat_log: RichTextLabel = $Body/CenterPanel/Margin/Scroll/Content/ResultView/CombatLog
 
 @onready var opponent_info: RichTextLabel = $Body/EncounterPanel/Margin/Scroll/Content/OpponentInfo
-@onready var difficulty: RichTextLabel = $Body/EncounterPanel/Margin/Scroll/Content/DifficultyRow/Difficulty
+@onready
+var difficulty: RichTextLabel = $Body/EncounterPanel/Margin/Scroll/Content/DifficultyRow/Difficulty
 @onready var rewards: RichTextLabel = $Body/EncounterPanel/Margin/Scroll/Content/RewardsRow/Rewards
 @onready var entry_info: RichTextLabel = $Body/EncounterPanel/Margin/Scroll/Content/EntryRow/Entry
-@onready var combat_conditions: RichTextLabel = $Body/EncounterPanel/Margin/Scroll/Content/ConditionsRow/CombatConditions
+@onready
+var combat_conditions: RichTextLabel = $Body/EncounterPanel/Margin/Scroll/Content/ConditionsRow/CombatConditions
 
 var _arena_runtime = CombatV1ArenaRuntimeScript.new()
 var _stat_adapter = CombatStatAdapterScript.new()
@@ -89,16 +117,16 @@ func _ready() -> void:
 
 
 func begin_gt1_session(
-	month: int,
-	player_team_id: String,
-	player_ids_by_bout: Array,
-	opponent_fighters_by_bout: Array
+	month: int, player_team_id: String, player_ids_by_bout: Array, opponent_fighters_by_bout: Array
 ) -> Dictionary:
-	var result: Dictionary = _arena_runtime.start_gt1_session(
-		month,
-		player_team_id,
-		player_ids_by_bout,
-		opponent_fighters_by_bout,
+	var result: Dictionary = (
+		_arena_runtime
+		. start_gt1_session(
+			month,
+			player_team_id,
+			player_ids_by_bout,
+			opponent_fighters_by_bout,
+		)
 	)
 	if str(result.get("status", "")) != "combat_running":
 		_render_error(result)
@@ -124,23 +152,31 @@ func advance_exchange_with_ai_requests(ai_requests_by_actor: Dictionary) -> Dict
 	if _arena_runtime.action_requires_target(action_id):
 		var target_id := _selected_target_id()
 		if target_id.is_empty():
-			return _ui_rejected("target_required", ["La acción seleccionada requiere un objetivo explícito."])
+			return _ui_rejected(
+				"target_required", ["La acción seleccionada requiere un objetivo explícito."]
+			)
 		for actor_id in _arena_runtime.get_active_player_ids(_session):
 			targets_by_actor[actor_id] = target_id
 
-	var intents_result: Dictionary = _arena_runtime.build_player_intents(
-		_session,
-		action_id,
-		targets_by_actor,
+	var intents_result: Dictionary = (
+		_arena_runtime
+		. build_player_intents(
+			_session,
+			action_id,
+			targets_by_actor,
+		)
 	)
 	if str(intents_result.get("status", "")) != "ready":
 		_render_error(intents_result)
 		return intents_result
 
-	var next: Dictionary = _arena_runtime.advance_exchange(
-		_session,
-		intents_result.get("player_intents_by_actor", {}) as Dictionary,
-		ai_requests_by_actor,
+	var next: Dictionary = (
+		_arena_runtime
+		. advance_exchange(
+			_session,
+			intents_result.get("player_intents_by_actor", {}) as Dictionary,
+			ai_requests_by_actor,
+		)
 	)
 	if str(next.get("status", "")) == "rejected":
 		_render_error(next)
@@ -219,13 +255,16 @@ func _refresh_event() -> void:
 		)
 		return
 	event_header.text = "MES %d · %s" % [month, str(encounter.get("tournament_name", "GT I"))]
-	event_conditions.text = "[b]ENCUENTRO %d · %s[/b]\n%s\nSerie: %d combates · %d puntos por victoria" % [
-		int(encounter.get("encounter", 0)),
-		str(encounter.get("format", "")),
-		str(encounter.get("description", "")),
-		int(encounter.get("series_bouts", 3)),
-		int(encounter.get("points_per_win", 3)),
-	]
+	event_conditions.text = (
+		"[b]ENCUENTRO %d · %s[/b]\n%s\nSerie: %d combates · %d puntos por victoria"
+		% [
+			int(encounter.get("encounter", 0)),
+			str(encounter.get("format", "")),
+			str(encounter.get("description", "")),
+			int(encounter.get("series_bouts", 3)),
+			int(encounter.get("points_per_win", 3)),
+		]
+	)
 
 
 func _refresh_roster() -> void:
@@ -236,28 +275,36 @@ func _refresh_roster() -> void:
 		if str(person.role) != "gladiator":
 			continue
 		_fighter_ids.append(str(person.id))
-		var adapted := _stat_adapter.from_legacy(
-			{
-				"strength": person.strength,
-				"agility": person.agility,
-				"technique": person.technique,
-				"resistance": person.resistance,
-				"health": person.health,
-			}
+		var adapted := (
+			_stat_adapter
+			. from_legacy(
+				{
+					"strength": person.strength,
+					"agility": person.agility,
+					"technique": person.technique,
+					"resistance": person.resistance,
+					"health": person.health,
+				}
+			)
 		)
 		var stats := adapted.get("stats", {}) as Dictionary
 		var state := "LISTO" if person.is_available_for_combat() else "NO DISPONIBLE"
-		roster_list.add_item(
-			"%s · %s\nFUE %d · AGI %d · TEC %d · RES %d · PV %d"
-			% [
-				person.display_name,
-				state,
-				int(stats.get("FUE", 0)),
-				int(stats.get("AGI", 0)),
-				int(stats.get("TEC", 0)),
-				int(stats.get("RES", 0)),
-				int(stats.get("PV", 0)),
-			]
+		(
+			roster_list
+			. add_item(
+				(
+					"%s · %s\nFUE %d · AGI %d · TEC %d · RES %d · PV %d"
+					% [
+						person.display_name,
+						state,
+						int(stats.get("FUE", 0)),
+						int(stats.get("AGI", 0)),
+						int(stats.get("TEC", 0)),
+						int(stats.get("RES", 0)),
+						int(stats.get("PV", 0)),
+					]
+				)
+			)
 		)
 		roster_list.set_item_metadata(roster_list.item_count - 1, person.id)
 
@@ -329,7 +376,9 @@ func _render_stage(snapshot: Dictionary) -> void:
 	if not player_fighters.is_empty():
 		var player := player_fighters[0]
 		player_name.text = _fighter_display_name(str(player.get("id", "")))
-		_set_bar(player_health, int(player.get("current_pv", 0)), int(player.get("max_pv", 1)), "PV")
+		_set_bar(
+			player_health, int(player.get("current_pv", 0)), int(player.get("max_pv", 1)), "PV"
+		)
 		_set_bar(player_stamina, int(round(float(player.get("stamina", 0.0)))), 100, "Stamina")
 	if not enemy_fighters.is_empty():
 		var enemy := enemy_fighters[0]
@@ -339,15 +388,18 @@ func _render_stage(snapshot: Dictionary) -> void:
 
 	action_text.text = "Intercambio Combat V1 · Combate %d/3" % int(snapshot.get("bout_number", 1))
 	selected_prep.text = (
-		"[b]SESIÓN COMBAT V1[/b]\nMes %d · Formato %s · Combate %d/3\n"
-		+ "Victorias: %d · Puntos del encuentro: %d"
-	) % [
-		int(snapshot.get("month", 0)),
-		str(snapshot.get("format", "")),
-		int(snapshot.get("bout_number", 1)),
-		int(snapshot.get("player_wins", 0)),
-		int(snapshot.get("player_points", 0)),
-	]
+		(
+			"[b]SESIÓN COMBAT V1[/b]\nMes %d · Formato %s · Combate %d/3\n"
+			+ "Victorias: %d · Puntos del encuentro: %d"
+		)
+		% [
+			int(snapshot.get("month", 0)),
+			str(snapshot.get("format", "")),
+			int(snapshot.get("bout_number", 1)),
+			int(snapshot.get("player_wins", 0)),
+			int(snapshot.get("player_points", 0)),
+		]
+	)
 
 
 func _clear_stage() -> void:
@@ -370,10 +422,13 @@ func _refresh_encounter_panel() -> void:
 			"[b]RIVAL COMBAT V1[/b]\n"
 			+ "Debe llegar como snapshot canónico explícito. La Arena no genera ni elige rivales."
 		)
-		combat_conditions.text = "[b]FORMATO %s[/b]\n%s" % [
-			str(encounter.get("format", "")),
-			str(encounter.get("description", "")),
-		]
+		combat_conditions.text = (
+			"[b]FORMATO %s[/b]\n%s"
+			% [
+				str(encounter.get("format", "")),
+				str(encounter.get("description", "")),
+			]
+		)
 	difficulty.text = "[b]DIFICULTAD[/b]\nNo calculada por la UI."
 	rewards.text = "[b]PUNTUACIÓN[/b]\n3 puntos por victoria GT I. Sin premios económicos inventados."
 	entry_info.text = "[b]ENTRADA[/b]\nSin coste automático definido por esta pantalla."
@@ -395,13 +450,16 @@ func _refresh_combat_controls() -> void:
 			action_contract = contract
 			break
 	plan_summary.text = (
-		"[b]ACCIÓN COMBAT V1[/b]\n%s · Stamina %d\nObjetivo: %s\n"
-		+ "La acción se valida por contrato antes de llegar al simulador."
-	) % [
-		str(ACTION_LABELS.get(action_id, action_id)),
-		int(action_contract.get("stamina_cost", 0)),
-		"explícito" if target_required else "no requerido",
-	]
+		(
+			"[b]ACCIÓN COMBAT V1[/b]\n%s · Stamina %d\nObjetivo: %s\n"
+			+ "La acción se valida por contrato antes de llegar al simulador."
+		)
+		% [
+			str(ACTION_LABELS.get(action_id, action_id)),
+			int(action_contract.get("stamina_cost", 0)),
+			"explícito" if target_required else "no requerido",
+		]
+	)
 
 	if not session_running:
 		start_button.text = "ESPERANDO SESIÓN GT I"
@@ -441,11 +499,18 @@ func _selected_target_id() -> String:
 
 func _request_exchange() -> void:
 	if not _ai_request_provider.is_valid():
-		_render_error(_ui_rejected("ai_provider_missing", ["La política LimboAI no está conectada."]))
+		_render_error(
+			_ui_rejected("ai_provider_missing", ["La política LimboAI no está conectada."])
+		)
 		return
 	var request_value: Variant = _ai_request_provider.call(_session.duplicate(true))
 	if not request_value is Dictionary:
-		_render_error(_ui_rejected("invalid_ai_requests", ["La política LimboAI debe devolver un Dictionary de solicitudes."]))
+		_render_error(
+			_ui_rejected(
+				"invalid_ai_requests",
+				["La política LimboAI debe devolver un Dictionary de solicitudes."]
+			)
+		)
 		return
 	advance_exchange_with_ai_requests(request_value as Dictionary)
 
@@ -454,10 +519,13 @@ func _render_encounter_finished() -> void:
 	var snapshot := _arena_runtime.build_snapshot(_session)
 	if str(snapshot.get("status", "")) == "ready":
 		_last_snapshot = snapshot.duplicate(true)
-	result_summary.text = "[b]ENCUENTRO GT I COMPLETADO[/b]\nVictorias: %d/3 · Puntos: %d" % [
-		int(_session.get("player_wins", 0)),
-		int(_session.get("player_points", 0)),
-	]
+	result_summary.text = (
+		"[b]ENCUENTRO GT I COMPLETADO[/b]\nVictorias: %d/3 · Puntos: %d"
+		% [
+			int(_session.get("player_wins", 0)),
+			int(_session.get("player_points", 0)),
+		]
+	)
 	combat_log.text = (
 		"[b]Autoridades[/b]\nCombatSimulator: resultado de combate\n"
 		+ "TournamentManager: puntuación y progreso GT I"
@@ -470,7 +538,9 @@ func _render_error(result: Dictionary) -> void:
 		errors.append(str(raw_error))
 	if errors.is_empty():
 		errors.append(str(result.get("reason", "Operación rechazada por contrato Combat V1")))
-	result_summary.text = "[color=orange][b]COMBAT V1 RECHAZÓ LA OPERACIÓN[/b][/color]\n%s" % "\n".join(errors)
+	result_summary.text = (
+		"[color=orange][b]COMBAT V1 RECHAZÓ LA OPERACIÓN[/b][/color]\n%s" % "\n".join(errors)
+	)
 	combat_log.text = "[b]Sin mutación de combate[/b]\nLa operación falló antes de resolver el intercambio."
 	view_result_button.disabled = false
 	_show_result_view()
