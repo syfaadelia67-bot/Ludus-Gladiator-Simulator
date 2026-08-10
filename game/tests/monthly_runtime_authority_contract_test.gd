@@ -99,9 +99,7 @@ func _assert_non_gt_tournament_authority() -> void:
 	var tournaments := FileAccess.get_file_as_string(
 		"res://scripts/systems/tournament_manager_demo_monthly.gd"
 	)
-	var campaign := FileAccess.get_file_as_string(
-		"res://scripts/systems/campaign_manager_demo.gd"
-	)
+	var campaign := FileAccess.get_file_as_string("res://scripts/systems/campaign_manager_demo.gd")
 	assert(
 		project.contains(
 			'TournamentManager="*res://scripts/systems/tournament_manager_demo_monthly.gd"'
