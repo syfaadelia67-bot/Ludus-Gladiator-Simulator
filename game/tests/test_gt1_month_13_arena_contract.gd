@@ -7,8 +7,12 @@ func _ready() -> void:
 
 func _run() -> void:
 	var host := FileAccess.get_file_as_string("res://scripts/combat/gt1_month_13_host.gd")
-	var arena_runtime := FileAccess.get_file_as_string("res://scripts/ui/combat_v1_arena_runtime.gd")
-	var combat_runtime := FileAccess.get_file_as_string("res://scripts/combat/gt1_combat_runtime.gd")
+	var arena_runtime := FileAccess.get_file_as_string(
+		"res://scripts/ui/combat_v1_arena_runtime.gd"
+	)
+	var combat_runtime := FileAccess.get_file_as_string(
+		"res://scripts/combat/gt1_combat_runtime.gd"
+	)
 	var rival_catalog := FileAccess.get_file_as_string("res://data/rival_combat_v1_snapshots.json")
 
 	assert(host.contains("const MONTH := 13"))
