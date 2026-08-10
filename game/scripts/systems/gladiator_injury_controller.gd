@@ -4,9 +4,7 @@ signal injury_state_changed(person_id: String)
 signal scar_added(person_id: String, scar: Dictionary)
 signal recovery_reduced(person_id: String, months: int, source: String)
 
-const MONTHLY_ROSTER_WORK_POLICY = preload(
-	"res://scripts/systems/monthly_roster_work_policy.gd"
-)
+const MONTHLY_ROSTER_WORK_POLICY = preload("res://scripts/systems/monthly_roster_work_policy.gd")
 const MAX_SCARS := 8
 
 
@@ -39,9 +37,7 @@ func get_summary(person_id: String) -> Dictionary:
 		"active": get_active_injury(person_id),
 		"scars": get_scars(person_id),
 		"available_for_combat": person != null and person.is_available_for_combat(),
-		"recovery_policy_status": str(
-			MONTHLY_ROSTER_WORK_POLICY.get_contract().get("status", "")
-		),
+		"recovery_policy_status": str(MONTHLY_ROSTER_WORK_POLICY.get_contract().get("status", "")),
 	}
 
 
@@ -66,9 +62,7 @@ func register_existing_injury(person_id: String, event_name: String = "Arena") -
 	return true
 
 
-func reduce_recovery_months(
-	person_id: String, months: int, source: String = "tratamiento"
-) -> int:
+func reduce_recovery_months(person_id: String, months: int, source: String = "tratamiento") -> int:
 	if not MONTHLY_ROSTER_WORK_POLICY.INJURY_TREATMENT_ENABLED:
 		return 0
 	var person = RosterManager.get_person(person_id)
@@ -136,19 +130,22 @@ func _complete_recovery(person, record: Dictionary, injury: Dictionary) -> void:
 		creates_scar = absi(hash(seed_text)) % 100 < 35
 	if creates_scar:
 		_add_scar(person, record, injury)
-	GladiatorCareerJournalController.add_event(
-		person.id,
-		"recovery",
-		"Recuperación completada",
-		(
-			"%s se recuperó de %s.%s"
-			% [
-				person.display_name,
-				injury.get("name", "una herida"),
-				" La lesión dejó una secuela permanente." if creates_scar else ""
-			]
-		),
-		{"severity": severity, "scar": creates_scar},
+	(
+		GladiatorCareerJournalController
+		. add_event(
+			person.id,
+			"recovery",
+			"Recuperación completada",
+			(
+				"%s se recuperó de %s.%s"
+				% [
+					person.display_name,
+					injury.get("name", "una herida"),
+					" La lesión dejó una secuela permanente." if creates_scar else ""
+				]
+			),
+			{"severity": severity, "scar": creates_scar},
+		)
 	)
 	injury_state_changed.emit(person.id)
 	GladiatorProgressionManager.progression_changed.emit()
@@ -173,12 +170,15 @@ func _add_scar(person, record: Dictionary, injury: Dictionary) -> void:
 		scars.resize(MAX_SCARS)
 	record["scars"] = scars
 	person.apply_growth(penalty)
-	GladiatorCareerJournalController.add_event(
-		person.id,
-		"scar",
-		"Cicatriz permanente",
-		"%s conserva %s como recuerdo de la arena." % [person.display_name, scar.name],
-		scar,
+	(
+		GladiatorCareerJournalController
+		. add_event(
+			person.id,
+			"scar",
+			"Cicatriz permanente",
+			"%s conserva %s como recuerdo de la arena." % [person.display_name, scar.name],
+			scar,
+		)
 	)
 	scar_added.emit(person.id, scar.duplicate(true))
 
@@ -236,16 +236,21 @@ func _sanitize_record(record: Dictionary) -> void:
 			if not raw is Dictionary or clean_scars.size() >= MAX_SCARS:
 				continue
 			var scar_month := maxi(1, int(raw.get("month", raw.get("week", 1))))
-			clean_scars.append(
-				{
-					"name": str(raw.get("name", "cicatriz de combate")),
-					"source_injury": str(raw.get("source_injury", "Herida")),
-					"month": scar_month,
-					"week": scar_month,
-					"penalty":
-					raw.get("penalty", {}).duplicate(true)
-					if raw.get("penalty", {}) is Dictionary
-					else {},
-				}
+			(
+				clean_scars
+				. append(
+					{
+						"name": str(raw.get("name", "cicatriz de combate")),
+						"source_injury": str(raw.get("source_injury", "Herida")),
+						"month": scar_month,
+						"week": scar_month,
+						"penalty":
+						(
+							raw.get("penalty", {}).duplicate(true)
+							if raw.get("penalty", {}) is Dictionary
+							else {}
+						),
+					}
+				)
 			)
 	record["scars"] = clean_scars
