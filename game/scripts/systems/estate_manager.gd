@@ -1,3 +1,4 @@
+# gdlint: disable=max-public-methods
 extends Node
 
 signal estate_changed
