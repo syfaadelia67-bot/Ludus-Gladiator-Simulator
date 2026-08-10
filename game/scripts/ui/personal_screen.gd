@@ -55,8 +55,14 @@ func _refresh_roster() -> void:
 	for index in range(people.size()):
 		var person = people[index]
 		roster_list.add_item(
-			"%s — %s — %s"
-			% [person.display_name, _role_name(person.role), RosterManager.get_job_name(person.job)]
+			(
+				"%s — %s — %s"
+				% [
+					person.display_name,
+					_role_name(person.role),
+					RosterManager.get_job_name(person.job)
+				]
+			)
 		)
 		roster_list.set_item_metadata(index, person.id)
 	if people.is_empty():
@@ -96,25 +102,27 @@ func _refresh_details() -> void:
 		"[b]%s[/b]\nOrigen: %s | Rol: %s\n"
 		+ "Fuerza: %d | Agilidad: %d | Resistencia: %d | Inteligencia: %d\n"
 		+ "Lealtad: %d | Moral: %d | Fatiga: %d\nEntrenamiento: %d/100\n"
-		+ "Ataque: %d | Defensa: %d | Vida: %d | Energía: %d\nRasgos: %s"
-		% [
-			person.display_name,
-			person.origin,
-			_role_name(person.role),
-			person.strength,
-			person.agility,
-			person.endurance,
-			person.intelligence,
-			person.loyalty,
-			person.morale,
-			person.fatigue,
-			person.training,
-			person.get_base_attack(),
-			person.get_base_defense(),
-			person.get_max_health(),
-			person.get_max_energy(),
-			trait_text,
-		]
+		+ (
+			"Ataque: %d | Defensa: %d | Vida: %d | Energía: %d\nRasgos: %s"
+			% [
+				person.display_name,
+				person.origin,
+				_role_name(person.role),
+				person.strength,
+				person.agility,
+				person.endurance,
+				person.intelligence,
+				person.loyalty,
+				person.morale,
+				person.fatigue,
+				person.training,
+				person.get_base_attack(),
+				person.get_base_defense(),
+				person.get_max_health(),
+				person.get_max_energy(),
+				trait_text,
+			]
+		)
 	)
 	var current_job_index := job_ids.find(str(person.job))
 	if current_job_index >= 0:
@@ -144,11 +152,7 @@ func _open_selected_dossier() -> void:
 		return
 	FincaHubController.open_gladiator_dossier(
 		selected_person_id,
-		{
-			"system_id": "personal",
-			"selected_id": selected_person_id,
-			"callback": "restore_context"
-		}
+		{"system_id": "personal", "selected_id": selected_person_id, "callback": "restore_context"}
 	)
 
 
@@ -163,8 +167,10 @@ func _on_monthly_report(report: Dictionary) -> void:
 	activity_log.append_text("\nEntrenamiento total: %d" % int(report.get("training", 0)))
 	for person_name in report.get("promotions", []):
 		activity_log.append_text(
-			"\n[color=gold]%s completó su formación y ahora es gladiador.[/color]"
-			% str(person_name)
+			(
+				"\n[color=gold]%s completó su formación y ahora es gladiador.[/color]"
+				% str(person_name)
+			)
 		)
 
 
