@@ -62,7 +62,9 @@ func _refresh() -> void:
 	gladiator_ids.clear()
 	for person in RosterManager.get_gladiators():
 		gladiator_ids.append(str(person.id))
-		var availability := "Disponible" if person.is_available_for_combat() else person.get_injury_summary()
+		var availability := (
+			"Disponible" if person.is_available_for_combat() else person.get_injury_summary()
+		)
 		gladiator_selector.add_item("%s — %s" % [person.display_name, availability])
 	if gladiator_ids.is_empty():
 		status.text = "No hay gladiadores disponibles."
@@ -83,6 +85,7 @@ func _refresh_items() -> void:
 	var person_id := _selected_gladiator_id()
 	for slot_id in ACTIVE_SLOTS:
 		var selector := selectors[slot_id] as OptionButton
+		selector.clear()
 		var ids: Array[String] = []
 		for item in EquipmentManager.get_available_items_for_slot(slot_id, person_id):
 			var item_id := str(item.get("id", ""))
@@ -108,13 +111,17 @@ func _refresh_status() -> void:
 	for slot_id in ACTIVE_SLOTS:
 		var item_id := str(slots.get(slot_id, ""))
 		lines.append(
-			"%s: %s" % [EquipmentManager.get_slot_label(slot_id), EquipmentManager.get_item_name(item_id)]
+			"%s: %s"
+			% [EquipmentManager.get_slot_label(slot_id), EquipmentManager.get_item_name(item_id)]
 		)
 	lines.append("")
 	lines.append("Montura: Próximamente")
 	lines.append("")
 	lines.append(
-		"[color=orange]Los valores power/defense, calidad y requisitos legacy no modifican Combat V1 hasta congelar el catálogo definitivo.[/color]"
+		(
+			"[color=orange]Los valores power/defense, calidad y requisitos legacy no modifican "
+			+ "Combat V1 hasta congelar el catálogo definitivo.[/color]"
+		)
 	)
 	if CampaignManager.campaign_over:
 		lines.append("[color=gray]Campaña finalizada: equipamiento en modo consulta.[/color]")
@@ -123,11 +130,13 @@ func _refresh_status() -> void:
 
 func _equip_selected(slot_id: String) -> void:
 	var selector := selectors.get(slot_id) as OptionButton
-	var ids: Array[String] = item_ids_by_slot.get(slot_id, []) as Array[String]
+	var ids: Array = item_ids_by_slot.get(slot_id, [])
 	if selector == null or selector.selected < 0 or selector.selected >= ids.size():
 		_show_error("No hay un objeto seleccionado para esa ranura.")
 		return
-	EquipmentManager.equip_item_to_slot(_selected_gladiator_id(), ids[selector.selected], slot_id)
+	EquipmentManager.equip_item_to_slot(
+		_selected_gladiator_id(), str(ids[selector.selected]), slot_id
+	)
 
 
 func _unequip(slot_id: String) -> void:
