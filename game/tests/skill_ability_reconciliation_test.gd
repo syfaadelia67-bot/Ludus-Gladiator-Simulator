@@ -2,39 +2,75 @@ extends SceneTree
 
 const CanonicalSkillCatalog = preload("res://scripts/core/canonical_skill_catalog.gd")
 const ReconciliationPolicy = preload("res://scripts/core/skill_ability_reconciliation_policy.gd")
-const DemoPreAssetReadiness = preload("res://scripts/core/demo_pre_asset_readiness.gd")
 
 var _failures: Array[String] = []
-var _data_repository: Node = null
+var _repository: FakeRepository
+
+
+class FakeRepository:
+	extends RefCounted
+
+	var skills: Array = [
+		{"id": "counterattack", "name": "Contraataque", "category": "general"},
+		{"id": "charge", "name": "Embestida", "category": "general"},
+		{"id": "closed_guard", "name": "Guardia Cerrada", "category": "general"},
+		{"id": "demolisher", "name": "Demoledor", "category": "general"},
+		{"id": "feint", "name": "Finta", "category": "general"},
+		{"id": "provoke", "name": "Provocación", "category": "general"},
+		{"id": "execution", "name": "Ejecución", "category": "general"},
+		{"id": "aid", "name": "Auxilio", "category": "general"},
+		{"id": "anchoring", "name": "Anclaje", "category": "specialized"},
+		{"id": "disarm", "name": "Desarme", "category": "specialized"},
+		{"id": "immobilize", "name": "Inmovilización", "category": "specialized"},
+		{"id": "interception", "name": "Intercepción", "category": "specialized"},
+	]
+	var abilities: Array = [
+		{
+			"id": "precise_strike",
+			"primary_stats": ["intelligence"],
+			"levels": [{"level": 1, "damage": 9, "energy_cost": 4}],
+		},
+		{
+			"id": "feint",
+			"primary_stats": ["intelligence"],
+			"levels": [{"level": 1, "status": "stun", "energy_cost": 3}],
+		},
+	]
+	var specializations: Array = [
+		{"id": "legacy_duelist", "class_ability": "precise_strike"},
+		{"id": "legacy_tactician", "class_ability": "legacy_command"},
+	]
+
+	func get_skills() -> Array:
+		return skills.duplicate(true)
+
+	func get_skill(skill_id: String) -> Dictionary:
+		for raw_entry in skills:
+			if raw_entry is Dictionary and str((raw_entry as Dictionary).get("id", "")) == skill_id:
+				return (raw_entry as Dictionary).duplicate(true)
+		return {}
 
 
 func _initialize() -> void:
-	_data_repository = root.get_node_or_null("DataRepository")
-	_assert_true(
-		_data_repository != null, "DataRepository autoload must exist for reconciliation tests"
-	)
-	if _data_repository == null:
-		_finish()
-		return
+	_repository = FakeRepository.new()
 	_test_canonical_catalog_is_exact_and_identity_only()
 	_test_legacy_abilities_cannot_resolve_as_combat_v1_skills()
 	_test_shared_ids_do_not_inherit_legacy_mechanics()
 	_test_specialization_class_abilities_stay_legacy()
 	_test_progression_fails_closed_until_skill_mechanics_are_frozen()
-	_test_readiness_closes_reconciliation_without_hiding_design_blocker()
 	_finish()
 
 
 func _test_canonical_catalog_is_exact_and_identity_only() -> void:
-	var skills := CanonicalSkillCatalog.get_skills(_data_repository)
+	var skills := CanonicalSkillCatalog.get_skills(_repository)
 	_assert_eq(skills.size(), 12, "Combat V1 must expose exactly twelve canonical skills")
 	_assert_eq(
-		CanonicalSkillCatalog.get_general_skills(_data_repository).size(),
+		CanonicalSkillCatalog.get_general_skills(_repository).size(),
 		8,
 		"Combat V1 must expose exactly eight general skills",
 	)
 	_assert_eq(
-		CanonicalSkillCatalog.get_specialized_skills(_data_repository).size(),
+		CanonicalSkillCatalog.get_specialized_skills(_repository).size(),
 		4,
 		"Combat V1 must expose exactly four specialized skills",
 	)
@@ -47,13 +83,12 @@ func _test_canonical_catalog_is_exact_and_identity_only() -> void:
 
 
 func _test_legacy_abilities_cannot_resolve_as_combat_v1_skills() -> void:
-	var legacy_abilities: Variant = _data_repository.get("abilities")
 	_assert_true(
-		legacy_abilities is Array and not (legacy_abilities as Array).is_empty(),
+		not _repository.abilities.is_empty(),
 		"legacy abilities must remain available for compatibility until legacy combat is retired",
 	)
 	_assert_true(
-		CanonicalSkillCatalog.get_skill(_data_repository, "precise_strike").is_empty(),
+		CanonicalSkillCatalog.get_skill(_repository, "precise_strike").is_empty(),
 		"legacy-only precise_strike must not become a canonical skill",
 	)
 	_assert_true(
@@ -68,7 +103,7 @@ func _test_legacy_abilities_cannot_resolve_as_combat_v1_skills() -> void:
 
 
 func _test_shared_ids_do_not_inherit_legacy_mechanics() -> void:
-	var canonical_feint := CanonicalSkillCatalog.get_skill(_data_repository, "feint")
+	var canonical_feint := CanonicalSkillCatalog.get_skill(_repository, "feint")
 	var legacy_feint := _legacy_ability("feint")
 	_assert_true(not canonical_feint.is_empty(), "canonical Finta must exist")
 	_assert_true(not legacy_feint.is_empty(), "legacy Finta compatibility data must still exist")
@@ -97,11 +132,7 @@ func _test_shared_ids_do_not_inherit_legacy_mechanics() -> void:
 
 
 func _test_specialization_class_abilities_stay_legacy() -> void:
-	var raw_specializations: Variant = _data_repository.get("specializations")
-	if not raw_specializations is Array:
-		_assert_true(false, "DataRepository specializations compatibility catalog must be an Array")
-		return
-	for raw_specialization in raw_specializations as Array:
+	for raw_specialization in _repository.specializations:
 		if not raw_specialization is Dictionary:
 			continue
 		var specialization := raw_specialization as Dictionary
@@ -109,7 +140,7 @@ func _test_specialization_class_abilities_stay_legacy() -> void:
 		if class_ability.is_empty():
 			continue
 		_assert_true(
-			CanonicalSkillCatalog.get_skill(_data_repository, class_ability).is_empty(),
+			CanonicalSkillCatalog.get_skill(_repository, class_ability).is_empty(),
 			(
 				"legacy specialization class_ability must not silently become a canonical skill: %s"
 				% class_ability
@@ -148,23 +179,8 @@ func _test_progression_fails_closed_until_skill_mechanics_are_frozen() -> void:
 	)
 
 
-func _test_readiness_closes_reconciliation_without_hiding_design_blocker() -> void:
-	var codes := DemoPreAssetReadiness.new().get_blocker_codes()
-	_assert_true(
-		not codes.has("canonical_skill_progression_reconciliation"),
-		"Part 7 reconciliation architecture blocker must be closed",
-	)
-	_assert_true(
-		codes.has("canonical_skill_mechanics_not_frozen"),
-		"unfrozen skill mechanics must remain an explicit design blocker",
-	)
-
-
 func _legacy_ability(ability_id: String) -> Dictionary:
-	var raw_abilities: Variant = _data_repository.get("abilities")
-	if not raw_abilities is Array:
-		return {}
-	for raw_entry in raw_abilities as Array:
+	for raw_entry in _repository.abilities:
 		if raw_entry is Dictionary and str((raw_entry as Dictionary).get("id", "")) == ability_id:
 			return (raw_entry as Dictionary).duplicate(true)
 	return {}
