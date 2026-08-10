@@ -2,7 +2,9 @@ extends Node
 
 
 func run() -> void:
-	var modal := FileAccess.get_file_as_string("res://scripts/ui/weekly_event_modal_presenter.gd")
+	var modal := FileAccess.get_file_as_string(
+		"res://scripts/ui/weekly_event_modal_presenter.gd"
+	)
 	var arena_scene := FileAccess.get_file_as_string("res://scenes/ArenaScreen.tscn")
 	var arena := FileAccess.get_file_as_string("res://scripts/ui/arena_screen.gd")
 	var project := FileAccess.get_file_as_string("res://project.godot")
