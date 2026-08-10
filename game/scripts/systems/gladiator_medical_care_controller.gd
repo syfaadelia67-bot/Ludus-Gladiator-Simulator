@@ -81,7 +81,7 @@ func can_purchase_treatment(person_id: String, treatment_id: String) -> bool:
 	return false
 
 
-func purchase_treatment(person_id: String, treatment_id: String) -> bool:
+func purchase_treatment(_person_id: String, treatment_id: String) -> bool:
 	if not MONTHLY_ROSTER_WORK_POLICY.INJURY_TREATMENT_ENABLED:
 		treatment_failed.emit("Tratamientos pendientes de balance mensual canónico.")
 		return false
