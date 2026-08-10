@@ -72,9 +72,10 @@ func _refresh() -> void:
 
 func _beast_name(beast_id: String) -> String:
 	for raw_beast in DataRepository.beasts:
-		if (
-			raw_beast is Dictionary
-			and str((raw_beast as Dictionary).get("id", "")) == beast_id
-		):
-			return str((raw_beast as Dictionary).get("name", beast_id))
+		if not raw_beast is Dictionary:
+			continue
+		var beast: Dictionary = raw_beast
+		if str(beast.get("id", "")) != beast_id:
+			continue
+		return str(beast.get("name", beast_id))
 	return beast_id if not beast_id.is_empty() else "Bestia desconocida"
