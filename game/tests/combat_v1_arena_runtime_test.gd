@@ -7,6 +7,7 @@ func run() -> void:
 	_test_runtime_contract()
 	_test_month_13_request_bridge()
 	_test_month_16_request_bridge()
+	_test_month_20_request_bridge()
 	_test_player_intent_requires_explicit_target()
 	_test_defensive_action_needs_no_target()
 	print("Combat V1 Arena runtime bridge: OK")
@@ -20,6 +21,7 @@ func _test_runtime_contract() -> void:
 	assert(contract.get("presentation_authority") == "gt1_combat_presentation_snapshot")
 	assert(contract.get("month_13_host") == "gt1_month_13_host")
 	assert(contract.get("month_16_host") == "gt1_month_16_host")
+	assert(contract.get("month_20_host") == "gt1_month_20_host")
 	assert(contract.get("combat_authority") == "combat_simulator")
 	assert(contract.get("scoring_authority") == "tournament_manager")
 	assert(contract.get("default_player_action_allowed") == false)
@@ -74,6 +76,28 @@ func _test_month_16_request_bridge() -> void:
 	assert(readiness.get("month") == 16)
 	assert(readiness.get("beast_selection_ready") == false)
 	assert(readiness.get("invent_stats_allowed") == false)
+
+
+func _test_month_20_request_bridge() -> void:
+	var runtime = CombatV1ArenaRuntimeScript.new()
+	var request: Dictionary = (
+		runtime
+		. prepare_month_20_request(
+			[["p1", "p2"], ["p1", "p3"], ["p1", "p3"]],
+			"alpha",
+			[
+				[_fighter("r1a", "beta"), _fighter("r1b", "beta")],
+				[_fighter("r2a", "beta"), _fighter("r2b", "beta")],
+				[_fighter("r3a", "beta"), _fighter("r3b", "beta")],
+			],
+		)
+	)
+	assert(request.get("status") == "ready")
+	assert(request.get("format") == "2v2")
+	assert(request.get("substitution_used") == true)
+	assert(request.get("carryover") == ["current_pv", "stamina"])
+	assert(int(request.get("substitution_limit", 0)) == 1)
+	assert(int(request.get("max_points", 0)) == 9)
 
 
 func _test_player_intent_requires_explicit_target() -> void:
