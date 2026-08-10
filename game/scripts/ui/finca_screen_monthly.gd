@@ -121,8 +121,7 @@ func _set_upgrade_copy(data: Dictionary, status: Dictionary, modal: bool) -> voi
 			% [int(status.get("next_level", 0)), int(status.get("max_level", 0))]
 		)
 		target_cost.text = (
-			("COSTO · %d DENARIOS" if modal else "Costo: %d denarios")
-			% int(status.get("cost", 0))
+			("COSTO · %d DENARIOS" if modal else "Costo: %d denarios") % int(status.get("cost", 0))
 		)
 		return
 	if code == "upgrade_cost_pending":
