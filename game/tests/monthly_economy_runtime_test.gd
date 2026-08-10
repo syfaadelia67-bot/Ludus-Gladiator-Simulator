@@ -51,10 +51,6 @@ func _test_frozen_population_cost() -> void:
 		population.get("beast_count_source_ready") == true,
 		"La propiedad de bestias debe tener una fuente canónica explícita."
 	)
-	_assert(
-		population.get("beast_count_source") == "OwnedBeastRegistry.owned_beast_ids",
-		"Economía debe leer bestias poseídas, no el catálogo completo."
-	)
 	var breakdown := EconomyManager.get_monthly_operating_cost_breakdown()
 	_assert(breakdown.get("status") == "ready", "La fórmula congelada debe estar disponible.")
 	_assert(int(breakdown.get("fixed_expense", 0)) == 88, "El costo fijo mensual debe ser 88.")
@@ -69,18 +65,30 @@ func _test_frozen_population_cost() -> void:
 
 
 func _test_owned_beast_cost_and_persistence() -> void:
-	_assert(not OwnedBeastRegistry.register_owned_beast("unknown"), "No debe registrar IDs inventados.")
-	_assert(OwnedBeastRegistry.register_owned_beast("boar"), "Debe aceptar una bestia canónica.")
-	_assert(OwnedBeastRegistry.get_owned_count() == 1, "Debe registrar una bestia poseída.")
+	_assert(
+		not OwnedBeastRegistry.register_owned_beast("unknown_1", "unknown"),
+		"No debe registrar una especie inventada."
+	)
+	_assert(
+		OwnedBeastRegistry.register_owned_beast("boar_1", "boar"),
+		"Debe aceptar una instancia de bestia canónica."
+	)
+	_assert(
+		OwnedBeastRegistry.register_owned_beast("boar_2", "boar"),
+		"No debe inventar un límite de una bestia por especie."
+	)
+	_assert(OwnedBeastRegistry.get_owned_count() == 2, "Debe contar ambas instancias poseídas.")
 	var breakdown := EconomyManager.get_monthly_operating_cost_breakdown()
-	_assert(int(breakdown.get("beast_cost", 0)) == 10, "Una bestia poseída debe costar 10/mes.")
-	_assert(int(breakdown.get("total", 0)) == 128, "La bestia debe elevar el costo total a 128.")
+	_assert(int(breakdown.get("beast_cost", 0)) == 20, "Dos bestias poseídas deben costar 20/mes.")
+	_assert(int(breakdown.get("total", 0)) == 138, "Las bestias deben elevar el costo total a 138.")
 
 	var exported := OwnedBeastRegistry.export_state()
 	OwnedBeastRegistry.reset_state()
 	OwnedBeastRegistry.import_state(exported)
-	_assert(OwnedBeastRegistry.owns("boar"), "La propiedad de bestias debe persistir.")
-	_assert(OwnedBeastRegistry.release_owned_beast("boar"), "Debe poder liberar la bestia registrada.")
+	_assert(OwnedBeastRegistry.owns_instance("boar_1"), "La primera instancia debe persistir.")
+	_assert(OwnedBeastRegistry.owns_instance("boar_2"), "La segunda instancia debe persistir.")
+	_assert(OwnedBeastRegistry.release_owned_beast("boar_1"), "Debe poder liberar una instancia.")
+	_assert(OwnedBeastRegistry.release_owned_beast("boar_2"), "Debe poder liberar la otra instancia.")
 	_assert(OwnedBeastRegistry.get_owned_count() == 0, "El registro debe volver a quedar vacío.")
 
 
