@@ -26,8 +26,6 @@ const PENDING_AUTHORITY_BOUNDARIES := {
 		"Legacy sabotage, espionage and retaliation RNG are quarantined. Monthly operation "
 		+ "cadence, costs and risk rules still require frozen design values."
 	),
-	"monthly_planning_turn_closure":
-	"Planning is month-native; non-GT activity blockers are not fully frozen yet.",
 	"playable_combat_v1_ui":
 	(
 		"Combat V1 Arena and the Month XIII/XVI/XX hosts are canonical. GT I still fails closed "
