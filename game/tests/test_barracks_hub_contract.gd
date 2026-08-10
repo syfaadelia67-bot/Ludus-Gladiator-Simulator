@@ -59,7 +59,7 @@ func _initialize() -> void:
 	assert(finca_text.contains('"barracks": "barracks"'))
 	assert(finca_text.contains("Entrar a barracones"))
 	assert(shell_scene_text.contains('name="Barracks" type="Button"'))
-	assert(shell_controller_text.contains('"barracks":$MainNavigation/Margin/Column/Barracks'))
+	assert(shell_controller_text.contains('"barracks": $MainNavigation/Margin/Column/Barracks'))
 
 	var packed := load("res://scenes/BarracksScreen.tscn")
 	var script := load("res://scripts/ui/barracks_screen.gd")
