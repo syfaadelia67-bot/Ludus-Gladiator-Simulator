@@ -5,9 +5,7 @@ func _initialize() -> void:
 	var scene_text := FileAccess.get_file_as_string("res://scenes/MarketScreen.tscn")
 	var screen_text := FileAccess.get_file_as_string("res://scripts/ui/market_screen.gd")
 	var market_text := FileAccess.get_file_as_string("res://scripts/systems/market_manager.gd")
-	var equipment_text := FileAccess.get_file_as_string(
-		"res://scripts/systems/equipment_manager.gd"
-	)
+	var equipment_text := FileAccess.get_file_as_string("res://scripts/systems/equipment_manager.gd")
 	var save_text := FileAccess.get_file_as_string("res://scripts/core/save_manager.gd")
 	var hub_text := FileAccess.get_file_as_string("res://scripts/ui/finca_hub_controller.gd")
 
@@ -68,12 +66,15 @@ func _initialize() -> void:
 	assert(screen_script != null)
 
 	var instance := (packed as PackedScene).instantiate()
-	assert(instance.get_node_or_null("Landing/Cards/FightersCard") is TextureButton)
-	assert(instance.get_node_or_null("Landing/Cards/EquipmentCard") is TextureButton)
+	assert(
+		instance.get_node_or_null("Landing/Cards/FightersCard") is TextureButton
+	)
+	assert(
+		instance.get_node_or_null("Landing/Cards/EquipmentCard") is TextureButton
+	)
 	assert(instance.get_node_or_null("ContentShell/SectionHeader/BackToMarketHome") is Button)
 	assert(
-		instance.get_node_or_null("ContentShell/FightersView/OffersPanel/Margin/Content/List")
-		is ItemList
+		instance.get_node_or_null("ContentShell/FightersView/OffersPanel/Margin/Content/List") is ItemList
 	)
 	assert(
 		instance.get_node_or_null("ContentShell/EquipmentView/OffersPanel/Margin/Content/Header/Refresh")
