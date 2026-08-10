@@ -36,7 +36,9 @@ func run() -> void:
 	assert(not economy_script.contains("DataRepository.beasts.size()"))
 	assert(beast_registry.contains("var owned_beasts: Array[Dictionary] = []"))
 	assert(beast_registry.contains("func get_owned_count()"))
-	assert(beast_registry.contains("func register_owned_beast(instance_id: String, beast_id: String)"))
+	assert(
+		beast_registry.contains("func register_owned_beast(instance_id: String, beast_id: String)")
+	)
 	assert(beast_registry.contains("func export_state()"))
 	assert(beast_registry.contains("func import_state(data: Dictionary)"))
 	assert(save_script.contains('payload["owned_beasts"] = OwnedBeastRegistry.export_state()'))
