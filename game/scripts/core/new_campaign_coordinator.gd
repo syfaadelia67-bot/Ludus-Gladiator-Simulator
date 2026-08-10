@@ -36,7 +36,15 @@ func reset_campaign_state() -> bool:
 			"reputation": 0
 		},
 		"owner": LudusOwnerManager.export_state(),
-		"roster": {"people": [], "capacity": 8, "security_score": 0, "intelligence_points": 0},
+		"roster":
+		{
+			"people": [],
+			"capacity": 8,
+			"security_score": 0,
+			"intelligence_points": 0,
+			"last_processed_month": 0,
+			"last_monthly_result": {},
+		},
 		"owned_beasts": {"entries": []},
 		"estate": {"levels": {}},
 		"equipment": {"inventory": [], "serial": 0},
