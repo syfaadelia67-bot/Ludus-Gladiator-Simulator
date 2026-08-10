@@ -30,7 +30,9 @@ func prepare_request(
 	var available_selected_ids := _unique_player_ids(normalized_player_ids)
 	if normalized_player_ids.size() == BOUT_COUNT:
 		errors.append_array(
-			_selection_contract.validate_selection(MONTH, normalized_player_ids, available_selected_ids)
+			_selection_contract.validate_selection(
+				MONTH, normalized_player_ids, available_selected_ids
+			)
 		)
 
 	var normalized_opponents := _normalize_opponents(
@@ -113,12 +115,16 @@ func _normalize_player_selections(player_ids_by_bout: Array, errors: Array[Strin
 				errors.append("GT I month XX player bout %d contains an empty id" % [index + 1])
 				continue
 			if pair.has(fighter_id):
-				errors.append("GT I month XX player bout %d cannot duplicate a gladiator" % [index + 1])
+				errors.append(
+					"GT I month XX player bout %d cannot duplicate a gladiator" % [index + 1]
+				)
 				continue
 			pair.append(fighter_id)
 		pair.sort()
 		if pair.size() != TEAM_SIZE:
-			errors.append("GT I month XX player bout %d requires exactly two gladiators" % [index + 1])
+			errors.append(
+				"GT I month XX player bout %d requires exactly two gladiators" % [index + 1]
+			)
 		result.append(pair)
 	return result
 
@@ -147,12 +153,16 @@ func _normalize_opponents(
 			if _looks_like_beast(opponent):
 				errors.append("GT I month XX does not allow beasts")
 				continue
-			var snapshot_errors: Array[String] = _combat_contract.validate_fighter_snapshot(opponent)
+			var snapshot_errors: Array[String] = _combat_contract.validate_fighter_snapshot(
+				opponent
+			)
 			for snapshot_error in snapshot_errors:
 				errors.append("GT I month XX rival bout %d: %s" % [index + 1, snapshot_error])
 			var fighter_id := str(opponent.get("id", ""))
 			if seen_ids.has(fighter_id):
-				errors.append("GT I month XX rival bout %d cannot duplicate a fighter" % [index + 1])
+				errors.append(
+					"GT I month XX rival bout %d cannot duplicate a fighter" % [index + 1]
+				)
 			seen_ids.append(fighter_id)
 			var team_id := str(opponent.get("team", ""))
 			if team_id == player_team_id:
