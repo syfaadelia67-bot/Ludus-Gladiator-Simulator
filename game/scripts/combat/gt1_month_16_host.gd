@@ -42,9 +42,12 @@ func prepare_human_request(
 			continue
 		var opponent := raw_opponent as Dictionary
 		if _looks_like_beast(opponent) and beast_readiness.get("beast_selection_ready") != true:
-			errors.append(
-			"GT I month XVI beast combat is blocked until canonical stats and runtime adapter are ready"
-		)
+			(
+				errors
+				. append(
+					"GT I month XVI beast combat is blocked until canonical stats and runtime adapter are ready"
+				)
+			)
 			continue
 		var snapshot_errors: Array[String] = _combat_contract.validate_fighter_snapshot(opponent)
 		for snapshot_error in snapshot_errors:
@@ -109,7 +112,7 @@ func get_contract() -> Dictionary:
 		"beasts_allowed_by_design": true,
 		"beast_selection_boundary": "gt1_beast_readiness_contract",
 		"beast_selection_current_behavior": "blocked_until_canonical_stats_and_runtime_adapter",
-		"human_fallback_allowed": true,
+		"human_selection_remains_available": true,
 		"invent_beast_stats_allowed": false,
 		"points_per_win": 3,
 		"max_points": 9,
