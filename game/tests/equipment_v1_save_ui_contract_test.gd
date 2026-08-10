@@ -32,7 +32,8 @@ func _initialize() -> void:
 	assert(equipment_ui_text.contains('"accessory"'))
 	assert(not equipment_ui_text.contains("Ataque final"))
 	assert(not equipment_ui_text.contains("Defensa final"))
-	assert(equipment_ui_text.contains("no modifican Combat V1"))
+	assert(equipment_ui_text.contains("requisitos legacy no modifican"))
+	assert(equipment_ui_text.contains("Combat V1 hasta congelar el catálogo definitivo"))
 
 	assert(forge_scene_text.contains('path="res://scripts/ui/forge_screen_v1.gd"'))
 	assert(forge_scene_text.contains("Fabricación pendiente de balance"))
