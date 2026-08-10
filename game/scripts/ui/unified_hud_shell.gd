@@ -153,7 +153,9 @@ func _refresh_navigation(system_id: String) -> void:
 		display_name = normalized.capitalize()
 	section_label.text = "SECCIÓN · %s" % display_name.to_upper()
 	more_button.tooltip_text = (
-		"Más sistemas · %s" % display_name if not PRIMARY_SYSTEMS.has(normalized) else "Más sistemas"
+		"Más sistemas · %s" % display_name
+		if not PRIMARY_SYSTEMS.has(normalized)
+		else "Más sistemas"
 	)
 
 
