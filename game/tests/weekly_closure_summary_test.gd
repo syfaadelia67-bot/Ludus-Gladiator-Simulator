@@ -13,7 +13,9 @@ func run() -> void:
 	)
 	var project_source := FileAccess.get_file_as_string("res://project.godot")
 
-	_assert(controller_source.contains("func get_summary"), "Debe existir un resumen previo al cierre.")
+	_assert(
+		controller_source.contains("func get_summary"), "Debe existir un resumen previo al cierre."
+	)
 	_assert(
 		controller_source.contains("assignments"),
 		"El resumen debe incluir asignaciones del personal."
@@ -21,8 +23,12 @@ func run() -> void:
 	_assert(
 		controller_source.contains("training"), "El resumen debe incluir entrenamiento mensual."
 	)
-	_assert(controller_source.contains("injured"), "El resumen debe incluir gladiadores lesionados.")
-	_assert(controller_source.contains("food_consumption"), "Debe proyectarse el consumo de comida.")
+	_assert(
+		controller_source.contains("injured"), "El resumen debe incluir gladiadores lesionados."
+	)
+	_assert(
+		controller_source.contains("food_consumption"), "Debe proyectarse el consumo de comida."
+	)
 	_assert(controller_source.contains("denarii_after"), "Debe proyectarse el saldo de denarios.")
 	_assert(
 		controller_source.contains("EconomyManager.get_monthly_projection()"),
@@ -37,7 +43,9 @@ func run() -> void:
 		"La proyección mensual debe exponer los costos económicos del turno."
 	)
 	_assert(economy_source.contains("active_loans"), "La proyección debe considerar préstamos.")
-	_assert(economy_source.contains("active_contracts"), "La proyección debe considerar patrocinadores.")
+	_assert(
+		economy_source.contains("active_contracts"), "La proyección debe considerar patrocinadores."
+	)
 	_assert(
 		controller_source.contains("Hay un evento mensual pendiente"),
 		"Un evento mensual sin resolver debe bloquear el cierre."
@@ -46,7 +54,9 @@ func run() -> void:
 		controller_source.contains("El encuentro del Gran Torneo de este mes"),
 		"Un encuentro GT I pendiente debe bloquear el cierre mensual."
 	)
-	_assert(controller_source.contains("can_close"), "El resumen debe exponer si el mes puede cerrarse.")
+	_assert(
+		controller_source.contains("can_close"), "El resumen debe exponer si el mes puede cerrarse."
+	)
 
 	_assert(
 		presenter_source.contains("MonthlyClosureSummary"),
