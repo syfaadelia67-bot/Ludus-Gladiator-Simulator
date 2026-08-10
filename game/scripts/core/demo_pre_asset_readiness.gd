@@ -22,8 +22,6 @@ const PENDING_AUTHORITY_BOUNDARIES := {
 	"Planning is month-native; non-GT activity blockers are not fully frozen yet.",
 	"legacy_combat_manager_quarantine":
 	"Legacy CombatManager still exposes old scheduling and non-Combat-V1 formulas.",
-	"canonical_skill_progression_reconciliation":
-	"Legacy abilities are not yet reconciled with the 12 canonical Combat V1 skills.",
 	"playable_combat_v1_ui":
 	"Combat V1 has runtime contracts but no complete player-facing placeholder combat flow yet.",
 	"gt1_rival_results_provider":
@@ -80,15 +78,12 @@ func get_contract() -> Dictionary:
 func _append_rival_snapshot_blocker(blockers: Array[Dictionary]) -> void:
 	if not DataRepository.get_rival_combat_v1_snapshots().is_empty():
 		return
-	(
-		blockers
-		. append(
-			_blocker(
-				"rival_combat_v1_snapshots_missing",
-				"gt1_rivals",
-				"Canonical rival gladiator Combat V1 snapshots are not frozen yet.",
-				true,
-			)
+	blockers.append(
+		_blocker(
+			"rival_combat_v1_snapshots_missing",
+			"gt1_rivals",
+			"Canonical rival gladiator Combat V1 snapshots are not frozen yet.",
+			true,
 		)
 	)
 
@@ -96,27 +91,21 @@ func _append_rival_snapshot_blocker(blockers: Array[Dictionary]) -> void:
 func _append_beast_blockers(blockers: Array[Dictionary]) -> void:
 	var readiness := GT1BeastReadinessContractScript.new().evaluate(DataRepository.beasts, false)
 	if readiness.get("canonical_beast_stats_ready") != true:
-		(
-			blockers
-			. append(
-				_blocker(
-					"beast_combat_v1_stats_missing",
-					"beasts",
-					"Jabalí, León and Oso still require canonical Combat V1 stats.",
-					true,
-				)
+		blockers.append(
+			_blocker(
+				"beast_combat_v1_stats_missing",
+				"beasts",
+				"Jabalí, León and Oso still require canonical Combat V1 stats.",
+				true,
 			)
 		)
 	if readiness.get("runtime_beast_adapter_ready") != true:
-		(
-			blockers
-			. append(
-				_blocker(
-					"beast_combat_v1_adapter_missing",
-					"beasts",
-					"The canonical beast-to-Combat-V1 runtime adapter is not implemented yet.",
-					false,
-				)
+		blockers.append(
+			_blocker(
+				"beast_combat_v1_adapter_missing",
+				"beasts",
+				"The canonical beast-to-Combat-V1 runtime adapter is not implemented yet.",
+				false,
 			)
 		)
 
@@ -127,18 +116,13 @@ func _append_pending_building_balance_blockers(blockers: Array[Dictionary]) -> v
 			building is Dictionary
 			and bool((building as Dictionary).get("upgrade_cost_pending", false))
 		):
-			(
-				blockers
-				. append(
-					_blocker(
-						(
-							"building_upgrade_cost_pending:%s"
-							% str((building as Dictionary).get("id", ""))
-						),
-						"estate",
-						"A demo building still has an explicitly pending upgrade cost.",
-						true,
-					)
+			blockers.append(
+				_blocker(
+					"building_upgrade_cost_pending:%s"
+					% str((building as Dictionary).get("id", "")),
+					"estate",
+					"A demo building still has an explicitly pending upgrade cost.",
+					true,
 				)
 			)
 
@@ -146,30 +130,27 @@ func _append_pending_building_balance_blockers(blockers: Array[Dictionary]) -> v
 func _append_skill_mechanics_blocker(blockers: Array[Dictionary]) -> void:
 	if DataRepository.get_skills().is_empty():
 		return
-	(
-		blockers
-		. append(
-			_blocker(
-				"canonical_skill_mechanics_not_frozen",
-				"skills",
-				"The 12 canonical skill identities exist, but their Combat V1 mechanics are not frozen yet.",
-				true,
-			)
+	blockers.append(
+		_blocker(
+			"canonical_skill_mechanics_not_frozen",
+			"skills",
+			(
+				"The 12 canonical skill identities are reconciled and authoritative, but their "
+				+ "Combat V1 mechanics and progression are not frozen yet."
+			),
+			true,
 		)
 	)
 
 
 func _append_authority_boundary_blockers(blockers: Array[Dictionary]) -> void:
 	for code in PENDING_AUTHORITY_BOUNDARIES.keys():
-		(
-			blockers
-			. append(
-				_blocker(
-					str(code),
-					"architecture",
-					str(PENDING_AUTHORITY_BOUNDARIES[code]),
-					false,
-				)
+		blockers.append(
+			_blocker(
+				str(code),
+				"architecture",
+				str(PENDING_AUTHORITY_BOUNDARIES[code]),
+				false,
 			)
 		)
 
