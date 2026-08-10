@@ -20,11 +20,12 @@ func run() -> void:
 	assert(not project.contains("ArenaFinaleWarningPresenter="))
 	assert(not project.contains("PlaceholderAssetIntegrator="))
 
-	assert(arena.contains("func _refresh_encounter()"))
-	assert(arena.contains("CombatManager.get_current_opponent_preview(selected_fighter_id)"))
-	assert(arena.contains("const FINAL_WEEK := 16"))
-	assert(arena.contains("COMBATE FINAL DE LA DEMO"))
-	assert(arena.contains("Pack000Assets"))
+	assert(arena.contains("CombatV1ArenaRuntimeScript"))
+	assert(arena.contains("_refresh_encounter_panel"))
+	assert(arena.contains("snapshot canónico explícito"))
+	assert(arena.contains("GameState.get_month()"))
+	assert(not arena.contains("CombatManager"))
+	assert(not arena.contains("FINAL_WEEK"))
 	assert(not arena.contains("Margin/VBox/Tabs/Arena"))
 
 	assert(FileAccess.file_exists("res://scripts/ui/equipment_panel.gd"))
@@ -32,4 +33,4 @@ func run() -> void:
 	assert(equipment_scene.contains("res://scripts/ui/equipment_panel_v1.gd"))
 	assert(not equipment_scene.contains("res://scripts/ui/equipment_panel.gd"))
 
-	print("Orphaned UI artifact cleanup contract: OK")
+	print("Orphaned UI artifact and legacy Arena authority cleanup contract: OK")
