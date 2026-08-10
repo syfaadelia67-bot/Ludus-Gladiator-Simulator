@@ -104,12 +104,7 @@ func get_summary() -> Dictionary:
 	if available_gladiators == 0 and RosterManager.has_gladiator():
 		warnings.append("No hay gladiadores disponibles para combatir.")
 	if not bool(roster_policy.get("work_outputs_enabled", false)):
-		(
-			warnings
-			. append(
-				"Trabajo, entrenamiento, fatiga y recuperación no aplicarán cambios numéricos hasta congelar su balance mensual."
-			)
-		)
+		warnings.append("Trabajo, entrenamiento, fatiga y recuperación: balance mensual pendiente.")
 
 	return {
 		"period": "month",
