@@ -87,7 +87,7 @@ func _test_contract_freezes_month_xvi_rules() -> void:
 	assert(contract.get("carryover") == [])
 	assert(contract.get("beasts_allowed_by_design") == true)
 	assert(contract.get("beast_selection_boundary") == "gt1_beast_readiness_contract")
-	assert(contract.get("human_fallback_allowed") == true)
+	assert(contract.get("human_selection_remains_available") == true)
 	assert(contract.get("invent_beast_stats_allowed") == false)
 	assert(int(contract.get("points_per_win", 0)) == 3)
 	assert(int(contract.get("max_points", 0)) == 9)
