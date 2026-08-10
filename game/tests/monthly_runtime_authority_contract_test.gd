@@ -24,6 +24,7 @@ func _assert_monthly_scheduler_authority() -> void:
 		"RosterManager.process_day()",
 		"RivalManager.process_week()",
 		"EconomyManager.process_week()",
+		"EconomyManager.process_day()",
 		"EventManager.process_week()",
 		"CombatManager.get_current_event_details()",
 		"range(DAYS_PER_WEEK)",
@@ -79,7 +80,9 @@ func _assert_legacy_entrypoints_are_adapters() -> void:
 	assert(rivals.contains("func process_day()"))
 	assert(rivals.count("return process_month()") >= 2)
 	assert(economy.contains("func process_week()"))
-	assert(economy.contains("return process_month()"))
+	assert(economy.contains("func process_day()"))
+	assert(economy.count("return process_month()") >= 2)
+	assert(not economy.contains("super.process_day()"))
 	assert(tournaments.contains("func process_week()"))
 	assert(tournaments.contains("func process_day()"))
 	assert(tournaments.count("return process_month()") >= 2)
