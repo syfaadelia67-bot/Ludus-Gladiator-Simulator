@@ -4,6 +4,7 @@ extends SceneTree
 func _initialize() -> void:
 	var scene_text := FileAccess.get_file_as_string("res://scenes/MarketScreen.tscn")
 	var screen_text := FileAccess.get_file_as_string("res://scripts/ui/market_screen_monthly.gd")
+	var base_screen_text := FileAccess.get_file_as_string("res://scripts/ui/market_screen.gd")
 	var market_text := FileAccess.get_file_as_string("res://scripts/systems/market_manager.gd")
 	var policy_text := FileAccess.get_file_as_string(
 		"res://scripts/systems/monthly_market_policy.gd"
@@ -61,7 +62,8 @@ func _initialize() -> void:
 	assert(screen_text.contains("GameState.month_advanced.connect"))
 	assert(not screen_text.contains("GameState.week_advanced.connect"))
 	assert(not screen_text.to_lower().contains("semana"))
-	assert(screen_text.contains("func _show_market_home"))
+	assert(screen_text.contains('extends "res://scripts/ui/market_screen.gd"'))
+	assert(base_screen_text.contains("func _show_market_home"))
 	assert(screen_text.contains("func _open_fighters"))
 	assert(screen_text.contains("func _open_equipment"))
 	assert(screen_text.contains('active_section = "fighters"'))
