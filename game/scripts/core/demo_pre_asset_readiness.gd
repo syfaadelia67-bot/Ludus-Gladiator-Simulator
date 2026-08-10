@@ -22,8 +22,8 @@ const PENDING_AUTHORITY_BOUNDARIES := {
 	"Planning is month-native; non-GT activity blockers are not fully frozen yet.",
 	"playable_combat_v1_ui":
 	(
-		"Combat V1 placeholder UI is canonical; month-specific GT I roster, opponent and policy "
-		+ "host wiring remains pending for Months XIII, XVI and XX."
+		"Combat V1 Arena and the Month XIII host are canonical; Month XVI and XX host wiring "
+		+ "remains pending. Month XIII still fails closed while canonical rival snapshots are absent."
 	),
 	"gt1_rival_results_provider":
 	"GT I rival standings still require explicit external results without a campaign-owned provider.",
