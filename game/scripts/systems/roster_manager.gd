@@ -6,27 +6,30 @@ signal monthly_results(results: Dictionary)
 signal daily_results(results: Dictionary)
 
 const PERSON_SCRIPT = preload("res://scripts/entities/person.gd")
+const MONTHLY_ROSTER_WORK_POLICY = preload(
+	"res://scripts/systems/monthly_roster_work_policy.gd"
+)
 const JOBS := {
-	"idle": "Descanso — recupera fatiga y heridas",
-	"mining": "Minería — produce mineral cada mes",
-	"security": "Seguridad — protege la finca",
-	"espionage": "Espionaje — genera información",
-	"training": "Entrenamiento — forma gladiadores"
+	"idle": "Descanso — asignación mensual",
+	"mining": "Minería — asignación mensual",
+	"security": "Seguridad — asignación mensual",
+	"espionage": "Espionaje — asignación mensual",
+	"training": "Entrenamiento — asignación mensual"
 }
 const JOB_DESCRIPTIONS := {
-	"idle": "No genera recursos. Reduce fatiga y permite recuperarse con mayor seguridad.",
-	"mining": "Produce mineral al cerrar el mes. La Fuerza y la Resistencia mejoran el resultado.",
-	"security":
-	"Aumenta la seguridad mensual del ludus y ayuda a bloquear sabotajes y represalias.",
-	"espionage": "Genera puntos de inteligencia para operaciones contra casas rivales.",
-	"training":
-	"Aumenta el entrenamiento mensual. Los esclavos llegan a 100 y se convierten en gladiadores."
+	"idle": "La asignación queda registrada. La recuperación mensual está pendiente de balance canónico.",
+	"mining": "La asignación queda registrada. La producción mensual de mineral está pendiente de balance canónico.",
+	"security": "La asignación queda registrada. El aporte mensual de seguridad está pendiente de balance canónico.",
+	"espionage": "La asignación queda registrada. La generación mensual de información está pendiente de balance canónico.",
+	"training": "La asignación queda registrada. La progresión mensual y la promoción están pendientes de balance canónico."
 }
 
 var people: Array = []
 var security_score: int = 0
 var intelligence_points: int = 0
 var capacity: int = 8
+var last_processed_month: int = 0
+var last_monthly_result: Dictionary = {}
 
 
 func _ready() -> void:
@@ -131,8 +134,12 @@ func assign_job(person_id: String, job_id: String) -> bool:
 	var person = get_person(person_id)
 	if person == null:
 		return false
+	var previous_job := str(person.job)
 	person.assign_job(job_id)
-	roster_changed.emit()
+	if str(person.job) != job_id:
+		return false
+	if previous_job != str(person.job):
+		roster_changed.emit()
 	return true
 
 
@@ -162,31 +169,48 @@ func get_job_description(job_id: String) -> String:
 	return str(JOB_DESCRIPTIONS.get(job_id, "Sin descripción."))
 
 
+func get_monthly_work_policy() -> Dictionary:
+	return MONTHLY_ROSTER_WORK_POLICY.get_contract()
+
+
 func process_month() -> Dictionary:
+	var month := GameState.get_month()
+	if last_processed_month == month and not last_monthly_result.is_empty():
+		var cached := last_monthly_result.duplicate(true)
+		cached["duplicate_call_ignored"] = true
+		return cached
+
+	var policy := get_monthly_work_policy()
 	var totals := {
 		"period": "month",
-		"month": GameState.get_month(),
+		"month": month,
 		"ore": 0,
 		"food": 0,
 		"security": 0,
 		"intel": 0,
 		"training": 0,
 		"promotions": [],
-		"relationship_events": []
+		"relationship_events": [],
+		"policy_status": str(policy.get("status", "")),
+		"work_balance_applied": false,
+		"training_balance_applied": false,
+		"fatigue_balance_applied": false,
+		"injury_recovery_balance_applied": false,
+		"duplicate_call_ignored": false,
 	}
 	for person in people:
-		var previous_role: String = person.role
 		var result: Dictionary = person.process_month()
 		totals.ore += int(result.ore)
 		totals.security += int(result.security)
 		totals.intel += int(result.intel)
 		totals.training += int(result.training)
-		if previous_role == "slave" and person.role == "gladiator":
-			totals.promotions.append(person.display_name)
+
 	totals.relationship_events = RelationshipManager.process_month(totals)
 	totals.security += EstateManager.get_security_bonus()
 	security_score = totals.security
 	intelligence_points += totals.intel
+	last_processed_month = month
+	last_monthly_result = totals.duplicate(true)
 	monthly_results.emit(totals.duplicate(true))
 	# Legacy signal mirrors the monthly result. It is not a second tick.
 	daily_results.emit(totals.duplicate(true))
@@ -197,6 +221,11 @@ func process_month() -> Dictionary:
 func process_day() -> Dictionary:
 	# Save-v14 / legacy caller adapter only.
 	return process_month()
+
+
+func reset_monthly_runtime_state() -> void:
+	last_processed_month = 0
+	last_monthly_result.clear()
 
 
 func get_roster_summary() -> String:
