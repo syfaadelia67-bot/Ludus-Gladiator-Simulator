@@ -213,7 +213,7 @@ func _sanitize_all() -> void:
 
 func _sanitize_record(record: Dictionary) -> void:
 	var active = record.get("active_injury", {})
-	if active is Dictionary:
+	if active is Dictionary and not (active as Dictionary).is_empty():
 		var clean_active := (active as Dictionary).duplicate(true)
 		var started_month := maxi(
 			1, int(clean_active.get("started_month", clean_active.get("started_week", 1)))
@@ -227,6 +227,8 @@ func _sanitize_record(record: Dictionary) -> void:
 		clean_active["recovery_weeks"] = recovery_months
 		record["active_injury"] = clean_active
 	else:
+		# An empty dictionary means there is no active injury. Do not materialize
+		# compatibility date fields into it, or it becomes falsely non-empty.
 		record["active_injury"] = {}
 
 	var clean_scars: Array[Dictionary] = []
