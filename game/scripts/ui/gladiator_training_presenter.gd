@@ -115,13 +115,16 @@ func _refresh() -> void:
 		"Disponible" if bool(preview.get("available", false)) else "Bloqueado por lesión"
 	)
 	status.text = (
-		"[b]%s[/b]\n%s\nEstado: %s · %s\n"
-		+ "Progreso acumulado legacy: %d\n"
-		+ "[color=orange]Ganancia, fatiga y riesgo: balance mensual pendiente.[/color]"
-	) % [
-		str(preview.get("focus_name", "Entrenamiento")),
-		str(focus_data.get("description", "")),
-		assignment,
-		availability,
-		int(preview.get("progress", 0)),
-	]
+		(
+			"[b]%s[/b]\n%s\nEstado: %s · %s\n"
+			+ "Progreso acumulado legacy: %d\n"
+			+ "[color=orange]Ganancia, fatiga y riesgo: balance mensual pendiente.[/color]"
+		)
+		% [
+			str(preview.get("focus_name", "Entrenamiento")),
+			str(focus_data.get("description", "")),
+			assignment,
+			availability,
+			int(preview.get("progress", 0)),
+		]
+	)
