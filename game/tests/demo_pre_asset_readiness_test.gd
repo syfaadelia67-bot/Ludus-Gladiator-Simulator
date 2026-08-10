@@ -30,7 +30,7 @@ func _assert_known_blockers(codes: Array[String]) -> void:
 	assert(codes.has("monthly_roster_work_recovery"))
 	assert(codes.has("monthly_event_cadence"))
 	assert(codes.has("monthly_rival_management"))
-	assert(codes.has("monthly_planning_turn_closure"))
+	assert(not codes.has("monthly_planning_turn_closure"))
 	assert(not codes.has("legacy_combat_manager_quarantine"))
 	assert(codes.has("playable_combat_v1_ui"))
 	assert(codes.has("gt1_rival_results_provider"))
