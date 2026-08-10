@@ -22,7 +22,9 @@ func run() -> void:
 	assert(audit_script.contains("runway_months"))
 	assert(not audit_script.contains("GameState.DAYS_PER_WEEK"))
 	assert(
-		project.contains('EconomyManager="*res://scripts/systems/economy_manager_weekly.gd"')
+		project.contains(
+			'EconomyManager="*res://scripts/systems/economy_manager_weekly.gd"'
+		)
 	)
 	assert(panel_script.contains("Costo fijo mensual"))
 	assert(panel_script.contains("Ingreso mensual"))
