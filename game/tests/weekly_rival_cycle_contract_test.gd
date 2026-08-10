@@ -16,14 +16,8 @@ func run() -> void:
 		rival_source.contains("monthly_rivalry_processed"),
 		"Debe emitir un informe mensual de rivalidad."
 	)
-	_assert(
-		rival_source.contains('result["month"]'),
-		"Las operaciones deben registrar el mes canónico."
-	)
-	_assert(
-		rival_source.contains('event["month"]'),
-		"Las represalias deben registrar el mes canónico."
-	)
+	_assert(rival_source.contains('result["month"]'), "Las operaciones deben registrar el mes canónico.")
+	_assert(rival_source.contains('event["month"]'), "Las represalias deben registrar el mes canónico.")
 	_assert(
 		(
 			rival_source.contains("func process_week()")
@@ -45,9 +39,7 @@ func run() -> void:
 		"GameState no debe usar la API diaria rival."
 	)
 	_assert(
-		project_source.contains(
-			'RivalManager="*res://scripts/systems/rival_manager_weekly.gd"'
-		),
+		project_source.contains('RivalManager="*res://scripts/systems/rival_manager_weekly.gd"'),
 		"La ruta legacy del manager rival debe permanecer estable por compatibilidad."
 	)
 
