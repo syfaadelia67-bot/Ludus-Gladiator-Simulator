@@ -60,35 +60,47 @@ func get_current_overview() -> Dictionary:
 func get_calendar_milestones() -> Array[Dictionary]:
 	var milestones: Array[Dictionary] = []
 	for chapter in CampaignManager.CHAPTERS:
-		milestones.append(
-			{
-				"month": int(chapter.get("month_start", 1)),
-				"type": "chapter_start",
-				"label": "Inicio: %s" % str(chapter.get("name", "Capítulo")),
-				"chapter_id": str(chapter.get("id", "")),
-			}
+		(
+			milestones
+			. append(
+				{
+					"month": int(chapter.get("month_start", 1)),
+					"type": "chapter_start",
+					"label": "Inicio: %s" % str(chapter.get("name", "Capítulo")),
+					"chapter_id": str(chapter.get("id", "")),
+				}
+			)
 		)
-		milestones.append(
-			{
-				"month": int(chapter.get("month_end", 1)),
-				"type": "chapter_deadline",
-				"label": "Cierre: %s" % str(chapter.get("name", "Capítulo")),
-				"chapter_id": str(chapter.get("id", "")),
-			}
+		(
+			milestones
+			. append(
+				{
+					"month": int(chapter.get("month_end", 1)),
+					"type": "chapter_deadline",
+					"label": "Cierre: %s" % str(chapter.get("name", "Capítulo")),
+					"chapter_id": str(chapter.get("id", "")),
+				}
+			)
 		)
 	for month in TournamentManager.GT1_ENCOUNTER_MONTHS:
 		var encounter := TournamentManager.get_gt1_encounter(month)
-		milestones.append(
-			{
-				"month": month,
-				"type": "gt1_encounter",
-				"label": "%s · Encuentro %d"
-				% [
-					str(encounter.get("tournament_name", "Gran Torneo de Roma")),
-					int(encounter.get("encounter", 0)),
-				],
-				"chapter_id": "name_of_ludus",
-			}
+		(
+			milestones
+			. append(
+				{
+					"month": month,
+					"type": "gt1_encounter",
+					"label":
+					(
+						"%s · Encuentro %d"
+						% [
+							str(encounter.get("tournament_name", "Gran Torneo de Roma")),
+							int(encounter.get("encounter", 0)),
+						]
+					),
+					"chapter_id": "name_of_ludus",
+				}
+			)
 		)
 	for milestone in milestones:
 		milestone["week"] = int(milestone.get("month", 1))
