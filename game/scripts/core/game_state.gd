@@ -14,6 +14,9 @@ signal campaign_action_blocked(reason: String)
 
 const LEGACY_DAYS_PER_WEEK := 7
 const DAYS_PER_WEEK := LEGACY_DAYS_PER_WEEK
+const MonthlyTurnClosurePolicyScript = preload(
+	"res://scripts/systems/monthly_turn_closure_policy.gd"
+)
 
 # Save-v14 compatibility storage. `day` is retained as the serialized legacy
 # field, but its value is the canonical campaign turn/month index.
@@ -22,6 +25,7 @@ var denarii: int = 0
 var food: int = 100
 var ore: int = 20
 var reputation: int = 0
+var _monthly_turn_closure_policy = MonthlyTurnClosurePolicyScript.new()
 
 
 func _ready() -> void:
@@ -45,11 +49,30 @@ func get_week() -> int:
 	return get_month()
 
 
+func get_month_closure_status() -> Dictionary:
+	return _monthly_turn_closure_policy.evaluate(
+		get_month(),
+		CampaignManager.campaign_over,
+		EventManager.get_pending_event(),
+		TournamentManager.get_gt1_encounter(get_month()),
+		TournamentManager.get_gt1_summary(),
+	)
+
+
+func get_month_closure_contract() -> Dictionary:
+	return _monthly_turn_closure_policy.get_contract()
+
+
 func advance_month() -> void:
-	if CampaignManager.campaign_over:
-		campaign_action_blocked.emit(
-			"La campaña terminó. La partida permanece disponible en modo de consulta."
+	var closure_status := get_month_closure_status()
+	if not bool(closure_status.get("can_close", false)):
+		var blockers: Array = closure_status.get("blockers", [])
+		var reason := (
+			str(blockers.front())
+			if not blockers.is_empty()
+			else "El mes no puede cerrarse por un bloqueo de campaña."
 		)
+		campaign_action_blocked.emit(reason)
 		return
 
 	var closing_month := get_month()
@@ -59,6 +82,7 @@ func advance_month() -> void:
 		"month": closing_month,
 		"closed_month": closing_month,
 		"internal_work_ticks": 1,
+		"processing_order": MonthlyTurnClosurePolicyScript.PROCESSING_ORDER.duplicate(),
 		"ore": 0,
 		"food": 0,
 		"security": 0,
