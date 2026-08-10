@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3]
 
-[ext_resource path="res://scripts/ui/forge_screen.gd" type="Script" id="1"]
+[ext_resource path="res://scripts/ui/forge_screen_v1.gd" type="Script" id="1"]
 
 [node name="ForgeScreen" type="HSplitContainer"]
 layout_mode = 3
@@ -28,7 +28,7 @@ layout_mode = 2
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 24
-text = "FORJA"
+text = "FORJA · CATÁLOGO PARCIAL"
 
 [node name="BackToFinca" type="Button" parent="ForgePanel/Header"]
 layout_mode = 2
@@ -36,18 +36,19 @@ text = "Volver a la finca"
 tooltip_text = "Regresar al centro del ludus."
 
 [node name="RecipeDetails" type="RichTextLabel" parent="ForgePanel"]
-custom_minimum_size = Vector2(450, 210)
+custom_minimum_size = Vector2(450, 240)
 layout_mode = 2
 bbcode_enabled = true
-text = "Seleccioná una receta."
+text = "Seleccioná una entrada del catálogo provisional."
 
 [node name="CraftItem" type="Button" parent="ForgePanel"]
 layout_mode = 2
-text = "Fabricar"
+text = "Fabricación pendiente de balance"
+disabled = true
 
 [node name="InventoryTitle" type="Label" parent="ForgePanel"]
 layout_mode = 2
-text = "INVENTARIO"
+text = "INVENTARIO REAL"
 
 [node name="Inventory" type="RichTextLabel" parent="ForgePanel"]
 custom_minimum_size = Vector2(450, 170)
