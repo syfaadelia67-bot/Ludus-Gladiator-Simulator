@@ -48,7 +48,9 @@ func _ready() -> void:
 	assert(dossier.contains("RETRATO PENDIENTE"))
 	assert(dossier.contains("SpecializationMasteryController.get_progress"))
 
-	assert(project.contains('AllTabsUIBootstrap="*res://scripts/ui/main_ui_bootstrap.gd"'))
+	assert(
+		project.contains('AllTabsUIBootstrap="*res://scripts/ui/main_ui_bootstrap.gd"')
+	)
 	assert(not project.contains("all_tabs_ui_bootstrap.gd"))
 	assert(project.contains("SpecializationMasteryController="))
 	assert(project.contains("GladiatorDossierPresenter="))
