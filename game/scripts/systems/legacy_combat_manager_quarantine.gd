@@ -64,6 +64,18 @@ func configure_next_battle(config: Dictionary) -> void:
 	next_battle_config = config.duplicate(true)
 
 
+func get_event_type_for_week(_week: int) -> String:
+	return "combat_v1_only"
+
+
+func get_event_name_for_week(_week: int) -> String:
+	return ""
+
+
+func get_event_details_for_week(_week: int) -> Dictionary:
+	return get_current_event_details()
+
+
 func get_current_event_type() -> String:
 	return "combat_v1_only"
 
