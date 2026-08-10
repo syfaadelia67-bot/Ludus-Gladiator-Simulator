@@ -176,10 +176,13 @@ func get_monthly_population_snapshot() -> Dictionary:
 func get_monthly_operating_cost_breakdown() -> Dictionary:
 	var population := get_monthly_population_snapshot()
 	var calculator = MonthlyOperatingCostCalculatorScript.new()
-	var breakdown: Dictionary = calculator.calculate(
-		int(population.get("slave_count", 0)),
-		int(population.get("gladiator_count", 0)),
-		int(population.get("beast_count", 0)),
+	var breakdown: Dictionary = (
+		calculator
+		. calculate(
+			int(population.get("slave_count", 0)),
+			int(population.get("gladiator_count", 0)),
+			int(population.get("beast_count", 0)),
+		)
 	)
 	breakdown["slave_count_source"] = population.get("slave_count_source", "")
 	breakdown["gladiator_count_source"] = population.get("gladiator_count_source", "")
