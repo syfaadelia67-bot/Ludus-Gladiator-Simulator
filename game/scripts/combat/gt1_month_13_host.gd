@@ -68,11 +68,14 @@ func start(
 	var request := prepare_request(player_gladiator_id, player_team_id, opponent_fighters)
 	if request.get("status") != "ready":
 		return request
-	return _runtime.start_encounter_from_live_roster(
-		MONTH,
-		player_team_id,
-		request.get("player_ids_by_bout", []) as Array,
-		request.get("opponent_fighters_by_bout", []) as Array,
+	return (
+		_runtime
+		. start_encounter_from_live_roster(
+			MONTH,
+			player_team_id,
+			request.get("player_ids_by_bout", []) as Array,
+			request.get("opponent_fighters_by_bout", []) as Array,
+		)
 	)
 
 
