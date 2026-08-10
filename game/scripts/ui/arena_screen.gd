@@ -38,12 +38,13 @@ var _ai_request_provider: Callable = Callable()
 @onready var manage_button: Button = roster_content.get_node("ManageGladiators")
 
 @onready var preparation_view: VBoxContainer = center_content.get_node("PreparationView")
-@onready var battlefield: Control = preparation_view.get_node(
-	"ArenaVisual/Margin/VisualContent/Battlefield"
-)
+@onready var arena_visual: Control = preparation_view.get_node("ArenaVisual/Margin/VisualContent")
+@onready var battlefield: Control = arena_visual.get_node("Battlefield")
 @onready var preparation_content: Control = preparation_view.get_node("Preparation/Margin/Content")
+@onready var options_content: Control = preparation_content.get_node("Options")
 @onready var action_row: Control = preparation_view.get_node("ActionRow")
 @onready var result_view: VBoxContainer = center_content.get_node("ResultView")
+@onready var result_header: Control = result_view.get_node("ResultHeader")
 @onready var replay_controls: Control = result_view.get_node("ReplayControls")
 
 @onready var player_name: Label = battlefield.get_node("PlayerName")
@@ -54,23 +55,17 @@ var _ai_request_provider: Callable = Callable()
 @onready var enemy_stamina: ProgressBar = battlefield.get_node("EnemyEnergy")
 @onready var action_text: Label = battlefield.get_node("ActionText")
 @onready var selected_prep: RichTextLabel = preparation_content.get_node("SelectedPrep")
-@onready var action_selector: OptionButton = preparation_content.get_node("Options/TacticSelector")
-@onready var target_selector: OptionButton = preparation_content.get_node("Options/EnergySelector")
-@onready var legacy_surrender_selector: OptionButton = preparation_content.get_node(
-	"Options/SurrenderSelector"
-)
-@onready var legacy_finisher_toggle: CheckButton = preparation_content.get_node(
-	"Options/FinisherToggle"
-)
+@onready var action_selector: OptionButton = options_content.get_node("TacticSelector")
+@onready var target_selector: OptionButton = options_content.get_node("EnergySelector")
+@onready var legacy_surrender_selector: OptionButton = options_content.get_node("SurrenderSelector")
+@onready var legacy_finisher_toggle: CheckButton = options_content.get_node("FinisherToggle")
 @onready var plan_summary: RichTextLabel = preparation_content.get_node("PlanSummary")
 @onready var edit_plan_button: Button = action_row.get_node("EditPlan")
 @onready var equipment_button: Button = action_row.get_node("Equipment")
 @onready var start_button: Button = action_row.get_node("StartCombat")
 @onready var view_result_button: Button = action_row.get_node("ViewResult")
 
-@onready var back_to_preparation_button: Button = result_view.get_node(
-	"ResultHeader/BackToPreparation"
-)
+@onready var back_to_preparation_button: Button = result_header.get_node("BackToPreparation")
 @onready var result_summary: RichTextLabel = result_view.get_node("ResultSummary")
 @onready var replay_button: Button = replay_controls.get_node("Replay")
 @onready var pause_button: Button = replay_controls.get_node("Pause")
@@ -83,9 +78,8 @@ var _ai_request_provider: Callable = Callable()
 @onready var difficulty: RichTextLabel = encounter_content.get_node("DifficultyRow/Difficulty")
 @onready var rewards: RichTextLabel = encounter_content.get_node("RewardsRow/Rewards")
 @onready var entry_info: RichTextLabel = encounter_content.get_node("EntryRow/Entry")
-@onready var combat_conditions: RichTextLabel = encounter_content.get_node(
-	"ConditionsRow/CombatConditions"
-)
+@onready var conditions_row: Control = encounter_content.get_node("ConditionsRow")
+@onready var combat_conditions: RichTextLabel = conditions_row.get_node("CombatConditions")
 
 
 func _ready() -> void:
@@ -408,9 +402,11 @@ func _clear_stage() -> void:
 func _refresh_encounter_panel() -> void:
 	var encounter := TournamentManager.get_gt1_encounter(GameState.get_month())
 	if encounter.is_empty():
-		opponent_info.text = (
-			"[b]SIN ENCUENTRO GT I ESTE MES[/b]\n"
-			+ "No se genera un rival de forma automática."
+		opponent_info.text = "\n".join(
+			[
+				"[b]SIN ENCUENTRO GT I ESTE MES[/b]",
+				"No se genera un rival de forma automática.",
+			]
 		)
 		combat_conditions.text = (
 			"[b]AUTORIDAD[/b]\n"
@@ -430,9 +426,11 @@ func _refresh_encounter_panel() -> void:
 			]
 		)
 	difficulty.text = "[b]DIFICULTAD[/b]\nNo calculada por la UI."
-	rewards.text = (
-		"[b]PUNTUACIÓN[/b]\n"
-		+ "3 puntos por victoria GT I. Sin premios económicos inventados."
+	rewards.text = "\n".join(
+		[
+			"[b]PUNTUACIÓN[/b]",
+			"3 puntos por victoria GT I. Sin premios económicos inventados.",
+		]
 	)
 	entry_info.text = "[b]ENTRADA[/b]\nSin coste automático definido por esta pantalla."
 
@@ -541,13 +539,13 @@ func _render_error(result: Dictionary) -> void:
 		errors.append(str(raw_error))
 	if errors.is_empty():
 		errors.append(str(result.get("reason", "Operación rechazada por contrato Combat V1")))
-	result_summary.text = (
-		"[color=orange][b]COMBAT V1 RECHAZÓ LA OPERACIÓN[/b][/color]\n%s"
-		% "\n".join(errors)
-	)
-	combat_log.text = (
-		"[b]Sin mutación de combate[/b]\n"
-		+ "La operación falló antes de resolver el intercambio."
+	var error_header := "[color=orange][b]COMBAT V1 RECHAZÓ LA OPERACIÓN[/b][/color]"
+	result_summary.text = "%s\n%s" % [error_header, "\n".join(errors)]
+	combat_log.text = "\n".join(
+		[
+			"[b]Sin mutación de combate[/b]",
+			"La operación falló antes de resolver el intercambio.",
+		]
 	)
 	view_result_button.disabled = false
 	_show_result_view()
