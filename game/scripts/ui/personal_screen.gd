@@ -99,20 +99,28 @@ func _refresh_details() -> void:
 	open_dossier_button.disabled = str(person.role) != "gladiator"
 	var trait_text := ", ".join(person.traits) if not person.traits.is_empty() else "Ninguno"
 	details.text = (
-		"[b]%s[/b]\nOrigen: %s | Rol: %s\n"
-		% [person.display_name, person.origin, _role_name(person.role)]
-		+ "Fuerza: %d | Agilidad: %d | Resistencia: %d | Inteligencia: %d\n"
-		% [person.strength, person.agility, person.endurance, person.intelligence]
-		+ "Lealtad: %d | Moral: %d | Fatiga: %d\nEntrenamiento: %d/100\n"
-		% [person.loyalty, person.morale, person.fatigue, person.training]
-		+ "Ataque: %d | Defensa: %d | Vida: %d | Energía: %d\nRasgos: %s"
-		% [
-			person.get_base_attack(),
-			person.get_base_defense(),
-			person.get_max_health(),
-			person.get_max_energy(),
-			trait_text,
-		]
+		(
+			"[b]%s[/b]\nOrigen: %s | Rol: %s\n"
+			% [person.display_name, person.origin, _role_name(person.role)]
+		)
+		+ (
+			"Fuerza: %d | Agilidad: %d | Resistencia: %d | Inteligencia: %d\n"
+			% [person.strength, person.agility, person.endurance, person.intelligence]
+		)
+		+ (
+			"Lealtad: %d | Moral: %d | Fatiga: %d\nEntrenamiento: %d/100\n"
+			% [person.loyalty, person.morale, person.fatigue, person.training]
+		)
+		+ (
+			"Ataque: %d | Defensa: %d | Vida: %d | Energía: %d\nRasgos: %s"
+			% [
+				person.get_base_attack(),
+				person.get_base_defense(),
+				person.get_max_health(),
+				person.get_max_energy(),
+				trait_text,
+			]
+		)
 	)
 	var current_job_index := job_ids.find(str(person.job))
 	if current_job_index >= 0:
