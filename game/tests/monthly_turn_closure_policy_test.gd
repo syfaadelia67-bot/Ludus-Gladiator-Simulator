@@ -18,7 +18,9 @@ func _ready() -> void:
 
 
 func _test_non_gt_month_closes_without_invented_combat(policy) -> void:
-	var result: Dictionary = policy.evaluate(5, false, {}, {}, _summary({"13": 0, "16": 0, "20": 0}))
+	var result: Dictionary = policy.evaluate(
+		5, false, {}, {}, _summary({"13": 0, "16": 0, "20": 0})
+	)
 	assert(result.get("can_close") == true)
 	assert(result.get("non_gt_combat_required") == false)
 	assert(result.get("fight_pending") == false)
@@ -29,24 +31,30 @@ func _test_non_gt_month_closes_without_invented_combat(policy) -> void:
 
 
 func _test_pending_event_blocks(policy) -> void:
-	var result: Dictionary = policy.evaluate(
-		7,
-		false,
-		{"id": "monthly_event"},
-		{},
-		_summary({"13": 0, "16": 0, "20": 0}),
+	var result: Dictionary = (
+		policy
+		. evaluate(
+			7,
+			false,
+			{"id": "monthly_event"},
+			{},
+			_summary({"13": 0, "16": 0, "20": 0}),
+		)
 	)
 	assert(result.get("can_close") == false)
 	assert(_has_blocker(result, "event_pending"))
 
 
 func _test_gt1_incomplete_blocks(policy) -> void:
-	var result: Dictionary = policy.evaluate(
-		13,
-		false,
-		{},
-		_encounter(13),
-		_summary({"13": 2, "16": 0, "20": 0}),
+	var result: Dictionary = (
+		policy
+		. evaluate(
+			13,
+			false,
+			{},
+			_encounter(13),
+			_summary({"13": 2, "16": 0, "20": 0}),
+		)
 	)
 	assert(result.get("can_close") == false)
 	assert(result.get("fight_pending") == true)
@@ -57,12 +65,15 @@ func _test_gt1_incomplete_blocks(policy) -> void:
 
 
 func _test_gt1_complete_allows_closure(policy) -> void:
-	var result: Dictionary = policy.evaluate(
-		13,
-		false,
-		{},
-		_encounter(13),
-		_summary({"13": 3, "16": 0, "20": 0}),
+	var result: Dictionary = (
+		policy
+		. evaluate(
+			13,
+			false,
+			{},
+			_encounter(13),
+			_summary({"13": 3, "16": 0, "20": 0}),
+		)
 	)
 	assert(result.get("can_close") == true)
 	assert(result.get("fight_pending") == false)
@@ -70,12 +81,15 @@ func _test_gt1_complete_allows_closure(policy) -> void:
 
 
 func _test_campaign_over_blocks(policy) -> void:
-	var result: Dictionary = policy.evaluate(
-		20,
-		true,
-		{},
-		_encounter(20),
-		_summary({"13": 3, "16": 3, "20": 3}),
+	var result: Dictionary = (
+		policy
+		. evaluate(
+			20,
+			true,
+			{},
+			_encounter(20),
+			_summary({"13": 3, "16": 3, "20": 3}),
+		)
 	)
 	assert(result.get("can_close") == false)
 	assert(_has_blocker(result, "campaign_over"))
@@ -89,8 +103,10 @@ func _test_contract(policy) -> void:
 	assert(contract.get("warnings_block_closure") == false)
 	assert(contract.get("save_version_change_required") == false)
 	assert(
-		contract.get("processing_order")
-		== ["roster", "rivals", "economy", "tournaments", "advance_clock", "events", "food"]
+		(
+			contract.get("processing_order")
+			== ["roster", "rivals", "economy", "tournaments", "advance_clock", "events", "food"]
+		)
 	)
 
 
