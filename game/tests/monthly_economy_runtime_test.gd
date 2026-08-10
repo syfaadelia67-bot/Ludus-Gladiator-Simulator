@@ -43,8 +43,7 @@ func _test_frozen_population_cost() -> void:
 	var population := EconomyManager.get_monthly_population_snapshot()
 	_assert(int(population.get("slave_count", -1)) == 2, "Debe contar esclavos del roster vivo.")
 	_assert(
-		int(population.get("gladiator_count", -1)) == 1,
-		"Debe contar gladiadores del roster vivo."
+		int(population.get("gladiator_count", -1)) == 1, "Debe contar gladiadores del roster vivo."
 	)
 	_assert(int(population.get("beast_count", -1)) == 0, "Una campaña nueva no posee bestias.")
 	_assert(
@@ -88,7 +87,9 @@ func _test_owned_beast_cost_and_persistence() -> void:
 	_assert(OwnedBeastRegistry.owns_instance("boar_1"), "La primera instancia debe persistir.")
 	_assert(OwnedBeastRegistry.owns_instance("boar_2"), "La segunda instancia debe persistir.")
 	_assert(OwnedBeastRegistry.release_owned_beast("boar_1"), "Debe poder liberar una instancia.")
-	_assert(OwnedBeastRegistry.release_owned_beast("boar_2"), "Debe poder liberar la otra instancia.")
+	_assert(
+		OwnedBeastRegistry.release_owned_beast("boar_2"), "Debe poder liberar la otra instancia."
+	)
 	_assert(OwnedBeastRegistry.get_owned_count() == 0, "El registro debe volver a quedar vacío.")
 
 
@@ -98,8 +99,12 @@ func _test_exactly_once_per_month() -> void:
 	_assert(GameState.denarii == 882, "La primera liquidación debe descontar exactamente 118.")
 	_assert(EconomyManager.last_processed_month == 5, "Debe registrar el mes liquidado.")
 	_assert(
-		EconomyManager.ledger.size() > 0
-		and str(EconomyManager.ledger[0].get("reason", "")).contains("Costos operativos mensuales"),
+		(
+			EconomyManager.ledger.size() > 0
+			and str(EconomyManager.ledger[0].get("reason", "")).contains(
+				"Costos operativos mensuales"
+			)
+		),
 		"El ledger debe registrar el costo mensual canónico."
 	)
 	var ledger_size := EconomyManager.ledger.size()
@@ -107,11 +112,15 @@ func _test_exactly_once_per_month() -> void:
 	var daily_alias := EconomyManager.process_day()
 	_assert(GameState.denarii == 882, "Los aliases legacy no pueden volver a cobrar el mes.")
 	_assert(
-		weekly_alias.get("duplicate_call_ignored") == true
-		and daily_alias.get("duplicate_call_ignored") == true,
+		(
+			weekly_alias.get("duplicate_call_ignored") == true
+			and daily_alias.get("duplicate_call_ignored") == true
+		),
 		"Los aliases repetidos deben devolver el reporte cacheado."
 	)
-	_assert(EconomyManager.ledger.size() == ledger_size, "Un alias repetido no debe duplicar ledger.")
+	_assert(
+		EconomyManager.ledger.size() == ledger_size, "Un alias repetido no debe duplicar ledger."
+	)
 
 
 func _test_processed_month_persists() -> void:
@@ -121,12 +130,18 @@ func _test_processed_month_persists() -> void:
 	EconomyManager.import_state(exported)
 	var before := GameState.denarii
 	var duplicate := EconomyManager.process_month()
-	_assert(duplicate.get("duplicate_call_ignored") == true, "Save v14 debe recordar el mes liquidado.")
-	_assert(GameState.denarii == before, "Recargar no puede habilitar un segundo cobro del mismo mes.")
+	_assert(
+		duplicate.get("duplicate_call_ignored") == true, "Save v14 debe recordar el mes liquidado."
+	)
+	_assert(
+		GameState.denarii == before, "Recargar no puede habilitar un segundo cobro del mismo mes."
+	)
 
 	GameState.day = 6
 	var next_month := EconomyManager.process_month()
-	_assert(next_month.get("duplicate_call_ignored") == false, "El mes siguiente sí debe liquidarse.")
+	_assert(
+		next_month.get("duplicate_call_ignored") == false, "El mes siguiente sí debe liquidarse."
+	)
 	_assert(GameState.denarii == before - 118, "Cada nuevo mes debe cobrar una sola vez.")
 
 
@@ -142,8 +157,10 @@ func _test_insufficient_funds_uses_monthly_cost() -> void:
 		"El costo operativo impago debe registrar un incumplimiento."
 	)
 	_assert(
-		not str(report.get("sponsor_balance_status", "")).is_empty()
-		and not str(report.get("loan_balance_status", "")).is_empty(),
+		(
+			not str(report.get("sponsor_balance_status", "")).is_empty()
+			and not str(report.get("loan_balance_status", "")).is_empty()
+		),
 		"Sponsors y préstamos deben permanecer marcados como compatibilidad pendiente."
 	)
 
