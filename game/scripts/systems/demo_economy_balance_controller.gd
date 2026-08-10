@@ -106,7 +106,8 @@ func get_key_prices() -> Array[Dictionary]:
 				}
 			)
 	result.sort_custom(
-		func(a: Dictionary, b: Dictionary): return int(a.get("price", 0)) < int(b.get("price", 0))
+		func(a: Dictionary, b: Dictionary):
+			return int(a.get("price", 0)) < int(b.get("price", 0))
 	)
 	return result
 
