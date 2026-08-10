@@ -8,7 +8,7 @@ func _ready() -> void:
 	RosterManager.roster_changed.connect(_emit_changed)
 	EventManager.events_changed.connect(_emit_changed)
 	EconomyManager.economy_changed.connect(_emit_changed)
-	CombatManager.combat_finished.connect(func(_result: Dictionary): _emit_changed())
+	TournamentManager.grand_tournament_changed.connect(func(_summary: Dictionary): _emit_changed())
 	GladiatorTrainingController.training_focus_changed.connect(
 		func(_person_id: String, _focus_id: String): _emit_changed()
 	)
@@ -76,27 +76,13 @@ func get_summary() -> Dictionary:
 			)
 		),
 	)
-	var event_pending := not EventManager.get_pending_event().is_empty()
-	var fight := TournamentManager.get_gt1_encounter(GameState.get_month())
-	var fight_pending := false
-	if not fight.is_empty():
-		var gt1_summary := TournamentManager.get_gt1_summary()
-		var progress: Dictionary = gt1_summary.get("encounter_progress", {})
-		fight_pending = int(progress.get(str(GameState.get_month()), 0)) < 3
-		fight["required"] = true
-	else:
-		fight = {
-			"month": GameState.get_month(),
-			"required": false,
-			"name": "Gestión del ludus",
-		}
-	var blockers: Array[String] = []
+	var closure := GameState.get_month_closure_status()
+	var fight: Dictionary = closure.get("fight", {})
+	var fight_pending := bool(closure.get("fight_pending", false))
+	var event_pending := bool(closure.get("event_pending", false))
+	var blockers: Array = closure.get("blockers", [])
 	var warnings: Array[String] = []
 
-	if event_pending:
-		blockers.append("Hay un evento mensual pendiente de resolución.")
-	if fight_pending:
-		blockers.append("El encuentro del Gran Torneo de este mes todavía no fue completado.")
 	if GameState.food < food_consumption:
 		warnings.append("La comida no alcanza para cubrir el consumo previsto.")
 	if GameState.denarii + int(economy.get("income", 0)) < int(economy.get("expenses", 0)):
@@ -123,7 +109,8 @@ func get_summary() -> Dictionary:
 		"fight": fight,
 		"fight_pending": fight_pending,
 		"event_pending": event_pending,
-		"blockers": blockers,
+		"blockers": blockers.duplicate(),
 		"warnings": warnings,
-		"can_close": blockers.is_empty() and not CampaignManager.campaign_over,
+		"can_close": bool(closure.get("can_close", false)),
+		"closure": closure.duplicate(true),
 	}
