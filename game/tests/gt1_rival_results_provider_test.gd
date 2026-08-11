@@ -1,8 +1,6 @@
 extends Node
 
-const GT1RivalResultsProviderScript = preload(
-	"res://scripts/combat/gt1_rival_results_provider.gd"
-)
+const GT1RivalResultsProviderScript = preload("res://scripts/combat/gt1_rival_results_provider.gd")
 
 const VALID_RESULTS := [
 	{"rival_id": "cassianus", "points": 27, "wins": 9},
