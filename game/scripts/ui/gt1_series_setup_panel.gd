@@ -279,33 +279,45 @@ func _begin_series() -> void:
 func _build_session() -> Dictionary:
 	var rival_ludus_id := _selected_metadata(rival_ludus_selector)
 	if _month == 13:
-		return _runtime.start_month_13_catalog_session(
-			_selected_metadata(_player_selectors[0]),
-			PLAYER_TEAM_ID,
-			rival_ludus_id,
-			_selected_values(_opponent_selectors, 3),
+		return (
+			_runtime
+			. start_month_13_catalog_session(
+				_selected_metadata(_player_selectors[0]),
+				PLAYER_TEAM_ID,
+				rival_ludus_id,
+				_selected_values(_opponent_selectors, 3),
+			)
 		)
 	if _month == 16:
 		var player_ids := _selected_values(_player_selectors, 3)
 		if _selected_metadata(opponent_mode_selector) == "beast":
-			return _runtime.start_month_16_beast_session(
+			return (
+				_runtime
+				. start_month_16_beast_session(
+					player_ids,
+					PLAYER_TEAM_ID,
+					_selected_values(_opponent_selectors, 3),
+					BEAST_TEAM_ID,
+				)
+			)
+		return (
+			_runtime
+			. start_month_16_catalog_human_session(
 				player_ids,
 				PLAYER_TEAM_ID,
+				rival_ludus_id,
 				_selected_values(_opponent_selectors, 3),
-				BEAST_TEAM_ID,
 			)
-		return _runtime.start_month_16_catalog_human_session(
-			player_ids,
-			PLAYER_TEAM_ID,
-			rival_ludus_id,
-			_selected_values(_opponent_selectors, 3),
 		)
 	if _month == 20:
-		return _runtime.start_month_20_catalog_session(
-			_pairs(_selected_values(_player_selectors, 6)),
-			PLAYER_TEAM_ID,
-			rival_ludus_id,
-			_pairs(_selected_values(_opponent_selectors, 6)),
+		return (
+			_runtime
+			. start_month_20_catalog_session(
+				_pairs(_selected_values(_player_selectors, 6)),
+				PLAYER_TEAM_ID,
+				rival_ludus_id,
+				_pairs(_selected_values(_opponent_selectors, 6)),
+			)
 		)
 	return {
 		"status": "rejected",
