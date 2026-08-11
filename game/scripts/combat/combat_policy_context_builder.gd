@@ -1,9 +1,13 @@
 extends RefCounted
 
 const CombatContractScript = preload("res://scripts/combat/combat_contract.gd")
+const CombatFighterActionPolicyScript = preload(
+	"res://scripts/combat/combat_fighter_action_policy.gd"
+)
 const CombatTargetResolverScript = preload("res://scripts/combat/combat_target_resolver.gd")
 
 var _combat_contract = CombatContractScript.new()
+var _fighter_action_policy = CombatFighterActionPolicyScript.new()
 var _target_resolver = CombatTargetResolverScript.new()
 
 
@@ -48,8 +52,9 @@ func build_context(state: Dictionary, actor_id: String) -> Dictionary:
 			"context": {},
 		}
 
+	var available_action_ids := _fighter_action_policy.get_allowed_action_ids(actor)
 	var legal_targets: Dictionary = {}
-	for action_id in _combat_contract.get_action_ids():
+	for action_id in available_action_ids:
 		var action_target_result: Dictionary = _target_resolver.inspect_action_targets(
 			state, actor_id, action_id
 		)
@@ -73,8 +78,8 @@ func build_context(state: Dictionary, actor_id: String) -> Dictionary:
 			"actor_id": actor_id,
 			"allies": allies,
 			"enemies": enemies,
-			"available_action_ids": _combat_contract.get_action_ids(),
-			"action_contracts": _combat_contract.get_action_contracts(),
+			"available_action_ids": available_action_ids.duplicate(),
+			"action_contracts": _fighter_action_policy.get_allowed_action_contracts(actor),
 			"target_candidates":
 			(target_result.get("candidates", {}) as Dictionary).duplicate(true),
 			"legal_targets": legal_targets.duplicate(true),
