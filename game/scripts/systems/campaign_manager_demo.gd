@@ -5,9 +5,11 @@ signal objective_failed(objective: Dictionary)
 const MonthlyNonGTActivityPolicyScript = preload(
 	"res://scripts/systems/monthly_non_gt_activity_policy.gd"
 )
+const DemoFinalePolicyScript = preload("res://scripts/systems/demo_finale_policy.gd")
 
 var failed_objectives: Array[String] = []
 var _non_gt_activity_policy = MonthlyNonGTActivityPolicyScript.new()
+var _finale_policy = DemoFinalePolicyScript.new()
 
 
 func _ready() -> void:
@@ -33,6 +35,18 @@ func evaluate_progress() -> void:
 	_evaluate_chapter()
 	_evaluate_rank()
 	_evaluate_objectives()
+	campaign_changed.emit()
+
+
+func _evaluate_campaign_finale() -> void:
+	if campaign_over:
+		return
+	var finale := _finale_policy.evaluate(GameState.get_month(), TournamentManager.get_gt1_summary())
+	if not bool(finale.get("can_finalize", false)):
+		return
+	_apply_gt1_finale_state(finale)
+	var result_message := _finale_result_message(finale)
+	campaign_finished.emit(victory_achieved, result_message)
 	campaign_changed.emit()
 
 
@@ -98,6 +112,9 @@ func get_summary() -> Dictionary:
 	var data := super.get_summary()
 	data["approved_combat_progress_source"] = "gt1_combat_v1"
 	data["non_gt_activity"] = _non_gt_activity_policy.evaluate_month(GameState.get_month())
+	data["finale"] = _finale_policy.evaluate(
+		GameState.get_month(), TournamentManager.get_gt1_summary()
+	)
 	return data
 
 
@@ -109,6 +126,7 @@ func export_state() -> Dictionary:
 
 func import_state(data: Dictionary) -> void:
 	super.import_state(data)
+	_reconcile_loaded_finale_state()
 	failed_objectives.clear()
 	for raw_id in data.get("failed_objectives", []):
 		var objective_id := str(raw_id)
@@ -121,6 +139,52 @@ func import_state(data: Dictionary) -> void:
 	_sync_approved_combat_progress()
 	_mark_expired_objectives()
 	campaign_changed.emit()
+
+
+func _reconcile_loaded_finale_state() -> void:
+	var finale := _finale_policy.evaluate(GameState.get_month(), TournamentManager.get_gt1_summary())
+	var can_finalize := bool(finale.get("can_finalize", false))
+	if final_combat_resolved and not can_finalize:
+		# A Save v14 campaign cannot claim the GT I finale while standings or its
+		# tiebreak are unresolved. Reopen the finale instead of trusting stale flags.
+		final_combat_resolved = false
+		campaign_over = false
+		victory_achieved = false
+		defeat_reason = ""
+		return
+	if can_finalize and (final_combat_resolved or not campaign_over):
+		_apply_gt1_finale_state(finale)
+
+
+func _apply_gt1_finale_state(finale: Dictionary) -> void:
+	final_combat_resolved = true
+	campaign_over = true
+	victory_achieved = bool(finale.get("victory", false))
+	defeat_reason = (
+		""
+		if victory_achieved
+		else "El ludus completó el Gran Torneo de Roma sin subir al podio."
+	)
+
+
+func _finale_result_message(finale: Dictionary) -> String:
+	if not bool(finale.get("victory", false)):
+		return defeat_reason
+	return "El ludus terminó %d.º en Roma y obtuvo medalla %s." % [
+		int(finale.get("placement", 0)), _medal_label(str(finale.get("medal", "")))
+	]
+
+
+func _medal_label(medal: String) -> String:
+	match medal:
+		"gold":
+			return "oro"
+		"silver":
+			return "plata"
+		"bronze":
+			return "bronce"
+		_:
+			return "sin medalla"
 
 
 func _mark_expired_objectives() -> void:
