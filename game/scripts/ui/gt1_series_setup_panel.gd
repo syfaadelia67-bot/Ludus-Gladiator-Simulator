@@ -3,12 +3,12 @@ extends PanelContainer
 signal session_started(session: Dictionary)
 signal setup_rejected(result: Dictionary)
 
-const CombatV1ArenaRuntimeScript = preload("res://scripts/ui/combat_v1_arena_runtime.gd")
+const GT1SeriesSetupRuntimeScript = preload("res://scripts/ui/gt1_series_setup_runtime.gd")
 const PLAYER_TEAM_ID := "player_ludus"
 const BEAST_TEAM_ID := "beast_team"
 const GT1_MONTHS := [13, 16, 20]
 
-var _runtime = CombatV1ArenaRuntimeScript.new()
+var _runtime = GT1SeriesSetupRuntimeScript.new()
 var _month := 0
 var _catalog: Dictionary = {}
 var _session_active := false
@@ -114,6 +114,7 @@ func get_contract() -> Dictionary:
 	return {
 		"status": "frozen",
 		"months": GT1_MONTHS.duplicate(),
+		"setup_runtime": "gt1_series_setup_runtime",
 		"player_source": "RosterManager",
 		"rival_ludi_source": "DataRepository.rival_ludi",
 		"rival_fighter_source": "DataRepository.rival_combat_v1_snapshots",
@@ -245,7 +246,9 @@ func _refresh_summary() -> void:
 	var selected_players := _selected_values(_player_selectors, player_slots)
 	var selected_opponents := _selected_values(_opponent_selectors, opponent_slots)
 	var mode := _selected_metadata(opponent_mode_selector)
-	var source_ready := mode == "beast" or not _selected_metadata(rival_ludus_selector).is_empty()
+	var source_ready := (
+		mode == "beast" or not _selected_metadata(rival_ludus_selector).is_empty()
+	)
 	var complete := (
 		selected_players.size() == player_slots
 		and selected_opponents.size() == opponent_slots
@@ -253,7 +256,9 @@ func _refresh_summary() -> void:
 	)
 	begin_series_button.disabled = _session_active or not complete
 	if _session_active:
-		setup_summary.text = "[b]SERIE ACTIVA[/b]\nTerminá o abandoná la sesión actual antes de armar otra."
+		setup_summary.text = (
+			"[b]SERIE ACTIVA[/b]\nTerminá o abandoná la sesión actual antes de armar otra."
+		)
 		return
 	setup_summary.text = (
 		"[b]ARMADO EXPLÍCITO[/b]\nMes %d · %s · Selecciones: %d/%d propias, %d/%d rivales."
@@ -281,7 +286,7 @@ func _build_session() -> Dictionary:
 	if _month == 13:
 		return (
 			_runtime
-			. start_month_13_catalog_session(
+			. start_month_13_session(
 				_selected_metadata(_player_selectors[0]),
 				PLAYER_TEAM_ID,
 				rival_ludus_id,
@@ -302,7 +307,7 @@ func _build_session() -> Dictionary:
 			)
 		return (
 			_runtime
-			. start_month_16_catalog_human_session(
+			. start_month_16_human_session(
 				player_ids,
 				PLAYER_TEAM_ID,
 				rival_ludus_id,
@@ -312,7 +317,7 @@ func _build_session() -> Dictionary:
 	if _month == 20:
 		return (
 			_runtime
-			. start_month_20_catalog_session(
+			. start_month_20_session(
 				_pairs(_selected_values(_player_selectors, 6)),
 				PLAYER_TEAM_ID,
 				rival_ludus_id,
