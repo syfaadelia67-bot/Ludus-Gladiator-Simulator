@@ -43,93 +43,72 @@ func inspect() -> Dictionary:
 
 
 func _inspect_path(path: String) -> Dictionary:
-	if not FileAccess.file_exists(path):
-		return {
-			"path": path,
-			"exists": false,
-			"loadable": false,
-			"status": STATUS_MISSING,
-			"metadata": {},
-		}
+	var result: Dictionary = {
+		"path": path,
+		"exists": FileAccess.file_exists(path),
+		"loadable": false,
+		"status": STATUS_MISSING,
+		"metadata": {},
+	}
+	if not bool(result["exists"]):
+		return result
+
+	result["status"] = STATUS_CORRUPT
 	var file := FileAccess.open(path, FileAccess.READ)
 	if file == null:
-		return {
-			"path": path,
-			"exists": true,
-			"loadable": false,
-			"status": STATUS_CORRUPT,
-			"metadata": {},
-		}
+		return result
+
 	var parsed: Variant = JSON.parse_string(file.get_as_text())
 	file.close()
 	if not parsed is Dictionary:
-		return {
-			"path": path,
-			"exists": true,
-			"loadable": false,
-			"status": STATUS_CORRUPT,
-			"metadata": {},
-		}
+		return result
 
 	var payload: Dictionary = parsed
 	var version := int(payload.get("version", 0))
+	result["metadata"] = _metadata(payload)
 	var structural_error := _structural_error(payload)
 	if not structural_error.is_empty():
-		return {
-			"path": path,
-			"exists": true,
-			"loadable": false,
-			"status": STATUS_CORRUPT,
-			"error": structural_error,
-			"metadata": _metadata(payload),
-		}
-	if version > CURRENT_SAVE_VERSION:
-		return {
-			"path": path,
-			"exists": true,
-			"loadable": false,
-			"status": STATUS_INCOMPATIBLE_NEWER,
-			"metadata": _metadata(payload),
-		}
-	if version < CURRENT_SAVE_VERSION:
-		return {
-			"path": path,
-			"exists": true,
-			"loadable": true,
-			"status": STATUS_LEGACY_MIGRATABLE,
-			"metadata": _metadata(payload),
-		}
-	return {
-		"path": path,
-		"exists": true,
-		"loadable": true,
-		"status": STATUS_VALID,
-		"metadata": _metadata(payload),
-	}
+		result["error"] = structural_error
+	elif version > CURRENT_SAVE_VERSION:
+		result["status"] = STATUS_INCOMPATIBLE_NEWER
+	elif version < CURRENT_SAVE_VERSION:
+		result["status"] = STATUS_LEGACY_MIGRATABLE
+		result["loadable"] = true
+	else:
+		result["status"] = STATUS_VALID
+		result["loadable"] = true
+	return result
 
 
 func _structural_error(payload: Dictionary) -> String:
-	if int(payload.get("version", 0)) <= 0:
-		return "missing_version"
+	var error := ""
 	var game_state: Variant = payload.get("game_state", null)
 	var roster: Variant = payload.get("roster", null)
-	if not game_state is Dictionary:
-		return "missing_game_state"
-	if not roster is Dictionary:
-		return "missing_roster"
-	var month := int(
-		(game_state as Dictionary).get(
-			"month",
-			(game_state as Dictionary).get("week", (game_state as Dictionary).get("day", 0))
+	if int(payload.get("version", 0)) <= 0:
+		error = "missing_version"
+	elif not game_state is Dictionary:
+		error = "missing_game_state"
+	elif not roster is Dictionary:
+		error = "missing_roster"
+	else:
+		var month := int(
+			(game_state as Dictionary).get(
+				"month",
+				(game_state as Dictionary).get(
+					"week", (game_state as Dictionary).get("day", 0)
+				)
+			)
 		)
-	)
-	if month < 1:
-		return "invalid_month"
-	if not (roster as Dictionary).get("people", null) is Array:
-		return "invalid_roster"
-	if payload.has("combat_v1_runtime") and not payload.get("combat_v1_runtime") is Dictionary:
-		return "invalid_combat_v1_runtime"
-	return ""
+		if month < 1:
+			error = "invalid_month"
+		elif not (roster as Dictionary).get("people", null) is Array:
+			error = "invalid_roster"
+		elif (
+			payload.has("combat_v1_runtime")
+			and not payload.get("combat_v1_runtime") is Dictionary
+		):
+			error = "invalid_combat_v1_runtime"
+	return error
 
 
 func _metadata(payload: Dictionary) -> Dictionary:
