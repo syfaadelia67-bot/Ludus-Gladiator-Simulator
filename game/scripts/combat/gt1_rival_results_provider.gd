@@ -1,8 +1,6 @@
 extends RefCounted
 
-const GT1RivalResultRegistryScript = preload(
-	"res://scripts/combat/gt1_rival_result_registry.gd"
-)
+const GT1RivalResultRegistryScript = preload("res://scripts/combat/gt1_rival_result_registry.gd")
 
 const REQUIRED_RIVAL_RESULTS := 7
 const POINTS_PER_WIN := 3
@@ -39,8 +37,10 @@ func validate_explicit_results(results: Array) -> Dictionary:
 		return _rejected(
 			"incomplete_rival_results_batch",
 			[
-				"GT I rival results provider requires exactly %d explicit results"
-				% REQUIRED_RIVAL_RESULTS,
+				(
+					"GT I rival results provider requires exactly %d explicit results"
+					% REQUIRED_RIVAL_RESULTS
+				),
 			],
 		)
 
@@ -129,10 +129,13 @@ func register_explicit_results(results: Array) -> Dictionary:
 	var standings_resolution: Dictionary = {}
 	for raw_result in validation.get("normalized_results", []) as Array:
 		var entry := raw_result as Dictionary
-		var registered: Dictionary = _registry.register_result(
-			str(entry.get("rival_id", "")),
-			int(entry.get("points", 0)),
-			int(entry.get("wins", 0)),
+		var registered: Dictionary = (
+			_registry
+			. register_result(
+				str(entry.get("rival_id", "")),
+				int(entry.get("points", 0)),
+				int(entry.get("wins", 0)),
+			)
 		)
 		if registered.get("status") != "registered":
 			return _rejected(
@@ -140,9 +143,9 @@ func register_explicit_results(results: Array) -> Dictionary:
 				registered.get("errors", []) as Array,
 			)
 		registered_results.append(registered.duplicate(true))
-		standings_resolution = (
-			registered.get("standings_resolution", {}) as Dictionary
-		).duplicate(true)
+		standings_resolution = (registered.get("standings_resolution", {}) as Dictionary).duplicate(
+			true
+		)
 	return {
 		"status": "registered",
 		"reason": "",
