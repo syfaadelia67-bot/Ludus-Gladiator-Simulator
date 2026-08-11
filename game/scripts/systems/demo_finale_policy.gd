@@ -33,7 +33,8 @@ func evaluate(month: int, gt_summary: Dictionary) -> Dictionary:
 		"classification_valid": classification_valid,
 		"can_finalize": can_finalize,
 		"pending": eligible_month and not can_finalize,
-		"pending_reason": _pending_reason(
+		"pending_reason":
+		_pending_reason(
 			eligible_month,
 			player_bouts,
 			rival_results,
