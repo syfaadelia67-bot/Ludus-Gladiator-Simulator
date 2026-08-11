@@ -1,8 +1,6 @@
 extends Node
 
-const MonthlyOnboardingPolicyScript = preload(
-	"res://scripts/systems/monthly_onboarding_policy.gd"
-)
+const MonthlyOnboardingPolicyScript = preload("res://scripts/systems/monthly_onboarding_policy.gd")
 
 
 func run() -> void:
@@ -24,13 +22,16 @@ func run() -> void:
 	assert(step_ids.has("gt1_preparation"))
 	assert(MonthlyOnboardingPolicyScript.GT1_MONTHS == [13, 16, 20])
 
-	var migrated := policy.sanitize_completed_objectives(
-		{
-			"initial_gladiator": true,
-			"advance_week": true,
-			"weekly_combat": true,
-			"unknown": true,
-		}
+	var migrated := (
+		policy
+		. sanitize_completed_objectives(
+			{
+				"initial_gladiator": true,
+				"advance_week": true,
+				"weekly_combat": true,
+				"unknown": true,
+			}
+		)
 	)
 	assert(bool(migrated.get("initial_gladiator", false)))
 	assert(bool(migrated.get("close_month", false)))
