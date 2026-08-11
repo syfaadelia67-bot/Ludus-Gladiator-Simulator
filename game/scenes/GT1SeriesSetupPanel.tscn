@@ -1,0 +1,160 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource path="res://scripts/ui/gt1_series_setup_panel.gd" type="Script" id="1"]
+
+[node name="GT1SeriesSetupPanel" type="PanelContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+script = ExtResource("1")
+
+[node name="Margin" type="MarginContainer" parent="."]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 10
+
+[node name="Content" type="VBoxContainer" parent="Margin"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Title" type="Label" parent="Margin/Content"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "ARMADO DE SERIE GT I"
+
+[node name="SourceSummary" type="RichTextLabel" parent="Margin/Content"]
+custom_minimum_size = Vector2(0, 64)
+layout_mode = 2
+bbcode_enabled = true
+fit_content = false
+scroll_active = false
+text = "Fuentes canónicas de rivales y bestias."
+
+[node name="ModeRow" type="GridContainer" parent="Margin/Content"]
+layout_mode = 2
+columns = 4
+
+[node name="OpponentModeLabel" type="Label" parent="Margin/Content/ModeRow"]
+layout_mode = 2
+text = "Oponente"
+
+[node name="OpponentModeSelector" type="OptionButton" parent="Margin/Content/ModeRow"]
+custom_minimum_size = Vector2(180, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="RivalLudusLabel" type="Label" parent="Margin/Content/ModeRow"]
+layout_mode = 2
+text = "Ludus rival"
+
+[node name="RivalLudusSelector" type="OptionButton" parent="Margin/Content/ModeRow"]
+custom_minimum_size = Vector2(230, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="PlayerGrid" type="GridContainer" parent="Margin/Content"]
+layout_mode = 2
+columns = 2
+
+[node name="Player1Label" type="Label" parent="Margin/Content/PlayerGrid"]
+layout_mode = 2
+text = "Tu gladiador 1"
+[node name="Player1Selector" type="OptionButton" parent="Margin/Content/PlayerGrid"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Player2Label" type="Label" parent="Margin/Content/PlayerGrid"]
+layout_mode = 2
+text = "Tu gladiador 2"
+[node name="Player2Selector" type="OptionButton" parent="Margin/Content/PlayerGrid"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Player3Label" type="Label" parent="Margin/Content/PlayerGrid"]
+layout_mode = 2
+text = "Tu gladiador 3"
+[node name="Player3Selector" type="OptionButton" parent="Margin/Content/PlayerGrid"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Player4Label" type="Label" parent="Margin/Content/PlayerGrid"]
+layout_mode = 2
+text = "Tu gladiador 4"
+[node name="Player4Selector" type="OptionButton" parent="Margin/Content/PlayerGrid"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Player5Label" type="Label" parent="Margin/Content/PlayerGrid"]
+layout_mode = 2
+text = "Tu gladiador 5"
+[node name="Player5Selector" type="OptionButton" parent="Margin/Content/PlayerGrid"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Player6Label" type="Label" parent="Margin/Content/PlayerGrid"]
+layout_mode = 2
+text = "Tu gladiador 6"
+[node name="Player6Selector" type="OptionButton" parent="Margin/Content/PlayerGrid"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="OpponentGrid" type="GridContainer" parent="Margin/Content"]
+layout_mode = 2
+columns = 2
+
+[node name="Opponent1Label" type="Label" parent="Margin/Content/OpponentGrid"]
+layout_mode = 2
+text = "Oponente 1"
+[node name="Opponent1Selector" type="OptionButton" parent="Margin/Content/OpponentGrid"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Opponent2Label" type="Label" parent="Margin/Content/OpponentGrid"]
+layout_mode = 2
+text = "Oponente 2"
+[node name="Opponent2Selector" type="OptionButton" parent="Margin/Content/OpponentGrid"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Opponent3Label" type="Label" parent="Margin/Content/OpponentGrid"]
+layout_mode = 2
+text = "Oponente 3"
+[node name="Opponent3Selector" type="OptionButton" parent="Margin/Content/OpponentGrid"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Opponent4Label" type="Label" parent="Margin/Content/OpponentGrid"]
+layout_mode = 2
+text = "Oponente 4"
+[node name="Opponent4Selector" type="OptionButton" parent="Margin/Content/OpponentGrid"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Opponent5Label" type="Label" parent="Margin/Content/OpponentGrid"]
+layout_mode = 2
+text = "Oponente 5"
+[node name="Opponent5Selector" type="OptionButton" parent="Margin/Content/OpponentGrid"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Opponent6Label" type="Label" parent="Margin/Content/OpponentGrid"]
+layout_mode = 2
+text = "Oponente 6"
+[node name="Opponent6Selector" type="OptionButton" parent="Margin/Content/OpponentGrid"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="SetupSummary" type="RichTextLabel" parent="Margin/Content"]
+custom_minimum_size = Vector2(0, 64)
+layout_mode = 2
+bbcode_enabled = true
+fit_content = false
+scroll_active = false
+text = "Seleccioná todos los participantes de la serie."
+
+[node name="BeginSeries" type="Button" parent="Margin/Content"]
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 2
+disabled = true
+text = "INICIAR SERIE GT I"
