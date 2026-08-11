@@ -13,6 +13,10 @@ var _runtime_builder = CombatRuntimeStateBuilderScript.new()
 var _limboai_runner = LimboAIPolicyRunnerScript.new()
 
 
+func set_skill_mechanics(entries: Array) -> void:
+	_policy_contract.set_skill_mechanics(entries)
+
+
 func collect(
 	state: Dictionary,
 	player_team_id: String,
@@ -49,6 +53,7 @@ func collect(
 
 	var intents: Array = []
 	var providers_by_actor: Dictionary = {}
+	var skill_activations_by_actor: Dictionary = {}
 	for fighter in active_fighters:
 		var actor_result := _resolve_fighter_intent(
 			state,
@@ -65,6 +70,9 @@ func collect(
 		var actor_id := str(fighter.get("id", ""))
 		intents.append((actor_result.get("desired_action", {}) as Dictionary).duplicate(true))
 		providers_by_actor[actor_id] = str(actor_result.get("provider", ""))
+		var skill_activation := actor_result.get("skill_activation", {}) as Dictionary
+		if not skill_activation.is_empty():
+			skill_activations_by_actor[actor_id] = skill_activation.duplicate(true)
 
 	return {
 		"status": "ready",
@@ -72,6 +80,7 @@ func collect(
 		"errors": [],
 		"intents": intents.duplicate(true),
 		"providers_by_actor": providers_by_actor.duplicate(true),
+		"skill_activations_by_actor": skill_activations_by_actor.duplicate(true),
 		"active_actor_ids": active_ids.duplicate(),
 		"combat_authority": "combat_simulator",
 	}
@@ -86,6 +95,7 @@ func get_contract() -> Dictionary:
 		"inactive_or_unknown_source": "reject",
 		"missing_source": "reject",
 		"default_action_allowed": false,
+		"skill_translation": "combat_skill_runtime_resolver",
 		"combat_authority": "combat_simulator",
 		"policy_may_resolve_combat": false,
 	}
@@ -114,7 +124,17 @@ func _resolve_player_intent(state: Dictionary, actor_id: String, raw_intent: Var
 	var errors := _validate_actor_action(state, actor_id, desired_action)
 	if not errors.is_empty():
 		return _actor_rejected("invalid_player_intent", errors)
-	return _actor_ready("player", desired_action)
+	var translated := _policy_contract.resolve_desired_action(state, desired_action)
+	if translated.get("status") != "ready":
+		return _actor_rejected(
+			"invalid_player_skill_translation",
+			_to_string_array(translated.get("errors", [])),
+		)
+	return _actor_ready(
+		"player",
+		translated.get("desired_action", {}) as Dictionary,
+		translated.get("skill_activation", {}) as Dictionary,
+	)
 
 
 func _resolve_ai_intent(state: Dictionary, actor_id: String, raw_request: Variant) -> Dictionary:
@@ -151,16 +171,29 @@ func _resolve_ai_intent(state: Dictionary, actor_id: String, raw_request: Varian
 	var errors := _validate_actor_action(state, actor_id, desired_action)
 	if not errors.is_empty():
 		return _actor_rejected("invalid_limboai_intent", errors)
-	return _actor_ready("limboai", desired_action)
+	var translated := _policy_contract.resolve_desired_action(state, desired_action)
+	if translated.get("status") != "ready":
+		return _actor_rejected(
+			"invalid_limboai_skill_translation",
+			_to_string_array(translated.get("errors", [])),
+		)
+	return _actor_ready(
+		"limboai",
+		translated.get("desired_action", {}) as Dictionary,
+		translated.get("skill_activation", {}) as Dictionary,
+	)
 
 
-func _actor_ready(provider: String, desired_action: Dictionary) -> Dictionary:
+func _actor_ready(
+	provider: String, desired_action: Dictionary, skill_activation: Dictionary = {}
+) -> Dictionary:
 	return {
 		"status": "ready",
 		"reason": "",
 		"errors": [],
 		"provider": provider,
 		"desired_action": desired_action.duplicate(true),
+		"skill_activation": skill_activation.duplicate(true),
 	}
 
 
@@ -171,6 +204,7 @@ func _actor_rejected(reason: String, errors: Array[String]) -> Dictionary:
 		"errors": errors.duplicate(),
 		"provider": "",
 		"desired_action": {},
+		"skill_activation": {},
 	}
 
 
@@ -237,6 +271,7 @@ func _rejected(reason: String, errors: Array[String]) -> Dictionary:
 		"errors": errors.duplicate(),
 		"intents": [],
 		"providers_by_actor": {},
+		"skill_activations_by_actor": {},
 		"active_actor_ids": [],
 		"combat_authority": "combat_simulator",
 	}
