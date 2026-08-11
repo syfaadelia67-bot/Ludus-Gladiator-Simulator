@@ -57,19 +57,20 @@ func _pending_reason(
 	tiebreak_required: bool,
 	classification_valid: bool
 ) -> String:
+	var reason := ""
 	if not eligible_month:
-		return "before_final_month"
-	if player_bouts < TOTAL_PLAYER_BOUTS:
-		return "player_series_incomplete"
-	if rival_results != TOTAL_RIVAL_RESULTS:
-		return "rival_results_incomplete"
-	if tiebreak_required:
-		return "tiebreak_pending"
-	if not standings_resolved:
-		return "standings_unresolved"
-	if not classification_valid:
-		return "invalid_classification"
-	return ""
+		reason = "before_final_month"
+	elif player_bouts < TOTAL_PLAYER_BOUTS:
+		reason = "player_series_incomplete"
+	elif rival_results != TOTAL_RIVAL_RESULTS:
+		reason = "rival_results_incomplete"
+	elif tiebreak_required:
+		reason = "tiebreak_pending"
+	elif not standings_resolved:
+		reason = "standings_unresolved"
+	elif not classification_valid:
+		reason = "invalid_classification"
+	return reason
 
 
 func _expected_medal(placement: int) -> String:
