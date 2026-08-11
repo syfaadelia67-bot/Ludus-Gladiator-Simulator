@@ -20,7 +20,8 @@ func get_steps() -> Array[Dictionary]:
 		{
 			"id": "initial_gladiator",
 			"title": "1. Tu primer gladiador",
-			"text": (
+			"text":
+			(
 				"La campaña comienza eligiendo uno de los tres candidatos iniciales. "
 				+ "Los otros dos pasarán a casas rivales."
 			),
@@ -32,7 +33,8 @@ func get_steps() -> Array[Dictionary]:
 		{
 			"id": "inspect_roster",
 			"title": "2. Personal y roster",
-			"text": (
+			"text":
+			(
 				"En Personal revisás gladiadores y esclavos, además de moral, lealtad "
 				+ "y su asignación de trabajo mensual."
 			),
@@ -44,7 +46,8 @@ func get_steps() -> Array[Dictionary]:
 		{
 			"id": "assign_work",
 			"title": "3. Trabajo mensual",
-			"text": (
+			"text":
+			(
 				"Las asignaciones se resuelven una vez por mes. Cambiar un trabajo no "
 				+ "crea días ni semanas internas adicionales."
 			),
@@ -56,7 +59,8 @@ func get_steps() -> Array[Dictionary]:
 		{
 			"id": "inspect_finca",
 			"title": "4. La finca",
-			"text": (
+			"text":
+			(
 				"La finca concentra las instalaciones del ludus. En la demo hay siete "
 				+ "instalaciones disponibles según su estado y nivel."
 			),
@@ -68,7 +72,8 @@ func get_steps() -> Array[Dictionary]:
 		{
 			"id": "inspect_equipment",
 			"title": "5. Equipamiento",
-			"text": (
+			"text":
+			(
 				"El equipamiento del gladiador se gestiona por ranuras. Sus valores de "
 				+ "equipo llegan a Combat V1 como snapshots explícitos."
 			),
@@ -80,7 +85,8 @@ func get_steps() -> Array[Dictionary]:
 		{
 			"id": "close_month",
 			"title": "6. Cerrar el mes",
-			"text": (
+			"text":
+			(
 				"Un turno equivale a un mes. Antes de cerrarlo deben resolverse las "
 				+ "decisiones pendientes y, en un mes de GT I, sus tres combates."
 			),
@@ -92,12 +98,14 @@ func get_steps() -> Array[Dictionary]:
 		{
 			"id": "gt1_preparation",
 			"title": "7. Preparación para el GT I",
-			"text": (
+			"text":
+			(
 				"El primer Gran Torneo de Roma llega en el Mes XIII. Prepará roster y "
 				+ "equipamiento con anticipación; los otros encuentros de la demo son XVI y XX."
 			),
 			"system": "arena",
-			"objective": (
+			"objective":
+			(
 				"Recordá: XIII, XVI y XX son meses de GT I. Fuera de ellos no existe "
 				+ "un combate obligatorio inventado por el tutorial."
 			),
