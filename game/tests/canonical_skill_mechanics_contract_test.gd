@@ -48,7 +48,7 @@ func _assert_legacy_mechanics_are_rejected(contract) -> void:
 	var entry := _fixture_entry("feint")
 	var mechanics := entry.get("mechanics", {}) as Dictionary
 	mechanics["cost"] = {"energy_cost": 10}
-	mechanics["effects"] = {"primary_stats": ["intelligence"]}
+	mechanics["effects"] = {"primary_stats": ["FUE"], "intelligence": 1}
 	entry["mechanics"] = mechanics
 	var readiness: Dictionary = contract.evaluate(DataRepository.get_skills(), [entry], true)
 	var errors := readiness.get("errors", []) as Array
