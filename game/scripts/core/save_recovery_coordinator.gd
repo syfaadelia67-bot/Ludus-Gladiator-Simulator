@@ -55,10 +55,7 @@ func _rewrite_loaded_campaign() -> void:
 		return
 	rewrite_pending = false
 	if not SaveManager.save_game():
-		var failure_message := (
-			"La campaña se cargó, pero no pudo reescribirse con el formato "
-			+ "de guardado actual."
-		)
+		var failure_message := "La campaña cargada no pudo reescribirse con el formato actual."
 		push_warning(failure_message)
 		recovery_failed.emit(failure_message)
 		_clear_pending_state()
