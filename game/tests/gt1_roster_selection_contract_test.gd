@@ -47,15 +47,15 @@ func _test_month_16_beast_readiness(contract) -> void:
 	var readiness: Dictionary = contract.get_month_16_beast_readiness(_load_beasts(), false)
 	_assert_true(
 		readiness.get("status") == "blocked",
-		"month XVI beast selection must remain blocked until canonical stats and adapter exist",
+		"readiness contract must fail closed when the adapter readiness signal is false",
 	)
 	_assert_true(
 		readiness.get("human_selection_ready") == true,
-		"month XVI human selection must remain available while beast support is blocked",
+		"month XVI human selection must remain available if beast adapter audit fails",
 	)
 	_assert_true(
 		readiness.get("beast_selection_ready") == false,
-		"month XVI must not claim beast runtime readiness from allows_beasts alone",
+		"month XVI must not claim beast runtime readiness from frozen stats alone",
 	)
 	_assert_true(
 		readiness.get("invent_stats_allowed") == false,
@@ -112,21 +112,25 @@ func _test_frozen_contract(contract) -> void:
 	_assert_true(
 		(
 			frozen.get("month_16_frozen_design")
-			== "one_available_gladiator_or_beast_per_independent_bout"
+			== "one_available_gladiator_per_independent_bout_against_human_or_beast"
 		),
-		"month XVI frozen design must retain gladiator-or-beast support",
+		"month XVI frozen design must retain human-or-beast opponent support",
 	)
 	_assert_true(
-		frozen.get("month_16_current_selection") == "human_gladiators_only_until_beast_readiness",
-		"month XVI current implementation must report human-only selection honestly",
+		frozen.get("month_16_current_selection") == "human_or_canonical_beast_opponents",
+		"month XVI current implementation must expose canonical beast opponents",
 	)
 	_assert_true(
 		frozen.get("month_16_beast_readiness") == "gt1_beast_readiness_contract",
 		"month XVI selection must expose its beast readiness authority",
 	)
 	_assert_true(
-		frozen.get("beast_data_source") == "explicit_injected_canonical_beast_data",
-		"month XVI beast readiness must not depend on a global DataRepository autoload",
+		frozen.get("month_16_beast_adapter") == "combat_beast_fighter_adapter",
+		"month XVI selection must expose its canonical beast adapter",
+	)
+	_assert_true(
+		frozen.get("beast_data_source") == "DataRepository.beasts",
+		"month XVI beast runtime must consume canonical repository data",
 	)
 	_assert_true(
 		frozen.get("invent_beast_stats_allowed") == false,
