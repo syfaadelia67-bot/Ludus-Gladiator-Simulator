@@ -2,6 +2,7 @@ extends Node
 
 const FrozenDataValidatorScript = preload("res://scripts/core/frozen_data_validator.gd")
 const EquipmentDataValidatorScript = preload("res://scripts/core/equipment_data_validator.gd")
+const BeastCombatV1DataContractScript = preload("res://scripts/core/beast_combat_v1_data_contract.gd")
 const RivalCombatV1SnapshotDataValidatorScript = preload(
 	"res://scripts/core/rival_combat_v1_snapshot_data_validator.gd"
 )
@@ -48,11 +49,13 @@ func load_all() -> void:
 func _validate_frozen_contracts() -> void:
 	var frozen_validator = FrozenDataValidatorScript.new()
 	var equipment_validator = EquipmentDataValidatorScript.new()
+	var beast_combat_v1_validator = BeastCombatV1DataContractScript.new()
 	var rival_combat_v1_snapshot_validator = RivalCombatV1SnapshotDataValidatorScript.new()
 	var rival_ludi_validator = RivalLudiDataValidatorScript.new()
 	var monthly_economy_validator = MonthlyEconomyDataValidatorScript.new()
 	frozen_contract_errors = frozen_validator.validate_repository(self)
 	frozen_contract_errors.append_array(equipment_validator.validate_repository(self))
+	frozen_contract_errors.append_array(beast_combat_v1_validator.validate_entries(beasts))
 	frozen_contract_errors.append_array(rival_ludi_validator.validate_repository(self))
 	frozen_contract_errors.append_array(
 		rival_combat_v1_snapshot_validator.validate_repository(self)
