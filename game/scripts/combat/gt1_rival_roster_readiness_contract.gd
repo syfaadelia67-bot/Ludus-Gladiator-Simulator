@@ -6,15 +6,18 @@ const RivalCombatV1SnapshotDataValidatorScript = preload(
 const RivalLudiDataValidatorScript = preload("res://scripts/core/rival_ludi_data_validator.gd")
 const REQUIRED_TEAM_ID := "rival_team"
 const REQUIRED_ARCHETYPES := {
-	"rival_heavy": {
+	"rival_heavy":
+	{
 		"stats": {"FUE": 9, "AGI": 5, "TEC": 5, "RES": 5, "PV": 62},
 		"stamina": 10,
 	},
-	"rival_agile": {
+	"rival_agile":
+	{
 		"stats": {"FUE": 5, "AGI": 9, "TEC": 8, "RES": 5, "PV": 50},
 		"stamina": 10,
 	},
-	"rival_technical": {
+	"rival_technical":
+	{
 		"stats": {"FUE": 7, "AGI": 6, "TEC": 7, "RES": 5, "PV": 59},
 		"stamina": 10,
 	},
@@ -43,7 +46,9 @@ func evaluate(entries: Array) -> Dictionary:
 			missing_ids.sort()
 			missing_by_ludus[rival_ludus_id] = missing_ids
 
-	var complete := errors.is_empty() and missing_by_ludus.is_empty() and mismatched_profiles.is_empty()
+	var complete := (
+		errors.is_empty() and missing_by_ludus.is_empty() and mismatched_profiles.is_empty()
+	)
 	return {
 		"status": "ready" if complete else "blocked",
 		"ready": complete,
@@ -53,7 +58,8 @@ func evaluate(entries: Array) -> Dictionary:
 		"required_ludi": _rival_ludi_validator.get_canonical_ids(),
 		"required_fighter_ids": get_required_fighter_ids(),
 		"required_team_id": REQUIRED_TEAM_ID,
-		"required_entry_count": _rival_ludi_validator.get_canonical_ids().size() * REQUIRED_ARCHETYPES.size(),
+		"required_entry_count":
+		_rival_ludi_validator.get_canonical_ids().size() * REQUIRED_ARCHETYPES.size(),
 		"actual_entry_count": entries.size(),
 		"generated_stats_allowed": false,
 		"save_version_change_required": false,
