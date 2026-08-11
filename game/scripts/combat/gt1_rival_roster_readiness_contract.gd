@@ -115,6 +115,15 @@ func _matches_required_profile(fighter_id: String, fighter: Dictionary) -> bool:
 	var expected := REQUIRED_ARCHETYPES[fighter_id] as Dictionary
 	if str(fighter.get("team", "")) != REQUIRED_TEAM_ID:
 		return false
-	if fighter.get("stats", {}) != expected.get("stats", {}):
+	var actual_stats_value: Variant = fighter.get("stats", {})
+	var expected_stats_value: Variant = expected.get("stats", {})
+	if not actual_stats_value is Dictionary or not expected_stats_value is Dictionary:
 		return false
+	var actual_stats := actual_stats_value as Dictionary
+	var expected_stats := expected_stats_value as Dictionary
+	for stat_id in expected_stats.keys():
+		if not actual_stats.has(stat_id):
+			return false
+		if float(actual_stats[stat_id]) != float(expected_stats[stat_id]):
+			return false
 	return float(fighter.get("stamina", -1.0)) == float(expected.get("stamina", -2.0))
