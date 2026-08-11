@@ -77,6 +77,7 @@ RivalUniqueGladiatorController="*res://scripts/systems/rival_unique_gladiator_co
 EventManager="*res://scripts/systems/event_manager_demo.gd"
 EconomyManager="*res://scripts/systems/economy_manager_weekly.gd"
 TournamentManager="*res://scripts/systems/tournament_manager_demo_monthly.gd"
+CombatV1SessionStore="*res://scripts/systems/combat_v1_session_store.gd"
 CampaignManager="*res://scripts/systems/campaign_manager_demo.gd"
 PersonalityManager="*res://scripts/systems/personality_manager_monthly.gd"
 RelationshipManager="*res://scripts/systems/relationship_manager_monthly.gd"
