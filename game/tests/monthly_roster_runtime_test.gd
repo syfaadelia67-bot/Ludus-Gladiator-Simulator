@@ -21,64 +21,52 @@ func _ready() -> void:
 	RosterManager.intelligence_points = 0
 	RosterManager.reset_monthly_runtime_state()
 
-	var miner = (
-		PERSON_SCRIPT
-		. new(
-			{
-				"id": "monthly_miner",
-				"name": "Miner",
-				"role": "slave",
-				"job": "mining",
-				"strength": 9,
-				"endurance": 9,
-				"fatigue": 41,
-				"traits": [],
-			}
-		)
+	var miner = PERSON_SCRIPT.new(
+		{
+			"id": "monthly_miner",
+			"name": "Miner",
+			"role": "slave",
+			"job": "mining",
+			"strength": 9,
+			"endurance": 9,
+			"fatigue": 41,
+			"traits": [],
+		}
 	)
-	var trainee = (
-		PERSON_SCRIPT
-		. new(
-			{
-				"id": "monthly_trainee",
-				"name": "Trainee",
-				"role": "slave",
-				"job": "training",
-				"training": 99,
-				"fatigue": 50,
-				"traits": [],
-			}
-		)
+	var trainee = PERSON_SCRIPT.new(
+		{
+			"id": "monthly_trainee",
+			"name": "Trainee",
+			"role": "slave",
+			"job": "training",
+			"training": 99,
+			"fatigue": 50,
+			"traits": [],
+		}
 	)
-	var fighter = (
-		PERSON_SCRIPT
-		. new(
-			{
-				"id": "monthly_fighter",
-				"name": "Fighter",
-				"role": "gladiator",
-				"job": "training",
-				"training": 20,
-				"fatigue": 100,
-				"traits": [],
-			}
-		)
+	var fighter = PERSON_SCRIPT.new(
+		{
+			"id": "monthly_fighter",
+			"name": "Fighter",
+			"role": "gladiator",
+			"job": "training",
+			"training": 20,
+			"fatigue": 100,
+			"traits": [],
+		}
 	)
-	var injured = (
-		PERSON_SCRIPT
-		. new(
-			{
-				"id": "monthly_injured",
-				"name": "Injured",
-				"role": "gladiator",
-				"job": "training",
-				"fatigue": 70,
-				"injury_name": "Herida de prueba",
-				"injury_severity": 2,
-				"injury_days": 3,
-				"traits": [],
-			}
-		)
+	var injured = PERSON_SCRIPT.new(
+		{
+			"id": "monthly_injured",
+			"name": "Injured",
+			"role": "gladiator",
+			"job": "training",
+			"fatigue": 70,
+			"injury_name": "Herida de prueba",
+			"injury_severity": 2,
+			"injury_days": 3,
+			"traits": [],
+		}
 	)
 	RosterManager.people.assign([miner, trainee, fighter, injured])
 
@@ -86,41 +74,35 @@ func _ready() -> void:
 	assert(first.get("period") == "month")
 	assert(first.get("month") == 4)
 	assert(first.get("duplicate_call_ignored") == false)
-	assert(first.get("work_balance_applied") == false)
-	assert(first.get("training_balance_applied") == false)
-	assert(first.get("fatigue_balance_applied") == false)
-	assert(first.get("injury_recovery_balance_applied") == false)
-	assert(int(first.get("ore", -1)) == 0)
-	assert(int(first.get("security", -1)) == 0)
-	assert(int(first.get("intel", -1)) == 0)
-	assert(int(first.get("training", -1)) == 0)
-	assert(miner.fatigue == 41)
-	assert(trainee.training == 99)
-	assert(trainee.role == "slave")
-	assert(trainee.fatigue == 50)
-	assert(fighter.training == 20)
+	assert(first.get("work_balance_applied") == true)
+	assert(first.get("training_balance_applied") == true)
+	assert(first.get("fatigue_balance_applied") == true)
+	assert(first.get("injury_recovery_balance_applied") == true)
+	assert(int(first.get("ore", 0)) == 13)
+	assert(int(first.get("training", 0)) > 0)
+	assert(miner.fatigue == 49)
+	assert(trainee.training > 99)
+	assert(trainee.role == "gladiator")
+	assert(str(trainee.job) == "idle")
+	assert(trainee.fatigue > 50)
+	assert(fighter.training > 20)
 	assert(fighter.fatigue == 100)
-	assert(fighter.is_available_for_combat())
-	assert(injured.injury_days == 3)
-	assert(injured.fatigue == 70)
+	assert(not fighter.is_available_for_combat())
+	assert(injured.injury_days < 3)
+	assert(injured.fatigue < 70)
 	assert(injured.job == "idle")
 	assert(not injured.is_available_for_combat())
+	assert((first.get("promotions", []) as Array).has("monthly_trainee"))
 
-	var preview := GladiatorTrainingController.get_preview(fighter.id)
-	assert(preview.get("balance_ready") == false)
-	assert(int(preview.get("monthly_gain", -1)) == 0)
-	assert(int(preview.get("fatigue_gain", -1)) == 0)
-	assert(int(preview.get("injury_risk", -1)) == 0)
-	GladiatorTrainingController.process_week(4)
-	assert(fighter.training == 20)
-	assert(fighter.fatigue == 100)
-
+	var miner_fatigue_after := miner.fatigue
+	var trainee_training_after := trainee.training
+	var injured_recovery_after := injured.injury_days
 	var duplicate := RosterManager.process_day()
 	assert(duplicate.get("duplicate_call_ignored") == true)
 	assert(RosterManager.last_processed_month == 4)
-	assert(miner.fatigue == 41)
-	assert(trainee.training == 99)
-	assert(injured.injury_days == 3)
+	assert(miner.fatigue == miner_fatigue_after)
+	assert(trainee.training == trainee_training_after)
+	assert(injured.injury_days == injured_recovery_after)
 
 	var save_source := FileAccess.get_file_as_string("res://scripts/core/save_manager_demo.gd")
 	assert(save_source.contains('roster_data["last_processed_month"]'))
@@ -141,5 +123,5 @@ func _ready() -> void:
 	RelationshipManager.import_state(previous_relationships)
 	GladiatorProgressionManager.import_state(previous_progression)
 	RosterManager.roster_changed.emit()
-	print("Monthly roster fail-closed runtime and idempotency: OK")
+	print("Monthly roster authored runtime and idempotency: OK")
 	get_tree().quit(0)
