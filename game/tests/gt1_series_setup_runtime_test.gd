@@ -1,6 +1,7 @@
 extends Node
 
 const GT1SeriesSetupRuntimeScript = preload("res://scripts/ui/gt1_series_setup_runtime.gd")
+const RIVAL_PROFILE_IDS := ["rival_heavy", "rival_agile", "rival_technical"]
 
 
 func run() -> void:
@@ -58,12 +59,9 @@ func _test_catalogs() -> void:
 
 
 func _test_month_13_bridge() -> void:
-	var request := (
-		GT1SeriesSetupRuntimeScript
-		. new()
-		. prepare_month_13_request(
-			"player", "alpha", "cassianus", ["rival_heavy", "rival_agile", "rival_technical"]
-		)
+	var runtime = GT1SeriesSetupRuntimeScript.new()
+	var request := runtime.prepare_month_13_request(
+		"player", "alpha", "cassianus", RIVAL_PROFILE_IDS
 	)
 	assert(request.get("status") == "ready")
 	assert(request.get("player_ids_by_bout") == [["player"], ["player"], ["player"]])
@@ -74,15 +72,12 @@ func _test_month_13_bridge() -> void:
 
 
 func _test_month_16_bridge() -> void:
-	var request := (
-		GT1SeriesSetupRuntimeScript
-		. new()
-		. prepare_month_16_human_request(
-			["p1", "p2", "p3"],
-			"alpha",
-			"flavianus",
-			["rival_technical", "rival_heavy", "rival_agile"],
-		)
+	var runtime = GT1SeriesSetupRuntimeScript.new()
+	var request := runtime.prepare_month_16_human_request(
+		["p1", "p2", "p3"],
+		"alpha",
+		"flavianus",
+		["rival_technical", "rival_heavy", "rival_agile"],
 	)
 	assert(request.get("status") == "ready")
 	assert(request.get("player_ids_by_bout") == [["p1"], ["p2"], ["p3"]])
@@ -91,19 +86,16 @@ func _test_month_16_bridge() -> void:
 
 
 func _test_month_20_bridge() -> void:
-	var request := (
-		GT1SeriesSetupRuntimeScript
-		. new()
-		. prepare_month_20_request(
-			[["p1", "p2"], ["p1", "p3"], ["p1", "p3"]],
-			"alpha",
-			"drusus",
-			[
-				["rival_heavy", "rival_agile"],
-				["rival_heavy", "rival_technical"],
-				["rival_agile", "rival_technical"],
-			],
-		)
+	var runtime = GT1SeriesSetupRuntimeScript.new()
+	var request := runtime.prepare_month_20_request(
+		[["p1", "p2"], ["p1", "p3"], ["p1", "p3"]],
+		"alpha",
+		"drusus",
+		[
+			["rival_heavy", "rival_agile"],
+			["rival_heavy", "rival_technical"],
+			["rival_agile", "rival_technical"],
+		],
 	)
 	assert(request.get("status") == "ready")
 	assert(request.get("format") == "2v2")
@@ -116,16 +108,15 @@ func _test_month_20_bridge() -> void:
 
 func _test_fail_closed_selection() -> void:
 	var runtime = GT1SeriesSetupRuntimeScript.new()
+	var missing_ids := RIVAL_PROFILE_IDS.duplicate()
+	missing_ids[1] = ""
 	var missing := runtime.prepare_month_13_request(
-		"player", "alpha", "cassianus", ["rival_heavy", "", "rival_technical"]
+		"player", "alpha", "cassianus", missing_ids
 	)
 	assert(missing.get("status") == "rejected")
 	assert(missing.get("generated_opponents_allowed") == false)
 	var unknown := runtime.prepare_month_16_human_request(
-		["p1", "p2", "p3"],
-		"alpha",
-		"unknown_ludus",
-		["rival_heavy", "rival_agile", "rival_technical"],
+		["p1", "p2", "p3"], "alpha", "unknown_ludus", RIVAL_PROFILE_IDS
 	)
 	assert(unknown.get("status") == "rejected")
 	assert(unknown.get("generated_opponents_allowed") == false)
