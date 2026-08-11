@@ -3,7 +3,9 @@ extends Node
 
 func run() -> void:
 	var tutorial := FileAccess.get_file_as_string("res://scripts/ui/tutorial_controller.gd")
-	var policy := FileAccess.get_file_as_string("res://scripts/systems/monthly_onboarding_policy.gd")
+	var policy := FileAccess.get_file_as_string(
+		"res://scripts/systems/monthly_onboarding_policy.gd"
+	)
 	var hub := FileAccess.get_file_as_string("res://scripts/ui/finca_hub_controller.gd")
 
 	assert(policy.contains('"system": "mercado"'))
