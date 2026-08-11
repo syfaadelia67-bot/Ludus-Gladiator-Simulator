@@ -41,7 +41,9 @@ func evaluate_progress() -> void:
 func _evaluate_campaign_finale() -> void:
 	if campaign_over:
 		return
-	var finale := _finale_policy.evaluate(GameState.get_month(), TournamentManager.get_gt1_summary())
+	var finale := _finale_policy.evaluate(
+		GameState.get_month(), TournamentManager.get_gt1_summary()
+	)
 	if not bool(finale.get("can_finalize", false)):
 		return
 	_apply_gt1_finale_state(finale)
@@ -142,7 +144,9 @@ func import_state(data: Dictionary) -> void:
 
 
 func _reconcile_loaded_finale_state() -> void:
-	var finale := _finale_policy.evaluate(GameState.get_month(), TournamentManager.get_gt1_summary())
+	var finale := _finale_policy.evaluate(
+		GameState.get_month(), TournamentManager.get_gt1_summary()
+	)
 	var can_finalize := bool(finale.get("can_finalize", false))
 	if final_combat_resolved and not can_finalize:
 		# A Save v14 campaign cannot claim the GT I finale while standings or its
@@ -161,18 +165,17 @@ func _apply_gt1_finale_state(finale: Dictionary) -> void:
 	campaign_over = true
 	victory_achieved = bool(finale.get("victory", false))
 	defeat_reason = (
-		""
-		if victory_achieved
-		else "El ludus completó el Gran Torneo de Roma sin subir al podio."
+		"" if victory_achieved else "El ludus completó el Gran Torneo de Roma sin subir al podio."
 	)
 
 
 func _finale_result_message(finale: Dictionary) -> String:
 	if not bool(finale.get("victory", false)):
 		return defeat_reason
-	return "El ludus terminó %d.º en Roma y obtuvo medalla %s." % [
-		int(finale.get("placement", 0)), _medal_label(str(finale.get("medal", "")))
-	]
+	return (
+		"El ludus terminó %d.º en Roma y obtuvo medalla %s."
+		% [int(finale.get("placement", 0)), _medal_label(str(finale.get("medal", "")))]
+	)
 
 
 func _medal_label(medal: String) -> String:
