@@ -8,7 +8,7 @@ const CanonicalSkillMechanicsContractScript = preload(
 func _ready() -> void:
 	DataRepository.load_all()
 	var contract = CanonicalSkillMechanicsContractScript.new()
-	_assert_production_source_is_fail_closed(contract)
+	_assert_production_design_is_frozen_but_runtime_still_closed(contract)
 	_assert_partial_catalog_cannot_fake_readiness(contract)
 	_assert_legacy_mechanics_are_rejected(contract)
 	_assert_runtime_cannot_precede_frozen_design(contract)
@@ -17,20 +17,21 @@ func _ready() -> void:
 	get_tree().quit(0)
 
 
-func _assert_production_source_is_fail_closed(contract) -> void:
-	assert(DataRepository.get_skill_mechanics_v1().is_empty())
+func _assert_production_design_is_frozen_but_runtime_still_closed(contract) -> void:
+	var production := DataRepository.get_skill_mechanics_v1()
+	assert(production.size() == 12)
 	var readiness: Dictionary = contract.evaluate(
-		DataRepository.get_skills(), DataRepository.get_skill_mechanics_v1(), false
+		DataRepository.get_skills(), production, false
 	)
 	assert(readiness.get("status") == "blocked")
 	assert(readiness.get("ready") == false)
 	assert(readiness.get("identity_ready") == true)
-	assert(readiness.get("mechanics_ready") == false)
-	assert(readiness.get("progression_ready") == false)
-	assert(readiness.get("design_ready") == false)
+	assert(readiness.get("mechanics_ready") == true)
+	assert(readiness.get("progression_ready") == true)
+	assert(readiness.get("design_ready") == true)
 	assert(readiness.get("runtime_resolver_ready") == false)
-	assert((readiness.get("missing_mechanics_ids", []) as Array).size() == 12)
-	assert((readiness.get("missing_progression_ids", []) as Array).size() == 12)
+	assert((readiness.get("missing_mechanics_ids", []) as Array).is_empty())
+	assert((readiness.get("missing_progression_ids", []) as Array).is_empty())
 	assert(readiness.get("legacy_ability_import_allowed") == false)
 	assert(readiness.get("invent_mechanics_allowed") == false)
 
