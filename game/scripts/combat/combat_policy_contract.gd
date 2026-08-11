@@ -16,6 +16,13 @@ func validate_desired_action(state: Dictionary, desired_action: Dictionary) -> A
 	if not errors.is_empty():
 		return errors
 
+	var skill_id := str(desired_action.get("skill_id", ""))
+	if not skill_id.is_empty():
+		errors.append(
+			"Desired action skill activation is unavailable until Combat V1 skill design is frozen"
+		)
+		return errors
+
 	var actor_id := str(desired_action.get("actor_id", ""))
 	var action_id := str(desired_action.get("action_id", ""))
 	var target_id := str(desired_action.get("target_id", ""))
