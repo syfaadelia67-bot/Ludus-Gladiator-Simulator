@@ -17,7 +17,6 @@ const GT1RivalRosterReadinessContractScript = preload(
 )
 
 const PENDING_AUTHORITY_BOUNDARIES := {
-	"monthly_event_cadence": "Event chains use month-native follow-up scheduling. Legacy random cadence, cooldowns and timed-effect durations are quarantined until monthly balance is frozen.",
 	"monthly_rival_management": "Legacy sabotage, espionage and retaliation RNG are quarantined. Monthly operation cadence, costs and risk rules still require frozen design values.",
 	"months_without_gt1_loop": "Months outside XIII, XVI and XX now have an explicit management-only canonical loop and legacy arena schedules are quarantined. The blocker remains until optional/mandatory non-GT Arena opportunities and replacement objectives are frozen by design.",
 }
@@ -34,6 +33,7 @@ func evaluate() -> Dictionary:
 	_append_monthly_market_blocker(blockers)
 	_append_monthly_roster_blocker(blockers)
 	_append_equipment_blocker(blockers)
+	_append_monthly_event_blocker(blockers)
 	_append_authority_boundary_blockers(blockers)
 	var report := _build_report(blockers)
 	return {
@@ -83,6 +83,7 @@ func get_contract() -> Dictionary:
 		"monthly_market_quality_gate": "market_manager_monthly_policy_contract",
 		"monthly_roster_quality_gate": "roster_manager_monthly_work_policy_contract",
 		"equipment_quality_gate": "equipment_runtime_policy_contract",
+		"monthly_event_quality_gate": "monthly_event_runtime_policy_contract",
 		"gt1_rival_results_provider_quality_gate": "campaign_owned_contract",
 		"month_20_end_to_end_quality_gate": "automated_test",
 		"save_version_change_required": false,
@@ -419,6 +420,60 @@ func _append_equipment_blocker(blockers: Array[Dictionary]) -> void:
 				"equipment_catalog_and_forge_balance",
 				"equipment",
 				"The authored 15-item demo catalog, forge recipes, quality multipliers or Combat V1 power/defense authority are incomplete.",
+				false
+			)
+		)
+
+
+func _append_monthly_event_blocker(blockers: Array[Dictionary]) -> void:
+	if not EventManager.has_method("get_monthly_runtime_contract"):
+		blockers.append(
+			_blocker(
+				"monthly_event_cadence",
+				"events",
+				"EventManager does not expose the canonical monthly event runtime contract.",
+				false
+			)
+		)
+		return
+	var contract: Dictionary = EventManager.get_monthly_runtime_contract()
+	var event_rules := contract.get("event_rules", {}) as Dictionary
+	var timed_effect_months := contract.get("timed_effect_months", {}) as Dictionary
+	var grain_rule := event_rules.get("grain_shortage", {}) as Dictionary
+	var patron_rule := event_rules.get("patron_invitation", {}) as Dictionary
+	var ready := (
+		contract.get("status") == "frozen"
+		and contract.get("authority") == "monthly_event_runtime_policy"
+		and contract.get("scheduler_authority") == "event_manager_demo.process_month"
+		and contract.get("period") == "month"
+		and contract.get("process_frequency") == "exactly_once_per_month"
+		and contract.get("migration_mode") == "one_legacy_turn_equals_one_monthly_turn"
+		and int(contract.get("authored_event_count", 0)) == 8
+		and contract.get("authored_random_event_generation_enabled") == true
+		and contract.get("monthly_cooldown_tick_enabled") == true
+		and contract.get("monthly_timed_effect_tick_enabled") == true
+		and int(contract.get("chain_followup_delay_months", 0)) == 1
+		and int(grain_rule.get("weight", 0)) == 18
+		and int(grain_rule.get("cooldown_months", 0)) == 3
+		and int(patron_rule.get("cooldown_months", 0)) == 5
+		and int(timed_effect_months.get("rationing", 0)) == 1
+		and int(timed_effect_months.get("official_hostility", 0)) == 2
+		and contract.get("legacy_random_event_generation_allowed") == false
+		and contract.get("legacy_cooldown_tick_allowed") == false
+		and contract.get("legacy_timed_effect_tick_allowed") == false
+		and contract.get("weekly_duration_to_months_conversion_allowed") == false
+		and contract.get("proportional_legacy_scaling_allowed") == false
+		and contract.get("authored_turn_value_relabel_allowed") == true
+		and contract.get("unknown_legacy_timed_effects_fail_closed") == true
+		and contract.get("invent_monthly_cadence_allowed") == false
+		and contract.get("save_version_change_required") == false
+	)
+	if not ready:
+		blockers.append(
+			_blocker(
+				"monthly_event_cadence",
+				"events",
+				"Authored event weights, monthly cooldowns, timed effects or exactly-once monthly scheduling are incomplete.",
 				false
 			)
 		)
