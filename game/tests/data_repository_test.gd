@@ -32,13 +32,18 @@ func _ready() -> void:
 		"DataRepository must expose canonical rival Ludus identities"
 	)
 	assert(
-		repository.rival_combat_v1_snapshots.is_empty(),
-		"Rival Combat V1 snapshot catalog must stay empty until canonical rival stats are frozen"
+		repository.rival_combat_v1_snapshots.size() == 21,
+		"DataRepository must load the frozen 7-Ludi x 3-archetype rival Combat V1 roster"
 	)
 	assert(
-		repository.get_rival_combat_v1_snapshots_for_ludus("cassianus").is_empty(),
-		"DataRepository must expose the empty canonical rival snapshot catalog without fallback data"
+		repository.get_rival_combat_v1_snapshots_for_ludus("cassianus").size() == 3,
+		"Every canonical rival Ludus must expose the three frozen Combat V1 archetypes"
 	)
+	var heavy_entry := repository.get_rival_combat_v1_snapshot("cassianus", "rival_heavy")
+	assert(not heavy_entry.is_empty(), "DataRepository must resolve a frozen rival fighter snapshot")
+	var heavy := heavy_entry.get("fighter", {}) as Dictionary
+	assert(heavy.get("team") == "rival_team")
+	assert(float(heavy.get("stamina", 0.0)) == 10.0)
 	assert(
 		int(repository.get_economy_rule("demo_starting_resources").get("denarii", 0)) == 650,
 		"DataRepository must expose the frozen 650-denarii demo start"
