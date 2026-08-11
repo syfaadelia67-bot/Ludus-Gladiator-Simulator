@@ -183,8 +183,6 @@ func _apply_payload(data: Dictionary) -> bool:
 	MarketManager.sync_unique_offers()
 
 	var runtime_data: Variant = data.get("combat_v1_runtime", {})
-	if not CombatV1SessionStore.import_state(
-		runtime_data if runtime_data is Dictionary else {}
-	):
+	if not CombatV1SessionStore.import_state(runtime_data if runtime_data is Dictionary else {}):
 		return false
 	return true
