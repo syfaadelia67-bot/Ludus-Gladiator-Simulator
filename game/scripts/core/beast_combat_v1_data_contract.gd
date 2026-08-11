@@ -3,7 +3,8 @@ extends RefCounted
 const REQUIRED_BEAST_IDS: Array[String] = ["bear", "boar", "lion"]
 const REQUIRED_STAT_IDS: Array[String] = ["FUE", "AGI", "TEC", "RES", "PV"]
 const REQUIRED_PROFILES := {
-	"boar": {
+	"boar":
+	{
 		"FUE": 7,
 		"AGI": 5,
 		"TEC": 6,
@@ -11,7 +12,8 @@ const REQUIRED_PROFILES := {
 		"PV": 56,
 		"stamina": 10,
 	},
-	"lion": {
+	"lion":
+	{
 		"FUE": 8,
 		"AGI": 9,
 		"TEC": 8,
@@ -19,7 +21,8 @@ const REQUIRED_PROFILES := {
 		"PV": 55,
 		"stamina": 10,
 	},
-	"bear": {
+	"bear":
+	{
 		"FUE": 10,
 		"AGI": 4,
 		"TEC": 5,
