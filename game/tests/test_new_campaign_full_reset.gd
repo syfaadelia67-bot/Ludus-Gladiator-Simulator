@@ -18,8 +18,10 @@ func _ready() -> void:
 	assert(owner_source.contains("EquipmentManager.inventory.clear()"))
 	assert(owner_source.contains("MarketManager.refresh_market(false)"))
 	assert(owner_source.contains("RivalManager._seed_rivals()"))
+	assert(owner_source.contains("CombatV1SessionStore.clear_all()"))
 	assert(owner_source.contains("CombatHistoryManager.import_state({})"))
 	assert(owner_source.contains("EventManager.import_state({})"))
+	assert(owner_source.contains("TournamentManager.import_state({})"))
 	assert(owner_source.contains("CampaignManager.import_state({})"))
 	assert(owner_source.contains("TransferManager.import_state({})"))
 	assert(
