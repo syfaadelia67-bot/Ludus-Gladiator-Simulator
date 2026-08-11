@@ -43,7 +43,7 @@ func _assert_known_blockers(codes: Array[String]) -> void:
 
 
 func _assert_skill_blocker(snapshot: Dictionary) -> void:
-	assert(DataRepository.get_skill_mechanics_v1().is_empty())
+	assert(DataRepository.get_skill_mechanics_v1().size() == 12)
 	var blockers := snapshot.get("blockers", []) as Array
 	for raw_blocker in blockers:
 		if not raw_blocker is Dictionary:
@@ -51,9 +51,8 @@ func _assert_skill_blocker(snapshot: Dictionary) -> void:
 		var blocker := raw_blocker as Dictionary
 		if str(blocker.get("code", "")) != "canonical_skill_mechanics_not_frozen":
 			continue
-		assert(blocker.get("design_blocked") == true)
-		assert(str(blocker.get("reason", "")).contains("Missing mechanics=12"))
-		assert(str(blocker.get("reason", "")).contains("missing progression=12"))
+		assert(blocker.get("design_blocked") == false)
+		assert(str(blocker.get("reason", "")).contains("resolver is not ready"))
 		return
 	assert(false, "Skill mechanics readiness blocker must be present")
 
