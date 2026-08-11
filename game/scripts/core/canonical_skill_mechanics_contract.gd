@@ -157,8 +157,12 @@ func _append_forbidden_legacy_keys(
 			var key := str(raw_key)
 			var child_path := key if path.is_empty() else "%s.%s" % [path, key]
 			if FORBIDDEN_LEGACY_KEYS.has(key):
-				errors.append("Skill %s contains forbidden legacy field %s" % [skill_id, child_path])
-			_append_forbidden_legacy_keys((value as Dictionary).get(raw_key), skill_id, errors, child_path)
+				errors.append(
+					"Skill %s contains forbidden legacy field %s" % [skill_id, child_path]
+				)
+			_append_forbidden_legacy_keys(
+				(value as Dictionary).get(raw_key), skill_id, errors, child_path
+			)
 	elif value is Array:
 		for index in range((value as Array).size()):
 			_append_forbidden_legacy_keys(
