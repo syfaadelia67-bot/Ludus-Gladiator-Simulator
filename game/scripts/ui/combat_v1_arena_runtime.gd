@@ -46,7 +46,8 @@ func start_gt1_session(
 func get_gt1_setup_catalog(month: int) -> Dictionary:
 	if not GT1_MONTHS.has(month):
 		return _setup_rejected(
-			"unsupported_gt1_month", ["Player-facing GT I setup only supports months XIII, XVI and XX"]
+			"unsupported_gt1_month",
+			["Player-facing GT I setup only supports months XIII, XVI and XX"]
 		)
 	var rivals: Array[Dictionary] = []
 	for raw_ludus in DataRepository.get_rival_ludi():
@@ -59,12 +60,15 @@ func get_gt1_setup_catalog(month: int) -> Dictionary:
 		var profiles := _get_rival_profiles(rival_id)
 		if profiles.get("status") != "ready":
 			return profiles
-		rivals.append(
-			{
-				"id": rival_id,
-				"name": str(ludus.get("name", rival_id)),
-				"fighters": (profiles.get("fighters", []) as Array).duplicate(true),
-			}
+		(
+			rivals
+			. append(
+				{
+					"id": rival_id,
+					"name": str(ludus.get("name", rival_id)),
+					"fighters": (profiles.get("fighters", []) as Array).duplicate(true),
+				}
+			)
 		)
 	var beasts: Array[Dictionary] = []
 	if month == 16:
@@ -80,20 +84,23 @@ func get_gt1_setup_catalog(month: int) -> Dictionary:
 					"invalid_beast_catalog", ["Canonical beast catalog contains an invalid entry"]
 				)
 			var beast := raw_beast as Dictionary
-			beasts.append(
-				{
-					"id": str(beast.get("id", "")),
-					"name": str(beast.get("name", "")),
-					"stats":
+			(
+				beasts
+				. append(
 					{
-						"FUE": beast.get("FUE"),
-						"AGI": beast.get("AGI"),
-						"TEC": beast.get("TEC"),
-						"RES": beast.get("RES"),
-						"PV": beast.get("PV"),
-					},
-					"stamina": beast.get("stamina"),
-				}
+						"id": str(beast.get("id", "")),
+						"name": str(beast.get("name", "")),
+						"stats":
+						{
+							"FUE": beast.get("FUE"),
+							"AGI": beast.get("AGI"),
+							"TEC": beast.get("TEC"),
+							"RES": beast.get("RES"),
+							"PV": beast.get("PV"),
+						},
+						"stamina": beast.get("stamina"),
+					}
+				)
 			)
 	return {
 		"status": "ready",
@@ -420,7 +427,8 @@ func _get_rival_profiles(rival_ludus_id: String) -> Dictionary:
 	for raw_entry in entries:
 		if not raw_entry is Dictionary:
 			return _setup_rejected(
-				"invalid_rival_catalog", ["Canonical rival snapshot catalog contains an invalid entry"]
+				"invalid_rival_catalog",
+				["Canonical rival snapshot catalog contains an invalid entry"]
 			)
 		var fighter_value: Variant = (raw_entry as Dictionary).get("fighter", {})
 		if not fighter_value is Dictionary:
@@ -430,7 +438,8 @@ func _get_rival_profiles(rival_ludus_id: String) -> Dictionary:
 		var fighter_id := str((fighter_value as Dictionary).get("id", ""))
 		if fighter_id.is_empty() or seen_ids.has(fighter_id):
 			return _setup_rejected(
-				"invalid_rival_catalog", ["Canonical rival profile ids must be non-empty and unique"]
+				"invalid_rival_catalog",
+				["Canonical rival profile ids must be non-empty and unique"]
 			)
 		seen_ids.append(fighter_id)
 		var resolved := _rival_provider.get_snapshot(
@@ -442,12 +451,15 @@ func _get_rival_profiles(rival_ludus_id: String) -> Dictionary:
 				resolved.get("errors", []) as Array,
 			)
 		var fighter := resolved.get("fighter_snapshot", {}) as Dictionary
-		fighters.append(
-			{
-				"id": fighter_id,
-				"stats": (fighter.get("stats", {}) as Dictionary).duplicate(true),
-				"stamina": fighter.get("stamina"),
-			}
+		(
+			fighters
+			. append(
+				{
+					"id": fighter_id,
+					"stats": (fighter.get("stats", {}) as Dictionary).duplicate(true),
+					"stamina": fighter.get("stamina"),
+				}
+			)
 		)
 	fighters.sort_custom(func(a: Dictionary, b: Dictionary): return str(a.id) < str(b.id))
 	return {"status": "ready", "reason": "", "errors": [], "fighters": fighters}
