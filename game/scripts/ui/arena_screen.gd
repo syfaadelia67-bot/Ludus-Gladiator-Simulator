@@ -2,6 +2,7 @@ extends VBoxContainer
 
 const CombatV1ArenaRuntimeScript = preload("res://scripts/ui/combat_v1_arena_runtime.gd")
 const CombatStatAdapterScript = preload("res://scripts/core/combat_stat_adapter.gd")
+const GT1SeriesSetupPanelScene = preload("res://scenes/GT1SeriesSetupPanel.tscn")
 
 const ACTION_LABELS := {
 	"light": "Ataque ligero",
@@ -21,6 +22,7 @@ var _action_ids: Array[String] = []
 var _target_ids: Array[String] = []
 var _selected_fighter_id := ""
 var _ai_request_provider: Callable = Callable()
+var _series_setup_panel = null
 
 @onready var center_scroll: ScrollContainer = $Body/CenterPanel/Margin/Scroll
 @onready var center_content: Control = center_scroll.get_node("Content")
@@ -83,6 +85,7 @@ var _ai_request_provider: Callable = Callable()
 
 
 func _ready() -> void:
+	_install_series_setup_panel()
 	back_button.pressed.connect(_return_to_finca)
 	manage_button.pressed.connect(_open_personal)
 	equipment_button.pressed.connect(_open_equipment)
@@ -117,21 +120,7 @@ func begin_gt1_session(
 			opponent_fighters_by_bout,
 		)
 	)
-	if str(result.get("status", "")) != "combat_running":
-		_render_error(result)
-		return result
-	if not CombatV1SessionStore.set_gt1_session(result):
-		var persistence_error := _ui_rejected(
-			"session_persistence_rejected",
-			["La sesión GT I no superó el contrato de persistencia Save v14."],
-		)
-		_render_error(persistence_error)
-		return persistence_error
-	_session = result.duplicate(true)
-	_last_snapshot.clear()
-	_refresh_all()
-	_show_preparation_view()
-	return _session.duplicate(true)
+	return _accept_started_session(result)
 
 
 func set_ai_request_provider(provider: Callable) -> void:
@@ -200,6 +189,10 @@ func get_ui_contract() -> Dictionary:
 		"time_axis": "month",
 		"display_stats": ["FUE", "AGI", "TEC", "RES", "PV", "Stamina"],
 		"runtime_bridge": "combat_v1_arena_runtime",
+		"series_setup_panel": "GT1SeriesSetupPanel",
+		"rival_ludi_source": "DataRepository.rival_ludi",
+		"rival_fighter_source": "DataRepository.rival_combat_v1_snapshots",
+		"month_16_beast_source": "DataRepository.beasts",
 		"combat_authority": "combat_simulator",
 		"scoring_authority": "tournament_manager",
 		"session_store": "CombatV1SessionStore",
@@ -207,10 +200,44 @@ func get_ui_contract() -> Dictionary:
 		"legacy_combat_authority_allowed": false,
 		"legacy_energy_authority_allowed": false,
 		"legacy_ability_plan_allowed": false,
-		"opponent_selection_is_external": true,
+		"opponent_selection_is_external": false,
+		"explicit_series_selection_required": true,
+		"generated_opponents_allowed": false,
 		"ai_requests_are_external": true,
 		"save_version_change_required": false,
 	}
+
+
+func _install_series_setup_panel() -> void:
+	if _series_setup_panel != null:
+		return
+	_series_setup_panel = GT1SeriesSetupPanelScene.instantiate()
+	preparation_content.add_child(_series_setup_panel)
+	preparation_content.move_child(_series_setup_panel, 1)
+	_series_setup_panel.session_started.connect(_on_series_setup_session_started)
+	_series_setup_panel.setup_rejected.connect(_render_error)
+
+
+func _on_series_setup_session_started(result: Dictionary) -> void:
+	_accept_started_session(result)
+
+
+func _accept_started_session(result: Dictionary) -> Dictionary:
+	if str(result.get("status", "")) != "combat_running":
+		_render_error(result)
+		return result
+	if not CombatV1SessionStore.set_gt1_session(result):
+		var persistence_error := _ui_rejected(
+			"session_persistence_rejected",
+			["La sesión GT I no superó el contrato de persistencia Save v14."],
+		)
+		_render_error(persistence_error)
+		return persistence_error
+	_session = result.duplicate(true)
+	_last_snapshot.clear()
+	_refresh_all()
+	_show_preparation_view()
+	return _session.duplicate(true)
 
 
 func _configure_legacy_scene_controls() -> void:
@@ -246,6 +273,10 @@ func _refresh_all() -> void:
 	_refresh_snapshot()
 	_refresh_encounter_panel()
 	_refresh_combat_controls()
+	if _series_setup_panel != null:
+		_series_setup_panel.set_session_active(
+			str(_session.get("status", "")) in ["combat_running", "encounter_finished"]
+		)
 
 
 func _refresh_event() -> void:
@@ -409,8 +440,8 @@ func _render_stage(snapshot: Dictionary) -> void:
 
 func _clear_stage() -> void:
 	player_name.text = "Tu equipo"
-	enemy_name.text = "Rival explícito pendiente"
-	action_text.text = "Combat V1 espera una sesión GT I explícita"
+	enemy_name.text = "Configurá el rival GT I"
+	action_text.text = "Armá la serie GT I con las fuentes canónicas"
 	_set_bar(player_health, 0, 1, "PV")
 	_set_bar(player_stamina, 0, 100, "Stamina")
 	_set_bar(enemy_health, 0, 1, "PV")
@@ -435,9 +466,9 @@ func _refresh_encounter_panel() -> void:
 		)
 	else:
 		opponent_info.text = (
-			"[b]RIVAL COMBAT V1[/b]\n"
-			+ "Debe llegar como snapshot canónico explícito. "
-			+ "La Arena no genera ni elige rivales."
+			"[b]RIVAL GT I CANÓNICO[/b]\n"
+			+ "Elegí un Ludus y los perfiles Combat V1 de cada combate en el armado de serie. "
+			+ "Mes XVI también permite seleccionar Jabalí, León u Oso desde el catálogo canónico."
 		)
 		combat_conditions.text = (
 			"[b]FORMATO %s[/b]\n%s"
@@ -487,7 +518,7 @@ func _refresh_combat_controls() -> void:
 	)
 
 	if not session_running:
-		start_button.text = "ESPERANDO SESIÓN GT I"
+		start_button.text = "ESPERANDO SERIE GT I"
 	elif not provider_ready:
 		start_button.text = "ESPERANDO POLÍTICA LIMBOAI"
 	elif not target_ready:
