@@ -20,7 +20,9 @@ func _ready() -> void:
 func _on_load_completed(loaded_path: String) -> void:
 	var inspection := SaveCompatibilityInspector.inspect()
 	var source_details: Dictionary = (
-		inspection.get("backup", {}) if loaded_path == BACKUP_PATH else inspection.get("primary", {})
+		inspection.get("backup", {})
+		if loaded_path == BACKUP_PATH
+		else inspection.get("primary", {})
 	)
 	var source_version := int(source_details.get("metadata", {}).get("version", 0))
 	var recovered_from_backup := loaded_path == BACKUP_PATH
@@ -53,9 +55,7 @@ func _rewrite_loaded_campaign() -> void:
 		return
 	rewrite_pending = false
 	if not SaveManager.save_game():
-		var failure_message := (
-			"La campaña se cargó, pero no pudo reescribirse con el formato de guardado actual."
-		)
+		var failure_message := "La campaña se cargó, pero no pudo reescribirse con el formato de guardado actual."
 		push_warning(failure_message)
 		recovery_failed.emit(failure_message)
 		_clear_pending_state()
