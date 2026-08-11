@@ -6,21 +6,24 @@ signal priority_changed(person_id: String)
 
 const MONTHLY_ROSTER_WORK_POLICY = preload("res://scripts/systems/monthly_roster_work_policy.gd")
 const TREATMENTS := {
-	"basic": {
+	"basic":
+	{
 		"name": "Atención básica",
 		"description": "Limpieza, vendaje y reposo supervisado.",
 		"base_cost": MONTHLY_ROSTER_WORK_POLICY.BASIC_TREATMENT_COST,
 		"recovery_months": MONTHLY_ROSTER_WORK_POLICY.BASIC_TREATMENT_RECOVERY,
 		"required_infirmary_level": 1,
 	},
-	"intensive": {
+	"intensive":
+	{
 		"name": "Tratamiento intensivo",
 		"description": "Atención dedicada para reducir una recuperación prolongada.",
 		"base_cost": MONTHLY_ROSTER_WORK_POLICY.INTENSIVE_TREATMENT_COST,
 		"recovery_months": MONTHLY_ROSTER_WORK_POLICY.INTENSIVE_TREATMENT_RECOVERY,
 		"required_infirmary_level": 1,
 	},
-	"specialist": {
+	"specialist":
+	{
 		"name": "Especialista externo",
 		"description": "Intervención para lesiones graves y complejas.",
 		"base_cost": MONTHLY_ROSTER_WORK_POLICY.SPECIALIST_TREATMENT_COST,
@@ -126,10 +129,13 @@ func purchase_treatment(person_id: String, treatment_id: String) -> bool:
 		treatment_failed.emit("No hay suficientes denarios para pagar el tratamiento.")
 		return false
 	var requested_months := int(TREATMENTS[treatment_id].get("recovery_months", 1))
-	var reduced := GladiatorInjuryController.reduce_recovery_months(
-		person_id,
-		requested_months,
-		str(TREATMENTS[treatment_id].get("name", treatment_id)),
+	var reduced := (
+		GladiatorInjuryController
+		. reduce_recovery_months(
+			person_id,
+			requested_months,
+			str(TREATMENTS[treatment_id].get("name", treatment_id)),
+		)
 	)
 	if reduced <= 0:
 		GameState.denarii += cost
@@ -139,13 +145,18 @@ func purchase_treatment(person_id: String, treatment_id: String) -> bool:
 	record["last_medical_treatment_month"] = month
 	record["last_medical_treatment_week"] = month
 	_append_treatment_history(record, treatment_id, reduced, cost)
-	GladiatorCareerJournalController.add_event(
-		person_id,
-		"medical_treatment",
-		"Tratamiento médico",
-		"%s recibió %s. Recuperación reducida en %d mes(es)."
-		% [person.display_name, TREATMENTS[treatment_id].get("name", treatment_id), reduced],
-		{"treatment_id": treatment_id, "months_reduced": reduced, "cost": cost},
+	(
+		GladiatorCareerJournalController
+		. add_event(
+			person_id,
+			"medical_treatment",
+			"Tratamiento médico",
+			(
+				"%s recibió %s. Recuperación reducida en %d mes(es)."
+				% [person.display_name, TREATMENTS[treatment_id].get("name", treatment_id), reduced]
+			),
+			{"treatment_id": treatment_id, "months_reduced": reduced, "cost": cost},
+		)
 	)
 	treatment_purchased.emit(person_id, treatment_id, reduced, cost)
 	GladiatorProgressionManager.progression_changed.emit()
@@ -216,13 +227,18 @@ func process_month(_month: int) -> void:
 		priority_id, bonus_months, "prioridad de Enfermería"
 	)
 	if reduced > 0:
-		GladiatorCareerJournalController.add_event(
-			priority_id,
-			"medical_priority",
-			"Prioridad de Enfermería",
-			"%s recibió atención prioritaria y redujo su recuperación en %d mes(es)."
-			% [person.display_name, reduced],
-			{"months_reduced": reduced},
+		(
+			GladiatorCareerJournalController
+			. add_event(
+				priority_id,
+				"medical_priority",
+				"Prioridad de Enfermería",
+				(
+					"%s recibió atención prioritaria y redujo su recuperación en %d mes(es)."
+					% [person.display_name, reduced]
+				),
+				{"months_reduced": reduced},
+			)
 		)
 
 
@@ -253,15 +269,18 @@ func _append_treatment_history(
 ) -> void:
 	var history: Array = record.get("medical_treatments", [])
 	var month := GameState.get_month()
-	history.push_front(
-		{
-			"month": month,
-			"week": month,
-			"treatment_id": treatment_id,
-			"months_reduced": reduced,
-			"weeks_reduced": reduced,
-			"cost": cost,
-		}
+	(
+		history
+		. push_front(
+			{
+				"month": month,
+				"week": month,
+				"treatment_id": treatment_id,
+				"months_reduced": reduced,
+				"weeks_reduced": reduced,
+				"cost": cost,
+			}
+		)
 	)
 	if history.size() > 20:
 		history.resize(20)
@@ -287,9 +306,7 @@ func _sanitize_record(record: Dictionary) -> void:
 	var last_month := maxi(
 		0,
 		int(
-			record.get(
-				"last_medical_treatment_month", record.get("last_medical_treatment_week", 0)
-			)
+			record.get("last_medical_treatment_month", record.get("last_medical_treatment_week", 0))
 		),
 	)
 	record["last_medical_treatment_month"] = last_month
@@ -301,17 +318,18 @@ func _sanitize_record(record: Dictionary) -> void:
 			if not raw is Dictionary or clean_history.size() >= 20:
 				continue
 			var month := maxi(1, int(raw.get("month", raw.get("week", 1))))
-			var reduced := maxi(
-				0, int(raw.get("months_reduced", raw.get("weeks_reduced", 0)))
-			)
-			clean_history.append(
-				{
-					"month": month,
-					"week": month,
-					"treatment_id": str(raw.get("treatment_id", "basic")),
-					"months_reduced": reduced,
-					"weeks_reduced": reduced,
-					"cost": maxi(0, int(raw.get("cost", 0))),
-				}
+			var reduced := maxi(0, int(raw.get("months_reduced", raw.get("weeks_reduced", 0))))
+			(
+				clean_history
+				. append(
+					{
+						"month": month,
+						"week": month,
+						"treatment_id": str(raw.get("treatment_id", "basic")),
+						"months_reduced": reduced,
+						"weeks_reduced": reduced,
+						"cost": maxi(0, int(raw.get("cost", 0))),
+					}
+				)
 			)
 	record["medical_treatments"] = clean_history

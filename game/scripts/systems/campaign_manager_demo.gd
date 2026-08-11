@@ -128,7 +128,9 @@ func get_summary() -> Dictionary:
 	var data := super.get_summary()
 	data["approved_combat_progress_source"] = "gt1_combat_v1"
 	data["non_gt_activity"] = _non_gt_activity_policy.evaluate_month(GameState.get_month())
-	data["retired_demo_objectives"] = MonthlyNonGTActivityPolicyScript.RETIRED_DEMO_OBJECTIVES.duplicate()
+	data["retired_demo_objectives"] = (
+		MonthlyNonGTActivityPolicyScript.RETIRED_DEMO_OBJECTIVES.duplicate()
+	)
 	data["finale"] = _finale_policy.evaluate(
 		GameState.get_month(), TournamentManager.get_gt1_summary()
 	)

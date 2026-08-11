@@ -26,7 +26,9 @@ func _run() -> void:
 	assert(events.contains("normalize_authored_timed_effect"))
 	assert(events.contains("get_monthly_runtime_contract"))
 	assert(event_policy.contains('const STATUS := "frozen"'))
-	assert(event_policy.contains('const MIGRATION_MODE := "one_legacy_turn_equals_one_monthly_turn"'))
+	assert(
+		event_policy.contains('const MIGRATION_MODE := "one_legacy_turn_equals_one_monthly_turn"')
+	)
 	assert(event_policy.contains('"authored_random_event_generation_enabled": true'))
 	assert(event_policy.contains('"monthly_cooldown_tick_enabled": true'))
 	assert(event_policy.contains('"monthly_timed_effect_tick_enabled": true'))

@@ -13,7 +13,8 @@ const MonthlyEconomyRuntimeScript = preload("res://scripts/systems/monthly_econo
 # Legacy sponsor/loan catalogs remain available for compatibility only.
 # Their cadence and balance are not authoritative for the monthly demo runtime.
 const SPONSORS := {
-	"local_merchant": {
+	"local_merchant":
+	{
 		"name": "Mercaderes del Foro",
 		"duration": 10,
 		"upfront": 120,
@@ -22,7 +23,8 @@ const SPONSORS := {
 		"victory_bonus": 35,
 		"failure_penalty": 20,
 	},
-	"patrician_house": {
+	"patrician_house":
+	{
 		"name": "Casa Patricia",
 		"duration": 14,
 		"upfront": 250,
@@ -31,7 +33,8 @@ const SPONSORS := {
 		"victory_bonus": 60,
 		"failure_penalty": 45,
 	},
-	"imperial_circle": {
+	"imperial_circle":
+	{
 		"name": "Círculo Imperial",
 		"duration": 20,
 		"upfront": 500,
@@ -173,10 +176,13 @@ func get_monthly_population_snapshot() -> Dictionary:
 
 func get_monthly_operating_cost_breakdown() -> Dictionary:
 	var population := get_monthly_population_snapshot()
-	var result: Dictionary = _monthly_runtime.calculate_monthly_cost(
-		int(population.get("slave_count", 0)),
-		int(population.get("gladiator_count", 0)),
-		int(population.get("beast_count", 0)),
+	var result: Dictionary = (
+		_monthly_runtime
+		. calculate_monthly_cost(
+			int(population.get("slave_count", 0)),
+			int(population.get("gladiator_count", 0)),
+			int(population.get("beast_count", 0)),
+		)
 	)
 	if result.get("status") != "ready":
 		return result
@@ -218,11 +224,14 @@ func process_month() -> Dictionary:
 		return cached
 
 	var population := get_monthly_population_snapshot()
-	var resolved: Dictionary = _monthly_runtime.process_month(
-		maxi(0, int(GameState.denarii)),
-		int(population.get("slave_count", 0)),
-		int(population.get("gladiator_count", 0)),
-		int(population.get("beast_count", 0)),
+	var resolved: Dictionary = (
+		_monthly_runtime
+		. process_month(
+			maxi(0, int(GameState.denarii)),
+			int(population.get("slave_count", 0)),
+			int(population.get("gladiator_count", 0)),
+			int(population.get("beast_count", 0)),
+		)
 	)
 	if resolved.get("status") != "resolved":
 		return resolved

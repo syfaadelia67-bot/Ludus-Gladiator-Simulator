@@ -150,9 +150,11 @@ func process_month() -> Dictionary:
 		injury_days = maxi(0, injury_days - 1 - recovery_bonus)
 		fatigue = maxi(
 			0,
-			fatigue
-			- MONTHLY_ROSTER_WORK_POLICY.INJURY_FATIGUE_RECOVERY
-			- EstateManager.get_recovery_bonus(),
+			(
+				fatigue
+				- MONTHLY_ROSTER_WORK_POLICY.INJURY_FATIGUE_RECOVERY
+				- EstateManager.get_recovery_bonus()
+			),
 		)
 		morale = mini(100, morale + MONTHLY_ROSTER_WORK_POLICY.INJURY_MORALE_RECOVERY)
 		if injury_days == 0:
@@ -191,9 +193,11 @@ func process_month() -> Dictionary:
 		_:
 			fatigue = maxi(
 				0,
-				fatigue
-				- MONTHLY_ROSTER_WORK_POLICY.IDLE_FATIGUE_RECOVERY
-				- EstateManager.get_recovery_bonus(),
+				(
+					fatigue
+					- MONTHLY_ROSTER_WORK_POLICY.IDLE_FATIGUE_RECOVERY
+					- EstateManager.get_recovery_bonus()
+				),
 			)
 			morale = mini(100, morale + MONTHLY_ROSTER_WORK_POLICY.IDLE_MORALE_RECOVERY)
 

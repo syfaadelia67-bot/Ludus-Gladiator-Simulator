@@ -44,9 +44,13 @@ func _assert_contract(contract: Dictionary) -> void:
 	assert(contract.get("invent_missing_balance_allowed") == false)
 	assert(contract.get("skill_mechanics_source_fail_closed") == true)
 	assert(contract.get("skill_runtime_quality_gate") == "combat_skill_runtime_resolver_contract")
-	assert(contract.get("monthly_economy_quality_gate") == "economy_manager_monthly_runtime_contract")
+	assert(
+		contract.get("monthly_economy_quality_gate") == "economy_manager_monthly_runtime_contract"
+	)
 	assert(contract.get("monthly_market_quality_gate") == "market_manager_monthly_policy_contract")
-	assert(contract.get("monthly_roster_quality_gate") == "roster_manager_monthly_work_policy_contract")
+	assert(
+		contract.get("monthly_roster_quality_gate") == "roster_manager_monthly_work_policy_contract"
+	)
 	assert(contract.get("equipment_quality_gate") == "equipment_runtime_policy_contract")
 	assert(contract.get("monthly_event_quality_gate") == "monthly_event_runtime_policy_contract")
 	assert(contract.get("monthly_rival_quality_gate") == "monthly_rival_management_policy_contract")

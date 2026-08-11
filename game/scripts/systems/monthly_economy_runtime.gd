@@ -29,7 +29,9 @@ func calculate_monthly_cost(slave_count: int, gladiator_count: int, beast_count:
 	}
 
 
-func process_month(denarii: int, slave_count: int, gladiator_count: int, beast_count: int) -> Dictionary:
+func process_month(
+	denarii: int, slave_count: int, gladiator_count: int, beast_count: int
+) -> Dictionary:
 	if denarii < 0:
 		return {
 			"status": "rejected",

@@ -30,12 +30,10 @@ func _test_contract_freezes_authored_monthly_timing() -> void:
 	assert(int(contract.get("chain_followup_delay_months", 0)) == 1)
 	assert(int((event_rules.get("grain_shortage", {}) as Dictionary).get("weight", 0)) == 18)
 	assert(
-		int((event_rules.get("grain_shortage", {}) as Dictionary).get("cooldown_months", 0))
-		== 3
+		int((event_rules.get("grain_shortage", {}) as Dictionary).get("cooldown_months", 0)) == 3
 	)
 	assert(
-		int((event_rules.get("patron_invitation", {}) as Dictionary).get("cooldown_months", 0))
-		== 5
+		int((event_rules.get("patron_invitation", {}) as Dictionary).get("cooldown_months", 0)) == 5
 	)
 	assert(int(timed_effect_months.get("rationing", 0)) == 1)
 	assert(int(timed_effect_months.get("official_hostility", 0)) == 2)
@@ -64,12 +62,15 @@ func _test_unknown_weekly_timed_choice_is_blocked() -> void:
 
 func _test_authored_timed_effect_is_migrated_one_to_one() -> void:
 	var policy = MonthlyEventRuntimePolicyScript.new()
-	var normalized := policy.normalize_authored_timed_effect(
-		{
-			"id": "official_hostility",
-			"weeks": 2,
-			"weekly_denarii": -40,
-		}
+	var normalized := (
+		policy
+		. normalize_authored_timed_effect(
+			{
+				"id": "official_hostility",
+				"weeks": 2,
+				"weekly_denarii": -40,
+			}
+		)
 	)
 	assert(int(normalized.get("months", 0)) == 2)
 	assert(int(normalized.get("monthly_denarii", 0)) == -40)

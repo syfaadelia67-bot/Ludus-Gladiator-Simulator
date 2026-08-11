@@ -26,8 +26,7 @@ func _ready() -> void:
 	assert(is_equal_approx(float(quality_multipliers.get("Magistral", 0.0)), 1.35))
 	assert(policy.get("item_power_defense_combat_v1_enabled") == true)
 	assert(
-		policy.get("combat_v1_stat_source")
-		== "canonical_equipped_items_after_quality_multiplier"
+		policy.get("combat_v1_stat_source") == "canonical_equipped_items_after_quality_multiplier"
 	)
 	assert(policy.get("legacy_ability_tag_gating_authoritative") == false)
 	assert(policy.get("catalog_breadth_ready") == true)
@@ -40,10 +39,7 @@ func _ready() -> void:
 	assert(int(combat_snapshot.get("power", -1)) == 12)
 	assert(int(combat_snapshot.get("defense", -1)) == 7)
 	assert(combat_snapshot.get("balance_ready") == true)
-	assert(
-		combat_snapshot.get("source")
-		== "canonical_equipped_items_after_quality_multiplier"
-	)
+	assert(combat_snapshot.get("source") == "canonical_equipped_items_after_quality_multiplier")
 
 	var builder = GT1LiveRosterStateBuilderScript.new()
 	var contract: Dictionary = builder.get_contract()

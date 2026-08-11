@@ -128,21 +128,27 @@ func run_operation(rival_id: String, operation_id: String, agent_id: String = ""
 	var defense: int = (
 		int(rival.get("security", 50))
 		+ floori(
-			float(int(rival.get("suspicion", 0)))
-			/ float(formula.get("defense_suspicion_divisor", 2))
+			(
+				float(int(rival.get("suspicion", 0)))
+				/ float(formula.get("defense_suspicion_divisor", 2))
+			)
 		)
 	)
 	var success_chance: int = clampi(
-		int(formula.get("success_base", 45))
-		+ floori(float(skill) / float(formula.get("skill_divisor", 3)))
-		- floori(float(defense) / float(formula.get("defense_divisor", 2))),
+		(
+			int(formula.get("success_base", 45))
+			+ floori(float(skill) / float(formula.get("skill_divisor", 3)))
+			- floori(float(defense) / float(formula.get("defense_divisor", 2)))
+		),
 		int(formula.get("success_min", 12)),
 		int(formula.get("success_max", 92))
 	)
 	var detection_chance: int = clampi(
-		int(operation.get("risk", 20))
-		+ floori(float(defense) / float(formula.get("detection_defense_divisor", 4)))
-		- int(agent.agility) * int(formula.get("detection_agility_weight", 2)),
+		(
+			int(operation.get("risk", 20))
+			+ floori(float(defense) / float(formula.get("detection_defense_divisor", 4)))
+			- int(agent.agility) * int(formula.get("detection_agility_weight", 2))
+		),
 		int(formula.get("detection_min", 5)),
 		int(formula.get("detection_max", 85))
 	)
@@ -153,38 +159,27 @@ func run_operation(rival_id: String, operation_id: String, agent_id: String = ""
 	if success:
 		effect_text = _apply_monthly_success(rival, operation_id, rng)
 		operations_completed += 1
-		agent.loyalty = mini(
-			100, agent.loyalty + int(formula.get("success_loyalty_gain", 2))
-		)
+		agent.loyalty = mini(100, agent.loyalty + int(formula.get("success_loyalty_gain", 2)))
 	else:
 		effect_text = "La operación fracasó sin producir beneficios."
-		agent.fatigue = mini(
-			100, agent.fatigue + int(formula.get("failure_fatigue_gain", 8))
-		)
+		agent.fatigue = mini(100, agent.fatigue + int(formula.get("failure_fatigue_gain", 8)))
 
 	if detected:
 		operations_detected += 1
 		hostility_heat += int(formula.get("detected_heat_gain", 12))
 		rival["relation"] = maxi(
-			-100,
-			int(rival.get("relation", 0)) - int(formula.get("detected_relation_loss", 18))
+			-100, int(rival.get("relation", 0)) - int(formula.get("detected_relation_loss", 18))
 		)
 		rival["suspicion"] = mini(
-			100,
-			int(rival.get("suspicion", 0))
-			+ int(formula.get("detected_suspicion_gain", 22))
+			100, int(rival.get("suspicion", 0)) + int(formula.get("detected_suspicion_gain", 22))
 		)
 		GameState.reputation = maxi(
 			0, GameState.reputation - int(formula.get("detected_reputation_loss", 2))
 		)
-		agent.morale = maxi(
-			0, agent.morale - int(formula.get("detected_agent_morale_loss", 5))
-		)
+		agent.morale = maxi(0, agent.morale - int(formula.get("detected_agent_morale_loss", 5)))
 	else:
 		rival["suspicion"] = maxi(
-			0,
-			int(rival.get("suspicion", 0))
-			- int(formula.get("undetected_suspicion_decay", 3))
+			0, int(rival.get("suspicion", 0)) - int(formula.get("undetected_suspicion_decay", 3))
 		)
 
 	var result := {
@@ -221,9 +216,7 @@ func process_month() -> Array:
 	last_processed_month = month
 	var rules: Dictionary = MonthlyRivalManagementPolicyScript.RETALIATION_RULES
 	var events: Array = []
-	hostility_heat = maxi(
-		0, hostility_heat - int(rules.get("hostility_heat_decay", 1))
-	)
+	hostility_heat = maxi(0, hostility_heat - int(rules.get("hostility_heat_decay", 1)))
 	for rival in rivals:
 		rival["suspicion"] = maxi(
 			0, int(rival.get("suspicion", 0)) - int(rules.get("suspicion_decay", 1))
@@ -335,9 +328,11 @@ func _resolve_monthly_retaliation(rival: Dictionary) -> Dictionary:
 		+ floori(float(int(rival.get("suspicion", 0))) / 2.0)
 	)
 	var blocked: bool = (
-		security
-		+ rng.randi_range(
-			int(rules.get("security_roll_min", 1)), int(rules.get("security_roll_max", 30))
+		(
+			security
+			+ rng.randi_range(
+				int(rules.get("security_roll_min", 1)), int(rules.get("security_roll_max", 30))
+			)
 		)
 		>= attack_strength
 	)
@@ -345,12 +340,10 @@ func _resolve_monthly_retaliation(rival: Dictionary) -> Dictionary:
 	var loss := 0
 	if blocked:
 		description = (
-			"Los guardias frustraron una represalia enviada por %s."
-			% rival.get("name", "un rival")
+			"Los guardias frustraron una represalia enviada por %s." % rival.get("name", "un rival")
 		)
 		rival["relation"] = maxi(
-			-100,
-			int(rival.get("relation", 0)) - int(rules.get("blocked_relation_loss", 2))
+			-100, int(rival.get("relation", 0)) - int(rules.get("blocked_relation_loss", 2))
 		)
 	else:
 		loss = mini(
@@ -362,9 +355,11 @@ func _resolve_monthly_retaliation(rival: Dictionary) -> Dictionary:
 		GameState.denarii -= loss
 		GameState.food = maxi(
 			0,
-			GameState.food
-			- rng.randi_range(
-				int(rules.get("food_loss_min", 4)), int(rules.get("food_loss_max", 12))
+			(
+				GameState.food
+				- rng.randi_range(
+					int(rules.get("food_loss_min", 4)), int(rules.get("food_loss_max", 12))
+				)
 			)
 		)
 		description = (

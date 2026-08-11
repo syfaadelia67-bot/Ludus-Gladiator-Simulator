@@ -229,10 +229,7 @@ func import_state(data: Dictionary) -> void:
 	last_processed_month = maxi(
 		0,
 		int(
-			data.get(
-				"last_processed_month",
-				data.get("last_processed_week", GameState.get_month())
-			)
+			data.get("last_processed_month", data.get("last_processed_week", GameState.get_month()))
 		),
 	)
 	weeks_without_event = months_without_event
@@ -326,7 +323,9 @@ func _normalize_event_month(event: Dictionary) -> Dictionary:
 
 func _normalize_active_effects() -> void:
 	for index in range(active_effects.size()):
-		active_effects[index] = _monthly_policy.normalize_authored_timed_effect(active_effects[index])
+		active_effects[index] = _monthly_policy.normalize_authored_timed_effect(
+			active_effects[index]
+		)
 
 
 func _tick_monthly_cooldowns() -> void:

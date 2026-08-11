@@ -18,10 +18,13 @@ func _initialize() -> void:
 
 func _assert_skill_translation(resolver, indexed: Dictionary) -> void:
 	var fighter := {"id": "g1", "team": "player", "entity_type": "gladiator"}
-	var result: Dictionary = resolver.resolve_desired_action(
-		fighter,
-		{"actor_id": "g1", "skill_id": "charge", "target_id": "e1"},
-		indexed,
+	var result: Dictionary = (
+		resolver
+		. resolve_desired_action(
+			fighter,
+			{"actor_id": "g1", "skill_id": "charge", "target_id": "e1"},
+			indexed,
+		)
 	)
 	assert(result.get("status") == "ready")
 	var desired := result.get("desired_action", {}) as Dictionary
@@ -36,10 +39,13 @@ func _assert_skill_translation(resolver, indexed: Dictionary) -> void:
 
 func _assert_beast_rejection(resolver, indexed: Dictionary) -> void:
 	var beast := {"id": "b1", "team": "enemy", "entity_type": "beast", "beast_id": "lion"}
-	var result: Dictionary = resolver.resolve_desired_action(
-		beast,
-		{"actor_id": "b1", "skill_id": "charge", "target_id": "g1"},
-		indexed,
+	var result: Dictionary = (
+		resolver
+		. resolve_desired_action(
+			beast,
+			{"actor_id": "b1", "skill_id": "charge", "target_id": "g1"},
+			indexed,
+		)
 	)
 	assert(result.get("status") == "rejected")
 	assert(str(result.get("reason", "")) == "beast_skill_forbidden")

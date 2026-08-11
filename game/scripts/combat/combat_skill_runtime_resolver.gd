@@ -18,7 +18,10 @@ func resolve_desired_action(
 		}
 	if not skill_mechanics_by_id.has(skill_id):
 		return _rejected("unknown_skill", ["Unknown Combat V1 skill: %s" % skill_id])
-	if str(fighter.get("entity_type", "")).to_lower() == "beast" or not str(fighter.get("beast_id", "")).is_empty():
+	if (
+		str(fighter.get("entity_type", "")).to_lower() == "beast"
+		or not str(fighter.get("beast_id", "")).is_empty()
+	):
 		return _rejected("beast_skill_forbidden", ["Beasts cannot activate Combat V1 skills"])
 
 	var entry := skill_mechanics_by_id.get(skill_id, {}) as Dictionary

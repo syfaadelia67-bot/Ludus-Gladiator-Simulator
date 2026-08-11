@@ -18,20 +18,23 @@ func run() -> void:
 	CampaignManager.campaign_over = false
 	EstateManager.levels["infirmary"] = 1
 
-	var fighter: LudusPerson = PERSON_SCRIPT.new(
-		{
-			"id": "medical_test_fighter",
-			"name": "Paciente",
-			"role": "gladiator",
-			"origin": "Hispania",
-			"strength": 6,
-			"agility": 6,
-			"endurance": 6,
-			"intelligence": 5,
-			"technique": 5,
-			"health": 50,
-			"traits": [],
-		}
+	var fighter: LudusPerson = (
+		PERSON_SCRIPT
+		. new(
+			{
+				"id": "medical_test_fighter",
+				"name": "Paciente",
+				"role": "gladiator",
+				"origin": "Hispania",
+				"strength": 6,
+				"agility": 6,
+				"endurance": 6,
+				"intelligence": 5,
+				"technique": 5,
+				"health": 50,
+				"traits": [],
+			}
+		)
 	)
 	fighter.apply_injury("Fractura de costillas", 3, 4)
 	RosterManager.people.append(fighter)

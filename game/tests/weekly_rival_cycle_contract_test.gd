@@ -32,8 +32,7 @@ func run() -> void:
 		"Los Save v14 legacy deben reconciliarse con los Ludi canónicos."
 	)
 	_assert(
-		rival_source.contains('"month": month'),
-		"Las operaciones deben registrar el mes canónico."
+		rival_source.contains('"month": month'), "Las operaciones deben registrar el mes canónico."
 	)
 	_assert(
 		rival_source.contains('"monthly_balance_frozen": true'),

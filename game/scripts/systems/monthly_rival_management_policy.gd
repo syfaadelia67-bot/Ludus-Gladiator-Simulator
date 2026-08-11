@@ -7,8 +7,10 @@ const MIGRATION_MODE := "one_legacy_turn_equals_one_monthly_turn"
 
 const OPERATION_RULES := {
 	"scout": {"name": "Explorar ludus", "intel_cost": 0, "denarii_cost": 20, "risk": 12},
-	"steal_plans": {"name": "Robar planes de combate", "intel_cost": 12, "denarii_cost": 35, "risk": 28},
-	"poison_supplies": {"name": "Envenenar suministros", "intel_cost": 20, "denarii_cost": 55, "risk": 42},
+	"steal_plans":
+	{"name": "Robar planes de combate", "intel_cost": 12, "denarii_cost": 35, "risk": 28},
+	"poison_supplies":
+	{"name": "Envenenar suministros", "intel_cost": 20, "denarii_cost": 55, "risk": 42},
 	"bribe_guard": {"name": "Sobornar guardia", "intel_cost": 8, "denarii_cost": 90, "risk": 22},
 	"spread_rumors": {"name": "Difundir rumores", "intel_cost": 15, "denarii_cost": 50, "risk": 34},
 }
@@ -59,8 +61,10 @@ const OPERATION_FORMULA := {
 
 const OPERATION_EFFECTS := {
 	"scout": {"intel_gain_min": 8, "intel_gain_max": 16, "player_intel_gain": 3},
-	"steal_plans": {"management_power_loss_min": 4, "management_power_loss_max": 9, "player_intel_gain": 8},
-	"poison_supplies": {"management_power_loss_min": 8, "management_power_loss_max": 15, "prestige_loss": 3},
+	"steal_plans":
+	{"management_power_loss_min": 4, "management_power_loss_max": 9, "player_intel_gain": 8},
+	"poison_supplies":
+	{"management_power_loss_min": 8, "management_power_loss_max": 15, "prestige_loss": 3},
 	"bribe_guard": {"security_loss_min": 7, "security_loss_max": 13, "rival_intel_gain": 12},
 	"spread_rumors": {"prestige_loss_min": 6, "prestige_loss_max": 12, "player_reputation_gain": 1},
 }

@@ -194,9 +194,7 @@ func process_month() -> Dictionary:
 		"work_balance_applied": bool(policy.get("work_outputs_enabled", false)),
 		"training_balance_applied": bool(policy.get("training_progress_enabled", false)),
 		"fatigue_balance_applied": bool(policy.get("fatigue_mutation_enabled", false)),
-		"injury_recovery_balance_applied": bool(
-			policy.get("injury_auto_recovery_enabled", false)
-		),
+		"injury_recovery_balance_applied": bool(policy.get("injury_auto_recovery_enabled", false)),
 		"duplicate_call_ignored": false,
 	}
 	for person in people:

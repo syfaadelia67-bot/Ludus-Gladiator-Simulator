@@ -4,6 +4,7 @@ const CanonicalSkillMechanicsContractScript = preload(
 	"res://scripts/core/canonical_skill_mechanics_contract.gd"
 )
 
+
 func _ready() -> void:
 	DataRepository.load_all()
 	var contract = CanonicalSkillMechanicsContractScript.new()

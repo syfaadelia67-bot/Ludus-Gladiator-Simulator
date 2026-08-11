@@ -79,9 +79,7 @@ func _test_operation_catalog_matches_authored_values() -> void:
 
 func _test_neutral_profile_uses_authored_fallbacks() -> void:
 	var policy = MonthlyRivalManagementPolicyScript.new()
-	var profile := policy.build_management_profile(
-		{"id": "flavianus", "name": "Ludus Flavianus"}
-	)
+	var profile := policy.build_management_profile({"id": "flavianus", "name": "Ludus Flavianus"})
 	assert(profile.get("id") == "flavianus")
 	assert(profile.get("name") == "Ludus Flavianus")
 	assert(int(profile.get("wealth", 0)) == 50)

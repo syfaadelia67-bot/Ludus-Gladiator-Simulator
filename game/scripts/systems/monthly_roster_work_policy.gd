@@ -53,12 +53,14 @@ static func get_contract() -> Dictionary:
 		"injury_fatigue_recovery": INJURY_FATIGUE_RECOVERY,
 		"fatigue_combat_limit": FATIGUE_COMBAT_LIMIT,
 		"slave_promotion_training_threshold": SLAVE_PROMOTION_TRAINING_THRESHOLD,
-		"treatment_costs": {
+		"treatment_costs":
+		{
 			"basic": BASIC_TREATMENT_COST,
 			"intensive": INTENSIVE_TREATMENT_COST,
 			"specialist": SPECIALIST_TREATMENT_COST,
 		},
-		"treatment_recovery_months": {
+		"treatment_recovery_months":
+		{
 			"basic": BASIC_TREATMENT_RECOVERY,
 			"intensive": INTENSIVE_TREATMENT_RECOVERY,
 			"specialist": SPECIALIST_TREATMENT_RECOVERY,
