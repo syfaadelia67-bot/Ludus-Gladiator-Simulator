@@ -7,6 +7,9 @@ const GT1SeriesSetupRuntimeScript = preload("res://scripts/ui/gt1_series_setup_r
 const PLAYER_TEAM_ID := "player_ludus"
 const BEAST_TEAM_ID := "beast_team"
 const GT1_MONTHS := [13, 16, 20]
+const ACTIVE_SESSION_TEXT := (
+	"[b]SERIE ACTIVA[/b]\nTerminá o abandoná la sesión actual antes de armar otra."
+)
 
 var _runtime = GT1SeriesSetupRuntimeScript.new()
 var _month := 0
@@ -245,21 +248,16 @@ func _refresh_summary() -> void:
 	var opponent_slots := int(_catalog.get("opponent_slots", 0))
 	var selected_players := _selected_values(_player_selectors, player_slots)
 	var selected_opponents := _selected_values(_opponent_selectors, opponent_slots)
-	var mode := _selected_metadata(opponent_mode_selector)
-	var source_ready := (
-		mode == "beast" or not _selected_metadata(rival_ludus_selector).is_empty()
-	)
 	var complete := (
 		selected_players.size() == player_slots
 		and selected_opponents.size() == opponent_slots
-		and source_ready
+		and _opponent_source_ready()
 	)
 	begin_series_button.disabled = _session_active or not complete
 	if _session_active:
-		setup_summary.text = (
-			"[b]SERIE ACTIVA[/b]\nTerminá o abandoná la sesión actual antes de armar otra."
-		)
+		setup_summary.text = ACTIVE_SESSION_TEXT
 		return
+	var mode := _selected_metadata(opponent_mode_selector)
 	setup_summary.text = (
 		"[b]ARMADO EXPLÍCITO[/b]\nMes %d · %s · Selecciones: %d/%d propias, %d/%d rivales."
 		% [
@@ -271,6 +269,12 @@ func _refresh_summary() -> void:
 			opponent_slots,
 		]
 	)
+
+
+func _opponent_source_ready() -> bool:
+	if _selected_metadata(opponent_mode_selector) == "beast":
+		return true
+	return not _selected_metadata(rival_ludus_selector).is_empty()
 
 
 func _begin_series() -> void:
