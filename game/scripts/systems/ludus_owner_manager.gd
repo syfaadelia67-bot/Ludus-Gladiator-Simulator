@@ -7,9 +7,7 @@ signal tutorial_progress_changed(progress: Dictionary)
 const ORIGINS_PATH := "res://data/dominus_origins.json"
 const LEGACY_PROFILE_PATH := "user://ludus_owner_profile.json"
 const VALID_TITLES := ["dominus", "domina"]
-const MonthlyOnboardingPolicyScript = preload(
-	"res://scripts/systems/monthly_onboarding_policy.gd"
-)
+const MonthlyOnboardingPolicyScript = preload("res://scripts/systems/monthly_onboarding_policy.gd")
 const TUTORIAL_STEP_COUNT := 7
 const TUTORIAL_OBJECTIVE_IDS := [
 	"initial_gladiator",
