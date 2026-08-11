@@ -6,6 +6,7 @@ const CombatPolicyContractScript = preload("res://scripts/combat/combat_policy_c
 func _ready() -> void:
 	var policy = CombatPolicyContractScript.new()
 	_assert_valid_intent(policy)
+	_assert_unfrozen_skill_is_rejected(policy)
 	_assert_missing_enemy_target_is_rejected(policy)
 	_assert_ally_target_is_rejected(policy)
 	_assert_no_target_actions_reject_explicit_target(policy)
@@ -30,6 +31,18 @@ func _assert_valid_intent(policy) -> void:
 			policy.validate_desired_action(state, no_target).is_empty(),
 			"%s must validate without explicit target" % action_id,
 		)
+
+
+func _assert_unfrozen_skill_is_rejected(policy) -> void:
+	var desired := {
+		"actor_id": "a1",
+		"action_id": "light",
+		"target_id": "b1",
+		"skill_id": "feint",
+	}
+	var errors: Array[String] = policy.validate_desired_action(_state(), desired)
+	assert(_contains_error(errors, "skill activation is unavailable"))
+	assert(not policy.is_valid_desired_action(_state(), desired))
 
 
 func _assert_missing_enemy_target_is_rejected(policy) -> void:
