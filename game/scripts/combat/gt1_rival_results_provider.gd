@@ -11,28 +11,10 @@ var _registry = GT1RivalResultRegistryScript.new()
 
 
 func validate_explicit_results(results: Array) -> Dictionary:
-	var canonical_ids: Array[String] = []
-	for raw_ludus in DataRepository.get_rival_ludi():
-		if not raw_ludus is Dictionary:
-			return _rejected(
-				"invalid_canonical_rival_catalog",
-				["Canonical rival Ludus catalog contains a non-Dictionary entry"],
-			)
-		var rival_id := str((raw_ludus as Dictionary).get("id", ""))
-		if rival_id.is_empty() or canonical_ids.has(rival_id):
-			return _rejected(
-				"invalid_canonical_rival_catalog",
-				["Canonical rival Ludus ids must be non-empty and unique"],
-			)
-		canonical_ids.append(rival_id)
-	canonical_ids.sort()
-	if canonical_ids.size() != REQUIRED_RIVAL_RESULTS:
-		return _rejected(
-			"invalid_canonical_rival_catalog",
-			[
-				"GT I requires exactly %d canonical rival Ludi" % REQUIRED_RIVAL_RESULTS,
-			],
-		)
+	var catalog_validation := _get_canonical_rival_ids()
+	if catalog_validation.get("status") != "ready":
+		return catalog_validation
+	var canonical_ids := catalog_validation.get("canonical_ids", []) as Array
 	if results.size() != REQUIRED_RIVAL_RESULTS:
 		return _rejected(
 			"incomplete_rival_results_batch",
@@ -46,66 +28,20 @@ func validate_explicit_results(results: Array) -> Dictionary:
 
 	var results_by_id: Dictionary = {}
 	for raw_result in results:
-		if not raw_result is Dictionary:
-			return _rejected(
-				"invalid_rival_result_entry",
-				["Every GT I rival result must be a Dictionary"],
-			)
-		var entry := raw_result as Dictionary
-		var rival_id := str(entry.get("rival_id", ""))
-		if not canonical_ids.has(rival_id):
-			return _rejected(
-				"unknown_rival_ludus",
-				["Unknown canonical rival Ludus id: %s" % rival_id],
-			)
-		if results_by_id.has(rival_id):
-			return _rejected(
-				"duplicate_rival_result",
-				["GT I rival result is duplicated for %s" % rival_id],
-			)
-		var points_value: Variant = entry.get("points", null)
-		var wins_value: Variant = entry.get("wins", null)
-		if not _is_integral_number(points_value) or not _is_integral_number(wins_value):
-			return _rejected(
-				"invalid_rival_score_type",
-				["GT I rival points and wins must be whole numbers"],
-			)
-		var points := int(points_value)
-		var wins := int(wins_value)
-		if points < 0 or points > MAX_POINTS:
-			return _rejected(
-				"invalid_rival_points",
-				["GT I rival points must be between 0 and %d" % MAX_POINTS],
-			)
-		if wins < 0 or wins > MAX_WINS:
-			return _rejected(
-				"invalid_rival_wins",
-				["GT I rival wins must be between 0 and %d" % MAX_WINS],
-			)
-		if points != wins * POINTS_PER_WIN:
-			return _rejected(
-				"inconsistent_rival_score",
-				["GT I rival points must equal wins × %d" % POINTS_PER_WIN],
-			)
-		results_by_id[rival_id] = {
-			"rival_id": rival_id,
-			"points": points,
-			"wins": wins,
-		}
+		var entry_validation := _validate_result_entry(raw_result, canonical_ids, results_by_id)
+		if entry_validation.get("status") != "ready":
+			return entry_validation
+		var normalized := entry_validation.get("normalized_result", {}) as Dictionary
+		results_by_id[str(normalized.get("rival_id", ""))] = normalized.duplicate(true)
 
-	var normalized_results: Array[Dictionary] = []
-	for rival_id in canonical_ids:
-		if not results_by_id.has(rival_id):
-			return _rejected(
-				"incomplete_rival_results_batch",
-				["Missing explicit GT I result for %s" % rival_id],
-			)
-		normalized_results.append((results_by_id[rival_id] as Dictionary).duplicate(true))
+	var normalization := _normalize_results(canonical_ids, results_by_id)
+	if normalization.get("status") != "ready":
+		return normalization
 	return {
 		"status": "ready",
 		"reason": "",
 		"errors": [],
-		"normalized_results": normalized_results.duplicate(true),
+		"normalized_results": (normalization.get("normalized_results", []) as Array).duplicate(true),
 		"required_rival_results": REQUIRED_RIVAL_RESULTS,
 		"score_source": "explicit_external_results",
 		"generated_scores": false,
@@ -180,6 +116,124 @@ func get_contract() -> Dictionary:
 		"random_scores_allowed": false,
 		"legacy_rival_manager_is_score_authority": false,
 		"save_version_change_required": false,
+	}
+
+
+func _get_canonical_rival_ids() -> Dictionary:
+	var canonical_ids: Array[String] = []
+	for raw_ludus in DataRepository.get_rival_ludi():
+		if not raw_ludus is Dictionary:
+			return _rejected(
+				"invalid_canonical_rival_catalog",
+				["Canonical rival Ludus catalog contains a non-Dictionary entry"],
+			)
+		var rival_id := str((raw_ludus as Dictionary).get("id", ""))
+		if rival_id.is_empty() or canonical_ids.has(rival_id):
+			return _rejected(
+				"invalid_canonical_rival_catalog",
+				["Canonical rival Ludus ids must be non-empty and unique"],
+			)
+		canonical_ids.append(rival_id)
+	canonical_ids.sort()
+	if canonical_ids.size() != REQUIRED_RIVAL_RESULTS:
+		return _rejected(
+			"invalid_canonical_rival_catalog",
+			[
+				"GT I requires exactly %d canonical rival Ludi" % REQUIRED_RIVAL_RESULTS,
+			],
+		)
+	return {
+		"status": "ready",
+		"reason": "",
+		"errors": [],
+		"canonical_ids": canonical_ids.duplicate(),
+	}
+
+
+func _validate_result_entry(
+	raw_result: Variant, canonical_ids: Array, existing_results: Dictionary
+) -> Dictionary:
+	if not raw_result is Dictionary:
+		return _rejected(
+			"invalid_rival_result_entry",
+			["Every GT I rival result must be a Dictionary"],
+		)
+	var entry := raw_result as Dictionary
+	var rival_id := str(entry.get("rival_id", ""))
+	if not canonical_ids.has(rival_id):
+		return _rejected(
+			"unknown_rival_ludus",
+			["Unknown canonical rival Ludus id: %s" % rival_id],
+		)
+	if existing_results.has(rival_id):
+		return _rejected(
+			"duplicate_rival_result",
+			["GT I rival result is duplicated for %s" % rival_id],
+		)
+	var score_validation := _validate_score(entry)
+	if score_validation.get("status") != "ready":
+		return score_validation
+	return {
+		"status": "ready",
+		"reason": "",
+		"errors": [],
+		"normalized_result":
+		{
+			"rival_id": rival_id,
+			"points": int(score_validation.get("points", 0)),
+			"wins": int(score_validation.get("wins", 0)),
+		},
+	}
+
+
+func _validate_score(entry: Dictionary) -> Dictionary:
+	var points_value: Variant = entry.get("points", null)
+	var wins_value: Variant = entry.get("wins", null)
+	if not _is_integral_number(points_value) or not _is_integral_number(wins_value):
+		return _rejected(
+			"invalid_rival_score_type",
+			["GT I rival points and wins must be whole numbers"],
+		)
+	var points := int(points_value)
+	var wins := int(wins_value)
+	if points < 0 or points > MAX_POINTS:
+		return _rejected(
+			"invalid_rival_points",
+			["GT I rival points must be between 0 and %d" % MAX_POINTS],
+		)
+	if wins < 0 or wins > MAX_WINS:
+		return _rejected(
+			"invalid_rival_wins",
+			["GT I rival wins must be between 0 and %d" % MAX_WINS],
+		)
+	if points != wins * POINTS_PER_WIN:
+		return _rejected(
+			"inconsistent_rival_score",
+			["GT I rival points must equal wins × %d" % POINTS_PER_WIN],
+		)
+	return {
+		"status": "ready",
+		"reason": "",
+		"errors": [],
+		"points": points,
+		"wins": wins,
+	}
+
+
+func _normalize_results(canonical_ids: Array, results_by_id: Dictionary) -> Dictionary:
+	var normalized_results: Array[Dictionary] = []
+	for rival_id in canonical_ids:
+		if not results_by_id.has(rival_id):
+			return _rejected(
+				"incomplete_rival_results_batch",
+				["Missing explicit GT I result for %s" % rival_id],
+			)
+		normalized_results.append((results_by_id[rival_id] as Dictionary).duplicate(true))
+	return {
+		"status": "ready",
+		"reason": "",
+		"errors": [],
+		"normalized_results": normalized_results.duplicate(true),
 	}
 
 
