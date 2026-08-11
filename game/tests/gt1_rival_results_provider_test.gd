@@ -33,7 +33,7 @@ func _test_complete_explicit_batch_registers_all_rivals() -> void:
 	assert(validation.get("score_source") == "explicit_external_results")
 	assert(validation.get("generated_scores") == false)
 
-	var registered: Dictionary = provider.register_explicit_results(VALID_RESULTS)
+	var registered: Dictionary = CampaignManager.register_gt1_rival_results(VALID_RESULTS)
 	assert(registered.get("status") == "registered")
 	assert(int(registered.get("registered_count", 0)) == 7)
 	assert(registered.get("registration_authority") == "gt1_rival_result_registry")
@@ -42,7 +42,7 @@ func _test_complete_explicit_batch_registers_all_rivals() -> void:
 	var summary := TournamentManager.get_gt1_summary()
 	assert(int(summary.get("rival_results_registered", 0)) == 7)
 
-	var repeated: Dictionary = provider.register_explicit_results(VALID_RESULTS)
+	var repeated: Dictionary = CampaignManager.register_gt1_rival_results(VALID_RESULTS)
 	assert(repeated.get("status") == "rejected")
 	assert(repeated.get("reason") == "rival_results_already_registered")
 	assert(int(TournamentManager.get_gt1_summary().get("rival_results_registered", 0)) == 7)
@@ -51,32 +51,31 @@ func _test_complete_explicit_batch_registers_all_rivals() -> void:
 
 func _test_invalid_batches_fail_before_registration() -> void:
 	TournamentManager.import_state({})
-	var provider = GT1RivalResultsProviderScript.new()
 
 	var incomplete := VALID_RESULTS.duplicate(true)
 	incomplete.pop_back()
-	var incomplete_result: Dictionary = provider.register_explicit_results(incomplete)
+	var incomplete_result: Dictionary = CampaignManager.register_gt1_rival_results(incomplete)
 	assert(incomplete_result.get("status") == "rejected")
 	assert(incomplete_result.get("reason") == "incomplete_rival_results_batch")
 	assert(int(TournamentManager.get_gt1_summary().get("rival_results_registered", 0)) == 0)
 
 	var duplicate := VALID_RESULTS.duplicate(true)
 	duplicate[6] = duplicate[0].duplicate(true)
-	var duplicate_result: Dictionary = provider.register_explicit_results(duplicate)
+	var duplicate_result: Dictionary = CampaignManager.register_gt1_rival_results(duplicate)
 	assert(duplicate_result.get("status") == "rejected")
 	assert(duplicate_result.get("reason") == "duplicate_rival_result")
 	assert(int(TournamentManager.get_gt1_summary().get("rival_results_registered", 0)) == 0)
 
 	var inconsistent := VALID_RESULTS.duplicate(true)
 	(inconsistent[2] as Dictionary)["points"] = 20
-	var inconsistent_result: Dictionary = provider.register_explicit_results(inconsistent)
+	var inconsistent_result: Dictionary = CampaignManager.register_gt1_rival_results(inconsistent)
 	assert(inconsistent_result.get("status") == "rejected")
 	assert(inconsistent_result.get("reason") == "inconsistent_rival_score")
 	assert(int(TournamentManager.get_gt1_summary().get("rival_results_registered", 0)) == 0)
 
 	var fractional := VALID_RESULTS.duplicate(true)
 	(fractional[1] as Dictionary)["wins"] = 7.5
-	var fractional_result: Dictionary = provider.register_explicit_results(fractional)
+	var fractional_result: Dictionary = CampaignManager.register_gt1_rival_results(fractional)
 	assert(fractional_result.get("status") == "rejected")
 	assert(fractional_result.get("reason") == "invalid_rival_score_type")
 	assert(int(TournamentManager.get_gt1_summary().get("rival_results_registered", 0)) == 0)
@@ -86,6 +85,8 @@ func _test_invalid_batches_fail_before_registration() -> void:
 func _test_contract() -> void:
 	var provider = GT1RivalResultsProviderScript.new()
 	var contract: Dictionary = provider.get_contract()
+	var campaign_contract: Dictionary = CampaignManager.get_gt1_rival_results_provider_contract()
+	assert(campaign_contract == contract)
 	assert(contract.get("status") == "frozen")
 	assert(contract.get("provider_authority") == "gt1_rival_results_provider")
 	assert(contract.get("input_source") == "explicit_external_results")
