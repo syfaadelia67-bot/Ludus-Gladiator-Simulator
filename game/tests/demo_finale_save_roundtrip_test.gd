@@ -14,30 +14,36 @@ func run() -> void:
 	assert(not CampaignManager.campaign_over)
 	assert(not CampaignManager.final_combat_resolved)
 
-	CampaignManager.import_state(
-		{
-			"campaign_over": true,
-			"victory": true,
-			"final_combat_resolved": true,
-			"rank_index": 0,
-			"chapter_index": 2,
-			"wins": 9,
-			"losses": 0,
-			"completed_objectives": [],
-		}
+	(
+		CampaignManager
+		. import_state(
+			{
+				"campaign_over": true,
+				"victory": true,
+				"final_combat_resolved": true,
+				"rank_index": 0,
+				"chapter_index": 2,
+				"wins": 9,
+				"losses": 0,
+				"completed_objectives": [],
+			}
+		)
 	)
 	assert(not CampaignManager.campaign_over)
 	assert(not CampaignManager.final_combat_resolved)
 	assert(not CampaignManager.victory_achieved)
 
 	assert(
-		TournamentManager.apply_gt1_standings_resolution(
-			{
-				"status": "resolved",
-				"resolution_source": "tournament_characteristic_combat",
-				"placement": 1,
-				"medal": "gold",
-			}
+		(
+			TournamentManager
+			. apply_gt1_standings_resolution(
+				{
+					"status": "resolved",
+					"resolution_source": "tournament_characteristic_combat",
+					"placement": 1,
+					"medal": "gold",
+				}
+			)
 		)
 	)
 	assert(TournamentManager.is_gt1_complete())
@@ -86,11 +92,14 @@ func _register_tied_rival_results() -> void:
 	assert(TournamentManager.register_gt1_rival_result("rival_tie", "Rival empate", 27, 9))
 	for index in range(6):
 		assert(
-			TournamentManager.register_gt1_rival_result(
-				"rival_%d" % index,
-				"Rival %d" % index,
-				18 - index * 3,
-				6 - index,
+			(
+				TournamentManager
+				. register_gt1_rival_result(
+					"rival_%d" % index,
+					"Rival %d" % index,
+					18 - index * 3,
+					6 - index,
+				)
 			)
 		)
 
