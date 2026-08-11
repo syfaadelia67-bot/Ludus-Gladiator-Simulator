@@ -10,7 +10,9 @@ const REMOVED_UI_ARTIFACTS := [
 func run() -> void:
 	var project := FileAccess.get_file_as_string("res://project.godot")
 	var arena := FileAccess.get_file_as_string("res://scripts/ui/arena_screen.gd")
-	var setup_runtime := FileAccess.get_file_as_string("res://scripts/ui/gt1_series_setup_runtime.gd")
+	var setup_runtime := FileAccess.get_file_as_string(
+		"res://scripts/ui/gt1_series_setup_runtime.gd"
+	)
 	var equipment_scene := FileAccess.get_file_as_string("res://scenes/EquipmentScreen.tscn")
 
 	for artifact_path in REMOVED_UI_ARTIFACTS:
