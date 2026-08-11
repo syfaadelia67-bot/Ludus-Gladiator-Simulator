@@ -51,11 +51,8 @@ func _run() -> void:
 	assert(arena_runtime.contains("get_month_16_beast_readiness"))
 	assert(arena_runtime.contains('"month_16_host": "gt1_month_16_host"'))
 	assert(
-		(
-			arena_runtime
-			. contains(
-				'"month_16_beast_selection_authority": "combat_beast_fighter_adapter"'
-			)
+		arena_runtime.contains(
+			'"month_16_beast_selection_authority": "combat_beast_fighter_adapter"'
 		)
 	)
 
