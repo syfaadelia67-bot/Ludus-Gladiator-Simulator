@@ -15,10 +15,12 @@ const GT1BeastReadinessContractScript = preload(
 const GT1RivalRosterReadinessContractScript = preload(
 	"res://scripts/combat/gt1_rival_roster_readiness_contract.gd"
 )
+const MonthlyNonGTActivityPolicyScript = preload(
+	"res://scripts/systems/monthly_non_gt_activity_policy.gd"
+)
 
 const PENDING_AUTHORITY_BOUNDARIES := {
 	"monthly_rival_management": "Legacy sabotage, espionage and retaliation RNG are quarantined. Monthly operation cadence, costs and risk rules still require frozen design values.",
-	"months_without_gt1_loop": "Months outside XIII, XVI and XX now have an explicit management-only canonical loop and legacy arena schedules are quarantined. The blocker remains until optional/mandatory non-GT Arena opportunities and replacement objectives are frozen by design.",
 }
 
 
@@ -34,6 +36,7 @@ func evaluate() -> Dictionary:
 	_append_monthly_roster_blocker(blockers)
 	_append_equipment_blocker(blockers)
 	_append_monthly_event_blocker(blockers)
+	_append_non_gt_loop_blocker(blockers)
 	_append_authority_boundary_blockers(blockers)
 	var report := _build_report(blockers)
 	return {
@@ -84,6 +87,7 @@ func get_contract() -> Dictionary:
 		"monthly_roster_quality_gate": "roster_manager_monthly_work_policy_contract",
 		"equipment_quality_gate": "equipment_runtime_policy_contract",
 		"monthly_event_quality_gate": "monthly_event_runtime_policy_contract",
+		"non_gt_loop_quality_gate": "monthly_non_gt_activity_policy_contract",
 		"gt1_rival_results_provider_quality_gate": "campaign_owned_contract",
 		"month_20_end_to_end_quality_gate": "automated_test",
 		"save_version_change_required": false,
@@ -474,6 +478,36 @@ func _append_monthly_event_blocker(blockers: Array[Dictionary]) -> void:
 				"monthly_event_cadence",
 				"events",
 				"Authored event weights, monthly cooldowns, timed effects or exactly-once monthly scheduling are incomplete.",
+				false
+			)
+		)
+
+
+func _append_non_gt_loop_blocker(blockers: Array[Dictionary]) -> void:
+	var contract := MonthlyNonGTActivityPolicyScript.new().get_contract()
+	var retired := contract.get("retired_demo_objectives", []) as Array
+	var ready := (
+		contract.get("status") == "frozen"
+		and contract.get("authority") == "monthly_non_gt_activity_policy"
+		and contract.get("scope") == "demo_months_1_to_20"
+		and contract.get("non_gt_mode") == "management_only"
+		and contract.get("non_gt_combat_required") == false
+		and contract.get("non_gt_combat_optional") == false
+		and contract.get("demo_loop_frozen") == true
+		and contract.get("full_game_non_gt_arena_deferred") == true
+		and contract.get("legacy_non_gt_schedule_allowed") == false
+		and contract.get("campaign_combat_progress_source") == "gt1_combat_v1"
+		and retired == ["first_fight", "first_victory", "three_victories"]
+		and contract.get("replacement_objectives_required") == false
+		and contract.get("invent_arena_rules_allowed") == false
+		and contract.get("save_version_change_required") == false
+	)
+	if not ready:
+		blockers.append(
+			_blocker(
+				"months_without_gt1_loop",
+				"campaign",
+				"The demo management-only loop outside GT I is incomplete or still depends on legacy Arena schedules/objectives.",
 				false
 			)
 		)
