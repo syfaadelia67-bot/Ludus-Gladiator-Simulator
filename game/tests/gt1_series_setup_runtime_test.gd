@@ -21,7 +21,7 @@ func run() -> void:
 
 
 func _assert_contract(runtime) -> void:
-	var contract := runtime.get_contract()
+	var contract: Dictionary = runtime.get_contract()
 	assert(contract.get("setup_authority") == "gt1_series_setup_runtime")
 	assert(contract.get("combat_runtime") == "combat_v1_arena_runtime")
 	assert(
@@ -35,30 +35,34 @@ func _assert_contract(runtime) -> void:
 
 
 func _assert_catalogs(runtime) -> void:
-	var month_13 := runtime.get_gt1_setup_catalog(13)
+	var month_13: Dictionary = runtime.get_gt1_setup_catalog(13)
 	assert(month_13.get("status") == "ready")
 	assert(month_13.get("opponent_modes") == ["human"])
 	assert((month_13.get("rivals", []) as Array).size() == 7)
 	for raw_rival in month_13.get("rivals", []) as Array:
 		assert(((raw_rival as Dictionary).get("fighters", []) as Array).size() == 3)
-	var month_16 := runtime.get_gt1_setup_catalog(16)
+	var month_16: Dictionary = runtime.get_gt1_setup_catalog(16)
 	assert(month_16.get("opponent_modes") == ["human", "beast"])
 	assert((month_16.get("beasts", []) as Array).size() == 3)
-	var month_20 := runtime.get_gt1_setup_catalog(20)
+	var month_20: Dictionary = runtime.get_gt1_setup_catalog(20)
 	assert(int(month_20.get("player_slots", 0)) == 6)
 	assert(int(month_20.get("opponent_slots", 0)) == 6)
 
 
 func _assert_requests(runtime) -> void:
-	var month_13 := runtime.prepare_month_13_request("player", "alpha", "cassianus", RIVALS)
+	var month_13: Dictionary = runtime.prepare_month_13_request(
+		"player", "alpha", "cassianus", RIVALS
+	)
 	assert(month_13.get("status") == "ready")
 	assert(month_13.get("player_ids_by_bout") == [["player"], ["player"], ["player"]])
-	var month_16 := runtime.prepare_month_16_human_request(
+	var month_16: Dictionary = runtime.prepare_month_16_human_request(
 		["p1", "p2", "p3"], "alpha", "flavianus", RIVALS
 	)
 	assert(month_16.get("status") == "ready")
 	assert(month_16.get("independent_bouts") == true)
-	var month_20 := runtime.prepare_month_20_request(PLAYER_20, "alpha", "drusus", RIVAL_20)
+	var month_20: Dictionary = runtime.prepare_month_20_request(
+		PLAYER_20, "alpha", "drusus", RIVAL_20
+	)
 	assert(month_20.get("status") == "ready")
 	assert(month_20.get("substitution_used") == true)
 	assert((month_20.get("opponent_fighters_by_bout", []) as Array).size() == 3)
@@ -67,10 +71,12 @@ func _assert_requests(runtime) -> void:
 func _assert_fail_closed(runtime) -> void:
 	var missing := RIVALS.duplicate()
 	missing[1] = ""
-	var rejected := runtime.prepare_month_13_request("player", "alpha", "cassianus", missing)
+	var rejected: Dictionary = runtime.prepare_month_13_request(
+		"player", "alpha", "cassianus", missing
+	)
 	assert(rejected.get("status") == "rejected")
 	assert(rejected.get("generated_opponents_allowed") == false)
-	var unknown := runtime.prepare_month_16_human_request(
+	var unknown: Dictionary = runtime.prepare_month_16_human_request(
 		["p1", "p2", "p3"], "alpha", "unknown_ludus", RIVALS
 	)
 	assert(unknown.get("status") == "rejected")
