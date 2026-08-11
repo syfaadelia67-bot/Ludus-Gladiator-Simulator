@@ -60,8 +60,9 @@ func run() -> void:
 
 	assert(beast_scene.contains('path="res://scripts/ui/beast_area_screen.gd"'))
 	assert(beast_screen.contains("OwnedBeastRegistry.get_owned_beasts()"))
-	assert(beast_screen.contains("stats Combat V1 de Jabalí, León y Oso ya están congeladas"))
-	assert(beast_screen.contains("adapter canónico"))
+	assert(beast_screen.contains("stats Combat V1 y el adapter canónico"))
+	assert(beast_screen.contains("listos para Mes XVI"))
+	assert(beast_screen.contains("selección visual final desde Arena sigue pendiente"))
 	assert(not buildings_text.contains('"id": "market"'))
 	assert(not project.contains("FincaBuildingNavigationController="))
 	assert(not FileAccess.file_exists("res://scripts/ui/finca_building_navigation_controller.gd"))
