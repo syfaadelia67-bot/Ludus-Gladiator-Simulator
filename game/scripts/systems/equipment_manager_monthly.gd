@@ -11,25 +11,26 @@ func get_recipe(recipe_id: String) -> Dictionary:
 	var data := super.get_recipe(recipe_id)
 	if data.is_empty():
 		return data
-	data["unlocked"] = false
-	data["balance_ready"] = false
+	data["balance_ready"] = EQUIPMENT_RUNTIME_POLICY.can_craft()
 	data["runtime_status"] = str(get_runtime_policy().get("status", ""))
-	data["legacy_recipe_preview"] = true
+	data["legacy_recipe_preview"] = false
 	return data
 
 
-func craft(_recipe_id: String) -> bool:
-	(
-		craft_failed
-		. emit(
-			"La fabricación está bloqueada hasta congelar el catálogo, los costos y la calidad de Forja."
-		)
+func craft(recipe_id: String) -> bool:
+	if not EQUIPMENT_RUNTIME_POLICY.can_craft():
+		craft_failed.emit("La fabricación no está habilitada por la política de equipamiento.")
+		return false
+	return super.craft(recipe_id)
+
+
+func get_combat_v1_equipped_stats(person) -> Dictionary:
+	if not EQUIPMENT_RUNTIME_POLICY.can_apply_item_stats_to_combat_v1():
+		return EQUIPMENT_RUNTIME_POLICY.get_combat_v1_snapshot()
+	var stats := super.get_equipped_stats(person)
+	return EQUIPMENT_RUNTIME_POLICY.get_combat_v1_snapshot(
+		int(stats.get("power", 0)), int(stats.get("defense", 0))
 	)
-	return false
-
-
-func get_combat_v1_equipped_stats(_person) -> Dictionary:
-	return EQUIPMENT_RUNTIME_POLICY.get_combat_v1_snapshot()
 
 
 func get_legacy_equipped_stats(person) -> Dictionary:
