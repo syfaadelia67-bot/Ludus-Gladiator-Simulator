@@ -25,7 +25,9 @@ func run() -> void:
 	assert(int(payload.get("version", 0)) == 14)
 	for section in REQUIRED_DICTIONARY_SECTIONS:
 		assert(payload.has(section), "Save v14 missing canonical monthly section: %s" % section)
-		assert(payload.get(section) is Dictionary, "Save section must be a Dictionary: %s" % section)
+		assert(
+			payload.get(section) is Dictionary, "Save section must be a Dictionary: %s" % section
+		)
 
 	var game_state := payload.get("game_state", {}) as Dictionary
 	var month := int(game_state.get("month", 0))
@@ -40,8 +42,18 @@ func run() -> void:
 
 	var market := payload.get("market", {}) as Dictionary
 	assert(market.has("last_market_rotation_month"))
-	assert(int(market.get("last_auto_refresh_month", 0)) == int(market.get("last_market_rotation_month", -1)))
-	assert(int(market.get("last_auto_refresh_week", 0)) == int(market.get("last_market_rotation_month", -1)))
+	assert(
+		(
+			int(market.get("last_auto_refresh_month", 0))
+			== int(market.get("last_market_rotation_month", -1))
+		)
+	)
+	assert(
+		(
+			int(market.get("last_auto_refresh_week", 0))
+			== int(market.get("last_market_rotation_month", -1))
+		)
+	)
 
 	var equipment := payload.get("equipment", {}) as Dictionary
 	assert(bool(equipment.get("canonical_slots_persisted", false)))
