@@ -20,6 +20,8 @@ var weapons: Array = []
 # Frozen Combat V1 skill identity lives in skills.json and must not be inferred from this array.
 var abilities: Array = []
 var skills: Array = []
+# Combat V1 mechanics are a separate fail-closed source. Empty means design is not frozen.
+var skill_mechanics_v1: Array = []
 var specializations: Array = []
 var beasts: Array = []
 var rival_ludi: Array = []
@@ -39,6 +41,7 @@ func load_all() -> void:
 	weapons = _load_json_array("res://data/weapons.json")
 	abilities = _load_json_array("res://data/abilities.json")
 	skills = _load_json_array("res://data/skills.json")
+	skill_mechanics_v1 = _load_json_array("res://data/skill_mechanics_v1.json")
 	specializations = _load_json_array("res://data/specializations.json")
 	beasts = _load_json_array("res://data/beasts.json")
 	rival_ludi = _load_json_array("res://data/rival_ludi.json")
@@ -99,6 +102,17 @@ func get_skills() -> Array:
 
 func get_skill(skill_id: String) -> Dictionary:
 	for entry in skills:
+		if entry is Dictionary and str(entry.get("id", "")) == skill_id:
+			return entry.duplicate(true)
+	return {}
+
+
+func get_skill_mechanics_v1() -> Array:
+	return skill_mechanics_v1.duplicate(true)
+
+
+func get_skill_mechanics_v1_entry(skill_id: String) -> Dictionary:
+	for entry in skill_mechanics_v1:
 		if entry is Dictionary and str(entry.get("id", "")) == skill_id:
 			return entry.duplicate(true)
 	return {}
