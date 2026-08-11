@@ -35,6 +35,8 @@ func advance_exchange(
 			session,
 		)
 
+	DataRepository.load_all()
+	_collector.set_skill_mechanics(DataRepository.get_skill_mechanics_v1())
 	var collection: Dictionary = (
 		_collector
 		. collect(
@@ -64,7 +66,11 @@ func advance_exchange(
 		(collection.get("providers_by_actor", {}) as Dictionary).duplicate(true)
 	)
 	next["last_intent_actor_ids"] = (collection.get("active_actor_ids", []) as Array).duplicate()
+	next["last_skill_activations_by_actor"] = (
+		(collection.get("skill_activations_by_actor", {}) as Dictionary).duplicate(true)
+	)
 	next["intent_collection_authority"] = "combat_intent_source_collector"
+	next["skill_translation_authority"] = "combat_skill_runtime_resolver"
 	next["combat_authority"] = "combat_simulator"
 	return next
 
@@ -75,6 +81,8 @@ func get_contract() -> Dictionary:
 		"player_intents": "explicit_desired_actions",
 		"ai_intents": "limboai_policy_runner",
 		"collector": "combat_intent_source_collector",
+		"skill_translation": "combat_skill_runtime_resolver",
+		"skill_mechanics_source": "DataRepository.skill_mechanics_v1",
 		"runtime": "gt1_combat_runtime",
 		"combat_authority": "combat_simulator",
 		"scoring_authority": "tournament_manager",
@@ -90,6 +98,8 @@ func _rejected(reason: String, errors: Array, session: Dictionary) -> Dictionary
 		"session": session.duplicate(true),
 		"last_intent_providers": {},
 		"last_intent_actor_ids": [],
+		"last_skill_activations_by_actor": {},
 		"intent_collection_authority": "combat_intent_source_collector",
+		"skill_translation_authority": "combat_skill_runtime_resolver",
 		"combat_authority": "combat_simulator",
 	}
