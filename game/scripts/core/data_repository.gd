@@ -2,7 +2,9 @@ extends Node
 
 const FrozenDataValidatorScript = preload("res://scripts/core/frozen_data_validator.gd")
 const EquipmentDataValidatorScript = preload("res://scripts/core/equipment_data_validator.gd")
-const BeastCombatV1DataContractScript = preload("res://scripts/core/beast_combat_v1_data_contract.gd")
+const BeastCombatV1DataContractScript = preload(
+	"res://scripts/core/beast_combat_v1_data_contract.gd"
+)
 const RivalCombatV1SnapshotDataValidatorScript = preload(
 	"res://scripts/core/rival_combat_v1_snapshot_data_validator.gd"
 )
