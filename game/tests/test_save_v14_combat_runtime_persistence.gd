@@ -17,15 +17,11 @@ func run() -> void:
 		"res://scripts/core/new_campaign_coordinator.gd"
 	)
 	var owner := FileAccess.get_file_as_string("res://scripts/systems/ludus_owner_manager.gd")
-	var recovery := FileAccess.get_file_as_string(
-		"res://scripts/core/save_recovery_coordinator.gd"
-	)
+	var recovery := FileAccess.get_file_as_string("res://scripts/core/save_recovery_coordinator.gd")
 	var inspector := FileAccess.get_file_as_string(
 		"res://scripts/core/save_compatibility_inspector.gd"
 	)
-	var readiness := FileAccess.get_file_as_string(
-		"res://scripts/core/demo_pre_asset_readiness.gd"
-	)
+	var readiness := FileAccess.get_file_as_string("res://scripts/core/demo_pre_asset_readiness.gd")
 
 	assert(base_save.contains("const SAVE_VERSION := 14"))
 	assert(not base_save.contains("const SAVE_VERSION := 15"))
@@ -33,7 +29,9 @@ func run() -> void:
 		project.contains('CombatV1SessionStore="*res://scripts/systems/combat_v1_session_store.gd"')
 	)
 	assert(project.find("TournamentManager=") < project.find("CombatV1SessionStore="))
-	assert(save_manager.contains('payload["combat_v1_runtime"] = CombatV1SessionStore.export_state()'))
+	assert(
+		save_manager.contains('payload["combat_v1_runtime"] = CombatV1SessionStore.export_state()')
+	)
 	assert(save_manager.contains("CombatV1SessionStore.import_state"))
 	assert(save_manager.contains('game_data["day"] = month'))
 	assert(save_manager.contains('game_data["week"] = month'))
