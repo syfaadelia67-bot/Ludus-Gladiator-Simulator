@@ -36,17 +36,26 @@ func _show_result(victory: bool, reason: String) -> void:
 	var rank: Dictionary = summary.get("rank", {})
 	var finale: Dictionary = summary.get("finale", {})
 
-	card.add_child(
-		_make_label(
-			_t("CAMPAIGN_RESULT_TITLE_VICTORY") if victory else _t("CAMPAIGN_RESULT_TITLE_FINISHED"),
-			34,
+	(
+		card
+		. add_child(
+			_make_label(
+				(
+					_t("CAMPAIGN_RESULT_TITLE_VICTORY")
+					if victory
+					else _t("CAMPAIGN_RESULT_TITLE_FINISHED")
+				),
+				34,
+			)
 		)
 	)
-	card.add_child(
-		_make_label(
-			"%s %s"
-			% [LudusOwnerManager.get_title_label(), str(owner.get("display_name", ""))],
-			20,
+	(
+		card
+		. add_child(
+			_make_label(
+				"%s %s" % [LudusOwnerManager.get_title_label(), str(owner.get("display_name", ""))],
+				20,
+			)
 		)
 	)
 
@@ -93,14 +102,17 @@ func _build_result_details(
 		and bool(finale.get("classification_valid", false))
 	):
 		var gt_summary: Dictionary = summary.get("grand_tournament", {})
-		text += "\n\n" + _t(
-			"CAMPAIGN_RESULT_GT1",
-			{
-				"placement": int(finale.get("placement", 0)),
-				"medal": _medal_label(str(finale.get("medal", ""))),
-				"points": int(gt_summary.get("player_points", 0)),
-				"bouts": int(gt_summary.get("player_bouts", 0)),
-			},
+		text += (
+			"\n\n"
+			+ _t(
+				"CAMPAIGN_RESULT_GT1",
+				{
+					"placement": int(finale.get("placement", 0)),
+					"medal": _medal_label(str(finale.get("medal", ""))),
+					"points": int(gt_summary.get("player_points", 0)),
+					"bouts": int(gt_summary.get("player_bouts", 0)),
+				},
+			)
 		)
 	if not reason.strip_edges().is_empty():
 		text += "\n\n" + reason.strip_edges()
