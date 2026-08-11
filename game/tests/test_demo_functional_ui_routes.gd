@@ -97,27 +97,24 @@ func _assert_route_state(route_id: String) -> void:
 	assert(VALID_STATES.has(state_id), "%s devolvió estado inválido: %s" % [route_id, state_id])
 	assert(not bool(state.get("blocks_navigation", true)))
 
-	var scene := get_tree().current_scene
-	var banner := (
-		scene.get_node_or_null("Margin/VBox/ScreenHost/FunctionalStateBanner") as PanelContainer
-	)
-	assert(banner != null, "ScreenHost debe exponer el banner funcional.")
+	var banner := screen.get_node_or_null("FunctionalStateBanner") as PanelContainer
+	assert(banner != null, "%s debe exponer su banner funcional." % route_id)
 	assert(banner.visible == (state_id != "ready"))
 
 	var focus_owner := get_viewport().gui_get_focus_owner()
-	if _has_focus_candidate(screen):
+	if _has_keyboard_focus_candidate(screen):
 		assert(
 			focus_owner != null and screen.is_ancestor_of(focus_owner),
-			"%s debe entregar foco a un control visible cuando existe uno." % route_id,
+			"%s debe entregar foco a un control FOCUS_ALL visible." % route_id,
 		)
 
 
-func _has_focus_candidate(screen: Control) -> bool:
+func _has_keyboard_focus_candidate(screen: Control) -> bool:
 	for candidate in screen.find_children("*", "Control", true, false):
 		var control := candidate as Control
 		if control == null or not control.is_visible_in_tree():
 			continue
-		if control.focus_mode == Control.FOCUS_NONE:
+		if control.focus_mode != Control.FOCUS_ALL:
 			continue
 		if control is BaseButton and (control as BaseButton).disabled:
 			continue
