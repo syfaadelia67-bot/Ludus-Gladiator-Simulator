@@ -52,7 +52,7 @@ func _run() -> void:
 	assert(arena_runtime.contains('"month_16_host": "gt1_month_16_host"'))
 	assert(
 		arena_runtime.contains(
-			'"month_16_beast_selection_authority": "combat_beast_fighter_adapter"'
+			'"player_facing_setup_authority": "gt1_series_setup_runtime"'
 		)
 	)
 
