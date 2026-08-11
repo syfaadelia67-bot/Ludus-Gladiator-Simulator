@@ -160,12 +160,15 @@ func _append_rival_snapshot_blocker(blockers: Array[Dictionary]) -> void:
 
 func _append_rival_results_provider_blocker(blockers: Array[Dictionary]) -> void:
 	if not CampaignManager.has_method("get_gt1_rival_results_provider_contract"):
-		blockers.append(
-			_blocker(
-				"gt1_rival_results_provider",
-				"architecture",
-				"CampaignManager does not expose the canonical GT I rival results provider.",
-				false,
+		(
+			blockers
+			. append(
+				_blocker(
+					"gt1_rival_results_provider",
+					"architecture",
+					"CampaignManager does not expose the canonical GT I rival results provider.",
+					false,
+				)
 			)
 		)
 		return
@@ -187,15 +190,18 @@ func _append_rival_results_provider_blocker(blockers: Array[Dictionary]) -> void
 	)
 	if ready:
 		return
-	blockers.append(
-		_blocker(
-			"gt1_rival_results_provider",
-			"architecture",
-			(
-				"GT I rival standings require a campaign-owned, explicit external-results provider "
-				+ "that cannot generate, randomize, partially register or overwrite rival scores."
-			),
-			false,
+	(
+		blockers
+		. append(
+			_blocker(
+				"gt1_rival_results_provider",
+				"architecture",
+				(
+					"GT I rival standings require a campaign-owned, explicit external-results provider "
+					+ "that cannot generate, randomize, partially register or overwrite rival scores."
+				),
+				false,
+			)
 		)
 	)
 
