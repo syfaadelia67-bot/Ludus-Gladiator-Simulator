@@ -1,6 +1,7 @@
 extends Node
 
 signal roster_changed
+signal job_assignment_changed(person_id: String, job_id: String)
 signal monthly_results(results: Dictionary)
 # Save-v14 / legacy observer alias. It mirrors the same monthly result.
 signal daily_results(results: Dictionary)
@@ -138,6 +139,7 @@ func assign_job(person_id: String, job_id: String) -> bool:
 		return false
 	if previous_job != str(person.job):
 		roster_changed.emit()
+		job_assignment_changed.emit(person_id, job_id)
 	return true
 
 
