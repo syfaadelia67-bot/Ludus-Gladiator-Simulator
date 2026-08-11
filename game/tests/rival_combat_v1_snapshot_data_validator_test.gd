@@ -7,7 +7,7 @@ const RivalCombatV1SnapshotDataValidatorScript = preload(
 
 func _ready() -> void:
 	var validator = RivalCombatV1SnapshotDataValidatorScript.new()
-	_test_empty_catalog_is_valid_until_balance_is_frozen(validator)
+	_test_empty_entries_are_valid_for_shape_validation(validator)
 	_test_valid_entry_is_accepted(validator)
 	_test_unknown_rival_is_rejected(validator)
 	_test_duplicate_fighter_id_is_rejected(validator)
@@ -18,7 +18,7 @@ func _ready() -> void:
 	get_tree().quit(0)
 
 
-func _test_empty_catalog_is_valid_until_balance_is_frozen(validator) -> void:
+func _test_empty_entries_are_valid_for_shape_validation(validator) -> void:
 	assert(validator.validate_entries([]).is_empty())
 
 
@@ -98,7 +98,9 @@ func _test_runtime_metadata_is_rejected(validator) -> void:
 
 func _test_contract(validator) -> void:
 	var contract: Dictionary = validator.get_contract()
-	assert(contract.get("catalog_may_be_empty_until_balance_is_frozen") == true)
+	assert(contract.get("empty_entries_shape_validation_allowed") == true)
+	assert(contract.get("catalog_completeness_authority") == "gt1_rival_roster_readiness_contract")
+	assert(contract.get("production_catalog_requires_complete_frozen_roster") == true)
 	assert(contract.get("entry_identity") == "rival_ludus_id + fighter.id")
 	assert(contract.get("rival_identity_source") == "rival_ludi.json")
 	assert(contract.get("fighter_validation") == "CombatContract.validate_fighter_snapshot")
