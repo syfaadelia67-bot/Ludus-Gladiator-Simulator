@@ -35,13 +35,6 @@ const PENDING_AUTHORITY_BOUNDARIES := {
 		"Legacy sabotage, espionage and retaliation RNG are quarantined. Monthly operation "
 		+ "cadence, costs and risk rules still require frozen design values."
 	),
-	"playable_combat_v1_ui":
-	(
-		"Combat V1 Arena and the Month XIII/XVI/XX hosts are canonical, the three-profile rival "
-		+ "roster is frozen for all seven Ludi, and canonical beast profiles now have a validated "
-		+ "Combat V1 adapter. Final player-facing series setup still needs to consume the canonical "
-		+ "rival/beast sources without placeholders."
-	),
 	"gt1_rival_results_provider":
 	"GT I rival standings still require explicit external results without a campaign-owned provider.",
 	"months_without_gt1_loop":
