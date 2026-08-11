@@ -173,7 +173,7 @@ func _append_rival_results_provider_blocker(blockers: Array[Dictionary]) -> void
 		)
 		return
 	var contract: Dictionary = CampaignManager.get_gt1_rival_results_provider_contract()
-	var ready := (
+	var ready: bool = (
 		contract.get("status") == "frozen"
 		and contract.get("provider_authority") == "gt1_rival_results_provider"
 		and contract.get("input_source") == "explicit_external_results"
