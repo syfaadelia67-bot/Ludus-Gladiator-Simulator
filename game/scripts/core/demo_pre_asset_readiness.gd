@@ -1,5 +1,8 @@
 extends RefCounted
 
+const CombatBeastFighterAdapterScript = preload(
+	"res://scripts/combat/combat_beast_fighter_adapter.gd"
+)
 const GT1BeastReadinessContractScript = preload(
 	"res://scripts/combat/gt1_beast_readiness_contract.gd"
 )
@@ -32,9 +35,9 @@ const PENDING_AUTHORITY_BOUNDARIES := {
 	"playable_combat_v1_ui":
 	(
 		"Combat V1 Arena and the Month XIII/XVI/XX hosts are canonical, the three-profile rival "
-		+ "roster is frozen for all seven Ludi, and the three canonical beast profiles are frozen. "
-		+ "XVI beast selection stays blocked until its runtime adapter is ready. Final player-facing "
-		+ "series setup still needs to consume the canonical rival/beast sources without placeholders."
+		+ "roster is frozen for all seven Ludi, and canonical beast profiles now have a validated "
+		+ "Combat V1 adapter. Final player-facing series setup still needs to consume the canonical "
+		+ "rival/beast sources without placeholders."
 	),
 	"gt1_rival_results_provider":
 	"GT I rival standings still require explicit external results without a campaign-owned provider.",
@@ -159,7 +162,10 @@ func _append_rival_snapshot_blocker(blockers: Array[Dictionary]) -> void:
 
 
 func _append_beast_blockers(blockers: Array[Dictionary]) -> void:
-	var readiness := GT1BeastReadinessContractScript.new().evaluate(DataRepository.beasts, false)
+	var adapter_audit := CombatBeastFighterAdapterScript.new().audit_catalog(DataRepository.beasts)
+	var readiness := GT1BeastReadinessContractScript.new().evaluate(
+		DataRepository.beasts, adapter_audit.get("ready") == true
+	)
 	if readiness.get("canonical_beast_stats_ready") != true:
 		(
 			blockers
@@ -178,8 +184,7 @@ func _append_beast_blockers(blockers: Array[Dictionary]) -> void:
 			. append(
 				_blocker(
 					"beast_combat_v1_adapter_missing",
-					"beasts",
-					"The canonical beast-to-Combat-V1 runtime adapter is not implemented yet.",
+					"The canonical beast-to-Combat-V1 runtime adapter is not ready.",
 					false,
 				)
 			)
