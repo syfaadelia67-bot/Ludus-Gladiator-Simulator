@@ -31,10 +31,10 @@ const PENDING_AUTHORITY_BOUNDARIES := {
 	),
 	"playable_combat_v1_ui":
 	(
-		"Combat V1 Arena and the Month XIII/XVI/XX hosts are canonical, and the three-profile "
-		+ "rival roster is frozen for all seven Ludi. XVI beast selection stays blocked until "
-		+ "canonical beast stats and its runtime adapter are ready. Final player-facing series "
-		+ "setup still needs to consume the canonical rival/beast sources without placeholders."
+		"Combat V1 Arena and the Month XIII/XVI/XX hosts are canonical, the three-profile rival "
+		+ "roster is frozen for all seven Ludi, and the three canonical beast profiles are frozen. "
+		+ "XVI beast selection stays blocked until its runtime adapter is ready. Final player-facing "
+		+ "series setup still needs to consume the canonical rival/beast sources without placeholders."
 	),
 	"gt1_rival_results_provider":
 	"GT I rival standings still require explicit external results without a campaign-owned provider.",
