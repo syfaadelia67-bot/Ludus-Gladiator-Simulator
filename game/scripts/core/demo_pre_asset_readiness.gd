@@ -17,7 +17,6 @@ const GT1RivalRosterReadinessContractScript = preload(
 )
 
 const PENDING_AUTHORITY_BOUNDARIES := {
-	"monthly_market_cadence": "Legacy cadence is quarantined; market rotation and refresh await monthly balance.",
 	"monthly_roster_work_recovery": "Monthly authority is canonical; work, training, fatigue and recovery balance remain pending.",
 	"equipment_catalog_and_forge_balance": "Six-slot inventory, equip and Save v14 authority are canonical; final catalog breadth, crafting costs, quality and Combat V1 item power/defense remain pending.",
 	"monthly_event_cadence": "Event chains use month-native follow-up scheduling. Legacy random cadence, cooldowns and timed-effect durations are quarantined until monthly balance is frozen.",
@@ -34,6 +33,7 @@ func evaluate() -> Dictionary:
 	_append_pending_building_balance_blockers(blockers)
 	_append_skill_mechanics_blocker(blockers)
 	_append_monthly_economy_blocker(blockers)
+	_append_monthly_market_blocker(blockers)
 	_append_authority_boundary_blockers(blockers)
 	var report := _build_report(blockers)
 	return {
@@ -80,6 +80,7 @@ func get_contract() -> Dictionary:
 		"skill_mechanics_source_fail_closed": true,
 		"skill_runtime_quality_gate": "combat_skill_runtime_resolver_contract",
 		"monthly_economy_quality_gate": "economy_manager_monthly_runtime_contract",
+		"monthly_market_quality_gate": "market_manager_monthly_policy_contract",
 		"gt1_rival_results_provider_quality_gate": "campaign_owned_contract",
 		"month_20_end_to_end_quality_gate": "automated_test",
 		"save_version_change_required": false,
@@ -282,6 +283,45 @@ func _append_monthly_economy_blocker(blockers: Array[Dictionary]) -> void:
 			"monthly_economy_runtime",
 			"architecture",
 			"Canonical monthly operating-cost runtime is incomplete or still grants authority to legacy daily/weekly economy.",
+			false,
+		)
+	)
+
+
+func _append_monthly_market_blocker(blockers: Array[Dictionary]) -> void:
+	if not MarketManager.has_method("get_market_rotation_policy"):
+		blockers.append(
+			_blocker(
+				"monthly_market_cadence",
+				"architecture",
+				"MarketManager does not expose its canonical monthly policy.",
+				false,
+			)
+		)
+		return
+	var contract: Dictionary = MarketManager.get_market_rotation_policy()
+	var ready := (
+		contract.get("status") == "frozen"
+		and contract.get("authority") == "monthly_market_policy"
+		and contract.get("month_native") == true
+		and contract.get("authored_unique_sync_enabled") == true
+		and int(contract.get("authored_unique_sync_cadence_months", 0)) == 1
+		and contract.get("procedural_auto_rotation_enabled") == false
+		and contract.get("manual_equipment_refresh_enabled") == false
+		and contract.get("procedural_recruit_generation_enabled") == false
+		and contract.get("procedural_equipment_generation_enabled") == false
+		and contract.get("legacy_three_turn_cadence_is_authoritative") == false
+		and contract.get("legacy_equipment_refresh_cost_is_authoritative") == false
+		and contract.get("invent_missing_balance_allowed") == false
+		and contract.get("save_version_change_required") == false
+	)
+	if ready:
+		return
+	blockers.append(
+		_blocker(
+			"monthly_market_cadence",
+			"architecture",
+			"Canonical monthly market cadence is incomplete or still grants authority to procedural/legacy refresh paths.",
 			false,
 		)
 	)
