@@ -30,12 +30,15 @@ func get_gt1_setup_catalog(month: int) -> Dictionary:
 		var profiles := _get_rival_profiles(rival_id)
 		if profiles.get("status") != "ready":
 			return profiles
-		rivals.append(
-			{
-				"id": rival_id,
-				"name": str(ludus.get("name", rival_id)),
-				"fighters": (profiles.get("fighters", []) as Array).duplicate(true),
-			}
+		(
+			rivals
+			. append(
+				{
+					"id": rival_id,
+					"name": str(ludus.get("name", rival_id)),
+					"fighters": (profiles.get("fighters", []) as Array).duplicate(true),
+				}
+			)
 		)
 	var beasts: Array[Dictionary] = []
 	if month == 16:
@@ -51,20 +54,23 @@ func get_gt1_setup_catalog(month: int) -> Dictionary:
 					"invalid_beast_catalog", ["Canonical beast catalog contains an invalid entry"]
 				)
 			var beast := raw_beast as Dictionary
-			beasts.append(
-				{
-					"id": str(beast.get("id", "")),
-					"name": str(beast.get("name", "")),
-					"stats":
+			(
+				beasts
+				. append(
 					{
-						"FUE": beast.get("FUE"),
-						"AGI": beast.get("AGI"),
-						"TEC": beast.get("TEC"),
-						"RES": beast.get("RES"),
-						"PV": beast.get("PV"),
-					},
-					"stamina": beast.get("stamina"),
-				}
+						"id": str(beast.get("id", "")),
+						"name": str(beast.get("name", "")),
+						"stats":
+						{
+							"FUE": beast.get("FUE"),
+							"AGI": beast.get("AGI"),
+							"TEC": beast.get("TEC"),
+							"RES": beast.get("RES"),
+							"PV": beast.get("PV"),
+						},
+						"stamina": beast.get("stamina"),
+					}
+				)
 			)
 	return {
 		"status": "ready",
@@ -91,10 +97,13 @@ func prepare_month_13_request(
 	var resolved := _resolve_rival_singles(rival_ludus_id, rival_fighter_ids)
 	if resolved.get("status") != "ready":
 		return resolved
-	return _arena_runtime.prepare_month_13_request(
-		player_gladiator_id,
-		player_team_id,
-		resolved.get("fighters", []) as Array,
+	return (
+		_arena_runtime
+		. prepare_month_13_request(
+			player_gladiator_id,
+			player_team_id,
+			resolved.get("fighters", []) as Array,
+		)
 	)
 
 
@@ -120,10 +129,13 @@ func prepare_month_16_human_request(
 	var resolved := _resolve_rival_singles(rival_ludus_id, rival_fighter_ids)
 	if resolved.get("status") != "ready":
 		return resolved
-	return _arena_runtime.prepare_month_16_human_request(
-		player_gladiator_ids,
-		player_team_id,
-		resolved.get("fighters", []) as Array,
+	return (
+		_arena_runtime
+		. prepare_month_16_human_request(
+			player_gladiator_ids,
+			player_team_id,
+			resolved.get("fighters", []) as Array,
+		)
 	)
 
 
@@ -157,10 +169,13 @@ func prepare_month_20_request(
 	var resolved := _resolve_rival_pairs(rival_ludus_id, rival_fighter_ids_by_bout)
 	if resolved.get("status") != "ready":
 		return resolved
-	return _arena_runtime.prepare_month_20_request(
-		player_ids_by_bout,
-		player_team_id,
-		resolved.get("fighters_by_bout", []) as Array,
+	return (
+		_arena_runtime
+		. prepare_month_20_request(
+			player_ids_by_bout,
+			player_team_id,
+			resolved.get("fighters_by_bout", []) as Array,
+		)
 	)
 
 
@@ -234,12 +249,15 @@ func _get_rival_profiles(rival_ludus_id: String) -> Dictionary:
 				resolved.get("errors", []) as Array,
 			)
 		var fighter := resolved.get("fighter_snapshot", {}) as Dictionary
-		fighters.append(
-			{
-				"id": fighter_id,
-				"stats": (fighter.get("stats", {}) as Dictionary).duplicate(true),
-				"stamina": fighter.get("stamina"),
-			}
+		(
+			fighters
+			. append(
+				{
+					"id": fighter_id,
+					"stats": (fighter.get("stats", {}) as Dictionary).duplicate(true),
+					"stamina": fighter.get("stamina"),
+				}
+			)
 		)
 	fighters.sort_custom(func(a: Dictionary, b: Dictionary): return str(a.id) < str(b.id))
 	return {"status": "ready", "reason": "", "errors": [], "fighters": fighters}
@@ -302,11 +320,14 @@ func _resolve_rival_pairs(rival_ludus_id: String, fighter_ids_by_bout: Array) ->
 func _start_prepared(request: Dictionary) -> Dictionary:
 	if request.get("status") != "ready":
 		return request
-	return _arena_runtime.start_gt1_session(
-		int(request.get("month", 0)),
-		str(request.get("player_team_id", "")),
-		request.get("player_ids_by_bout", []) as Array,
-		request.get("opponent_fighters_by_bout", []) as Array,
+	return (
+		_arena_runtime
+		. start_gt1_session(
+			int(request.get("month", 0)),
+			str(request.get("player_team_id", "")),
+			request.get("player_ids_by_bout", []) as Array,
+			request.get("opponent_fighters_by_bout", []) as Array,
+		)
 	)
 
 
