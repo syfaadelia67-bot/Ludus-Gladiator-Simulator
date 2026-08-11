@@ -25,13 +25,13 @@ func _ready() -> void:
 	assert(estate.get_training_multiplier() == 1.0)
 	assert(estate.get_recovery_bonus() == 0)
 
-	var mine_status := estate.get_upgrade_status("mine")
-	assert(mine_status.get("can_upgrade") == false)
-	assert(mine_status.get("code") == "upgrade_cost_pending")
-	assert(int(mine_status.get("cost", -1)) == 0)
-	assert(not estate.can_upgrade("mine"))
-
 	CampaignManager.campaign_over = false
+	var mine_status := estate.get_upgrade_status("mine")
+	assert(mine_status.get("can_upgrade") == true)
+	assert(mine_status.get("code") == "available")
+	assert(int(mine_status.get("cost", -1)) == 300)
+	assert(estate.can_upgrade("mine"))
+
 	GameState.denarii = 1000
 	var forge_status := estate.get_upgrade_status("forge")
 	assert(forge_status.get("can_upgrade") == true)
