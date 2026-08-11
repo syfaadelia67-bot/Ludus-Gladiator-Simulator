@@ -50,7 +50,14 @@ func _run() -> void:
 	assert(arena_runtime.contains("prepare_month_16_beast_request"))
 	assert(arena_runtime.contains("get_month_16_beast_readiness"))
 	assert(arena_runtime.contains('"month_16_host": "gt1_month_16_host"'))
-	assert(arena_runtime.contains('"month_16_beast_selection_authority": "combat_beast_fighter_adapter"'))
+	assert(
+		(
+			arena_runtime
+			. contains(
+				'"month_16_beast_selection_authority": "combat_beast_fighter_adapter"'
+			)
+		)
+	)
 
 	assert(combat_runtime.contains("if month in [13, 20]:"))
 	assert(combat_runtime.contains('"month_16"'))
