@@ -41,7 +41,8 @@ func validate_explicit_results(results: Array) -> Dictionary:
 		"status": "ready",
 		"reason": "",
 		"errors": [],
-		"normalized_results": (normalization.get("normalized_results", []) as Array).duplicate(true),
+		"normalized_results":
+		(normalization.get("normalized_results", []) as Array).duplicate(true),
 		"required_rival_results": REQUIRED_RIVAL_RESULTS,
 		"score_source": "explicit_external_results",
 		"generated_scores": false,
