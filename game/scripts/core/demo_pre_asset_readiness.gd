@@ -19,9 +19,7 @@ const MonthlyNonGTActivityPolicyScript = preload(
 	"res://scripts/systems/monthly_non_gt_activity_policy.gd"
 )
 
-const PENDING_AUTHORITY_BOUNDARIES := {
-	"monthly_rival_management": "Legacy sabotage, espionage and retaliation RNG are quarantined. Monthly operation cadence, costs and risk rules still require frozen design values.",
-}
+const PENDING_AUTHORITY_BOUNDARIES := {}
 
 
 func evaluate() -> Dictionary:
@@ -36,6 +34,7 @@ func evaluate() -> Dictionary:
 	_append_monthly_roster_blocker(blockers)
 	_append_equipment_blocker(blockers)
 	_append_monthly_event_blocker(blockers)
+	_append_monthly_rival_blocker(blockers)
 	_append_non_gt_loop_blocker(blockers)
 	_append_authority_boundary_blockers(blockers)
 	var report := _build_report(blockers)
@@ -87,6 +86,7 @@ func get_contract() -> Dictionary:
 		"monthly_roster_quality_gate": "roster_manager_monthly_work_policy_contract",
 		"equipment_quality_gate": "equipment_runtime_policy_contract",
 		"monthly_event_quality_gate": "monthly_event_runtime_policy_contract",
+		"monthly_rival_quality_gate": "monthly_rival_management_policy_contract",
 		"non_gt_loop_quality_gate": "monthly_non_gt_activity_policy_contract",
 		"gt1_rival_results_provider_quality_gate": "campaign_owned_contract",
 		"month_20_end_to_end_quality_gate": "automated_test",
@@ -478,6 +478,91 @@ func _append_monthly_event_blocker(blockers: Array[Dictionary]) -> void:
 				"monthly_event_cadence",
 				"events",
 				"Authored event weights, monthly cooldowns, timed effects or exactly-once monthly scheduling are incomplete.",
+				false
+			)
+		)
+
+
+func _append_monthly_rival_blocker(blockers: Array[Dictionary]) -> void:
+	if (
+		not RivalManager.has_method("get_monthly_management_contract")
+		or not RivalManager.has_method("reconcile_canonical_rivals")
+	):
+		blockers.append(
+			_blocker(
+				"monthly_rival_management",
+				"rivals",
+				"RivalManager does not expose the canonical monthly management contract.",
+				false
+			)
+		)
+		return
+	var contract: Dictionary = RivalManager.get_monthly_management_contract()
+	var baseline := contract.get("management_baseline", {}) as Dictionary
+	var operation_rules := contract.get("operation_rules", {}) as Dictionary
+	var scout := operation_rules.get("scout", {}) as Dictionary
+	var poison := operation_rules.get("poison_supplies", {}) as Dictionary
+	var retaliation := contract.get("retaliation_rules", {}) as Dictionary
+	var canonical_ids: Array[String] = []
+	for raw_identity in DataRepository.get_rival_ludi():
+		if raw_identity is Dictionary:
+			canonical_ids.append(str((raw_identity as Dictionary).get("id", "")))
+	var runtime_ids: Array[String] = []
+	for raw_rival in RivalManager.get_rivals():
+		if raw_rival is Dictionary:
+			runtime_ids.append(str((raw_rival as Dictionary).get("id", "")))
+	canonical_ids.sort()
+	runtime_ids.sort()
+	var ready := (
+		contract.get("status") == "frozen"
+		and contract.get("authority") == "monthly_rival_management_policy"
+		and contract.get("period") == "month"
+		and contract.get("process_frequency") == "exactly_once_per_month"
+		and contract.get("migration_mode") == "one_legacy_turn_equals_one_monthly_turn"
+		and contract.get("canonical_rival_identity_source") == "DataRepository.rival_ludi"
+		and int(contract.get("canonical_rival_count", 0)) == 7
+		and canonical_ids.size() == 7
+		and runtime_ids == canonical_ids
+		and contract.get("management_baseline_source") == "legacy_explicit_fallbacks"
+		and int(baseline.get("wealth", 0)) == 50
+		and int(baseline.get("security", 0)) == 50
+		and int(baseline.get("prestige", 0)) == 50
+		and int(baseline.get("relation", -1)) == 0
+		and int(baseline.get("suspicion", -1)) == 0
+		and int(contract.get("operation_count", 0)) == 5
+		and int(scout.get("intel_cost", -1)) == 0
+		and int(scout.get("denarii_cost", 0)) == 20
+		and int(scout.get("risk", 0)) == 12
+		and int(poison.get("intel_cost", 0)) == 20
+		and int(poison.get("denarii_cost", 0)) == 55
+		and int(poison.get("risk", 0)) == 42
+		and contract.get("player_initiated_operations_enabled") == true
+		and contract.get("operation_auto_tick_enabled") == false
+		and contract.get("monthly_retaliation_tick_enabled") == true
+		and contract.get("legacy_daily_scheduler_is_authority") == false
+		and contract.get("legacy_operation_execution_allowed") == false
+		and contract.get("legacy_retaliation_rng_allowed") == false
+		and contract.get("monthly_retaliation_rng_enabled") == true
+		and contract.get("management_gladiator_power_mutation_enabled") == true
+		and contract.get("gladiator_power_is_combat_v1_authority") == false
+		and contract.get("gt1_combat_snapshot_mutation_allowed") == false
+		and contract.get("gt1_standings_mutation_allowed") == false
+		and int(retaliation.get("relation_threshold", 0)) == -45
+		and is_equal_approx(float(retaliation.get("base_chance", 0.0)), 0.10)
+		and int(retaliation.get("denarii_loss_min", 0)) == 35
+		and int(retaliation.get("denarii_loss_max", 0)) == 110
+		and contract.get("invent_monthly_costs_allowed") == false
+		and contract.get("invent_monthly_risk_allowed") == false
+		and contract.get("invent_monthly_cadence_allowed") == false
+		and contract.get("proportional_legacy_scaling_allowed") == false
+		and contract.get("save_version_change_required") == false
+	)
+	if not ready:
+		blockers.append(
+			_blocker(
+				"monthly_rival_management",
+				"rivals",
+				"Canonical seven-Ludus management, authored operation balance, monthly retaliation or GT I isolation are incomplete.",
 				false
 			)
 		)
