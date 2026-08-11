@@ -40,7 +40,9 @@ func _ready() -> void:
 		"Every canonical rival Ludus must expose the three frozen Combat V1 archetypes"
 	)
 	var heavy_entry := repository.get_rival_combat_v1_snapshot("cassianus", "rival_heavy")
-	assert(not heavy_entry.is_empty(), "DataRepository must resolve a frozen rival fighter snapshot")
+	assert(
+		not heavy_entry.is_empty(), "DataRepository must resolve a frozen rival fighter snapshot"
+	)
 	var heavy := heavy_entry.get("fighter", {}) as Dictionary
 	assert(heavy.get("team") == "rival_team")
 	assert(float(heavy.get("stamina", 0.0)) == 10.0)
