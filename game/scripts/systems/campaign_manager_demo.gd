@@ -6,9 +6,7 @@ const MonthlyNonGTActivityPolicyScript = preload(
 	"res://scripts/systems/monthly_non_gt_activity_policy.gd"
 )
 const DemoFinalePolicyScript = preload("res://scripts/systems/demo_finale_policy.gd")
-const GT1RivalResultsProviderScript = preload(
-	"res://scripts/combat/gt1_rival_results_provider.gd"
-)
+const GT1RivalResultsProviderScript = preload("res://scripts/combat/gt1_rival_results_provider.gd")
 
 var failed_objectives: Array[String] = []
 var _non_gt_activity_policy = MonthlyNonGTActivityPolicyScript.new()
