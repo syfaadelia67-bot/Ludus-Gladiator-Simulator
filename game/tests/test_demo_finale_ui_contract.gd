@@ -20,7 +20,9 @@ func run() -> void:
 	assert(result_presenter.contains('finale.get("medal", "")'))
 	assert(result_presenter.contains('summary.get("grand_tournament", {})'))
 	assert(result_presenter.contains("GameState.get_month()"))
-	assert(result_presenter.contains('summary.get("final_month", CampaignManager.DEMO_FINAL_MONTH)'))
+	assert(
+		result_presenter.contains('summary.get("final_month", CampaignManager.DEMO_FINAL_MONTH)')
+	)
 	assert(not result_presenter.contains("GameState.get_week()"))
 	assert(not result_presenter.contains('summary.get("final_week", 16)'))
 	assert(result_presenter.contains("CAMPAIGN_RESULT_READ_ONLY_BUTTON"))
