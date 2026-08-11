@@ -35,10 +35,13 @@ func _test_runtime_contract() -> void:
 
 func _test_month_13_request_bridge() -> void:
 	var runtime = CombatV1ArenaRuntimeScript.new()
-	var request := runtime.prepare_month_13_request(
-		"player",
-		"alpha",
-		[_fighter("rival_1", "beta"), _fighter("rival_2", "beta"), _fighter("rival_3", "beta")],
+	var request := (
+		runtime
+		. prepare_month_13_request(
+			"player",
+			"alpha",
+			[_fighter("rival_1", "beta"), _fighter("rival_2", "beta"), _fighter("rival_3", "beta")],
+		)
 	)
 	assert(request.get("status") == "ready")
 	assert(request.get("player_ids_by_bout") == [["player"], ["player"], ["player"]])
@@ -49,10 +52,13 @@ func _test_month_13_request_bridge() -> void:
 
 func _test_month_16_request_bridge() -> void:
 	var runtime = CombatV1ArenaRuntimeScript.new()
-	var request := runtime.prepare_month_16_human_request(
-		["player_1", "player_2", "player_3"],
-		"alpha",
-		[_fighter("rival_1", "beta"), _fighter("rival_2", "beta"), _fighter("rival_3", "beta")],
+	var request := (
+		runtime
+		. prepare_month_16_human_request(
+			["player_1", "player_2", "player_3"],
+			"alpha",
+			[_fighter("rival_1", "beta"), _fighter("rival_2", "beta"), _fighter("rival_3", "beta")],
+		)
 	)
 	assert(request.get("status") == "ready")
 	assert(request.get("player_ids_by_bout") == [["player_1"], ["player_2"], ["player_3"]])
@@ -82,14 +88,17 @@ func _test_month_16_beast_request_bridge() -> void:
 
 func _test_month_20_request_bridge() -> void:
 	var runtime = CombatV1ArenaRuntimeScript.new()
-	var request := runtime.prepare_month_20_request(
-		[["p1", "p2"], ["p1", "p3"], ["p1", "p3"]],
-		"alpha",
-		[
-			[_fighter("r1a", "beta"), _fighter("r1b", "beta")],
-			[_fighter("r2a", "beta"), _fighter("r2b", "beta")],
-			[_fighter("r3a", "beta"), _fighter("r3b", "beta")],
-		],
+	var request := (
+		runtime
+		. prepare_month_20_request(
+			[["p1", "p2"], ["p1", "p3"], ["p1", "p3"]],
+			"alpha",
+			[
+				[_fighter("r1a", "beta"), _fighter("r1b", "beta")],
+				[_fighter("r2a", "beta"), _fighter("r2b", "beta")],
+				[_fighter("r3a", "beta"), _fighter("r3b", "beta")],
+			],
+		)
 	)
 	assert(request.get("status") == "ready")
 	assert(request.get("format") == "2v2")
@@ -105,7 +114,9 @@ func _test_player_intent_requires_explicit_target() -> void:
 	assert(rejected.get("status") == "rejected")
 	var ready := runtime.build_player_intents(_session(), "light", {"player": "rival"})
 	assert(ready.get("status") == "ready")
-	var desired := (ready.get("player_intents_by_actor", {}) as Dictionary).get("player", {}) as Dictionary
+	var desired := (
+		(ready.get("player_intents_by_actor", {}) as Dictionary).get("player", {}) as Dictionary
+	)
 	assert(desired.get("action_id") == "light")
 	assert(desired.get("target_id") == "rival")
 
@@ -125,7 +136,11 @@ func _session() -> Dictionary:
 		"status": "combat_running",
 		"month": 13,
 		"player_team_id": "alpha",
-		"active_loop": {"state": {"format": "1v1", "fighters": [_fighter("player", "alpha"), _fighter("rival", "beta")]}}
+		"active_loop":
+		{
+			"state":
+			{"format": "1v1", "fighters": [_fighter("player", "alpha"), _fighter("rival", "beta")]}
+		}
 	}
 
 
