@@ -47,7 +47,15 @@ func _run() -> void:
 	assert(roster_contract.contains("human_gladiators_only_until_beast_readiness"))
 	assert(beast_contract.contains('"month_16_allows_beasts": true'))
 	assert(beast_contract.contains('"fallback_to_human_stats_allowed": false'))
-	assert(rival_catalog.strip_edges() == "[]")
+	_assert_canonical_rival_catalog(rival_catalog)
 
 	print("GT I Month XVI Arena host contract: OK")
 	get_tree().quit(0)
+
+
+func _assert_canonical_rival_catalog(rival_catalog: String) -> void:
+	assert(rival_catalog.strip_edges() != "[]")
+	assert(rival_catalog.contains('"rival_ludus_id": "cassianus"'))
+	assert(rival_catalog.contains('"id": "rival_heavy"'))
+	assert(rival_catalog.contains('"id": "rival_agile"'))
+	assert(rival_catalog.contains('"id": "rival_technical"'))
