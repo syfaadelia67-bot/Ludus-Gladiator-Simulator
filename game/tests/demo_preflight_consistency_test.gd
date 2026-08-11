@@ -108,28 +108,35 @@ func _assert_equipment_compatibility() -> void:
 
 func _assert_migration_contracts() -> void:
 	assert(
-		GladiatorProgressionManager.canonical_tactical_condition("target_defending")
-		== "target_guarding"
+		(
+			GladiatorProgressionManager.canonical_tactical_condition("target_defending")
+			== "target_guarding"
+		)
 	)
 	assert(
-		GladiatorProgressionManager.canonical_tactical_condition("after_dodge_or_block")
-		== "after_defense"
+		(
+			GladiatorProgressionManager.canonical_tactical_condition("after_dodge_or_block")
+			== "after_defense"
+		)
 	)
 	assert(GladiatorProgressionManager.canonical_tactical_condition("unknown") == "always")
 
 
 func _assert_save_contract() -> void:
 	assert(SaveManager.SAVE_VERSION == 14)
-	var person = PersonScript.new(
-		{
-			"id": "preflight_person",
-			"name": "Preflight",
-			"role": "gladiator",
-			"technique": 7,
-			"health": 65,
-			"traits": ["arena_lover", "protector", "dreamer"],
-			"applied_trait_effects": ["dreamer"],
-		}
+	var person = (
+		PersonScript
+		. new(
+			{
+				"id": "preflight_person",
+				"name": "Preflight",
+				"role": "gladiator",
+				"technique": 7,
+				"health": 65,
+				"traits": ["arena_lover", "protector", "dreamer"],
+				"applied_trait_effects": ["dreamer"],
+			}
+		)
 	)
 	var serialized: Dictionary = SaveManager._serialize_person(person)
 	assert(int(serialized.get("technique", 0)) == 7)
