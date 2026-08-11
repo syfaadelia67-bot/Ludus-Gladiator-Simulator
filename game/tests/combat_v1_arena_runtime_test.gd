@@ -86,11 +86,14 @@ func _test_month_16_request_bridge() -> void:
 
 func _test_month_16_beast_request_bridge() -> void:
 	var runtime = CombatV1ArenaRuntimeScript.new()
-	var request: Dictionary = runtime.prepare_month_16_beast_request(
-		["player_1", "player_2", "player_3"],
-		"alpha",
-		["boar", "lion", "bear"],
-		"beasts",
+	var request: Dictionary = (
+		runtime
+		. prepare_month_16_beast_request(
+			["player_1", "player_2", "player_3"],
+			"alpha",
+			["boar", "lion", "bear"],
+			"beasts",
+		)
 	)
 	assert(request.get("status") == "ready")
 	var bouts := request.get("opponent_fighters_by_bout", []) as Array
@@ -151,7 +154,9 @@ func _test_defensive_action_needs_no_target() -> void:
 	var runtime = CombatV1ArenaRuntimeScript.new()
 	var ready: Dictionary = runtime.build_player_intents(_session(), "block")
 	assert(ready.get("status") == "ready")
-	var desired := (ready.get("player_intents_by_actor", {}) as Dictionary).get("player", {}) as Dictionary
+	var desired := (
+		(ready.get("player_intents_by_actor", {}) as Dictionary).get("player", {}) as Dictionary
+	)
 	assert(desired.get("action_id") == "block")
 	assert(str(desired.get("target_id", "")).is_empty())
 	assert(runtime.get_active_enemy_ids(_session()) == ["rival"])
