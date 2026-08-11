@@ -103,13 +103,18 @@ func _build_report(blockers: Array[Dictionary]) -> Dictionary:
 	var design_blocked_count := 0
 	var implementation_blocked_count := 0
 	for blocker in blockers:
-		lines.append(
-			"%s · %s · %s"
-			% [
-				str(blocker.get("code", "")),
-				str(blocker.get("category", "")),
-				str(blocker.get("reason", "")),
-			]
+		(
+			lines
+			. append(
+				(
+					"%s · %s · %s"
+					% [
+						str(blocker.get("code", "")),
+						str(blocker.get("category", "")),
+						str(blocker.get("reason", "")),
+					]
+				)
+			)
 		)
 		if bool(blocker.get("design_blocked", false)):
 			design_blocked_count += 1
