@@ -49,9 +49,13 @@ func _assert_report(readiness, snapshot: Dictionary) -> void:
 	assert(report.get("final_assets_allowed") == false)
 	assert(int(report.get("blocker_count", -1)) == int(snapshot.get("blocker_count", -2)))
 	assert(
-		int(report.get("design_blocked_count", 0))
-		+ int(report.get("implementation_blocked_count", 0))
-		== int(report.get("blocker_count", -1))
+		(
+			(
+				int(report.get("design_blocked_count", 0))
+				+ int(report.get("implementation_blocked_count", 0))
+			)
+			== int(report.get("blocker_count", -1))
+		)
 	)
 	var lines := report.get("lines", []) as Array
 	var unresolved := report.get("unresolved_blockers", []) as Array
