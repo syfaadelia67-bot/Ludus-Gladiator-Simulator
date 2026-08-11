@@ -18,72 +18,62 @@ func run() -> void:
 	CampaignManager.campaign_over = false
 	EstateManager.levels["infirmary"] = 1
 
-	var fighter: LudusPerson = (
-		PERSON_SCRIPT
-		. new(
-			{
-				"id": "medical_test_fighter",
-				"name": "Paciente",
-				"role": "gladiator",
-				"origin": "Hispania",
-				"strength": 6,
-				"agility": 6,
-				"endurance": 6,
-				"intelligence": 5,
-				"technique": 5,
-				"health": 50,
-				"traits": [],
-			}
-		)
+	var fighter: LudusPerson = PERSON_SCRIPT.new(
+		{
+			"id": "medical_test_fighter",
+			"name": "Paciente",
+			"role": "gladiator",
+			"origin": "Hispania",
+			"strength": 6,
+			"agility": 6,
+			"endurance": 6,
+			"intelligence": 5,
+			"technique": 5,
+			"health": 50,
+			"traits": [],
+		}
 	)
 	fighter.apply_injury("Fractura de costillas", 3, 4)
 	RosterManager.people.append(fighter)
-	var record := GladiatorProgressionManager.ensure_record(fighter.id)
-	record["active_injury"] = {
-		"name": fighter.injury_name,
-		"severity": fighter.injury_severity,
-		"started_week": GameState.get_month(),
-		"recovery_weeks": fighter.injury_days,
-		"event_name": "Prueba médica",
-	}
+	assert(GladiatorInjuryController.register_existing_injury(fighter.id, "Prueba médica"))
 
 	var basic := GladiatorMedicalCareController.get_treatment("basic", fighter.id)
-	_assert(basic.get("balance_ready") == false, "Tratamientos deben declarar balance pendiente.")
-	_assert(int(basic.get("cost", -1)) == 0, "No debe exponerse un costo mensual no congelado.")
+	_assert(basic.get("balance_ready") == true, "Tratamientos deben declarar balance congelado.")
+	_assert(int(basic.get("cost", 0)) > 0, "El tratamiento debe exponer su costo authored.")
 	_assert(
-		int(basic.get("recovery_months", -1)) == 0,
-		"No debe exponerse reducción mensual no congelada.",
+		int(basic.get("recovery_months", 0)) == 1,
+		"Atención básica debe reducir un mes de recuperación.",
 	)
 	_assert(
-		not GladiatorMedicalCareController.can_purchase_treatment(fighter.id, "basic"),
-		"Tratamientos pagados deben quedar bloqueados hasta congelar balance mensual.",
+		GladiatorMedicalCareController.can_purchase_treatment(fighter.id, "basic"),
+		"Un gladiador lesionado con fondos e Enfermería debe poder tratarse.",
 	)
 	var denarii_before := GameState.denarii
+	var treatment_cost := int(basic.get("cost", 0))
 	_assert(
-		not GladiatorMedicalCareController.purchase_treatment(fighter.id, "basic"),
-		"La compra debe fallar cerrado mientras el balance mensual esté pendiente.",
+		GladiatorMedicalCareController.purchase_treatment(fighter.id, "basic"),
+		"La compra mensual de tratamiento debe resolverse.",
 	)
-	_assert(fighter.injury_days == 4, "El tratamiento bloqueado no puede reducir recuperación.")
+	_assert(fighter.injury_days == 3, "El tratamiento básico debe reducir un mes.")
+	_assert(GameState.denarii == denarii_before - treatment_cost, "Debe cobrar el costo calculado.")
 	_assert(
-		GameState.denarii == denarii_before, "El tratamiento bloqueado no puede cobrar denarios."
+		not GladiatorMedicalCareController.can_purchase_treatment(fighter.id, "basic"),
+		"No puede comprarse un segundo tratamiento para el mismo gladiador en el mismo mes.",
+	)
+	_assert(
+		GladiatorMedicalCareController.get_treatment_history(fighter.id).size() == 1,
+		"La compra debe persistir en el historial médico.",
 	)
 
 	_assert(
 		GladiatorMedicalCareController.set_priority(fighter.id),
-		"La prioridad puede registrarse como estado de planificación.",
+		"Un gladiador lesionado puede recibir prioridad médica.",
 	)
+	var before_priority := fighter.injury_days
+	GladiatorMedicalCareController.process_month(GameState.get_month() + 1)
 	_assert(
-		GladiatorMedicalCareController.is_priority(fighter.id),
-		"La prioridad registrada debe persistir sin efecto numérico.",
-	)
-	GladiatorMedicalCareController.process_week(GameState.get_month() + 1)
-	_assert(
-		fighter.injury_days == 4,
-		"El adaptador semanal médico no puede crear recuperación oculta.",
-	)
-	_assert(
-		GladiatorMedicalCareController.get_treatment_history(fighter.id).is_empty(),
-		"No debe registrarse tratamiento si no hubo compra canónica.",
+		fighter.injury_days < before_priority,
+		"La prioridad de Enfermería debe aplicar su reducción authored una vez por tick invocado.",
 	)
 
 	var source := FileAccess.get_file_as_string(
@@ -99,7 +89,7 @@ func run() -> void:
 	)
 	_assert(
 		source.contains("INJURY_TREATMENT_ENABLED"),
-		"Atención médica debe respetar la política mensual fail-closed.",
+		"Atención médica debe respetar la política mensual congelada.",
 	)
 
 	RosterManager.people = previous_people
