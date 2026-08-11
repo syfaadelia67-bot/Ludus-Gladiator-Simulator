@@ -65,13 +65,14 @@ func get_contract() -> Dictionary:
 	return {
 		"status": "frozen",
 		"month_13": "same_single_gladiator_all_three_bouts",
-		"month_16_frozen_design": "one_available_gladiator_or_beast_per_independent_bout",
-		"month_16_current_selection": "human_gladiators_only_until_beast_readiness",
+		"month_16_frozen_design": "one_available_gladiator_per_independent_bout_against_human_or_beast",
+		"month_16_current_selection": "human_or_canonical_beast_opponents",
 		"month_16_beast_readiness": "gt1_beast_readiness_contract",
+		"month_16_beast_adapter": "combat_beast_fighter_adapter",
 		"month_20": "same_pair_with_at_most_one_single_fighter_substitution",
 		"selection_source": "available_player_gladiator_ids",
-		"beast_data_source": "explicit_injected_canonical_beast_data",
-		"combat_stats_authority": "separate_combat_roster_adapter",
+		"beast_data_source": "DataRepository.beasts",
+		"combat_stats_authority": "separate_combat_fighter_adapters",
 		"invent_beast_stats_allowed": false,
 	}
 
