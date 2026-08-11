@@ -61,7 +61,10 @@ func evaluate(system_id: String) -> Dictionary:
 
 	match normalized:
 		"mercado":
-			if MarketManager.get_offers().is_empty() and MarketManager.get_equipment_offers().is_empty():
+			if (
+				MarketManager.get_offers().is_empty()
+				and MarketManager.get_equipment_offers().is_empty()
+			):
 				return _state("empty", "UI_STATE_LABEL_EMPTY", "UI_STATE_EMPTY_MARKET")
 		"bestias":
 			if EstateManager.is_locked("beast_area"):
