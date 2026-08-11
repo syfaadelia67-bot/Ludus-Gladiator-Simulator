@@ -4,9 +4,11 @@ const CombatV1ArenaRuntimeScript = preload("res://scripts/ui/combat_v1_arena_run
 
 
 func run() -> void:
+	DataRepository.load_all()
 	_test_runtime_contract()
 	_test_month_13_request_bridge()
 	_test_month_16_request_bridge()
+	_test_month_16_beast_request_bridge()
 	_test_month_20_request_bridge()
 	_test_player_intent_requires_explicit_target()
 	_test_defensive_action_needs_no_target()
@@ -24,6 +26,8 @@ func _test_runtime_contract() -> void:
 	assert(contract.get("month_20_host") == "gt1_month_20_host")
 	assert(contract.get("combat_authority") == "combat_simulator")
 	assert(contract.get("scoring_authority") == "tournament_manager")
+	assert(contract.get("human_opponent_selection_authority") == "external_explicit_snapshots")
+	assert(contract.get("month_16_beast_selection_authority") == "combat_beast_fighter_adapter")
 	assert(contract.get("default_player_action_allowed") == false)
 	assert(contract.get("default_target_allowed") == false)
 	assert(contract.get("legacy_combat_manager_allowed") == false)
@@ -70,12 +74,33 @@ func _test_month_16_request_bridge() -> void:
 	assert(request.get("carryover") == [])
 	assert(request.get("independent_bouts") == true)
 	assert(request.get("beasts_allowed_by_design") == true)
-	assert(request.get("beast_selection_ready") == false)
+	assert(request.get("beast_selection_ready") == true)
 	assert(int(request.get("max_points", 0)) == 9)
 	var readiness: Dictionary = runtime.get_month_16_beast_readiness()
 	assert(readiness.get("month") == 16)
-	assert(readiness.get("beast_selection_ready") == false)
+	assert(readiness.get("beast_selection_ready") == true)
+	assert(readiness.get("canonical_beast_stats_ready") == true)
+	assert(readiness.get("runtime_beast_adapter_ready") == true)
 	assert(readiness.get("invent_stats_allowed") == false)
+
+
+func _test_month_16_beast_request_bridge() -> void:
+	var runtime = CombatV1ArenaRuntimeScript.new()
+	var request: Dictionary = runtime.prepare_month_16_beast_request(
+		["player_1", "player_2", "player_3"],
+		"alpha",
+		["boar", "lion", "bear"],
+		"beasts",
+	)
+	assert(request.get("status") == "ready")
+	var bouts := request.get("opponent_fighters_by_bout", []) as Array
+	assert(bouts.size() == 3)
+	for index in range(bouts.size()):
+		var beast := ((bouts[index] as Array)[0]) as Dictionary
+		assert(beast.get("entity_type") == "beast")
+		assert(beast.get("team") == "beasts")
+		assert(beast.get("can_block") == false)
+		assert(beast.get("can_parry") == false)
 
 
 func _test_month_20_request_bridge() -> void:
