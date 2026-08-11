@@ -3,6 +3,9 @@ extends RefCounted
 const GT1BeastReadinessContractScript = preload(
 	"res://scripts/combat/gt1_beast_readiness_contract.gd"
 )
+const GT1RivalRosterReadinessContractScript = preload(
+	"res://scripts/combat/gt1_rival_roster_readiness_contract.gd"
+)
 
 const PENDING_AUTHORITY_BOUNDARIES := {
 	"monthly_economy_runtime":
@@ -28,10 +31,10 @@ const PENDING_AUTHORITY_BOUNDARIES := {
 	),
 	"playable_combat_v1_ui":
 	(
-		"Combat V1 Arena and the Month XIII/XVI/XX hosts are canonical. GT I still fails closed "
-		+ "without rival snapshots, and XVI beast selection stays blocked until canonical beast "
-		+ "stats and its runtime adapter are ready. Final player-facing series setup still needs "
-		+ "to consume those canonical sources without placeholder opponent data."
+		"Combat V1 Arena and the Month XIII/XVI/XX hosts are canonical, and the three-profile "
+		+ "rival roster is frozen for all seven Ludi. XVI beast selection stays blocked until "
+		+ "canonical beast stats and its runtime adapter are ready. Final player-facing series "
+		+ "setup still needs to consume the canonical rival/beast sources without placeholders."
 	),
 	"gt1_rival_results_provider":
 	"GT I rival standings still require explicit external results without a campaign-owned provider.",
@@ -134,7 +137,12 @@ func _build_report(blockers: Array[Dictionary]) -> Dictionary:
 
 
 func _append_rival_snapshot_blocker(blockers: Array[Dictionary]) -> void:
-	if not DataRepository.get_rival_combat_v1_snapshots().is_empty():
+	var readiness := (
+		GT1RivalRosterReadinessContractScript.new().evaluate(
+			DataRepository.get_rival_combat_v1_snapshots()
+		)
+	)
+	if readiness.get("ready") == true:
 		return
 	(
 		blockers
@@ -142,7 +150,10 @@ func _append_rival_snapshot_blocker(blockers: Array[Dictionary]) -> void:
 			_blocker(
 				"rival_combat_v1_snapshots_missing",
 				"gt1_rivals",
-				"Canonical rival gladiator Combat V1 snapshots are not frozen yet.",
+				(
+					"Canonical rival Combat V1 roster coverage is incomplete or does not match the "
+					+ "three frozen demo archetypes for all seven Ludi."
+				),
 				true,
 			)
 		)
