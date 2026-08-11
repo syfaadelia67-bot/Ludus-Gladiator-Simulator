@@ -11,7 +11,7 @@ func _ready() -> void:
 	assert(snapshot.get("ready") == false)
 	assert(snapshot.get("final_assets_allowed") == false)
 	assert(snapshot.get("programming_complete_allowed") == false)
-	assert(int(snapshot.get("blocker_count", 0)) == 7)
+	assert(int(snapshot.get("blocker_count", 0)) == 6)
 	var codes := readiness.get_blocker_codes()
 	_assert_known_blockers(codes)
 	_assert_report(readiness, snapshot)
@@ -27,7 +27,7 @@ func _assert_known_blockers(codes: Array[String]) -> void:
 	assert(not codes.has("building_upgrade_cost_pending:mine"))
 	assert(not codes.has("canonical_skill_mechanics_not_frozen"))
 	assert(not codes.has("canonical_skill_progression_reconciliation"))
-	assert(codes.has("monthly_economy_runtime"))
+	assert(not codes.has("monthly_economy_runtime"))
 	assert(codes.has("monthly_market_cadence"))
 	assert(codes.has("monthly_roster_work_recovery"))
 	assert(codes.has("monthly_event_cadence"))
@@ -48,7 +48,11 @@ func _assert_report(readiness, snapshot: Dictionary) -> void:
 	assert(report.get("programming_complete_allowed") == false)
 	assert(report.get("final_assets_allowed") == false)
 	assert(int(report.get("blocker_count", -1)) == int(snapshot.get("blocker_count", -2)))
-	assert(int(report.get("design_blocked_count", 0)) + int(report.get("implementation_blocked_count", 0)) == int(report.get("blocker_count", -1)))
+	assert(
+		int(report.get("design_blocked_count", 0))
+		+ int(report.get("implementation_blocked_count", 0))
+		== int(report.get("blocker_count", -1))
+	)
 	var lines := report.get("lines", []) as Array
 	var unresolved := report.get("unresolved_blockers", []) as Array
 	assert(lines.size() == int(report.get("blocker_count", -1)))
@@ -72,6 +76,7 @@ func _assert_contract(contract: Dictionary) -> void:
 	assert(contract.get("invent_missing_balance_allowed") == false)
 	assert(contract.get("skill_mechanics_source_fail_closed") == true)
 	assert(contract.get("skill_runtime_quality_gate") == "combat_skill_runtime_resolver_contract")
+	assert(contract.get("monthly_economy_quality_gate") == "economy_manager_monthly_runtime_contract")
 	assert(contract.get("gt1_rival_results_provider_quality_gate") == "campaign_owned_contract")
 	assert(contract.get("month_20_end_to_end_quality_gate") == "automated_test")
 	assert(contract.get("save_version_change_required") == false)
