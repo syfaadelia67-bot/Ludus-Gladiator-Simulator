@@ -31,8 +31,12 @@ func _test_runtime_contract() -> void:
 	assert(contract.get("month_20_host") == "gt1_month_20_host")
 	assert(contract.get("combat_authority") == "combat_simulator")
 	assert(contract.get("scoring_authority") == "tournament_manager")
-	assert(contract.get("human_opponent_selection_authority") == "gt1_rival_combat_snapshot_provider")
-	assert(contract.get("player_facing_rival_catalog") == "DataRepository.rival_combat_v1_snapshots")
+	assert(
+		contract.get("human_opponent_selection_authority") == "gt1_rival_combat_snapshot_provider"
+	)
+	assert(
+		contract.get("player_facing_rival_catalog") == "DataRepository.rival_combat_v1_snapshots"
+	)
 	assert(contract.get("player_facing_rival_ludi") == "DataRepository.rival_ludi")
 	assert(contract.get("canonical_rival_team_id") == "rival_team")
 	assert(contract.get("low_level_explicit_snapshot_bridge_retained") == true)
@@ -77,11 +81,14 @@ func _test_player_facing_catalog() -> void:
 
 func _test_month_13_catalog_request_bridge() -> void:
 	var runtime = CombatV1ArenaRuntimeScript.new()
-	var request := runtime.prepare_month_13_catalog_request(
-		"player",
-		"alpha",
-		"cassianus",
-		["rival_heavy", "rival_agile", "rival_technical"],
+	var request := (
+		runtime
+		. prepare_month_13_catalog_request(
+			"player",
+			"alpha",
+			"cassianus",
+			["rival_heavy", "rival_agile", "rival_technical"],
+		)
 	)
 	assert(request.get("status") == "ready")
 	assert(request.get("player_ids_by_bout") == [["player"], ["player"], ["player"]])
@@ -94,11 +101,14 @@ func _test_month_13_catalog_request_bridge() -> void:
 
 func _test_month_16_catalog_request_bridge() -> void:
 	var runtime = CombatV1ArenaRuntimeScript.new()
-	var request := runtime.prepare_month_16_catalog_human_request(
-		["p1", "p2", "p3"],
-		"alpha",
-		"flavianus",
-		["rival_technical", "rival_heavy", "rival_agile"],
+	var request := (
+		runtime
+		. prepare_month_16_catalog_human_request(
+			["p1", "p2", "p3"],
+			"alpha",
+			"flavianus",
+			["rival_technical", "rival_heavy", "rival_agile"],
+		)
 	)
 	assert(request.get("status") == "ready")
 	assert(request.get("player_ids_by_bout") == [["p1"], ["p2"], ["p3"]])
@@ -108,15 +118,18 @@ func _test_month_16_catalog_request_bridge() -> void:
 
 func _test_month_20_catalog_request_bridge() -> void:
 	var runtime = CombatV1ArenaRuntimeScript.new()
-	var request := runtime.prepare_month_20_catalog_request(
-		[["p1", "p2"], ["p1", "p3"], ["p1", "p3"]],
-		"alpha",
-		"drusus",
-		[
-			["rival_heavy", "rival_agile"],
-			["rival_heavy", "rival_technical"],
-			["rival_agile", "rival_technical"],
-		],
+	var request := (
+		runtime
+		. prepare_month_20_catalog_request(
+			[["p1", "p2"], ["p1", "p3"], ["p1", "p3"]],
+			"alpha",
+			"drusus",
+			[
+				["rival_heavy", "rival_agile"],
+				["rival_heavy", "rival_technical"],
+				["rival_agile", "rival_technical"],
+			],
+		)
 	)
 	assert(request.get("status") == "ready")
 	assert(request.get("format") == "2v2")
@@ -135,11 +148,14 @@ func _test_missing_catalog_selection_fails_closed() -> void:
 	)
 	assert(missing.get("status") == "rejected")
 	assert(missing.get("generated_opponents_allowed") == false)
-	var unknown := runtime.prepare_month_16_catalog_human_request(
-		["p1", "p2", "p3"],
-		"alpha",
-		"unknown_ludus",
-		["rival_heavy", "rival_agile", "rival_technical"],
+	var unknown := (
+		runtime
+		. prepare_month_16_catalog_human_request(
+			["p1", "p2", "p3"],
+			"alpha",
+			"unknown_ludus",
+			["rival_heavy", "rival_agile", "rival_technical"],
+		)
 	)
 	assert(unknown.get("status") == "rejected")
 	assert(unknown.get("generated_opponents_allowed") == false)
