@@ -1,8 +1,6 @@
 extends Node
 
-const FunctionalUiStatePolicyScript = preload(
-	"res://scripts/ui/demo_functional_ui_state_policy.gd"
-)
+const FunctionalUiStatePolicyScript = preload("res://scripts/ui/demo_functional_ui_state_policy.gd")
 const SCREEN_HOST_PATH := "Margin/VBox/ScreenHost"
 const BANNER_NAME := "FunctionalStateBanner"
 
@@ -21,7 +19,9 @@ func _ready() -> void:
 	MarketManager.equipment_market_changed.connect(_refresh_current_state)
 	OwnedBeastRegistry.owned_beasts_changed.connect(_refresh_current_state)
 	TournamentManager.calendar_changed.connect(_refresh_current_state)
-	TournamentManager.grand_tournament_changed.connect(func(_summary: Dictionary): _refresh_current_state())
+	TournamentManager.grand_tournament_changed.connect(
+		func(_summary: Dictionary): _refresh_current_state()
+	)
 	LocalizationManager.locale_changed.connect(func(_locale: String): _refresh_current_state())
 	SaveManager.load_completed.connect(func(_path: String): call_deferred("_refresh_current_state"))
 	call_deferred("_refresh_current_state")
