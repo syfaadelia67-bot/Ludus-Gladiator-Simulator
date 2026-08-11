@@ -22,14 +22,17 @@ func _ready() -> void:
 		func(_profile: Dictionary): call_deferred("_show_if_needed")
 	)
 	SaveManager.load_completed.connect(func(_path: String): call_deferred("_show_if_needed"))
-	UniqueGladiatorManager.first_gladiator_acquired.connect(
-		func(_gladiator_id: String): _mark_objective("initial_gladiator")
-	)
+	UniqueGladiatorManager.first_gladiator_acquired.connect(_on_first_gladiator_acquired)
 	GameState.month_advanced.connect(func(_month: int): _mark_objective("close_month"))
 	RosterManager.job_assignment_changed.connect(
 		func(_person_id: String, _job_id: String): _mark_objective("assign_work")
 	)
 	FincaHubController.system_opened.connect(_on_system_opened)
+	call_deferred("_show_if_needed")
+
+
+func _on_first_gladiator_acquired(_gladiator_id: String) -> void:
+	_mark_objective("initial_gladiator")
 	call_deferred("_show_if_needed")
 
 
