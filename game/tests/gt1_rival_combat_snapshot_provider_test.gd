@@ -9,7 +9,8 @@ const GT1RivalCombatSnapshotProviderScript = preload(
 
 
 func _ready() -> void:
-	_test_empty_canonical_catalog_fails_closed()
+	_test_empty_entry_source_fails_closed()
+	_test_canonical_catalog_is_populated_and_resolvable()
 	_test_explicit_entry_is_validated_and_copied()
 	_test_explicit_fighter_selection_is_required()
 	_test_team_mismatch_is_rejected()
@@ -19,13 +20,26 @@ func _ready() -> void:
 	get_tree().quit(0)
 
 
-func _test_empty_canonical_catalog_fails_closed() -> void:
+func _test_empty_entry_source_fails_closed() -> void:
 	var provider = GT1RivalCombatSnapshotProviderScript.new()
-	var result := provider.get_snapshot("cassianus", "rival_glad", "beta")
+	var result := provider.get_snapshot_from_entries([], "cassianus", "rival_heavy", "rival_team")
 	assert(result.get("status") == "rejected")
 	assert(result.get("reason") == "rival_combat_snapshot_unavailable")
 	assert(result.get("generated_snapshot") == false)
 	assert(result.get("snapshot_source") == "res://data/rival_combat_v1_snapshots.json")
+
+
+func _test_canonical_catalog_is_populated_and_resolvable() -> void:
+	DataRepository.load_all()
+	var provider = GT1RivalCombatSnapshotProviderScript.new()
+	var result := provider.get_snapshot("cassianus", "rival_heavy", "rival_team")
+	assert(result.get("status") == "ready")
+	assert(result.get("fighter_id") == "rival_heavy")
+	assert(result.get("rival_ludus_id") == "cassianus")
+	var fighter := result.get("fighter_snapshot", {}) as Dictionary
+	assert(fighter.get("team") == "rival_team")
+	assert(fighter.get("stats") == {"FUE": 9, "AGI": 5, "TEC": 5, "RES": 5, "PV": 62})
+	assert(float(fighter.get("stamina", 0.0)) == 10.0)
 
 
 func _test_explicit_entry_is_validated_and_copied() -> void:
