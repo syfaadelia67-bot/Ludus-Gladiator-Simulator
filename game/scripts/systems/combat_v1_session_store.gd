@@ -151,7 +151,9 @@ func get_contract() -> Dictionary:
 	}
 
 
-func _validate_gt1_session(session: Dictionary, require_tournament_consistency: bool) -> Array[String]:
+func _validate_gt1_session(
+	session: Dictionary, require_tournament_consistency: bool
+) -> Array[String]:
 	var errors: Array[String] = []
 	if str(session.get("status", "")) != "combat_running":
 		errors.append("Persisted GT I session must be combat_running")
@@ -181,7 +183,9 @@ func _validate_gt1_session(session: Dictionary, require_tournament_consistency: 
 		else:
 			errors.append_array(_combat_contract.validate_state(state_value as Dictionary))
 	if require_tournament_consistency and errors.is_empty():
-		var progress := TournamentManager.get_gt1_summary().get("encounter_progress", {}) as Dictionary
+		var progress := (
+			TournamentManager.get_gt1_summary().get("encounter_progress", {}) as Dictionary
+		)
 		if int(progress.get(str(month), -1)) != completed_bouts:
 			errors.append("Persisted GT I session conflicts with TournamentManager progress")
 	return errors
@@ -207,7 +211,10 @@ func _validate_tiebreak_session(session: Dictionary) -> Array[String]:
 				errors.append("Running championship tiebreak requires CombatState")
 			else:
 				errors.append_array(_combat_contract.validate_state(state_value as Dictionary))
-	elif str((session.get("standings_resolution", {}) as Dictionary).get("status", "")) != "rematch_required":
+	elif (
+		str((session.get("standings_resolution", {}) as Dictionary).get("status", ""))
+		!= "rematch_required"
+	):
 		errors.append("Championship rematch state requires rematch_required resolution")
 	return errors
 
@@ -227,7 +234,9 @@ func _recover_legacy_partial_gt1_if_needed() -> bool:
 	var recovery := TournamentManager.rollback_incomplete_gt1_encounter(GameState.get_month())
 	if str(recovery.get("status", "")) != "recovered":
 		var errors := _last_import_report.get("errors", []) as Array
-		errors.append(str(recovery.get("reason", "Unable to recover incomplete legacy GT I encounter")))
+		errors.append(
+			str(recovery.get("reason", "Unable to recover incomplete legacy GT I encounter"))
+		)
 		_last_import_report["errors"] = errors
 		return false
 	_last_import_report["status"] = "recovered"
