@@ -6,10 +6,14 @@ const MonthlyNonGTActivityPolicyScript = preload(
 	"res://scripts/systems/monthly_non_gt_activity_policy.gd"
 )
 const DemoFinalePolicyScript = preload("res://scripts/systems/demo_finale_policy.gd")
+const GT1RivalResultsProviderScript = preload(
+	"res://scripts/combat/gt1_rival_results_provider.gd"
+)
 
 var failed_objectives: Array[String] = []
 var _non_gt_activity_policy = MonthlyNonGTActivityPolicyScript.new()
 var _finale_policy = DemoFinalePolicyScript.new()
+var _gt1_rival_results_provider = GT1RivalResultsProviderScript.new()
 
 
 func _ready() -> void:
@@ -26,6 +30,20 @@ func _on_grand_tournament_changed(_summary: Dictionary) -> void:
 	_sync_approved_combat_progress()
 	evaluate_progress()
 	_evaluate_campaign_finale()
+
+
+func register_gt1_rival_results(results: Array) -> Dictionary:
+	var registration: Dictionary = _gt1_rival_results_provider.register_explicit_results(results)
+	if registration.get("status") != "registered":
+		return registration
+	_sync_approved_combat_progress()
+	evaluate_progress()
+	_evaluate_campaign_finale()
+	return registration
+
+
+func get_gt1_rival_results_provider_contract() -> Dictionary:
+	return _gt1_rival_results_provider.get_contract()
 
 
 func evaluate_progress() -> void:
@@ -117,6 +135,7 @@ func get_summary() -> Dictionary:
 	data["finale"] = _finale_policy.evaluate(
 		GameState.get_month(), TournamentManager.get_gt1_summary()
 	)
+	data["gt1_rival_results_provider"] = get_gt1_rival_results_provider_contract()
 	return data
 
 
