@@ -137,10 +137,8 @@ func _build_report(blockers: Array[Dictionary]) -> Dictionary:
 
 
 func _append_rival_snapshot_blocker(blockers: Array[Dictionary]) -> void:
-	var readiness := (
-		GT1RivalRosterReadinessContractScript.new().evaluate(
-			DataRepository.get_rival_combat_v1_snapshots()
-		)
+	var readiness := GT1RivalRosterReadinessContractScript.new().evaluate(
+		DataRepository.get_rival_combat_v1_snapshots()
 	)
 	if readiness.get("ready") == true:
 		return
