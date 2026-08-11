@@ -15,7 +15,7 @@ const DEMO_BUILDING_CONTRACTS := {
 	"dominus_house": {"name": "Casa del Dominus", "starting_level": 1, "base_cost": 240},
 	"forge": {"name": "Forja", "starting_level": 0, "base_cost": 320},
 	"infirmary": {"name": "Enfermería", "starting_level": 0, "base_cost": 280},
-	"mine": {"name": "Mina", "starting_level": 0, "base_cost": 0},
+	"mine": {"name": "Mina", "starting_level": 0, "base_cost": 300},
 	"training_yard": {"name": "Patio de entrenamiento", "starting_level": 1, "base_cost": 260},
 }
 const REQUIRED_FULL_GAME_BUILDING_IDS: Array[String] = [
@@ -171,11 +171,8 @@ func _validate_buildings(entries: Variant, errors: Array[String]) -> void:
 				errors.append("Demo facility %s has non-canonical %s" % [building_id, field_name])
 		if int(entry.get("max_level", 0)) != 10:
 			errors.append("Demo facility %s must preserve full-game level X" % building_id)
-		if building_id == "mine":
-			if not bool(entry.get("upgrade_cost_pending", false)):
-				errors.append("Mine cost must remain pending until its frozen value is recovered")
-		elif bool(entry.get("upgrade_cost_pending", false)):
-			errors.append("Only Mine may have a pending demo facility cost")
+		if bool(entry.get("upgrade_cost_pending", false)):
+			errors.append("Demo facility %s must not keep a pending upgrade cost" % building_id)
 	for building_id in REQUIRED_FULL_GAME_BUILDING_IDS:
 		if not by_id.has(building_id):
 			errors.append("Missing required full-game facility: %s" % building_id)
@@ -204,7 +201,7 @@ func _validate_traits(entries: Variant, errors: Array[String]) -> void:
 			if not by_id.has(other_id):
 				errors.append(
 					"Trait %s references unknown incompatibility: %s" % [trait_id, other_id]
-				)
+			)
 			continue
 			var other: Dictionary = by_id[other_id]
 			if not other.get("incompatible_with", []).has(trait_id):
