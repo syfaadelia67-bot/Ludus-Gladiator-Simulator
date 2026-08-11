@@ -18,22 +18,28 @@ func _test_running_gt1_session_roundtrip_preserves_combat_state() -> void:
 	_reset_runtime()
 	GameState.day = 13
 	var runtime = GT1CombatRuntimeScript.new()
-	var session := runtime.start_encounter(
-		13,
-		"player_team",
-		[
-			_state_1v1("player", "r13_1"),
-			_state_1v1("player", "r13_2"),
-			_state_1v1("player", "r13_3"),
-		],
+	var session := (
+		runtime
+		. start_encounter(
+			13,
+			"player_team",
+			[
+				_state_1v1("player", "r13_1"),
+				_state_1v1("player", "r13_2"),
+				_state_1v1("player", "r13_3"),
+			],
+		)
 	)
 	assert(str(session.get("status", "")) == "combat_running")
-	session = runtime.advance_exchange(
-		session,
-		[
-			{"actor_id": "player", "action_id": "light", "target_id": "r13_1"},
-			{"actor_id": "r13_1", "action_id": "block"},
-		],
+	session = (
+		runtime
+		. advance_exchange(
+			session,
+			[
+				{"actor_id": "player", "action_id": "light", "target_id": "r13_1"},
+				{"actor_id": "r13_1", "action_id": "block"},
+			],
+		)
 	)
 	assert(int(session.get("completed_bouts", 0)) == 1)
 	assert(CombatV1SessionStore.set_gt1_session(session))
@@ -90,23 +96,26 @@ func _test_legacy_month_16_recovery_preserves_completed_month_13() -> void:
 func _test_legacy_recovery_fails_closed_on_history_mismatch() -> void:
 	_reset_runtime()
 	GameState.day = 13
-	TournamentManager.import_state(
-		{
-			"history":
-			[
-				{
-					"competition": "grand_tournament",
-					"month": 13,
-					"bout": 1,
-					"victory": true,
-					"points_gained": 3,
-				}
-			],
-			"gt1_player_points": 6,
-			"gt1_player_wins": 2,
-			"gt1_player_bouts": 2,
-			"gt1_encounter_progress": {"13": 2, "16": 0, "20": 0},
-		}
+	(
+		TournamentManager
+		. import_state(
+			{
+				"history":
+				[
+					{
+						"competition": "grand_tournament",
+						"month": 13,
+						"bout": 1,
+						"victory": true,
+						"points_gained": 3,
+					}
+				],
+				"gt1_player_points": 6,
+				"gt1_player_wins": 2,
+				"gt1_player_bouts": 2,
+				"gt1_encounter_progress": {"13": 2, "16": 0, "20": 0},
+			}
+		)
 	)
 	assert(not CombatV1SessionStore.import_state({}))
 	var summary := TournamentManager.get_gt1_summary()
@@ -118,12 +127,15 @@ func _test_legacy_recovery_fails_closed_on_history_mismatch() -> void:
 
 func _test_tiebreak_and_rematch_sessions_persist() -> void:
 	_reset_runtime()
-	TournamentManager.import_state(
-		{
-			"gt1_player_bouts": 9,
-			"gt1_tiebreak_required": true,
-			"gt1_encounter_progress": {"13": 3, "16": 3, "20": 3},
-		}
+	(
+		TournamentManager
+		. import_state(
+			{
+				"gt1_player_bouts": 9,
+				"gt1_tiebreak_required": true,
+				"gt1_encounter_progress": {"13": 3, "16": 3, "20": 3},
+			}
+		)
 	)
 	var loop := Combat1v1LoopScript.new().start(_state_1v1("player_tb", "rival_tb"))
 	var running := {
@@ -135,7 +147,12 @@ func _test_tiebreak_and_rematch_sessions_persist() -> void:
 	var exported := CombatV1SessionStore.export_state()
 	CombatV1SessionStore.clear_all()
 	assert(CombatV1SessionStore.import_state(exported))
-	assert(str(CombatV1SessionStore.get_tiebreak_session().get("status", "")) == "tiebreak_combat_running")
+	assert(
+		(
+			str(CombatV1SessionStore.get_tiebreak_session().get("status", ""))
+			== "tiebreak_combat_running"
+		)
+	)
 	var rematch := {
 		"status": "rematch_required",
 		"active_loop": {},
