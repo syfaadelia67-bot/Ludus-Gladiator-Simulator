@@ -182,11 +182,12 @@ jobs:
               git diff -- "${FILES[@]}"
               echo '```'
             } >> "$GITHUB_STEP_SUMMARY"
+            git diff --name-only -z --diff-filter=ACMR -- '*.gd' > gdformatted.bin
             mkdir -p gdformatted
             while IFS= read -r -d '' file; do
               mkdir -p "gdformatted/$(dirname "$file")"
               cp "$file" "gdformatted/$file"
-            done < changed-gdscript.bin
+            done < gdformatted.bin
             exit "$FORMAT_STATUS"
           fi
 
