@@ -21,7 +21,9 @@ func _ready() -> void:
 	var action_policy = CombatFighterActionPolicyScript.new()
 	var policy_contract = CombatPolicyContractScript.new()
 	var context_builder = CombatPolicyContextBuilderScript.new()
-	var beast := (adapter.build_from_beast_id("lion", "lion_1", "beasts").get("fighter", {}) as Dictionary)
+	var beast := (
+		adapter.build_from_beast_id("lion", "lion_1", "beasts").get("fighter", {}) as Dictionary
+	)
 	var human := _human("gladiator_1", "player")
 	var state := {"format": "1v1", "fighters": [human, beast]}
 
@@ -41,14 +43,20 @@ func _ready() -> void:
 	)
 	assert(_contains_error(parry_errors, "not allowed for actor lion_1"))
 	assert(
-		policy_contract.validate_desired_action(
-			state, {"actor_id": "lion_1", "action_id": "light", "target_id": "gladiator_1"}
-		).is_empty()
+		(
+			policy_contract
+			. validate_desired_action(
+				state, {"actor_id": "lion_1", "action_id": "light", "target_id": "gladiator_1"}
+			)
+			. is_empty()
+		)
 	)
 	assert(
-		policy_contract.validate_desired_action(
-			state, {"actor_id": "lion_1", "action_id": "dodge"}
-		).is_empty()
+		(
+			policy_contract
+			. validate_desired_action(state, {"actor_id": "lion_1", "action_id": "dodge"})
+			. is_empty()
+		)
 	)
 
 	var context_result: Dictionary = context_builder.build_context(state, "lion_1")
