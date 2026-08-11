@@ -10,6 +10,7 @@ const REMOVED_UI_ARTIFACTS := [
 func run() -> void:
 	var project := FileAccess.get_file_as_string("res://project.godot")
 	var arena := FileAccess.get_file_as_string("res://scripts/ui/arena_screen.gd")
+	var setup_runtime := FileAccess.get_file_as_string("res://scripts/ui/gt1_series_setup_runtime.gd")
 	var equipment_scene := FileAccess.get_file_as_string("res://scenes/EquipmentScreen.tscn")
 
 	for artifact_path in REMOVED_UI_ARTIFACTS:
@@ -21,10 +22,14 @@ func run() -> void:
 	assert(not project.contains("PlaceholderAssetIntegrator="))
 
 	assert(arena.contains("CombatV1ArenaRuntimeScript"))
+	assert(arena.contains("GT1SeriesSetupPanelScene"))
 	assert(arena.contains("_refresh_encounter_panel"))
-	assert(arena.contains("snapshot canónico explícito"))
+	assert(arena.contains("Elegí un Ludus y los perfiles Combat V1"))
 	assert(arena.contains("GameState.get_month()"))
+	assert(setup_runtime.contains("gt1_rival_combat_snapshot_provider"))
+	assert(setup_runtime.contains('"generated_opponents_allowed": false'))
 	assert(not arena.contains("CombatManager"))
+	assert(not setup_runtime.contains("CombatManager"))
 	assert(not arena.contains("FINAL_WEEK"))
 	assert(not arena.contains("Margin/VBox/Tabs/Arena"))
 
