@@ -21,7 +21,7 @@ func _ready() -> void:
 
 
 func _assert_known_blockers(codes: Array[String]) -> void:
-	assert(codes.has("rival_combat_v1_snapshots_missing"))
+	assert(not codes.has("rival_combat_v1_snapshots_missing"))
 	assert(codes.has("beast_combat_v1_stats_missing"))
 	assert(codes.has("beast_combat_v1_adapter_missing"))
 	assert(codes.has("building_upgrade_cost_pending:mine"))
