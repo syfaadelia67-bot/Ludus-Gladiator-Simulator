@@ -84,11 +84,14 @@ func _test_manual_beast_snapshot_is_rejected() -> void:
 
 func _test_canonical_beast_request_builds_snapshots() -> void:
 	var host = GT1Month16HostScript.new()
-	var result: Dictionary = host.prepare_beast_request(
-		["player_1", "player_2", "player_3"],
-		"player_team",
-		["boar", "lion", "bear"],
-		"beast_team",
+	var result: Dictionary = (
+		host
+		. prepare_beast_request(
+			["player_1", "player_2", "player_3"],
+			"player_team",
+			["boar", "lion", "bear"],
+			"beast_team",
+		)
 	)
 	assert(result.get("status") == "ready")
 	assert(result.get("beast_selection_ready") == true)
@@ -109,11 +112,14 @@ func _test_canonical_beast_request_builds_snapshots() -> void:
 
 func _test_unknown_beast_id_fails_closed() -> void:
 	var host = GT1Month16HostScript.new()
-	var result: Dictionary = host.prepare_beast_request(
-		["player_1", "player_2", "player_3"],
-		"player_team",
-		["boar", "dragon", "bear"],
-		"beast_team",
+	var result: Dictionary = (
+		host
+		. prepare_beast_request(
+			["player_1", "player_2", "player_3"],
+			"player_team",
+			["boar", "dragon", "bear"],
+			"beast_team",
+		)
 	)
 	assert(result.get("status") == "rejected")
 	assert(_contains_error(result, "Unknown canonical Combat V1 beast id"))
