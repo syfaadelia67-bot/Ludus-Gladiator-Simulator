@@ -8,3 +8,48 @@ msgstr ""
 
 msgid "START_BRAND"
 msgstr "LUDUS"
+
+msgid "UI_STATE_LABEL_READY"
+msgstr "LISTO"
+
+msgid "UI_STATE_LABEL_EMPTY"
+msgstr "VACÍO"
+
+msgid "UI_STATE_LABEL_BLOCKED"
+msgstr "BLOQUEADO"
+
+msgid "UI_STATE_LABEL_ERROR"
+msgstr "ERROR"
+
+msgid "UI_STATE_LABEL_READ_ONLY"
+msgstr "SOLO LECTURA"
+
+msgid "UI_STATE_EMPTY_ROSTER"
+msgstr "Todavía no hay personal disponible para esta sección."
+
+msgid "UI_STATE_EMPTY_MARKET"
+msgstr "No hay ofertas disponibles en el mercado en este momento."
+
+msgid "UI_STATE_BLOCKED_BEAST_AREA"
+msgstr "La Zona de bestias todavía no está habilitada en la finca."
+
+msgid "UI_STATE_EMPTY_BEASTS"
+msgstr "La Zona de bestias está disponible, pero el ludus no posee bestias."
+
+msgid "UI_STATE_BLOCKED_ARENA_NON_GT"
+msgstr "El Mes {month} es de gestión. La Arena no inventa combates fuera de los GT I XIII, XVI y XX."
+
+msgid "UI_STATE_BLOCKED_ARENA_RIVAL_DATA"
+msgstr "Este GT I espera un rival Combat V1 canónico; no se generan estadísticas rivales de reemplazo."
+
+msgid "UI_STATE_BLOCKED_PROGRESSION"
+msgstr "Las identidades de las 12 skills son canónicas, pero sus mecánicas y progresión Combat V1 todavía esperan diseño congelado."
+
+msgid "UI_STATE_BLOCKED_COMBAT_HISTORY"
+msgstr "El historial canónico de Combat V1 todavía no reemplazó al historial legacy. Esta vista no debe presentar resultados legacy como autoridad."
+
+msgid "UI_STATE_COMPLETED_READ_ONLY"
+msgstr "La campaña terminó. Esta sección permanece disponible para consulta y no debe modificar el estado de campaña."
+
+msgid "UI_STATE_ROUTE_ERROR"
+msgstr "No se pudo resolver la ruta funcional «{route}»."
