@@ -3,7 +3,9 @@ extends Node
 
 func run() -> void:
 	var tutorial := FileAccess.get_file_as_string("res://scripts/ui/tutorial_controller.gd")
-	var policy := FileAccess.get_file_as_string("res://scripts/systems/monthly_onboarding_policy.gd")
+	var policy := FileAccess.get_file_as_string(
+		"res://scripts/systems/monthly_onboarding_policy.gd"
+	)
 	var owner := FileAccess.get_file_as_string("res://scripts/systems/ludus_owner_manager.gd")
 	var roster := FileAccess.get_file_as_string("res://scripts/systems/roster_manager.gd")
 	var selection := FileAccess.get_file_as_string(
