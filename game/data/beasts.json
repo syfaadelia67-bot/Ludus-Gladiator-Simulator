@@ -12,7 +12,13 @@
     "uses_routines": false,
     "uses_loyalty": false,
     "uses_fame": false,
-    "can_train": false
+    "can_train": false,
+    "FUE": 7,
+    "AGI": 5,
+    "TEC": 6,
+    "RES": 6,
+    "PV": 56,
+    "stamina": 10
   },
   {
     "id": "lion",
@@ -27,7 +33,13 @@
     "uses_routines": false,
     "uses_loyalty": false,
     "uses_fame": false,
-    "can_train": false
+    "can_train": false,
+    "FUE": 8,
+    "AGI": 9,
+    "TEC": 8,
+    "RES": 5,
+    "PV": 55,
+    "stamina": 10
   },
   {
     "id": "bear",
@@ -42,6 +54,12 @@
     "uses_routines": false,
     "uses_loyalty": false,
     "uses_fame": false,
-    "can_train": false
+    "can_train": false,
+    "FUE": 10,
+    "AGI": 4,
+    "TEC": 5,
+    "RES": 8,
+    "PV": 68,
+    "stamina": 10
   }
 ]
