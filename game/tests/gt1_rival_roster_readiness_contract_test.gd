@@ -25,10 +25,7 @@ func _test_canonical_catalog_is_complete(contract) -> void:
 	assert((result.get("missing_by_ludus", {}) as Dictionary).is_empty())
 	assert((result.get("mismatched_profiles", []) as Array).is_empty())
 	assert((result.get("errors", []) as Array).is_empty())
-	assert(
-		result.get("required_fighter_ids")
-		== ["rival_agile", "rival_heavy", "rival_technical"]
-	)
+	assert(result.get("required_fighter_ids") == ["rival_agile", "rival_heavy", "rival_technical"])
 	for raw_entry in entries:
 		var fighter := (raw_entry as Dictionary).get("fighter", {}) as Dictionary
 		assert(fighter.get("team") == "rival_team")
