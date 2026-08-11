@@ -2,6 +2,7 @@ extends Node
 
 const CANONICAL_COMBAT_FILES: Array[String] = [
 	"res://scripts/combat/combat_simulator.gd",
+	"res://scripts/combat/combat_exchange_coordinator.gd",
 	"res://scripts/combat/combat_1v1_loop.gd",
 	"res://scripts/combat/combat_1v2_loop.gd",
 	"res://scripts/combat/combat_2v2_loop.gd",
@@ -68,12 +69,20 @@ func _assert_canonical_combat_cannot_call_legacy_result_authority() -> void:
 	assert(not gt_runtime.contains("TournamentManager.register_combat_result"))
 	var arena_runtime := _source("res://scripts/ui/combat_v1_arena_runtime.gd")
 	assert(arena_runtime.contains('"legacy_combat_manager_allowed": false'))
+
+	var coordinator := _source("res://scripts/combat/combat_exchange_coordinator.gd")
+	assert(coordinator.contains('preload("res://scripts/combat/combat_simulator.gd")'))
+	assert(coordinator.contains("_simulator.resolve_exchange(state, ordered_intents)"))
+	assert(coordinator.contains('"authority": "combat_simulator"'))
 	for loop_path in [
 		"res://scripts/combat/combat_1v1_loop.gd",
 		"res://scripts/combat/combat_1v2_loop.gd",
 		"res://scripts/combat/combat_2v2_loop.gd",
 	]:
-		assert(_source(loop_path).contains("CombatSimulator"))
+		var loop_source := _source(loop_path)
+		assert(loop_source.contains("combat_exchange_coordinator.gd"))
+		assert(loop_source.contains('"combat_end_authority": "combat_simulator"'))
+		assert(loop_source.contains('"winner_authority": "combat_simulator"'))
 
 
 func _assert_monthly_systems_cannot_schedule_hidden_ticks() -> void:
