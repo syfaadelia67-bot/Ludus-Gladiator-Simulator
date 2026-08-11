@@ -201,7 +201,7 @@ func _validate_traits(entries: Variant, errors: Array[String]) -> void:
 			if not by_id.has(other_id):
 				errors.append(
 					"Trait %s references unknown incompatibility: %s" % [trait_id, other_id]
-			)
+				)
 			continue
 			var other: Dictionary = by_id[other_id]
 			if not other.get("incompatible_with", []).has(trait_id):
