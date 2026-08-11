@@ -32,9 +32,6 @@ var training: int = 0
 var traits: Array[String] = []
 var applied_trait_effects: Array[String] = []
 
-# Legacy equipment fields remain serialized and consumed by older combat/UI
-# code. The canonical seven-slot model mirrors these three fields and extends
-# them without invalidating save version 14.
 var equipped_weapon_id: String = ""
 var equipped_armor_id: String = ""
 var equipped_shield_id: String = ""
@@ -55,9 +52,6 @@ func _init(data: Dictionary = {}) -> void:
 	strength = int(data.get("strength", 5))
 	agility = int(data.get("agility", 5))
 	endurance = int(data.get("endurance", 5))
-	# RES is canonical Combat V1 data. Legacy v14 people did not serialize this
-	# field, so they receive one neutral compatibility baseline exactly once and
-	# persist it on their next save. Endurance is deliberately not used here.
 	resistance = maxi(1, int(data.get("resistance", LEGACY_RESISTANCE_BASELINE)))
 	intelligence = int(data.get("intelligence", 5))
 	technique = int(data.get("technique", 5))
@@ -144,28 +138,77 @@ func process_month() -> Dictionary:
 		"training": 0,
 		"personality": {},
 		"policy_status": str(policy.get("status", "")),
-		"work_balance_applied": false,
-		"training_balance_applied": false,
-		"fatigue_balance_applied": false,
-		"injury_recovery_balance_applied": false,
+		"work_balance_applied": true,
+		"training_balance_applied": true,
+		"fatigue_balance_applied": true,
+		"injury_recovery_balance_applied": injury_days > 0,
 	}
 
-	# Injury state remains authoritative for availability and job assignment, but
-	# its countdown does not advance until a canonical monthly recovery formula is
-	# frozen. This avoids treating the former daily decrement as one month.
 	if injury_days > 0:
 		job = "idle"
+		var recovery_bonus := floori(float(EstateManager.get_recovery_bonus()) / 4.0)
+		injury_days = maxi(0, injury_days - 1 - recovery_bonus)
+		fatigue = maxi(
+			0,
+			fatigue
+			- MONTHLY_ROSTER_WORK_POLICY.INJURY_FATIGUE_RECOVERY
+			- EstateManager.get_recovery_bonus(),
+		)
+		morale = mini(100, morale + MONTHLY_ROSTER_WORK_POLICY.INJURY_MORALE_RECOVERY)
+		if injury_days == 0:
+			injury_severity = 0
+			injury_name = ""
+		result.personality = PersonalityManager.process_person_month(self, result)
+		loyalty = clampi(loyalty, 0, 100)
+		fatigue = clampi(fatigue, 0, 100)
+		return result
 
-	# Personality remains a separate monthly subsystem. The monthly wrapper
-	# protects disabled work/training outputs from legacy trait bonuses.
+	match job:
+		"mining":
+			result.ore = maxi(1, strength + floori(float(endurance) / 2.0))
+			fatigue += MONTHLY_ROSTER_WORK_POLICY.MINING_FATIGUE
+		"security":
+			result.security = maxi(1, strength + floori(float(loyalty) / 20.0))
+			fatigue += MONTHLY_ROSTER_WORK_POLICY.SECURITY_FATIGUE
+		"espionage":
+			result.intel = maxi(1, intelligence + floori(float(agility) / 2.0))
+			fatigue += MONTHLY_ROSTER_WORK_POLICY.ESPIONAGE_FATIGUE
+		"training":
+			var base_gain := maxi(1, endurance + floori(float(strength) / 2.0))
+			var multiplier := (
+				EstateManager.get_training_multiplier() * EventManager.get_training_multiplier()
+			)
+			var gained := int(round(base_gain * multiplier))
+			training += gained
+			result.training = gained
+			fatigue += MONTHLY_ROSTER_WORK_POLICY.TRAINING_FATIGUE
+			if (
+				role == "slave"
+				and training >= MONTHLY_ROSTER_WORK_POLICY.SLAVE_PROMOTION_TRAINING_THRESHOLD
+			):
+				role = "gladiator"
+				job = "idle"
+		_:
+			fatigue = maxi(
+				0,
+				fatigue
+				- MONTHLY_ROSTER_WORK_POLICY.IDLE_FATIGUE_RECOVERY
+				- EstateManager.get_recovery_bonus(),
+			)
+			morale = mini(100, morale + MONTHLY_ROSTER_WORK_POLICY.IDLE_MORALE_RECOVERY)
+
 	result.personality = PersonalityManager.process_person_month(self, result)
+	morale = clampi(
+		morale - floori(float(fatigue) / float(MONTHLY_ROSTER_WORK_POLICY.FATIGUE_MORALE_DIVISOR)),
+		0,
+		100,
+	)
 	loyalty = clampi(loyalty, 0, 100)
 	fatigue = clampi(fatigue, 0, 100)
 	return result
 
 
 func process_day() -> Dictionary:
-	# Save-v14 / legacy caller adapter only. Never an additional simulation tick.
 	return process_month()
 
 
@@ -187,14 +230,18 @@ func apply_injury(name_value: String, severity: int, recovery_months: int) -> vo
 
 
 func get_injury_recovery_months() -> int:
-	# `injury_days` is the Save-v14 storage alias; runtime semantics are months.
 	return injury_days
 
 
 func is_available_for_combat() -> bool:
-	# Fatigue is persisted for compatibility, but cannot affect Combat V1
-	# availability until that cross-system rule is explicitly frozen.
-	return role == "gladiator" and injury_days <= 0
+	return (
+		role == "gladiator"
+		and injury_days <= 0
+		and (
+			not MONTHLY_ROSTER_WORK_POLICY.FATIGUE_COMBAT_AVAILABILITY_ENABLED
+			or fatigue < MONTHLY_ROSTER_WORK_POLICY.FATIGUE_COMBAT_LIMIT
+		)
+	)
 
 
 func get_max_health() -> int:
