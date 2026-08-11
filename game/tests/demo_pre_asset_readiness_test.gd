@@ -14,6 +14,7 @@ func _ready() -> void:
 	assert(int(snapshot.get("blocker_count", 0)) > 0)
 	var codes := readiness.get_blocker_codes()
 	_assert_known_blockers(codes)
+	_assert_skill_blocker(snapshot)
 	_assert_report(readiness, snapshot)
 	_assert_contract(readiness.get_contract())
 	print("Demo pre-asset readiness report: OK · blockers=%d" % codes.size())
@@ -39,6 +40,22 @@ func _assert_known_blockers(codes: Array[String]) -> void:
 	assert(codes.has("months_without_gt1_loop"))
 	assert(not codes.has("in_progress_combat_save_policy"))
 	assert(not codes.has("month_20_end_to_end_gate"))
+
+
+func _assert_skill_blocker(snapshot: Dictionary) -> void:
+	assert(DataRepository.get_skill_mechanics_v1().is_empty())
+	var blockers := snapshot.get("blockers", []) as Array
+	for raw_blocker in blockers:
+		if not raw_blocker is Dictionary:
+			continue
+		var blocker := raw_blocker as Dictionary
+		if str(blocker.get("code", "")) != "canonical_skill_mechanics_not_frozen":
+			continue
+		assert(blocker.get("design_blocked") == true)
+		assert(str(blocker.get("reason", "")).contains("Missing mechanics=12"))
+		assert(str(blocker.get("reason", "")).contains("missing progression=12"))
+		return
+	assert(false, "Skill mechanics readiness blocker must be present")
 
 
 func _assert_report(readiness, snapshot: Dictionary) -> void:
@@ -78,5 +95,6 @@ func _assert_contract(contract: Dictionary) -> void:
 	assert(contract.get("legacy_combat_authority_allowed") == false)
 	assert(contract.get("legacy_weekly_authority_allowed") == false)
 	assert(contract.get("invent_missing_balance_allowed") == false)
+	assert(contract.get("skill_mechanics_source_fail_closed") == true)
 	assert(contract.get("month_20_end_to_end_quality_gate") == "automated_test")
 	assert(contract.get("save_version_change_required") == false)
