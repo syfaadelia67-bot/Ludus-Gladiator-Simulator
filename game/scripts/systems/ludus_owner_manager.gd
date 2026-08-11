@@ -7,13 +7,23 @@ signal tutorial_progress_changed(progress: Dictionary)
 const ORIGINS_PATH := "res://data/dominus_origins.json"
 const LEGACY_PROFILE_PATH := "user://ludus_owner_profile.json"
 const VALID_TITLES := ["dominus", "domina"]
-const TUTORIAL_STEP_COUNT := 5
+const MonthlyOnboardingPolicyScript = preload(
+	"res://scripts/systems/monthly_onboarding_policy.gd"
+)
+const TUTORIAL_STEP_COUNT := 7
 const TUTORIAL_OBJECTIVE_IDS := [
-	"inspect_roster", "advance_week", "obtain_equipment", "resolve_event", "weekly_combat"
+	"initial_gladiator",
+	"inspect_roster",
+	"assign_work",
+	"inspect_finca",
+	"inspect_equipment",
+	"close_month",
+	"gt1_preparation",
 ]
 
 var profile: Dictionary = _default_profile()
 var origins: Dictionary = {}
+var _onboarding_policy = MonthlyOnboardingPolicyScript.new()
 
 
 func _ready() -> void:
@@ -241,6 +251,10 @@ func import_state(data: Dictionary) -> void:
 	_remove_legacy_profile()
 
 
+func get_tutorial_contract() -> Dictionary:
+	return _onboarding_policy.get_contract()
+
+
 func _sanitize_profile() -> void:
 	profile["configured"] = bool(profile.get("configured", false))
 	profile["title"] = str(profile.get("title", "dominus"))
@@ -269,13 +283,7 @@ func _sanitize_profile() -> void:
 
 
 func _sanitize_tutorial_objectives(raw_objectives: Variant) -> Dictionary:
-	var sanitized: Dictionary = {}
-	if not raw_objectives is Dictionary:
-		return sanitized
-	for objective_id in TUTORIAL_OBJECTIVE_IDS:
-		if bool(raw_objectives.get(objective_id, false)):
-			sanitized[objective_id] = true
-	return sanitized
+	return _onboarding_policy.sanitize_completed_objectives(raw_objectives)
 
 
 func _import_legacy_profile_once() -> void:
