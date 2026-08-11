@@ -61,7 +61,7 @@ func _ready() -> void:
 			"func _sanitize_tutorial_objectives",
 			"_onboarding_policy.sanitize_completed_objectives",
 			"func get_tutorial_contract",
-			"SaveManager.call_deferred(\"save_game\")",
+			'SaveManager.call_deferred("save_game")',
 		]
 	)
 	_assert_file_not_contains(
@@ -91,7 +91,7 @@ func _ready() -> void:
 	)
 	_assert_file_contains(
 		PROJECT_PATH,
-		["MainMenuReturnController=\"*res://scripts/ui/main_menu_return_controller.gd\""]
+		['MainMenuReturnController="*res://scripts/ui/main_menu_return_controller.gd"']
 	)
 	print("Monthly onboarding and menu return contract: OK")
 	get_tree().quit()
@@ -104,7 +104,9 @@ func _assert_file_contains(path: String, expected_fragments: Array[String]) -> v
 	var source := file.get_as_text()
 	file.close()
 	for fragment in expected_fragments:
-		assert(source.contains(fragment), "%s no contiene el contrato esperado: %s" % [path, fragment])
+		assert(
+			source.contains(fragment), "%s no contiene el contrato esperado: %s" % [path, fragment]
+		)
 
 
 func _assert_file_not_contains(path: String, forbidden_fragments: Array[String]) -> void:
@@ -114,4 +116,7 @@ func _assert_file_not_contains(path: String, forbidden_fragments: Array[String])
 	var source := file.get_as_text()
 	file.close()
 	for fragment in forbidden_fragments:
-		assert(not source.contains(fragment), "%s conserva contrato legacy prohibido: %s" % [path, fragment])
+		assert(
+			not source.contains(fragment),
+			"%s conserva contrato legacy prohibido: %s" % [path, fragment]
+		)
