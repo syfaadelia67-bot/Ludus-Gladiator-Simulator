@@ -17,7 +17,6 @@ const GT1RivalRosterReadinessContractScript = preload(
 )
 
 const PENDING_AUTHORITY_BOUNDARIES := {
-	"monthly_economy_runtime": "Costs and beast ownership are canonical; sponsor, loan and bankruptcy balance remain pending.",
 	"monthly_market_cadence": "Legacy cadence is quarantined; market rotation and refresh await monthly balance.",
 	"monthly_roster_work_recovery": "Monthly authority is canonical; work, training, fatigue and recovery balance remain pending.",
 	"equipment_catalog_and_forge_balance": "Six-slot inventory, equip and Save v14 authority are canonical; final catalog breadth, crafting costs, quality and Combat V1 item power/defense remain pending.",
@@ -34,6 +33,7 @@ func evaluate() -> Dictionary:
 	_append_beast_blockers(blockers)
 	_append_pending_building_balance_blockers(blockers)
 	_append_skill_mechanics_blocker(blockers)
+	_append_monthly_economy_blocker(blockers)
 	_append_authority_boundary_blockers(blockers)
 	var report := _build_report(blockers)
 	return {
@@ -79,6 +79,7 @@ func get_contract() -> Dictionary:
 		"invent_missing_balance_allowed": false,
 		"skill_mechanics_source_fail_closed": true,
 		"skill_runtime_quality_gate": "combat_skill_runtime_resolver_contract",
+		"monthly_economy_quality_gate": "economy_manager_monthly_runtime_contract",
 		"gt1_rival_results_provider_quality_gate": "campaign_owned_contract",
 		"month_20_end_to_end_quality_gate": "automated_test",
 		"save_version_change_required": false,
@@ -90,7 +91,14 @@ func _build_report(blockers: Array[Dictionary]) -> Dictionary:
 	var design_blocked_count := 0
 	var implementation_blocked_count := 0
 	for blocker in blockers:
-		lines.append("%s · %s · %s" % [str(blocker.get("code", "")), str(blocker.get("category", "")), str(blocker.get("reason", ""))])
+		lines.append(
+			"%s · %s · %s"
+			% [
+				str(blocker.get("code", "")),
+				str(blocker.get("category", "")),
+				str(blocker.get("reason", "")),
+			]
+		)
 		if bool(blocker.get("design_blocked", false)):
 			design_blocked_count += 1
 		else:
@@ -109,15 +117,31 @@ func _build_report(blockers: Array[Dictionary]) -> Dictionary:
 
 
 func _append_rival_snapshot_blocker(blockers: Array[Dictionary]) -> void:
-	var readiness := GT1RivalRosterReadinessContractScript.new().evaluate(DataRepository.get_rival_combat_v1_snapshots())
+	var readiness := GT1RivalRosterReadinessContractScript.new().evaluate(
+		DataRepository.get_rival_combat_v1_snapshots()
+	)
 	if readiness.get("ready") == true:
 		return
-	blockers.append(_blocker("rival_combat_v1_snapshots_missing", "gt1_rivals", "Canonical rival Combat V1 roster coverage is incomplete or does not match the three frozen demo archetypes for all seven Ludi.", true))
+	blockers.append(
+		_blocker(
+			"rival_combat_v1_snapshots_missing",
+			"gt1_rivals",
+			"Canonical rival Combat V1 roster coverage is incomplete or does not match the three frozen demo archetypes for all seven Ludi.",
+			true,
+		)
+	)
 
 
 func _append_rival_results_provider_blocker(blockers: Array[Dictionary]) -> void:
 	if not CampaignManager.has_method("get_gt1_rival_results_provider_contract"):
-		blockers.append(_blocker("gt1_rival_results_provider", "architecture", "CampaignManager does not expose the canonical GT I rival results provider.", false))
+		blockers.append(
+			_blocker(
+				"gt1_rival_results_provider",
+				"architecture",
+				"CampaignManager does not expose the canonical GT I rival results provider.",
+				false,
+			)
+		)
 		return
 	var contract: Dictionary = CampaignManager.get_gt1_rival_results_provider_contract()
 	var ready: bool = (
@@ -137,22 +161,56 @@ func _append_rival_results_provider_blocker(blockers: Array[Dictionary]) -> void
 	)
 	if ready:
 		return
-	blockers.append(_blocker("gt1_rival_results_provider", "architecture", "GT I rival standings require a campaign-owned, explicit external-results provider that cannot generate, randomize, partially register or overwrite rival scores.", false))
+	blockers.append(
+		_blocker(
+			"gt1_rival_results_provider",
+			"architecture",
+			"GT I rival standings require a campaign-owned, explicit external-results provider that cannot generate, randomize, partially register or overwrite rival scores.",
+			false,
+		)
+	)
 
 
 func _append_beast_blockers(blockers: Array[Dictionary]) -> void:
 	var adapter_audit := CombatBeastFighterAdapterScript.new().audit_catalog(DataRepository.beasts)
-	var readiness := GT1BeastReadinessContractScript.new().evaluate(DataRepository.beasts, adapter_audit.get("ready") == true)
+	var readiness := GT1BeastReadinessContractScript.new().evaluate(
+		DataRepository.beasts, adapter_audit.get("ready") == true
+	)
 	if readiness.get("canonical_beast_stats_ready") != true:
-		blockers.append(_blocker("beast_combat_v1_stats_missing", "beasts", "Jabalí, León and Oso still require canonical Combat V1 stats.", true))
+		blockers.append(
+			_blocker(
+				"beast_combat_v1_stats_missing",
+				"beasts",
+				"Jabalí, León and Oso still require canonical Combat V1 stats.",
+				true,
+			)
+		)
 	if readiness.get("runtime_beast_adapter_ready") != true:
-		blockers.append(_blocker("beast_combat_v1_adapter_missing", "beasts", "The canonical beast-to-Combat-V1 runtime adapter is not ready.", false))
+		blockers.append(
+			_blocker(
+				"beast_combat_v1_adapter_missing",
+				"beasts",
+				"The canonical beast-to-Combat-V1 runtime adapter is not ready.",
+				false,
+			)
+		)
 
 
 func _append_pending_building_balance_blockers(blockers: Array[Dictionary]) -> void:
 	for building in DataRepository.get_buildings():
-		if building is Dictionary and bool((building as Dictionary).get("upgrade_cost_pending", false)):
-			blockers.append(_blocker("building_upgrade_cost_pending:%s" % str((building as Dictionary).get("id", "")), "estate", "A demo building still has an explicitly pending upgrade cost.", true))
+		if (
+			building is Dictionary
+			and bool((building as Dictionary).get("upgrade_cost_pending", false))
+		):
+			blockers.append(
+				_blocker(
+					"building_upgrade_cost_pending:%s"
+					% str((building as Dictionary).get("id", "")),
+					"estate",
+					"A demo building still has an explicitly pending upgrade cost.",
+					true,
+				)
+			)
 
 
 func _append_skill_mechanics_blocker(blockers: Array[Dictionary]) -> void:
@@ -174,15 +232,71 @@ func _append_skill_mechanics_blocker(blockers: Array[Dictionary]) -> void:
 	var design_ready := bool(readiness.get("design_ready", false))
 	var missing_mechanics := readiness.get("missing_mechanics_ids", []) as Array
 	var missing_progression := readiness.get("missing_progression_ids", []) as Array
-	var reason := "The 12 canonical skill identities are authoritative, but approved Combat V1 mechanics and progression remain fail-closed. Missing mechanics=%d; missing progression=%d." % [missing_mechanics.size(), missing_progression.size()]
+	var reason := (
+		"The 12 canonical skill identities are authoritative, but approved Combat V1 mechanics "
+		+ "and progression remain fail-closed. Missing mechanics=%d; missing progression=%d."
+		% [missing_mechanics.size(), missing_progression.size()]
+	)
 	if design_ready:
 		reason = "Canonical skill design is frozen, but the Combat V1 skill resolver is not ready."
-	blockers.append(_blocker("canonical_skill_mechanics_not_frozen", "skills", reason, not design_ready))
+	blockers.append(
+		_blocker(
+			"canonical_skill_mechanics_not_frozen",
+			"skills",
+			reason,
+			not design_ready,
+		)
+	)
+
+
+func _append_monthly_economy_blocker(blockers: Array[Dictionary]) -> void:
+	if not EconomyManager.has_method("get_monthly_runtime_contract"):
+		blockers.append(
+			_blocker(
+				"monthly_economy_runtime",
+				"architecture",
+				"EconomyManager does not expose the canonical monthly runtime contract.",
+				false,
+			)
+		)
+		return
+	var contract: Dictionary = EconomyManager.get_monthly_runtime_contract()
+	var ready := (
+		contract.get("status") == "frozen"
+		and contract.get("authority") == "monthly_economy_runtime"
+		and contract.get("period") == "month"
+		and contract.get("process_frequency") == "exactly_once_per_closed_month"
+		and int(contract.get("fixed_monthly_cost", 0)) == 88
+		and int(contract.get("slave_monthly_cost", 0)) == 5
+		and int(contract.get("gladiator_monthly_cost", 0)) == 20
+		and int(contract.get("beast_monthly_cost", 0)) == 10
+		and contract.get("daily_economy_is_authority") == false
+		and contract.get("legacy_weekly_economy_is_authority") == false
+		and contract.get("invent_unfrozen_values_allowed") == false
+		and contract.get("save_version_change_required") == false
+	)
+	if ready:
+		return
+	blockers.append(
+		_blocker(
+			"monthly_economy_runtime",
+			"architecture",
+			"Canonical monthly operating-cost runtime is incomplete or still grants authority to legacy daily/weekly economy.",
+			false,
+		)
+	)
 
 
 func _append_authority_boundary_blockers(blockers: Array[Dictionary]) -> void:
 	for code in PENDING_AUTHORITY_BOUNDARIES.keys():
-		blockers.append(_blocker(str(code), "architecture", str(PENDING_AUTHORITY_BOUNDARIES[code]), false))
+		blockers.append(
+			_blocker(
+				str(code),
+				"architecture",
+				str(PENDING_AUTHORITY_BOUNDARIES[code]),
+				false,
+			)
+		)
 
 
 func _blocker(code: String, category: String, reason: String, design_blocked: bool) -> Dictionary:
