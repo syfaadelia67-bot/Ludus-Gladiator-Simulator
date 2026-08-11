@@ -57,8 +57,10 @@ func _assert_canonical_combat_cannot_call_legacy_result_authority() -> void:
 		for forbidden in FORBIDDEN_LEGACY_COMBAT_CALLS:
 			assert(
 				not source.contains(forbidden),
-				"Canonical demo combat must not reference legacy result authority '%s': %s"
-				% [forbidden, path],
+				(
+					"Canonical demo combat must not reference legacy result authority '%s': %s"
+					% [forbidden, path]
+				),
 			)
 
 	var gt_runtime := _source("res://scripts/combat/gt1_combat_runtime.gd")
@@ -80,8 +82,10 @@ func _assert_monthly_systems_cannot_schedule_hidden_ticks() -> void:
 		for forbidden in FORBIDDEN_HIDDEN_TICK_CALLS:
 			assert(
 				not source.contains(forbidden),
-				"Canonical monthly system must not schedule hidden legacy tick '%s': %s"
-				% [forbidden, path],
+				(
+					"Canonical monthly system must not schedule hidden legacy tick '%s': %s"
+					% [forbidden, path]
+				),
 			)
 
 	var game_state := _source("res://scripts/core/game_state.gd")
