@@ -166,9 +166,12 @@ func _validate_buildings(entries: Variant, errors: Array[String]) -> void:
 			continue
 		var entry: Dictionary = by_id[building_id]
 		var contract: Dictionary = DEMO_BUILDING_CONTRACTS[building_id]
-		for field_name in ["name", "starting_level", "base_cost"]:
-			if entry.get(field_name) != contract.get(field_name):
-				errors.append("Demo facility %s has non-canonical %s" % [building_id, field_name])
+		if str(entry.get("name", "")) != str(contract.get("name", "")):
+			errors.append("Demo facility %s has non-canonical name" % building_id)
+		if int(entry.get("starting_level", -1)) != int(contract.get("starting_level", -2)):
+			errors.append("Demo facility %s has non-canonical starting_level" % building_id)
+		if int(entry.get("base_cost", -1)) != int(contract.get("base_cost", -2)):
+			errors.append("Demo facility %s has non-canonical base_cost" % building_id)
 		if int(entry.get("max_level", 0)) != 10:
 			errors.append("Demo facility %s must preserve full-game level X" % building_id)
 		if bool(entry.get("upgrade_cost_pending", false)):
