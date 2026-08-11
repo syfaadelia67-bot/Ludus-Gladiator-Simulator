@@ -3,6 +3,9 @@ extends RefCounted
 const CombatBeastFighterAdapterScript = preload(
 	"res://scripts/combat/combat_beast_fighter_adapter.gd"
 )
+const CanonicalSkillMechanicsContractScript = preload(
+	"res://scripts/core/canonical_skill_mechanics_contract.gd"
+)
 const GT1BeastReadinessContractScript = preload(
 	"res://scripts/combat/gt1_beast_readiness_contract.gd"
 )
@@ -99,6 +102,7 @@ func get_contract() -> Dictionary:
 		"legacy_combat_authority_allowed": false,
 		"legacy_weekly_authority_allowed": false,
 		"invent_missing_balance_allowed": false,
+		"skill_mechanics_source_fail_closed": true,
 		"month_20_end_to_end_quality_gate": "automated_test",
 		"save_version_change_required": false,
 	}
@@ -215,20 +219,29 @@ func _append_pending_building_balance_blockers(blockers: Array[Dictionary]) -> v
 
 
 func _append_skill_mechanics_blocker(blockers: Array[Dictionary]) -> void:
-	if DataRepository.get_skills().is_empty():
+	var readiness := CanonicalSkillMechanicsContractScript.new().evaluate(
+		DataRepository.get_skills(),
+		DataRepository.get_skill_mechanics_v1(),
+		false,
+	)
+	if readiness.get("ready") == true:
 		return
-	(
-		blockers
-		. append(
-			_blocker(
-				"canonical_skill_mechanics_not_frozen",
-				"skills",
-				(
-					"The 12 canonical skill identities are reconciled and authoritative, but their "
-					+ "Combat V1 mechanics and progression are not frozen yet."
-				),
-				true,
-			)
+	var design_ready := bool(readiness.get("design_ready", false))
+	var missing_mechanics := readiness.get("missing_mechanics_ids", []) as Array
+	var missing_progression := readiness.get("missing_progression_ids", []) as Array
+	var reason := (
+		"The 12 canonical skill identities are authoritative, but approved Combat V1 mechanics "
+		+ "and progression remain fail-closed. Missing mechanics=%d; missing progression=%d."
+		% [missing_mechanics.size(), missing_progression.size()]
+	)
+	if design_ready:
+		reason = "Canonical skill design is frozen, but the Combat V1 skill resolver is not ready."
+	blockers.append(
+		_blocker(
+			"canonical_skill_mechanics_not_frozen",
+			"skills",
+			reason,
+			not design_ready,
 		)
 	)
 
