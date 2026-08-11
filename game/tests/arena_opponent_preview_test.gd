@@ -3,8 +3,12 @@ extends Node
 
 func run() -> void:
 	var arena := FileAccess.get_file_as_string("res://scripts/ui/arena_screen.gd")
-	var combat_runtime := FileAccess.get_file_as_string("res://scripts/ui/combat_v1_arena_runtime.gd")
-	var setup_runtime := FileAccess.get_file_as_string("res://scripts/ui/gt1_series_setup_runtime.gd")
+	var combat_runtime := FileAccess.get_file_as_string(
+		"res://scripts/ui/combat_v1_arena_runtime.gd"
+	)
+	var setup_runtime := FileAccess.get_file_as_string(
+		"res://scripts/ui/gt1_series_setup_runtime.gd"
+	)
 	var setup_panel := FileAccess.get_file_as_string("res://scripts/ui/gt1_series_setup_panel.gd")
 	var scene := FileAccess.get_file_as_string("res://scenes/ArenaScreen.tscn")
 
@@ -17,7 +21,11 @@ func run() -> void:
 	assert(not arena.contains("RivalUniqueGladiatorController"))
 	assert(combat_runtime.contains('"player_facing_setup_authority": "gt1_series_setup_runtime"'))
 	assert(combat_runtime.contains('"default_target_allowed": false'))
-	assert(setup_runtime.contains('"human_opponent_selection_authority": "gt1_rival_combat_snapshot_provider"'))
+	assert(
+		setup_runtime.contains(
+			'"human_opponent_selection_authority": "gt1_rival_combat_snapshot_provider"'
+		)
+	)
 	assert(setup_runtime.contains('"rival_catalog": "DataRepository.rival_combat_v1_snapshots"'))
 	assert(setup_runtime.contains('"month_16_beast_catalog": "DataRepository.beasts"'))
 	assert(setup_runtime.contains('"generated_opponents_allowed": false'))
