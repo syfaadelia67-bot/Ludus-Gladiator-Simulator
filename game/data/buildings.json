@@ -73,8 +73,7 @@
     "max_level": 10,
     "demo_available": true,
     "demo_max_level": 3,
-    "base_cost": 0,
-    "upgrade_cost_pending": true,
+    "base_cost": 300,
     "effect_type": "mine_production",
     "effect_per_level": 0
   },
