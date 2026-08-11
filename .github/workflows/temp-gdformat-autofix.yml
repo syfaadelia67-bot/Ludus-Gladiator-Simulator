@@ -1,0 +1,54 @@
+name: Temporary GDScript Format Autofix
+
+on:
+  pull_request:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: temp-gdformat-autofix-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  format:
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Check out PR head
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          ref: ${{ github.head_ref }}
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Install pinned gdtoolkit
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m venv .ci-venv
+          .ci-venv/bin/python -m pip install --disable-pip-version-check --no-input 'gdtoolkit==4.5.0'
+
+      - name: Format changed GDScript and commit once
+        shell: bash
+        env:
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          set -euo pipefail
+          git diff --name-only -z --diff-filter=ACMR "$PR_BASE_SHA" HEAD -- '*.gd' > changed-gdscript.bin
+          if [ ! -s changed-gdscript.bin ]; then
+            echo 'No changed GDScript files.'
+            exit 0
+          fi
+          mapfile -d '' FILES < changed-gdscript.bin
+          .ci-venv/bin/gdformat "${FILES[@]}"
+          if git diff --quiet -- '*.gd'; then
+            echo 'GDScript already matches gdformat 4.5.0.'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- '*.gd'
+          git commit -m 'Format monthly programming checkpoint'
+          git push origin "HEAD:${GITHUB_HEAD_REF}"
