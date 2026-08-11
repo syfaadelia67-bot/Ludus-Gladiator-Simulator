@@ -1,8 +1,6 @@
 extends Node
 
-const MonthlyOnboardingPolicyScript = preload(
-	"res://scripts/systems/monthly_onboarding_policy.gd"
-)
+const MonthlyOnboardingPolicyScript = preload("res://scripts/systems/monthly_onboarding_policy.gd")
 
 var panel: PanelContainer
 var title_label: Label
@@ -147,9 +145,7 @@ func _render_step() -> void:
 	progress_label.text = "%d/%d" % [current_step + 1, _steps.size()]
 	title_label.text = str(step.get("title", "Tutorial"))
 	body_label.text = str(step.get("text", ""))
-	objective_label.text = ("✓ " if completed else "Objetivo: ") + str(
-		step.get("objective", "")
-	)
+	objective_label.text = ("✓ " if completed else "Objetivo: ") + str(step.get("objective", ""))
 	if objective_id == "close_month" and not completed:
 		_append_month_closure_status()
 
