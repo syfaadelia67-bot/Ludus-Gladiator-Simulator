@@ -25,7 +25,10 @@ func inspect() -> Dictionary:
 	var status := str(selected.get("status", STATUS_MISSING))
 	if selected_path == BACKUP_PATH and bool(backup.get("loadable", false)):
 		status = STATUS_RECOVERABLE_BACKUP
-	elif status == STATUS_MISSING and bool(primary.get("exists", false) or backup.get("exists", false)):
+	elif (
+		status == STATUS_MISSING
+		and bool(primary.get("exists", false) or backup.get("exists", false))
+	):
 		status = STATUS_CORRUPT
 
 	return {
@@ -116,7 +119,8 @@ func _structural_error(payload: Dictionary) -> String:
 		return "missing_roster"
 	var month := int(
 		(game_state as Dictionary).get(
-			"month", (game_state as Dictionary).get("week", (game_state as Dictionary).get("day", 0))
+			"month",
+			(game_state as Dictionary).get("week", (game_state as Dictionary).get("day", 0))
 		)
 	)
 	if month < 1:
