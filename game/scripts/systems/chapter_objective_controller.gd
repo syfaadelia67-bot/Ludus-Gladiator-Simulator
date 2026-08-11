@@ -3,8 +3,8 @@ extends Node
 signal chapter_objectives_changed
 
 const PRIMARY_BY_CHAPTER := {
-	"ruins": "first_victory",
-	"blood_reputation": "three_victories",
+	"ruins": "basic_preparation",
+	"blood_reputation": "recognized_house",
 	"name_of_ludus": "demo_finale",
 }
 
