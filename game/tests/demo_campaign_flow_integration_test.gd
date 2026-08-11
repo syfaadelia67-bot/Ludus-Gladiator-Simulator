@@ -42,8 +42,10 @@ func _run() -> void:
 		"La creación de campaña debe ofrecer Dominus o Domina."
 	)
 	assert(
-		StartScreenController.origin_selector != null
-		and StartScreenController.origin_selector.item_count > 0,
+		(
+			StartScreenController.origin_selector != null
+			and StartScreenController.origin_selector.item_count > 0
+		),
 		"La creación de campaña debe ofrecer orígenes."
 	)
 	StartScreenController.title_selector.select(1)
@@ -101,8 +103,7 @@ func _run() -> void:
 		)
 		_assert_navigation_state(system_id)
 		assert(
-			FincaHubController.show_finca(),
-			"Cada sistema debe permitir regresar al hub de Finca."
+			FincaHubController.show_finca(), "Cada sistema debe permitir regresar al hub de Finca."
 		)
 		await _wait_frames(1)
 		assert(
@@ -208,7 +209,9 @@ func _assert_main_startup_shell() -> void:
 		main_scene != null and main_scene.name == "Main",
 		"El proyecto debe arrancar sobre la escena Main real."
 	)
-	assert(main_scene.get_script() == null, "Main debe permanecer como shell sin controlador propio.")
+	assert(
+		main_scene.get_script() == null, "Main debe permanecer como shell sin controlador propio."
+	)
 
 	var host := main_scene.get_node_or_null("Margin/VBox/ScreenHost") as Control
 	var hud := main_scene.get_node_or_null("UnifiedHudShell") as Control
@@ -219,18 +222,17 @@ func _assert_main_startup_shell() -> void:
 	assert(main_scene.get_node_or_null("Margin/VBox/Resources") == null)
 	assert(main_scene.get_node_or_null("Margin/VBox/TopButtons") == null)
 
-	var hud_row := (
-		main_scene.get_node_or_null("UnifiedHudShell/TopHUD/Margin/Row") as HBoxContainer
-	)
+	var hud_row := main_scene.get_node_or_null("UnifiedHudShell/TopHUD/Margin/Row") as HBoxContainer
 	var close_month := (
 		main_scene.get_node_or_null("UnifiedHudShell/TopHUD/Margin/Row/AdvanceWeek") as Button
 	)
 	var return_menu := (
-		main_scene.get_node_or_null("UnifiedHudShell/TopHUD/Margin/Row/ReturnToMainMenu")
-		as Button
+		main_scene.get_node_or_null("UnifiedHudShell/TopHUD/Margin/Row/ReturnToMainMenu") as Button
 	)
 	assert(hud_row != null, "El HUD real debe exponer su fila superior.")
-	assert(close_month != null and close_month.visible, "Cerrar mes debe existir en el HUD visible.")
+	assert(
+		close_month != null and close_month.visible, "Cerrar mes debe existir en el HUD visible."
+	)
 	assert(
 		return_menu != null and return_menu.get_parent() == hud_row,
 		"Guardar y menú debe montarse en el HUD visible."
