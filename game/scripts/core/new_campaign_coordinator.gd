@@ -22,6 +22,7 @@ func reset_campaign_state() -> bool:
 		campaign_reset_failed.emit("No se pudieron limpiar los archivos de la campaña anterior.")
 		return false
 
+	CombatV1SessionStore.clear_all()
 	var reset_payload := {
 		"version": SaveManager.SAVE_VERSION,
 		"saved_at_unix": 0,
@@ -61,6 +62,7 @@ func reset_campaign_state() -> bool:
 		"rivals":
 		{"entries": [], "hostility_heat": 0, "operations_completed": 0, "operations_detected": 0},
 		"combat": {"last_combat_day": -1, "last_result": {}, "next_battle_config": {}},
+		"combat_v1_runtime": {},
 		"combat_history": {"entries": []},
 		"events": {},
 		"economy": {},
