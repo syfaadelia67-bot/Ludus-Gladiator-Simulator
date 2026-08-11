@@ -68,7 +68,9 @@ func run() -> void:
 	assert(str(restored_finale.get("result_source", "")) == "gt1_classification")
 
 	assert(NewCampaignCoordinator.reset_campaign_state())
-	print("Demo placeholder end-to-end: New Campaign -> 9 GT I bouts -> tiebreak -> finale -> Save v14 load: OK")
+	print(
+		"Demo placeholder end-to-end: New Campaign -> 9 GT I bouts -> tiebreak -> finale -> Save v14 load: OK"
+	)
 
 
 func _run_month_13_combat_v1() -> void:
