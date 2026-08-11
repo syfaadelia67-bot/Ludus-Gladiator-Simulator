@@ -47,10 +47,13 @@ func _run() -> void:
 		_assert_route_state(route_id)
 
 	assert(
-		FincaHubController.open_gladiator_dossier(
-			first_gladiator_id,
-			{"system_id": "barracks", "selected_id": first_gladiator_id},
-			"information",
+		(
+			FincaHubController
+			. open_gladiator_dossier(
+				first_gladiator_id,
+				{"system_id": "barracks", "selected_id": first_gladiator_id},
+				"information",
+			)
 		),
 		"La ficha contextual del gladiador debe ser navegable.",
 	)
@@ -95,7 +98,9 @@ func _assert_route_state(route_id: String) -> void:
 	assert(not bool(state.get("blocks_navigation", true)))
 
 	var scene := get_tree().current_scene
-	var banner := scene.get_node_or_null("Margin/VBox/ScreenHost/FunctionalStateBanner") as PanelContainer
+	var banner := (
+		scene.get_node_or_null("Margin/VBox/ScreenHost/FunctionalStateBanner") as PanelContainer
+	)
 	assert(banner != null, "ScreenHost debe exponer el banner funcional.")
 	assert(banner.visible == (state_id != "ready"))
 
