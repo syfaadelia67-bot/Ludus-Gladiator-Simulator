@@ -96,9 +96,11 @@ func _ready() -> void:
 	RosterManager.roster_changed.connect(_refresh_roster)
 	EquipmentManager.equipment_changed.connect(func(_person_id: String): _refresh_all())
 	GameState.month_advanced.connect(func(_month: int): _on_month_changed())
+	SaveManager.load_completed.connect(func(_path: String): call_deferred("_on_save_loaded"))
 
 	_configure_legacy_scene_controls()
 	_populate_actions()
+	_restore_persisted_session()
 	_refresh_all()
 	_show_preparation_view()
 
@@ -118,6 +120,13 @@ func begin_gt1_session(
 	if str(result.get("status", "")) != "combat_running":
 		_render_error(result)
 		return result
+	if not CombatV1SessionStore.set_gt1_session(result):
+		var persistence_error := _ui_rejected(
+			"session_persistence_rejected",
+			["La sesión GT I no superó el contrato de persistencia Save v14."],
+		)
+		_render_error(persistence_error)
+		return persistence_error
 	_session = result.duplicate(true)
 	_last_snapshot.clear()
 	_refresh_all()
@@ -168,6 +177,13 @@ func advance_exchange_with_ai_requests(ai_requests_by_actor: Dictionary) -> Dict
 	if str(next.get("status", "")) == "rejected":
 		_render_error(next)
 		return next
+	if not CombatV1SessionStore.set_gt1_session(next):
+		var persistence_error := _ui_rejected(
+			"session_persistence_rejected",
+			["El nuevo estado GT I no superó el contrato de persistencia Save v14."],
+		)
+		_render_error(persistence_error)
+		return persistence_error
 
 	_session = next.duplicate(true)
 	_refresh_all()
@@ -186,6 +202,8 @@ func get_ui_contract() -> Dictionary:
 		"runtime_bridge": "combat_v1_arena_runtime",
 		"combat_authority": "combat_simulator",
 		"scoring_authority": "tournament_manager",
+		"session_store": "CombatV1SessionStore",
+		"running_session_restored_after_load": true,
 		"legacy_combat_authority_allowed": false,
 		"legacy_energy_authority_allowed": false,
 		"legacy_ability_plan_allowed": false,
@@ -515,7 +533,7 @@ func _request_exchange() -> void:
 		_render_error(
 			_ui_rejected(
 				"invalid_ai_requests",
-				["La política LimboAI debe devolver un Dictionary de solicitudes."]
+				["La política LimboAI debe devolver un Dictionary de solicitudes."],
 			)
 		)
 		return
@@ -592,10 +610,30 @@ func _show_result_view() -> void:
 
 func _on_visibility_changed() -> void:
 	if is_visible_in_tree():
+		if _session.is_empty():
+			_restore_persisted_session()
 		_refresh_all()
 
 
+func _on_save_loaded() -> void:
+	_restore_persisted_session()
+	_refresh_all()
+	_show_preparation_view()
+
+
+func _restore_persisted_session() -> void:
+	var persisted := CombatV1SessionStore.get_gt1_session(GameState.get_month())
+	if persisted.is_empty():
+		_session.clear()
+		_last_snapshot.clear()
+		return
+	_session = persisted.duplicate(true)
+	_last_snapshot.clear()
+	result_summary.text = "Sesión Combat V1 restaurada desde Save v14."
+
+
 func _on_month_changed() -> void:
+	CombatV1SessionStore.clear_gt1_session()
 	_session.clear()
 	_last_snapshot.clear()
 	view_result_button.disabled = true
