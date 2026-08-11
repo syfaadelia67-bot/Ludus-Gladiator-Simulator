@@ -18,7 +18,9 @@ func _test_contract() -> void:
 	var contract := GT1SeriesSetupRuntimeScript.new().get_contract()
 	assert(contract.get("setup_authority") == "gt1_series_setup_runtime")
 	assert(contract.get("combat_runtime") == "combat_v1_arena_runtime")
-	assert(contract.get("human_opponent_selection_authority") == "gt1_rival_combat_snapshot_provider")
+	assert(
+		contract.get("human_opponent_selection_authority") == "gt1_rival_combat_snapshot_provider"
+	)
 	assert(contract.get("rival_catalog") == "DataRepository.rival_combat_v1_snapshots")
 	assert(contract.get("rival_ludi") == "DataRepository.rival_ludi")
 	assert(contract.get("month_16_beast_catalog") == "DataRepository.beasts")
@@ -56,8 +58,12 @@ func _test_catalogs() -> void:
 
 
 func _test_month_13_bridge() -> void:
-	var request := GT1SeriesSetupRuntimeScript.new().prepare_month_13_request(
-		"player", "alpha", "cassianus", ["rival_heavy", "rival_agile", "rival_technical"]
+	var request := (
+		GT1SeriesSetupRuntimeScript
+		. new()
+		. prepare_month_13_request(
+			"player", "alpha", "cassianus", ["rival_heavy", "rival_agile", "rival_technical"]
+		)
 	)
 	assert(request.get("status") == "ready")
 	assert(request.get("player_ids_by_bout") == [["player"], ["player"], ["player"]])
@@ -68,11 +74,15 @@ func _test_month_13_bridge() -> void:
 
 
 func _test_month_16_bridge() -> void:
-	var request := GT1SeriesSetupRuntimeScript.new().prepare_month_16_human_request(
-		["p1", "p2", "p3"],
-		"alpha",
-		"flavianus",
-		["rival_technical", "rival_heavy", "rival_agile"],
+	var request := (
+		GT1SeriesSetupRuntimeScript
+		. new()
+		. prepare_month_16_human_request(
+			["p1", "p2", "p3"],
+			"alpha",
+			"flavianus",
+			["rival_technical", "rival_heavy", "rival_agile"],
+		)
 	)
 	assert(request.get("status") == "ready")
 	assert(request.get("player_ids_by_bout") == [["p1"], ["p2"], ["p3"]])
@@ -81,15 +91,19 @@ func _test_month_16_bridge() -> void:
 
 
 func _test_month_20_bridge() -> void:
-	var request := GT1SeriesSetupRuntimeScript.new().prepare_month_20_request(
-		[["p1", "p2"], ["p1", "p3"], ["p1", "p3"]],
-		"alpha",
-		"drusus",
-		[
-			["rival_heavy", "rival_agile"],
-			["rival_heavy", "rival_technical"],
-			["rival_agile", "rival_technical"],
-		],
+	var request := (
+		GT1SeriesSetupRuntimeScript
+		. new()
+		. prepare_month_20_request(
+			[["p1", "p2"], ["p1", "p3"], ["p1", "p3"]],
+			"alpha",
+			"drusus",
+			[
+				["rival_heavy", "rival_agile"],
+				["rival_heavy", "rival_technical"],
+				["rival_agile", "rival_technical"],
+			],
+		)
 	)
 	assert(request.get("status") == "ready")
 	assert(request.get("format") == "2v2")
