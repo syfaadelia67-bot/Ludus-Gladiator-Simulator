@@ -64,8 +64,13 @@ func run() -> void:
 	assert(project.contains("window/size/viewport_width=1920"))
 	assert(project.contains("window/size/viewport_height=1080"))
 	assert(presenter.contains('BANNER_NAME := "FunctionalStateBanner"'))
+	assert(presenter.contains('contract["state_banner_parent"] = "active_hosted_screen"'))
+	assert(presenter.contains('screen.add_child(_banner)'))
+	assert(not presenter.contains('host.add_child(_banner)'))
 	assert(presenter.contains("control.grab_focus()"))
-	assert(presenter.contains("Control.FOCUS_NONE"))
+	assert(presenter.contains("control.focus_mode != Control.FOCUS_ALL"))
+	assert(presenter.contains("_try_initialize_for_main"))
+	assert(presenter.contains("_get_main_scene() == null"))
 	for key in [
 		"UI_STATE_LABEL_EMPTY",
 		"UI_STATE_LABEL_BLOCKED",
