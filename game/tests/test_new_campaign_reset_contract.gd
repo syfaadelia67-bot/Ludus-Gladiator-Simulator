@@ -29,7 +29,9 @@ func _ready() -> void:
 	assert(coordinator.contains("SaveManager.autosave_enabled = previous_autosave"))
 	assert(coordinator.contains("reset_in_progress = false"))
 	assert(save_manager.contains('payload["owned_beasts"] = OwnedBeastRegistry.export_state()'))
-	assert(save_manager.contains('payload["combat_v1_runtime"] = CombatV1SessionStore.export_state()'))
+	assert(
+		save_manager.contains('payload["combat_v1_runtime"] = CombatV1SessionStore.export_state()')
+	)
 	assert(save_manager.contains("CombatV1SessionStore.import_state"))
 	assert(save_manager.contains("OwnedBeastRegistry.import_state"))
 
