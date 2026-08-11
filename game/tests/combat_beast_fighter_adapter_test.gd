@@ -5,9 +5,12 @@ const CombatBeastFighterAdapterScript = preload(
 )
 
 const EXPECTED_PROFILES := {
-	"boar": {"FUE": 7, "AGI": 5, "TEC": 6, "RES": 6, "PV": 56, "stamina": 10},
-	"lion": {"FUE": 8, "AGI": 9, "TEC": 8, "RES": 5, "PV": 55, "stamina": 10},
-	"bear": {"FUE": 10, "AGI": 4, "TEC": 5, "RES": 8, "PV": 68, "stamina": 10},
+	"boar":
+	{"FUE": 7, "AGI": 5, "TEC": 6, "RES": 6, "PV": 56, "stamina": 10},
+	"lion":
+	{"FUE": 8, "AGI": 9, "TEC": 8, "RES": 5, "PV": 55, "stamina": 10},
+	"bear":
+	{"FUE": 10, "AGI": 4, "TEC": 5, "RES": 8, "PV": 68, "stamina": 10},
 }
 
 
@@ -98,7 +101,10 @@ func _test_contract(adapter) -> void:
 
 func _beast(beast_id: String) -> Dictionary:
 	for raw_beast in DataRepository.beasts:
-		if raw_beast is Dictionary and str((raw_beast as Dictionary).get("id", "")) == beast_id:
+		if (
+			raw_beast is Dictionary
+			and str((raw_beast as Dictionary).get("id", "")) == beast_id
+		):
 			return (raw_beast as Dictionary).duplicate(true)
 	return {}
 
