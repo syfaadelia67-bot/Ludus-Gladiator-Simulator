@@ -40,6 +40,13 @@ func get_save_metadata() -> Dictionary:
 	}
 
 
+func _validate_payload(payload: Dictionary) -> bool:
+	if not super._validate_payload(payload):
+		return false
+	var runtime_value: Variant = payload.get("combat_v1_runtime", {})
+	return runtime_value is Dictionary
+
+
 func _build_payload() -> Dictionary:
 	var payload := super._build_payload()
 	var game_data: Dictionary = payload.get("game_state", {})
@@ -58,6 +65,9 @@ func _build_payload() -> Dictionary:
 	payload["owned_beasts"] = OwnedBeastRegistry.export_state()
 	_inject_monthly_market_state(payload)
 	_inject_equipment_runtime_state(payload)
+	# Additive v14 runtime section: active Combat V1 state, including consecutive
+	# carryover and championship rematch state, never changes SAVE_VERSION.
+	payload["combat_v1_runtime"] = CombatV1SessionStore.export_state()
 	return payload
 
 
@@ -171,4 +181,10 @@ func _apply_payload(data: Dictionary) -> bool:
 		# saved market offers without being rejected.
 		UniqueGladiatorManager.reconcile_from_world()
 	MarketManager.sync_unique_offers()
+
+	var runtime_data: Variant = data.get("combat_v1_runtime", {})
+	if not CombatV1SessionStore.import_state(
+		runtime_data if runtime_data is Dictionary else {}
+	):
+		return false
 	return true
