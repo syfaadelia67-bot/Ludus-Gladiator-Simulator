@@ -181,9 +181,13 @@ func _build_candidate_card(offer: Dictionary) -> Control:
 	box.add_child(name_label)
 
 	var identity := Label.new()
-	identity.text = "%s · %s" % [
-		_gender_name(str(offer.get("gender", "unknown"))), str(offer.get("origin", "Desconocido"))
-	]
+	identity.text = (
+		"%s · %s"
+		% [
+			_gender_name(str(offer.get("gender", "unknown"))),
+			str(offer.get("origin", "Desconocido"))
+		]
+	)
 	identity.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	box.add_child(identity)
 
@@ -193,9 +197,9 @@ func _build_candidate_card(offer: Dictionary) -> Control:
 	box.add_child(stats)
 
 	var management := Label.new()
-	management.text = "Lealtad %d · Moral %d" % [
-		int(offer.get("loyalty", 50)), int(offer.get("morale", 50))
-	]
+	management.text = (
+		"Lealtad %d · Moral %d" % [int(offer.get("loyalty", 50)), int(offer.get("morale", 50))]
+	)
 	management.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	box.add_child(management)
 
@@ -203,7 +207,9 @@ func _build_candidate_card(offer: Dictionary) -> Control:
 	var trait_names: Array[String] = []
 	for trait_id in offer.get("traits", []):
 		trait_names.append(TraitManager.get_trait_name(str(trait_id)))
-	traits.text = "Rasgos: %s" % (", ".join(trait_names) if not trait_names.is_empty() else "Ninguno")
+	traits.text = (
+		"Rasgos: %s" % (", ".join(trait_names) if not trait_names.is_empty() else "Ninguno")
+	)
 	traits.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	box.add_child(traits)
 
@@ -217,7 +223,9 @@ func _build_candidate_card(offer: Dictionary) -> Control:
 	var names: Array[String] = []
 	for specialization_id in offer.get("recommended_specializations", []):
 		names.append(GladiatorProgressionManager.get_specialization_name(str(specialization_id)))
-	specializations.text = "Potencial: %s" % (", ".join(names) if not names.is_empty() else "Flexible")
+	specializations.text = (
+		"Potencial: %s" % (", ".join(names) if not names.is_empty() else "Flexible")
+	)
 	specializations.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	box.add_child(specializations)
 
@@ -229,9 +237,7 @@ func _build_candidate_card(offer: Dictionary) -> Control:
 	var choose := Button.new()
 	choose.text = "Contratar por %d denarios" % int(offer.get("price", 0))
 	choose.disabled = GameState.denarii < int(offer.get("price", 0))
-	choose.tooltip_text = (
-		"Esta decisión es permanente. Los otros candidatos pasarán a casas rivales."
-	)
+	choose.tooltip_text = ("Esta decisión es permanente. Los otros candidatos pasarán a casas rivales.")
 	choose.pressed.connect(
 		_choose_candidate.bind(str(offer.get("id", "")), str(offer.get("name", "Gladiador")))
 	)
@@ -243,13 +249,16 @@ func _canonical_combat_stats_text(offer: Dictionary) -> String:
 	var gladiator_id := str(offer.get("unique_gladiator_id", ""))
 	var canonical := DataRepository.get_unique_gladiator(gladiator_id)
 	var source := canonical if not canonical.is_empty() else offer
-	return "FUE %d · AGI %d · TEC %d\nRES %d · PV %d" % [
-		int(source.get("strength", 5)),
-		int(source.get("agility", 5)),
-		int(source.get("technique", 5)),
-		int(source.get("resistance", 5)),
-		int(source.get("health", 50)),
-	]
+	return (
+		"FUE %d · AGI %d · TEC %d\nRES %d · PV %d"
+		% [
+			int(source.get("strength", 5)),
+			int(source.get("agility", 5)),
+			int(source.get("technique", 5)),
+			int(source.get("resistance", 5)),
+			int(source.get("health", 50)),
+		]
+	)
 
 
 func _choose_candidate(offer_id: String, candidate_name: String) -> void:
