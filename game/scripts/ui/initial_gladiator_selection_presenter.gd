@@ -237,7 +237,10 @@ func _build_candidate_card(offer: Dictionary) -> Control:
 	var choose := Button.new()
 	choose.text = "Contratar por %d denarios" % int(offer.get("price", 0))
 	choose.disabled = GameState.denarii < int(offer.get("price", 0))
-	choose.tooltip_text = ("Esta decisión es permanente. Los otros candidatos pasarán a casas rivales.")
+	choose.tooltip_text = (
+		"Esta decisión es permanente. "
+		+ "Los otros candidatos pasarán a casas rivales."
+	)
 	choose.pressed.connect(
 		_choose_candidate.bind(str(offer.get("id", "")), str(offer.get("name", "Gladiador")))
 	)
