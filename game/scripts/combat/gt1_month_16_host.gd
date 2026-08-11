@@ -30,10 +30,7 @@ func prepare_human_request(
 
 
 func prepare_beast_request(
-	player_gladiator_ids: Array,
-	player_team_id: String,
-	beast_ids: Array,
-	opponent_team_id: String
+	player_gladiator_ids: Array, player_team_id: String, beast_ids: Array, opponent_team_id: String
 ) -> Dictionary:
 	var beast_readiness := get_beast_readiness()
 	var errors := _validate_player_request(player_gladiator_ids, player_team_id)
@@ -78,10 +75,7 @@ func start_human(
 
 
 func start_beasts(
-	player_gladiator_ids: Array,
-	player_team_id: String,
-	beast_ids: Array,
-	opponent_team_id: String
+	player_gladiator_ids: Array, player_team_id: String, beast_ids: Array, opponent_team_id: String
 ) -> Dictionary:
 	var request := prepare_beast_request(
 		player_gladiator_ids, player_team_id, beast_ids, opponent_team_id
@@ -148,8 +142,11 @@ func _prepare_request(
 			continue
 		var opponent := raw_opponent as Dictionary
 		if _looks_like_beast(opponent) and not allow_canonical_beasts:
-			errors.append(
-				"GT I month XVI manual beast snapshots are forbidden; use the canonical beast adapter"
+			(
+				errors
+				. append(
+					"GT I month XVI manual beast snapshots are forbidden; use the canonical beast adapter"
+				)
 			)
 			continue
 		if _looks_like_beast(opponent) and beast_readiness.get("beast_selection_ready") != true:
