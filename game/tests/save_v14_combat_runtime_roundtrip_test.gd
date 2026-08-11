@@ -8,21 +8,27 @@ func run() -> void:
 	TournamentManager.import_state({})
 	GameState.day = 13
 	var runtime = GT1CombatRuntimeScript.new()
-	var session := runtime.start_encounter(
-		13,
-		"player_team",
-		[
-			_state_1v1("save_player", "save_r1"),
-			_state_1v1("save_player", "save_r2"),
-			_state_1v1("save_player", "save_r3"),
-		],
+	var session := (
+		runtime
+		. start_encounter(
+			13,
+			"player_team",
+			[
+				_state_1v1("save_player", "save_r1"),
+				_state_1v1("save_player", "save_r2"),
+				_state_1v1("save_player", "save_r3"),
+			],
+		)
 	)
-	session = runtime.advance_exchange(
-		session,
-		[
-			{"actor_id": "save_player", "action_id": "light", "target_id": "save_r1"},
-			{"actor_id": "save_r1", "action_id": "block"},
-		],
+	session = (
+		runtime
+		. advance_exchange(
+			session,
+			[
+				{"actor_id": "save_player", "action_id": "light", "target_id": "save_r1"},
+				{"actor_id": "save_r1", "action_id": "block"},
+			],
+		)
 	)
 	assert(int(session.get("completed_bouts", -1)) == 1)
 	assert(CombatV1SessionStore.set_gt1_session(session))
