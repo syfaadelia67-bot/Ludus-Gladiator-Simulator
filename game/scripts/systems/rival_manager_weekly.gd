@@ -113,43 +113,41 @@ func run_operation(rival_id: String, operation_id: String, agent_id: String = ""
 		return _reject_operation("No hay suficientes denarios para financiar la operación.")
 	RosterManager.intelligence_points -= intel_cost
 
-	var formula := MonthlyRivalManagementPolicyScript.OPERATION_FORMULA
+	var formula: Dictionary = MonthlyRivalManagementPolicyScript.OPERATION_FORMULA
 	var rng := RandomNumberGenerator.new()
 	rng.randomize()
-	var skill := (
-		agent.intelligence * int(formula.get("intelligence_weight", 6))
-		+ agent.agility * int(formula.get("agility_weight", 3))
-		+ floori(
-			float(agent.loyalty) / float(formula.get("loyalty_divisor", 5))
-		)
+	var skill: int = (
+		int(agent.intelligence) * int(formula.get("intelligence_weight", 6))
+		+ int(agent.agility) * int(formula.get("agility_weight", 3))
+		+ floori(float(agent.loyalty) / float(formula.get("loyalty_divisor", 5)))
 	)
 	if agent.traits.has("mentor"):
 		skill += int(formula.get("mentor_bonus", 6))
 	if agent.traits.has("freedom_seeker"):
 		skill -= int(formula.get("freedom_seeker_penalty", 5))
-	var defense := (
+	var defense: int = (
 		int(rival.get("security", 50))
 		+ floori(
 			float(int(rival.get("suspicion", 0)))
 			/ float(formula.get("defense_suspicion_divisor", 2))
 		)
 	)
-	var success_chance := clampi(
+	var success_chance: int = clampi(
 		int(formula.get("success_base", 45))
 		+ floori(float(skill) / float(formula.get("skill_divisor", 3)))
 		- floori(float(defense) / float(formula.get("defense_divisor", 2))),
 		int(formula.get("success_min", 12)),
 		int(formula.get("success_max", 92))
 	)
-	var detection_chance := clampi(
+	var detection_chance: int = clampi(
 		int(operation.get("risk", 20))
 		+ floori(float(defense) / float(formula.get("detection_defense_divisor", 4)))
-		- agent.agility * int(formula.get("detection_agility_weight", 2)),
+		- int(agent.agility) * int(formula.get("detection_agility_weight", 2)),
 		int(formula.get("detection_min", 5)),
 		int(formula.get("detection_max", 85))
 	)
-	var success := rng.randi_range(1, 100) <= success_chance
-	var detected := rng.randi_range(1, 100) <= detection_chance
+	var success: bool = rng.randi_range(1, 100) <= success_chance
+	var detected: bool = rng.randi_range(1, 100) <= detection_chance
 	var effect_text := ""
 
 	if success:
@@ -221,7 +219,7 @@ func process_month() -> Array:
 	if month == last_processed_month:
 		return []
 	last_processed_month = month
-	var rules := MonthlyRivalManagementPolicyScript.RETALIATION_RULES
+	var rules: Dictionary = MonthlyRivalManagementPolicyScript.RETALIATION_RULES
 	var events: Array = []
 	hostility_heat = maxi(
 		0, hostility_heat - int(rules.get("hostility_heat_decay", 1))
@@ -233,7 +231,7 @@ func process_month() -> Array:
 		rival["last_management_month"] = month
 		if int(rival.get("relation", 0)) > int(rules.get("relation_threshold", -45)):
 			continue
-		var retaliation_chance := (
+		var retaliation_chance: float = (
 			float(rules.get("base_chance", 0.10))
 			+ float(hostility_heat) / float(rules.get("heat_divisor", 300.0))
 		)
@@ -269,7 +267,7 @@ func get_monthly_management_contract() -> Dictionary:
 func _apply_monthly_success(
 	rival: Dictionary, operation_id: String, rng: RandomNumberGenerator
 ) -> String:
-	var effects := MonthlyRivalManagementPolicyScript.OPERATION_EFFECTS
+	var effects: Dictionary = MonthlyRivalManagementPolicyScript.OPERATION_EFFECTS
 	var rule := effects.get(operation_id, {}) as Dictionary
 	match operation_id:
 		"scout":
@@ -280,12 +278,12 @@ func _apply_monthly_success(
 			RosterManager.intelligence_points += int(rule.get("player_intel_gain", 3))
 			return "Se obtuvieron datos sobre seguridad, riqueza y gladiadores del rival."
 		"steal_plans":
-			var power_loss := rng.randi_range(
+			var plans_power_loss := rng.randi_range(
 				int(rule.get("management_power_loss_min", 4)),
 				int(rule.get("management_power_loss_max", 9))
 			)
 			rival["gladiator_power"] = maxi(
-				10, int(rival.get("gladiator_power", 50)) - power_loss
+				10, int(rival.get("gladiator_power", 50)) - plans_power_loss
 			)
 			RosterManager.intelligence_points += int(rule.get("player_intel_gain", 8))
 			return (
@@ -293,12 +291,12 @@ func _apply_monthly_success(
 				+ "no alteran Combat V1 ni GT I."
 			)
 		"poison_supplies":
-			var power_loss := rng.randi_range(
+			var poison_power_loss := rng.randi_range(
 				int(rule.get("management_power_loss_min", 8)),
 				int(rule.get("management_power_loss_max", 15))
 			)
 			rival["gladiator_power"] = maxi(
-				10, int(rival.get("gladiator_power", 50)) - power_loss
+				10, int(rival.get("gladiator_power", 50)) - poison_power_loss
 			)
 			rival["prestige"] = maxi(
 				0, int(rival.get("prestige", 50)) - int(rule.get("prestige_loss", 3))
@@ -328,15 +326,15 @@ func _apply_monthly_success(
 
 
 func _resolve_monthly_retaliation(rival: Dictionary) -> Dictionary:
-	var rules := MonthlyRivalManagementPolicyScript.RETALIATION_RULES
+	var rules: Dictionary = MonthlyRivalManagementPolicyScript.RETALIATION_RULES
 	var rng := RandomNumberGenerator.new()
 	rng.randomize()
-	var security := RosterManager.security_score + EstateManager.get_security_bonus()
-	var attack_strength := (
+	var security: int = int(RosterManager.security_score) + int(EstateManager.get_security_bonus())
+	var attack_strength: int = (
 		floori(float(int(rival.get("wealth", 50))) / 3.0)
 		+ floori(float(int(rival.get("suspicion", 0))) / 2.0)
 	)
-	var blocked := (
+	var blocked: bool = (
 		security
 		+ rng.randi_range(
 			int(rules.get("security_roll_min", 1)), int(rules.get("security_roll_max", 30))
