@@ -41,8 +41,6 @@ const PENDING_AUTHORITY_BOUNDARIES := {
 		+ "legacy arena schedules are quarantined. The blocker remains until optional/mandatory "
 		+ "non-GT Arena opportunities and replacement objectives are frozen by design."
 	),
-	"in_progress_combat_save_policy":
-	"Saving/quitting during a Combat V1 series or tiebreak has no final persistence policy.",
 	"month_20_end_to_end_gate":
 	"No end-to-end test yet covers Month XX, GT I, tiebreak and final save/load.",
 }
