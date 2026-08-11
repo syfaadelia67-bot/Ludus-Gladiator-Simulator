@@ -7,6 +7,7 @@ static func get_contract() -> Dictionary:
 	return {
 		"status": STATUS,
 		"canonical_skill_source": "DataRepository.skills",
+		"canonical_skill_mechanics_source": "DataRepository.skill_mechanics_v1",
 		"legacy_ability_source": "DataRepository.abilities",
 		"canonical_skill_count": 12,
 		"canonical_general_skill_count": 8,
@@ -18,6 +19,8 @@ static func get_contract() -> Dictionary:
 		"legacy_abilities_allowed_in_combat_v1": false,
 		"legacy_ability_levels_allowed_in_combat_v1": false,
 		"legacy_specialization_class_ability_is_canonical_skill": false,
+		"legacy_progression_manager_is_combat_v1_authority": false,
+		"legacy_specialization_skill_mapping_allowed": false,
 		"shared_id_inherits_legacy_mechanics": false,
 		"invent_skill_mechanics_allowed": false,
 		"save_version_change_required": false,
