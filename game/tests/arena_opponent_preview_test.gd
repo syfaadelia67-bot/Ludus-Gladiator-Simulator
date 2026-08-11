@@ -14,8 +14,16 @@ func run() -> void:
 	assert(arena.contains("_arena_runtime.get_active_enemy_ids(_session)"))
 	assert(not arena.contains("CombatManager.get_current_opponent_preview"))
 	assert(not arena.contains("RivalUniqueGladiatorController"))
-	assert(runtime.contains('"human_opponent_selection_authority": "gt1_rival_combat_snapshot_provider"'))
-	assert(runtime.contains('"player_facing_rival_catalog": "DataRepository.rival_combat_v1_snapshots"'))
+	assert(
+		runtime.contains(
+			'"human_opponent_selection_authority": "gt1_rival_combat_snapshot_provider"'
+		)
+	)
+	assert(
+		runtime.contains(
+			'"player_facing_rival_catalog": "DataRepository.rival_combat_v1_snapshots"'
+		)
+	)
 	assert(runtime.contains('"month_16_beast_selection_authority": "combat_beast_fighter_adapter"'))
 	assert(runtime.contains('"generated_opponents_allowed": false'))
 	assert(runtime.contains('"default_target_allowed": false'))
