@@ -35,7 +35,7 @@ func _assert_known_blockers(codes: Array[String]) -> void:
 	assert(codes.has("playable_combat_v1_ui"))
 	assert(codes.has("gt1_rival_results_provider"))
 	assert(codes.has("months_without_gt1_loop"))
-	assert(codes.has("in_progress_combat_save_policy"))
+	assert(not codes.has("in_progress_combat_save_policy"))
 	assert(codes.has("month_20_end_to_end_gate"))
 
 
