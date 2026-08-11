@@ -38,7 +38,12 @@ func _test_canonical_catalog_is_populated_and_resolvable() -> void:
 	assert(result.get("rival_ludus_id") == "cassianus")
 	var fighter := result.get("fighter_snapshot", {}) as Dictionary
 	assert(fighter.get("team") == "rival_team")
-	assert(fighter.get("stats") == {"FUE": 9, "AGI": 5, "TEC": 5, "RES": 5, "PV": 62})
+	var stats := fighter.get("stats", {}) as Dictionary
+	assert(float(stats.get("FUE", 0.0)) == 9.0)
+	assert(float(stats.get("AGI", 0.0)) == 5.0)
+	assert(float(stats.get("TEC", 0.0)) == 5.0)
+	assert(float(stats.get("RES", 0.0)) == 5.0)
+	assert(float(stats.get("PV", 0.0)) == 62.0)
 	assert(float(fighter.get("stamina", 0.0)) == 10.0)
 
 
