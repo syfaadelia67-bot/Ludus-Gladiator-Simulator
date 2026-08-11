@@ -112,6 +112,7 @@ func _reset_campaign_for_new_owner() -> void:
 	CombatManager.last_combat_day = -1
 	CombatManager.last_result = {}
 	CombatManager.next_battle_config = {}
+	CombatV1SessionStore.clear_all()
 	CombatHistoryManager.import_state({})
 	EventManager.import_state({})
 	EconomyManager.import_state({})
