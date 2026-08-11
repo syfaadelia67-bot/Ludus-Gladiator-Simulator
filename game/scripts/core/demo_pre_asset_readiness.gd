@@ -184,6 +184,7 @@ func _append_beast_blockers(blockers: Array[Dictionary]) -> void:
 			. append(
 				_blocker(
 					"beast_combat_v1_adapter_missing",
+					"beasts",
 					"The canonical beast-to-Combat-V1 runtime adapter is not ready.",
 					false,
 				)
