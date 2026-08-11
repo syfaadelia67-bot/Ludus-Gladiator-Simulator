@@ -62,11 +62,11 @@ func _refresh() -> void:
 				)
 			)
 	lines.append("")
-	var combat_warning := (
-		"[color=orange]Las stats Combat V1 de Jabalí, León y Oso ya están congeladas. "
-		+ "Su selección en combate sigue bloqueada hasta completar el adapter canónico.[/color]"
+	var combat_status := (
+		"[color=orange]Las stats Combat V1 y el adapter canónico de Jabalí, León y Oso ya están "
+		+ "listos para Mes XVI. La selección visual final desde Arena sigue pendiente.[/color]"
 	)
-	lines.append(combat_warning)
+	lines.append(combat_status)
 	status.text = "\n".join(lines)
 
 
