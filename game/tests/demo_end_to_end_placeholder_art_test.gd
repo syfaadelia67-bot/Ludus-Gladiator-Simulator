@@ -69,8 +69,10 @@ func run() -> void:
 
 	assert(NewCampaignCoordinator.reset_campaign_state())
 	print(
-		"Demo placeholder end-to-end: New Campaign -> 9 GT I bouts -> "
-		+ "tiebreak -> finale -> Save v14 load: OK"
+		(
+			"Demo placeholder end-to-end: New Campaign -> 9 GT I bouts -> "
+			+ "tiebreak -> finale -> Save v14 load: OK"
+		)
 	)
 
 
