@@ -53,3 +53,33 @@ msgstr "La campaña terminó. Esta sección permanece disponible para consulta y
 
 msgid "UI_STATE_ROUTE_ERROR"
 msgstr "No se pudo resolver la ruta funcional «{route}»."
+
+msgid "CAMPAIGN_RESULT_TITLE_VICTORY"
+msgstr "VICTORIA DE CAMPAÑA"
+
+msgid "CAMPAIGN_RESULT_TITLE_FINISHED"
+msgstr "CAMPAÑA FINALIZADA"
+
+msgid "CAMPAIGN_RESULT_DETAILS"
+msgstr "Mes: {month} de {final_month}\nVictorias GT I: {wins} | Derrotas GT I: {losses}\nRango final: {rank}\nReputación: {reputation} | Denarios: {denarii}\nObjetivos: {objectives} de {objective_total}"
+
+msgid "CAMPAIGN_RESULT_GT1"
+msgstr "Gran Torneo de Roma · Puesto {placement}.º · Medalla: {medal} · {points} puntos en {bouts} combates"
+
+msgid "CAMPAIGN_RESULT_READ_ONLY_BUTTON"
+msgstr "Continuar en modo consulta"
+
+msgid "CAMPAIGN_RESULT_RETURN_MENU_BUTTON"
+msgstr "Guardar y volver al menú principal"
+
+msgid "GT1_MEDAL_GOLD"
+msgstr "oro"
+
+msgid "GT1_MEDAL_SILVER"
+msgstr "plata"
+
+msgid "GT1_MEDAL_BRONZE"
+msgstr "bronce"
+
+msgid "GT1_MEDAL_NONE"
+msgstr "sin medalla"
