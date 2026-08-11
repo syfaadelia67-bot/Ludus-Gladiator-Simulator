@@ -10,7 +10,7 @@ func run() -> void:
 	assert(presenter.contains("ELEGÍ AL PRIMER GLADIADOR DEL LUDUS"))
 	assert(presenter.contains("get_initial_candidate_offers"))
 	assert(presenter.contains("RETRATO\\nPENDIENTE"))
-	assert(presenter.contains("Los otros dos pasarán a casas rivales"))
+	assert(presenter.contains("los otros dos pasarán a casas rivales"))
 	assert(
 		presenter.contains("Marcus") and presenter.contains("Odran") and presenter.contains("Neria")
 	)
