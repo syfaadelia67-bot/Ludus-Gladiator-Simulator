@@ -55,11 +55,31 @@ func start_from_live_roster(
 	if session.get("status") == "tiebreak_combat_running":
 		session["rival_source"] = str(rival_lookup.get("snapshot_source", ""))
 		session["rival_catalog_lookup"] = rival_lookup.duplicate(true)
+		if not CombatV1SessionStore.set_tiebreak_session(session):
+			return _rejected(
+				"tiebreak_persistence_rejected",
+				["Championship tiebreak did not satisfy the Save v14 persistence contract"],
+				request,
+				rival_lookup,
+			)
 	return session
 
 
 func advance_exchange(session: Dictionary, intents: Array) -> Dictionary:
-	return _runtime.advance_exchange(session, intents)
+	var next := _runtime.advance_exchange(session, intents)
+	if str(next.get("status", "")) == "rejected":
+		return next
+	if not CombatV1SessionStore.set_tiebreak_session(next):
+		return _rejected(
+			"tiebreak_persistence_rejected",
+			["Championship tiebreak state did not satisfy the Save v14 persistence contract"],
+			next.get("request", {}) as Dictionary,
+		)
+	return next
+
+
+func get_persisted_session() -> Dictionary:
+	return CombatV1SessionStore.get_tiebreak_session()
 
 
 func get_contract() -> Dictionary:
@@ -76,6 +96,9 @@ func get_contract() -> Dictionary:
 		"legacy_rival_manager_is_combat_authority": false,
 		"combat_result_authority": "CombatSimulator",
 		"standings_authority": "TournamentManager",
+		"session_store": "CombatV1SessionStore",
+		"running_session_persisted": true,
+		"rematch_state_persisted": true,
 		"save_version_change_required": false,
 	}
 
