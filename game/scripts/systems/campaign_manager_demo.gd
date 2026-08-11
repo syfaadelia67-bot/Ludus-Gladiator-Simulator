@@ -72,7 +72,7 @@ func _evaluate_objectives() -> void:
 	_mark_expired_objectives()
 	for objective in OBJECTIVES:
 		var objective_id := str(objective.get("id", ""))
-		if _non_gt_activity_policy.is_objective_design_blocked(objective_id):
+		if _non_gt_activity_policy.is_objective_retired_from_demo(objective_id):
 			continue
 		if completed_objectives.has(objective_id) or failed_objectives.has(objective_id):
 			continue
@@ -91,23 +91,21 @@ func _evaluate_objectives() -> void:
 func get_objectives(chapter_id: String = "") -> Array:
 	var result: Array = []
 	for objective in OBJECTIVES:
+		var objective_id := str(objective.get("id", ""))
+		if _non_gt_activity_policy.is_objective_retired_from_demo(objective_id):
+			continue
 		if not chapter_id.is_empty() and str(objective.get("chapter", "")) != chapter_id:
 			continue
 		var data: Dictionary = objective.duplicate(true)
-		var objective_id := str(objective.get("id", ""))
 		var deadline := _deadline_for_objective(objective)
-		var design_blocked := _non_gt_activity_policy.is_objective_design_blocked(objective_id)
 		data["progress"] = _objective_progress(objective)
 		data["completed"] = completed_objectives.has(objective_id)
-		data["design_blocked"] = design_blocked
-		data["available"] = not design_blocked
-		data["blocked_reason"] = _non_gt_activity_policy.get_objective_block_reason(objective_id)
+		data["design_blocked"] = false
+		data["available"] = true
+		data["blocked_reason"] = ""
 		data["failed"] = (
-			not design_blocked
-			and (
-				failed_objectives.has(objective_id)
-				or (GameState.get_month() > deadline and not bool(data["completed"]))
-			)
+			failed_objectives.has(objective_id)
+			or (GameState.get_month() > deadline and not bool(data["completed"]))
 		)
 		data["deadline_month"] = deadline
 		data["months_remaining"] = maxi(0, deadline - GameState.get_month() + 1)
@@ -130,6 +128,7 @@ func get_summary() -> Dictionary:
 	var data := super.get_summary()
 	data["approved_combat_progress_source"] = "gt1_combat_v1"
 	data["non_gt_activity"] = _non_gt_activity_policy.evaluate_month(GameState.get_month())
+	data["retired_demo_objectives"] = MonthlyNonGTActivityPolicyScript.RETIRED_DEMO_OBJECTIVES.duplicate()
 	data["finale"] = _finale_policy.evaluate(
 		GameState.get_month(), TournamentManager.get_gt1_summary()
 	)
@@ -151,6 +150,7 @@ func import_state(data: Dictionary) -> void:
 		var objective_id := str(raw_id)
 		if (
 			_objective_exists(objective_id)
+			and not _non_gt_activity_policy.is_objective_retired_from_demo(objective_id)
 			and not completed_objectives.has(objective_id)
 			and not failed_objectives.has(objective_id)
 		):
@@ -210,7 +210,7 @@ func _medal_label(medal: String) -> String:
 func _mark_expired_objectives() -> void:
 	for objective in OBJECTIVES:
 		var objective_id := str(objective.get("id", ""))
-		if _non_gt_activity_policy.is_objective_design_blocked(objective_id):
+		if _non_gt_activity_policy.is_objective_retired_from_demo(objective_id):
 			continue
 		if completed_objectives.has(objective_id) or failed_objectives.has(objective_id):
 			continue
@@ -224,7 +224,7 @@ func _fail_objective(objective: Dictionary) -> void:
 		objective_id.is_empty()
 		or completed_objectives.has(objective_id)
 		or failed_objectives.has(objective_id)
-		or _non_gt_activity_policy.is_objective_design_blocked(objective_id)
+		or _non_gt_activity_policy.is_objective_retired_from_demo(objective_id)
 	):
 		return
 	failed_objectives.append(objective_id)
@@ -264,5 +264,5 @@ func _decorate_rank(rank: Dictionary) -> Dictionary:
 	var data := rank.duplicate(true)
 	data["combat_progress_source"] = "gt1_combat_v1"
 	data["legacy_arena_unlock_active"] = false
-	data["unlock_status"] = "design_pending_non_gt_arena"
+	data["unlock_status"] = "demo_gt1_only"
 	return data
