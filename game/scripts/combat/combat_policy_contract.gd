@@ -1,9 +1,13 @@
 extends RefCounted
 
 const CombatContractScript = preload("res://scripts/combat/combat_contract.gd")
+const CombatFighterActionPolicyScript = preload(
+	"res://scripts/combat/combat_fighter_action_policy.gd"
+)
 const CombatTargetResolverScript = preload("res://scripts/combat/combat_target_resolver.gd")
 
 var _combat_contract = CombatContractScript.new()
+var _fighter_action_policy = CombatFighterActionPolicyScript.new()
 var _target_resolver = CombatTargetResolverScript.new()
 
 
@@ -15,16 +19,21 @@ func validate_desired_action(state: Dictionary, desired_action: Dictionary) -> A
 	var actor_id := str(desired_action.get("actor_id", ""))
 	var action_id := str(desired_action.get("action_id", ""))
 	var target_id := str(desired_action.get("target_id", ""))
+	var actor: Dictionary = {}
 
 	if actor_id.is_empty():
 		errors.append("Desired action is missing actor_id")
-	elif not _fighter_exists(state, actor_id):
-		errors.append("Desired action references unknown actor: %s" % actor_id)
+	else:
+		actor = _find_fighter(state, actor_id)
+		if actor.is_empty():
+			errors.append("Desired action references unknown actor: %s" % actor_id)
 
 	if action_id.is_empty():
 		errors.append("Desired action is missing action_id")
 	elif not _combat_contract.is_action_id_valid(action_id):
 		errors.append("Desired action uses unsupported action: %s" % action_id)
+	elif not actor.is_empty() and not _fighter_action_policy.is_action_allowed(actor, action_id):
+		errors.append("Desired action %s is not allowed for actor %s" % [action_id, actor_id])
 
 	if not errors.is_empty():
 		return errors
@@ -65,13 +74,17 @@ func is_valid_desired_action(state: Dictionary, desired_action: Dictionary) -> b
 
 
 func _fighter_exists(state: Dictionary, fighter_id: String) -> bool:
+	return not _find_fighter(state, fighter_id).is_empty()
+
+
+func _find_fighter(state: Dictionary, fighter_id: String) -> Dictionary:
 	var fighters_value: Variant = state.get("fighters", [])
 	if not fighters_value is Array:
-		return false
+		return {}
 	for raw_fighter in fighters_value as Array:
 		if (
 			raw_fighter is Dictionary
 			and str((raw_fighter as Dictionary).get("id", "")) == fighter_id
 		):
-			return true
-	return false
+			return raw_fighter as Dictionary
+	return {}
