@@ -21,7 +21,7 @@ const ACTIVE_STRUCTURAL_EFFECTS := {
 const PENDING_BALANCE_EFFECTS := {
 	"training_yard": "training_gain_fatigue_and_injury_balance",
 	"infirmary": "recovery_speed_and_treatment_balance",
-	"mine": "monthly_production_and_upgrade_cost_balance",
+	"mine": "monthly_production_balance",
 	"beast_area": "beast_capacity_balance",
 }
 
