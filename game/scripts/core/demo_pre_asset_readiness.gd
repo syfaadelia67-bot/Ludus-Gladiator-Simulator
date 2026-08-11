@@ -41,8 +41,6 @@ const PENDING_AUTHORITY_BOUNDARIES := {
 		+ "legacy arena schedules are quarantined. The blocker remains until optional/mandatory "
 		+ "non-GT Arena opportunities and replacement objectives are frozen by design."
 	),
-	"month_20_end_to_end_gate":
-	"No end-to-end test yet covers Month XX, GT I, tiebreak and final save/load.",
 }
 
 
@@ -53,13 +51,16 @@ func evaluate() -> Dictionary:
 	_append_pending_building_balance_blockers(blockers)
 	_append_skill_mechanics_blocker(blockers)
 	_append_authority_boundary_blockers(blockers)
+	var report := _build_report(blockers)
 	return {
 		"status": "ready" if blockers.is_empty() else "blocked",
 		"ready": blockers.is_empty(),
 		"blocker_count": blockers.size(),
 		"blockers": blockers.duplicate(true),
+		"report": report.duplicate(true),
 		"scope": "demo_months_1_to_20_pre_asset_programming_gate",
 		"final_assets_allowed": blockers.is_empty(),
+		"programming_complete_allowed": blockers.is_empty(),
 		"save_version_change_required": false,
 	}
 
@@ -73,16 +74,57 @@ func get_blocker_codes() -> Array[String]:
 	return result
 
 
+func get_report() -> Dictionary:
+	return (evaluate().get("report", {}) as Dictionary).duplicate(true)
+
+
+func can_declare_programming_complete() -> bool:
+	return bool(get_report().get("clear", false))
+
+
 func get_contract() -> Dictionary:
 	return {
 		"status": "frozen",
 		"scope": "demo_months_1_to_20_pre_asset_programming_gate",
 		"blockers_are_fail_closed": true,
 		"final_assets_require_zero_blockers": true,
+		"programming_complete_requires_clear_report": true,
+		"report_lists_every_blocker": true,
 		"legacy_combat_authority_allowed": false,
 		"legacy_weekly_authority_allowed": false,
 		"invent_missing_balance_allowed": false,
+		"month_20_end_to_end_quality_gate": "automated_test",
 		"save_version_change_required": false,
+	}
+
+
+func _build_report(blockers: Array[Dictionary]) -> Dictionary:
+	var lines: Array[String] = []
+	var design_blocked_count := 0
+	var implementation_blocked_count := 0
+	for blocker in blockers:
+		lines.append(
+			"%s · %s · %s"
+			% [
+				str(blocker.get("code", "")),
+				str(blocker.get("category", "")),
+				str(blocker.get("reason", "")),
+			]
+		)
+		if bool(blocker.get("design_blocked", false)):
+			design_blocked_count += 1
+		else:
+			implementation_blocked_count += 1
+	return {
+		"status": "clear" if blockers.is_empty() else "blocked",
+		"clear": blockers.is_empty(),
+		"blocker_count": blockers.size(),
+		"design_blocked_count": design_blocked_count,
+		"implementation_blocked_count": implementation_blocked_count,
+		"unresolved_blockers": blockers.duplicate(true),
+		"lines": lines.duplicate(),
+		"programming_complete_allowed": blockers.is_empty(),
+		"final_assets_allowed": blockers.is_empty(),
 	}
 
 
