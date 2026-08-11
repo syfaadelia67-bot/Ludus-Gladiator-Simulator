@@ -61,7 +61,9 @@ func validate_entries(entries: Variant) -> Array[String]:
 func get_contract() -> Dictionary:
 	return {
 		"status": "frozen",
-		"catalog_may_be_empty_until_balance_is_frozen": true,
+		"empty_entries_shape_validation_allowed": true,
+		"catalog_completeness_authority": "gt1_rival_roster_readiness_contract",
+		"production_catalog_requires_complete_frozen_roster": true,
 		"entry_identity": "rival_ludus_id + fighter.id",
 		"rival_identity_source": "rival_ludi.json",
 		"fighter_validation": "CombatContract.validate_fighter_snapshot",
