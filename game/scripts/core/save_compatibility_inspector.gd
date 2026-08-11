@@ -84,6 +84,7 @@ func _structural_error(payload: Dictionary) -> String:
 	var error := ""
 	var game_state: Variant = payload.get("game_state", null)
 	var roster: Variant = payload.get("roster", null)
+	var runtime_value: Variant = payload.get("combat_v1_runtime", null)
 	if int(payload.get("version", 0)) <= 0:
 		error = "missing_version"
 	elif not game_state is Dictionary:
@@ -91,22 +92,15 @@ func _structural_error(payload: Dictionary) -> String:
 	elif not roster is Dictionary:
 		error = "missing_roster"
 	else:
-		var month := int(
-			(game_state as Dictionary).get(
-				"month",
-				(game_state as Dictionary).get(
-					"week", (game_state as Dictionary).get("day", 0)
-				)
-			)
-		)
+		var state := game_state as Dictionary
+		var fallback_day: Variant = state.get("day", 0)
+		var fallback_week: Variant = state.get("week", fallback_day)
+		var month := int(state.get("month", fallback_week))
 		if month < 1:
 			error = "invalid_month"
 		elif not (roster as Dictionary).get("people", null) is Array:
 			error = "invalid_roster"
-		elif (
-			payload.has("combat_v1_runtime")
-			and not payload.get("combat_v1_runtime") is Dictionary
-		):
+		elif payload.has("combat_v1_runtime") and not runtime_value is Dictionary:
 			error = "invalid_combat_v1_runtime"
 	return error
 
