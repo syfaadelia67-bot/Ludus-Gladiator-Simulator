@@ -21,6 +21,10 @@ func _ready() -> void:
 	assert(policy.get_effect_status("training_yard").get("numeric_balance_ready") == false)
 	assert(policy.get_effect_status("infirmary").get("numeric_balance_ready") == false)
 	assert(policy.get_effect_status("mine").get("numeric_balance_ready") == false)
+	assert(
+		policy.get_effect_status("mine").get("pending_balance_effect")
+		== "monthly_production_balance"
+	)
 	assert(policy.get_effect_status("beast_area").get("numeric_balance_ready") == false)
 	assert(not policy.can_apply_training_numeric_effect())
 	assert(not policy.can_apply_recovery_numeric_effect())
