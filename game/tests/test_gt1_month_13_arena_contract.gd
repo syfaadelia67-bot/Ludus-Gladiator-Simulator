@@ -33,7 +33,15 @@ func _run() -> void:
 	assert(combat_runtime.contains("month in [13, 20]"))
 	assert(combat_runtime.contains("prepare_consecutive_fight"))
 	assert(combat_runtime.contains("register_grand_tournament_fight_result"))
-	assert(rival_catalog.strip_edges() == "[]")
+	_assert_canonical_rival_catalog(rival_catalog)
 
 	print("GT I Month XIII Arena host contract: OK")
 	get_tree().quit(0)
+
+
+func _assert_canonical_rival_catalog(rival_catalog: String) -> void:
+	assert(rival_catalog.strip_edges() != "[]")
+	assert(rival_catalog.contains('"rival_ludus_id": "cassianus"'))
+	assert(rival_catalog.contains('"id": "rival_heavy"'))
+	assert(rival_catalog.contains('"id": "rival_agile"'))
+	assert(rival_catalog.contains('"id": "rival_technical"'))
