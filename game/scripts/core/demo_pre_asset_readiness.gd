@@ -35,8 +35,6 @@ const PENDING_AUTHORITY_BOUNDARIES := {
 		"Legacy sabotage, espionage and retaliation RNG are quarantined. Monthly operation "
 		+ "cadence, costs and risk rules still require frozen design values."
 	),
-	"gt1_rival_results_provider":
-	"GT I rival standings still require explicit external results without a campaign-owned provider.",
 	"months_without_gt1_loop":
 	(
 		"Months outside XIII, XVI and XX now have an explicit management-only canonical loop and "
@@ -49,6 +47,7 @@ const PENDING_AUTHORITY_BOUNDARIES := {
 func evaluate() -> Dictionary:
 	var blockers: Array[Dictionary] = []
 	_append_rival_snapshot_blocker(blockers)
+	_append_rival_results_provider_blocker(blockers)
 	_append_beast_blockers(blockers)
 	_append_pending_building_balance_blockers(blockers)
 	_append_skill_mechanics_blocker(blockers)
@@ -96,6 +95,7 @@ func get_contract() -> Dictionary:
 		"legacy_weekly_authority_allowed": false,
 		"invent_missing_balance_allowed": false,
 		"skill_mechanics_source_fail_closed": true,
+		"gt1_rival_results_provider_quality_gate": "campaign_owned_contract",
 		"month_20_end_to_end_quality_gate": "automated_test",
 		"save_version_change_required": false,
 	}
@@ -154,6 +154,48 @@ func _append_rival_snapshot_blocker(blockers: Array[Dictionary]) -> void:
 				),
 				true,
 			)
+		)
+	)
+
+
+func _append_rival_results_provider_blocker(blockers: Array[Dictionary]) -> void:
+	if not CampaignManager.has_method("get_gt1_rival_results_provider_contract"):
+		blockers.append(
+			_blocker(
+				"gt1_rival_results_provider",
+				"architecture",
+				"CampaignManager does not expose the canonical GT I rival results provider.",
+				false,
+			)
+		)
+		return
+	var contract: Dictionary = CampaignManager.get_gt1_rival_results_provider_contract()
+	var ready := (
+		contract.get("status") == "frozen"
+		and contract.get("provider_authority") == "gt1_rival_results_provider"
+		and contract.get("input_source") == "explicit_external_results"
+		and contract.get("registration_authority") == "gt1_rival_result_registry"
+		and contract.get("standings_authority") == "TournamentManager"
+		and int(contract.get("required_rival_results", 0)) == 7
+		and contract.get("full_batch_prevalidation_required") == true
+		and contract.get("partial_batch_allowed") == false
+		and contract.get("existing_result_overwrite_allowed") == false
+		and contract.get("generated_scores_allowed") == false
+		and contract.get("random_scores_allowed") == false
+		and contract.get("legacy_rival_manager_is_score_authority") == false
+		and contract.get("save_version_change_required") == false
+	)
+	if ready:
+		return
+	blockers.append(
+		_blocker(
+			"gt1_rival_results_provider",
+			"architecture",
+			(
+				"GT I rival standings require a campaign-owned, explicit external-results provider "
+				+ "that cannot generate, randomize, partially register or overwrite rival scores."
+			),
+			false,
 		)
 	)
 
