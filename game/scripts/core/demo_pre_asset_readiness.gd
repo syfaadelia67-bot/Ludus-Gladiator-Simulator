@@ -219,10 +219,14 @@ func _append_pending_building_balance_blockers(blockers: Array[Dictionary]) -> v
 
 
 func _append_skill_mechanics_blocker(blockers: Array[Dictionary]) -> void:
-	var readiness := CanonicalSkillMechanicsContractScript.new().evaluate(
-		DataRepository.get_skills(),
-		DataRepository.get_skill_mechanics_v1(),
-		false,
+	var readiness := (
+		CanonicalSkillMechanicsContractScript
+		. new()
+		. evaluate(
+			DataRepository.get_skills(),
+			DataRepository.get_skill_mechanics_v1(),
+			false,
+		)
 	)
 	if readiness.get("ready") == true:
 		return
@@ -231,17 +235,22 @@ func _append_skill_mechanics_blocker(blockers: Array[Dictionary]) -> void:
 	var missing_progression := readiness.get("missing_progression_ids", []) as Array
 	var reason := (
 		"The 12 canonical skill identities are authoritative, but approved Combat V1 mechanics "
-		+ "and progression remain fail-closed. Missing mechanics=%d; missing progression=%d."
-		% [missing_mechanics.size(), missing_progression.size()]
+		+ (
+			"and progression remain fail-closed. Missing mechanics=%d; missing progression=%d."
+			% [missing_mechanics.size(), missing_progression.size()]
+		)
 	)
 	if design_ready:
 		reason = "Canonical skill design is frozen, but the Combat V1 skill resolver is not ready."
-	blockers.append(
-		_blocker(
-			"canonical_skill_mechanics_not_frozen",
-			"skills",
-			reason,
-			not design_ready,
+	(
+		blockers
+		. append(
+			_blocker(
+				"canonical_skill_mechanics_not_frozen",
+				"skills",
+				reason,
+				not design_ready,
+			)
 		)
 	)
 
