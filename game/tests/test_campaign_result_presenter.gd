@@ -34,7 +34,9 @@ func run() -> void:
 	]:
 		assert(localization.contains(localized_text))
 
-	assert(project.contains('CampaignResultPresenter="*res://scripts/ui/campaign_result_presenter.gd"'))
+	assert(
+		project.contains('CampaignResultPresenter="*res://scripts/ui/campaign_result_presenter.gd"')
+	)
 	assert(project.find("CampaignManager=") < project.find("CampaignResultPresenter="))
 	assert(project.find("CampaignResultPresenter=") < project.find("StartScreenController="))
 
