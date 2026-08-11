@@ -182,23 +182,8 @@ jobs:
               git diff -- "${FILES[@]}"
               echo '```'
             } >> "$GITHUB_STEP_SUMMARY"
-            git diff --name-only -z --diff-filter=ACMR -- '*.gd' > gdformatted.bin
-            mkdir -p gdformatted
-            while IFS= read -r -d '' file; do
-              mkdir -p "gdformatted/$(dirname "$file")"
-              cp "$file" "gdformatted/$file"
-            done < gdformatted.bin
             exit "$FORMAT_STATUS"
           fi
-
-      - name: Upload gdformat output
-        if: failure() && steps.changed-gdscript.outputs.has_files == 'true'
-        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
-        with:
-          name: gdformatted-${{ github.run_attempt }}
-          path: gdformatted/
-          if-no-files-found: error
-          retention-days: 1
 
       - name: Lint GDScript
         if: steps.changed-gdscript.outputs.has_files == 'true'
