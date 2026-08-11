@@ -97,7 +97,8 @@ func get_contract() -> Dictionary:
 		"status": "frozen",
 		"source": "DataRepository.beasts",
 		"required_beast_ids": REQUIRED_BEAST_IDS.duplicate(),
-		"stat_mapping": {
+		"stat_mapping":
+		{
 			"FUE": "FUE",
 			"AGI": "AGI",
 			"TEC": "TEC",
@@ -140,8 +141,8 @@ func _validate_beast_source(beast: Dictionary) -> Array[String]:
 	for field_name in REQUIRED_RESTRICTIONS.keys():
 		if not beast.has(field_name) or beast.get(field_name) != REQUIRED_RESTRICTIONS[field_name]:
 			errors.append(
-			"Combat beast %s violates canonical restriction %s" % [beast_id, field_name]
-		)
+				"Combat beast %s violates canonical restriction %s" % [beast_id, field_name]
+			)
 	return errors
 
 
