@@ -1,8 +1,6 @@
 extends Node
 
-const FunctionalUiStatePolicyScript = preload(
-	"res://scripts/ui/demo_functional_ui_state_policy.gd"
-)
+const FunctionalUiStatePolicyScript = preload("res://scripts/ui/demo_functional_ui_state_policy.gd")
 
 
 func run() -> void:
@@ -33,7 +31,10 @@ func run() -> void:
 	]
 	for route_id in expected_routes:
 		assert(route_ids.has(route_id), "Missing functional route: %s" % route_id)
-		assert(FincaHubController.SCREEN_SCENES.has(route_id), "Missing ScreenHost route: %s" % route_id)
+		assert(
+			FincaHubController.SCREEN_SCENES.has(route_id),
+			"Missing ScreenHost route: %s" % route_id
+		)
 		var scene_path := str(FincaHubController.SCREEN_SCENES.get(route_id, ""))
 		assert(ResourceLoader.exists(scene_path), "Missing placeholder scene: %s" % scene_path)
 	for state_id in ["ready", "empty", "blocked", "error", "completed_read_only"]:
@@ -43,7 +44,9 @@ func run() -> void:
 	assert(not bool(contract.get("gameplay_authority", true)))
 	assert(not bool(contract.get("final_art_required", true)))
 	assert(not bool(contract.get("save_version_change_required", true)))
-	assert(str(policy.evaluate("missing_route").get("state", "")) == "error")
+	var missing_route_state := policy.evaluate("missing_route")
+	assert(str(missing_route_state.get("state", "")) == "error")
+	assert(not bool(missing_route_state.get("blocks_navigation", true)))
 
 	var project := FileAccess.get_file_as_string("res://project.godot")
 	var presenter := FileAccess.get_file_as_string(
@@ -51,7 +54,11 @@ func run() -> void:
 	)
 	var localization := FileAccess.get_file_as_string("res://localization/shared.es.po")
 	var start_screen := FileAccess.get_file_as_string("res://scripts/ui/start_screen_controller.gd")
-	assert(project.contains('DemoFunctionalUiPresenter="*res://scripts/ui/demo_functional_ui_presenter.gd"'))
+	assert(
+		project.contains(
+			'DemoFunctionalUiPresenter="*res://scripts/ui/demo_functional_ui_presenter.gd"'
+		)
+	)
 	assert(project.contains('window/stretch/mode="canvas_items"'))
 	assert(project.contains('window/stretch/aspect="expand"'))
 	assert(project.contains("window/size/viewport_width=1920"))
@@ -59,7 +66,6 @@ func run() -> void:
 	assert(presenter.contains('BANNER_NAME := "FunctionalStateBanner"'))
 	assert(presenter.contains("control.grab_focus()"))
 	assert(presenter.contains("Control.FOCUS_NONE"))
-	assert(presenter.contains("blocks_navigation") == false)
 	for key in [
 		"UI_STATE_LABEL_EMPTY",
 		"UI_STATE_LABEL_BLOCKED",
