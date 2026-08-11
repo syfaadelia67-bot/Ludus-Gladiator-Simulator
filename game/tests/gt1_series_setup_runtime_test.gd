@@ -24,7 +24,9 @@ func _assert_contract(runtime) -> void:
 	var contract := runtime.get_contract()
 	assert(contract.get("setup_authority") == "gt1_series_setup_runtime")
 	assert(contract.get("combat_runtime") == "combat_v1_arena_runtime")
-	assert(contract.get("human_opponent_selection_authority") == "gt1_rival_combat_snapshot_provider")
+	assert(
+		contract.get("human_opponent_selection_authority") == "gt1_rival_combat_snapshot_provider"
+	)
 	assert(contract.get("rival_catalog") == "DataRepository.rival_combat_v1_snapshots")
 	assert(contract.get("month_16_beast_catalog") == "DataRepository.beasts")
 	assert(contract.get("explicit_series_selection_required") == true)
