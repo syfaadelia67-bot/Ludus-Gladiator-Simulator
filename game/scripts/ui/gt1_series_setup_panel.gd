@@ -8,7 +8,7 @@ const PLAYER_TEAM_ID := "player_ludus"
 const BEAST_TEAM_ID := "beast_team"
 const GT1_MONTHS := [13, 16, 20]
 const ACTIVE_SESSION_TEXT := (
-	"[b]SERIE ACTIVA[/b]\nTerminá o abandoná la sesión actual antes de armar otra."
+	"[b]SERIE ACTIVA[/b]\n" + "Terminá o abandoná la sesión actual antes de armar otra."
 )
 
 var _runtime = GT1SeriesSetupRuntimeScript.new()
