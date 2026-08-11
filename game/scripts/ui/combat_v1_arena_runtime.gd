@@ -61,6 +61,28 @@ func prepare_month_16_human_request(
 	)
 
 
+func start_month_16_beast_session(
+	player_gladiator_ids: Array,
+	player_team_id: String,
+	beast_ids: Array,
+	opponent_team_id: String
+) -> Dictionary:
+	return _month_16_host.start_beasts(
+		player_gladiator_ids, player_team_id, beast_ids, opponent_team_id
+	)
+
+
+func prepare_month_16_beast_request(
+	player_gladiator_ids: Array,
+	player_team_id: String,
+	beast_ids: Array,
+	opponent_team_id: String
+) -> Dictionary:
+	return _month_16_host.prepare_beast_request(
+		player_gladiator_ids, player_team_id, beast_ids, opponent_team_id
+	)
+
+
 func get_month_16_beast_readiness() -> Dictionary:
 	return _month_16_host.get_beast_readiness()
 
@@ -209,7 +231,8 @@ func get_contract() -> Dictionary:
 		"month_20_host": "gt1_month_20_host",
 		"combat_authority": "combat_simulator",
 		"scoring_authority": "tournament_manager",
-		"opponent_selection_authority": "external_explicit_snapshots",
+		"human_opponent_selection_authority": "external_explicit_snapshots",
+		"month_16_beast_selection_authority": "combat_beast_fighter_adapter",
 		"ai_request_authority": "external_limboai_policy_requests",
 		"default_player_action_allowed": false,
 		"default_target_allowed": false,
