@@ -202,7 +202,9 @@ func _add_language_controls() -> void:
 		pseudolocalization_toggle = CheckButton.new()
 		pseudolocalization_toggle.text = _t("LOCALIZATION_PSEUDO_LABEL")
 		pseudolocalization_toggle.tooltip_text = _t("LOCALIZATION_PSEUDO_TOOLTIP")
-		pseudolocalization_toggle.button_pressed = LocalizationManager.is_pseudolocalization_enabled()
+		pseudolocalization_toggle.button_pressed = (
+			LocalizationManager.is_pseudolocalization_enabled()
+		)
 		pseudolocalization_toggle.toggled.connect(_on_pseudolocalization_toggled)
 		card.add_child(pseudolocalization_toggle)
 
@@ -245,7 +247,8 @@ func _format_save_summary(metadata: Dictionary) -> String:
 			"START_CAMPAIGN_FINISHED_SUMMARY",
 			{
 				"owner": owner_line,
-				"result": (
+				"result":
+				(
 					_t("START_RESULT_VICTORY")
 					if bool(metadata.get("victory", false))
 					else _t("START_RESULT_DEFEAT")
@@ -268,7 +271,9 @@ func _format_save_summary(metadata: Dictionary) -> String:
 
 
 func _owner_title_name(title_id: String) -> String:
-	return _t("OWNER_TITLE_DOMINA") if title_id.to_lower() == "domina" else _t("OWNER_TITLE_DOMINUS")
+	return (
+		_t("OWNER_TITLE_DOMINA") if title_id.to_lower() == "domina" else _t("OWNER_TITLE_DOMINUS")
+	)
 
 
 func _chapter_number_for_month(month: int) -> int:
@@ -412,19 +417,27 @@ func _refresh_origin_details() -> void:
 			bonus_lines.append("• %s: %+d" % [_t(str(labels[key])), value])
 	var experience_multiplier := float(bonuses.get("gladiator_experience_multiplier", 1.0))
 	if experience_multiplier > 1.0:
-		bonus_lines.append(
-			"• %s: +%d%%"
-			% [
-				_t("START_BONUS_GLADIATOR_EXPERIENCE"),
-				int(round((experience_multiplier - 1.0) * 100.0)),
-			]
+		(
+			bonus_lines
+			. append(
+				(
+					"• %s: +%d%%"
+					% [
+						_t("START_BONUS_GLADIATOR_EXPERIENCE"),
+						int(round((experience_multiplier - 1.0) * 100.0)),
+					]
+				)
+			)
 		)
-	origin_details.text = "[b]%s[/b]\n%s\n\n[b]%s[/b]\n%s" % [
-		origin.get("name", _t("START_ORIGIN_FALLBACK")),
-		origin.get("description", ""),
-		_t("START_BONUSES"),
-		"\n".join(bonus_lines) if not bonus_lines.is_empty() else _t("START_NO_BONUSES")
-	]
+	origin_details.text = (
+		"[b]%s[/b]\n%s\n\n[b]%s[/b]\n%s"
+		% [
+			origin.get("name", _t("START_ORIGIN_FALLBACK")),
+			origin.get("description", ""),
+			_t("START_BONUSES"),
+			"\n".join(bonus_lines) if not bonus_lines.is_empty() else _t("START_NO_BONUSES")
+		]
+	)
 
 
 func _start_new_campaign() -> void:
