@@ -8,23 +8,20 @@ var _policy = FunctionalUiStatePolicyScript.new()
 var _banner: PanelContainer
 var _label: Label
 var _last_state: Dictionary = {}
+var _initialized := false
 
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
-	FincaHubController.system_opened.connect(_on_system_opened)
-	GameState.month_advanced.connect(func(_month: int): _refresh_current_state())
-	RosterManager.roster_changed.connect(_refresh_current_state)
-	MarketManager.market_changed.connect(_refresh_current_state)
-	MarketManager.equipment_market_changed.connect(_refresh_current_state)
-	OwnedBeastRegistry.owned_beasts_changed.connect(_refresh_current_state)
-	TournamentManager.calendar_changed.connect(_refresh_current_state)
-	TournamentManager.grand_tournament_changed.connect(
-		func(_summary: Dictionary): _refresh_current_state()
-	)
-	LocalizationManager.locale_changed.connect(func(_locale: String): _refresh_current_state())
-	SaveManager.load_completed.connect(func(_path: String): call_deferred("_refresh_current_state"))
-	call_deferred("_refresh_current_state")
+	set_process(true)
+	call_deferred("_try_initialize_for_main")
+
+
+func _process(_delta: float) -> void:
+	if _initialized:
+		set_process(false)
+		return
+	_try_initialize_for_main()
 
 
 func get_current_state() -> Dictionary:
@@ -35,9 +32,30 @@ func get_contract() -> Dictionary:
 	var contract := _policy.get_contract()
 	contract["presenter"] = "DemoFunctionalUiPresenter"
 	contract["state_banner"] = BANNER_NAME
+	contract["state_banner_parent"] = "active_hosted_screen"
 	contract["focus_baseline_enabled"] = true
+	contract["focus_mode_required"] = "FOCUS_ALL"
 	contract["screen_host_path"] = SCREEN_HOST_PATH
+	contract["main_scene_only"] = true
 	return contract
+
+
+func _try_initialize_for_main() -> void:
+	if _initialized or _get_main_scene() == null:
+		return
+	_initialized = true
+	set_process(false)
+	FincaHubController.system_opened.connect(_on_system_opened)
+	GameState.month_advanced.connect(_on_month_advanced)
+	RosterManager.roster_changed.connect(_refresh_current_state)
+	MarketManager.market_changed.connect(_refresh_current_state)
+	MarketManager.equipment_market_changed.connect(_refresh_current_state)
+	OwnedBeastRegistry.owned_beasts_changed.connect(_refresh_current_state)
+	TournamentManager.calendar_changed.connect(_refresh_current_state)
+	TournamentManager.grand_tournament_changed.connect(_on_grand_tournament_changed)
+	LocalizationManager.locale_changed.connect(_on_locale_changed)
+	SaveManager.load_completed.connect(_on_save_loaded)
+	_refresh_current_state()
 
 
 func _on_system_opened(system_id: String) -> void:
@@ -45,17 +63,33 @@ func _on_system_opened(system_id: String) -> void:
 	call_deferred("_focus_current_screen")
 
 
+func _on_month_advanced(_month: int) -> void:
+	_refresh_current_state()
+
+
+func _on_grand_tournament_changed(_summary: Dictionary) -> void:
+	_refresh_current_state()
+
+
+func _on_locale_changed(_locale: String) -> void:
+	_refresh_current_state()
+
+
+func _on_save_loaded(_path: String) -> void:
+	call_deferred("_refresh_current_state")
+
+
 func _refresh_current_state() -> void:
-	if not is_inside_tree():
+	if not _initialized or not is_inside_tree():
 		return
 	_render_state(FincaHubController.get_current_system_id())
 
 
 func _render_state(system_id: String) -> void:
-	var host := _get_screen_host()
-	if host == null:
+	var screen := FincaHubController.get_hosted_screen(system_id)
+	if screen == null:
 		return
-	_ensure_banner(host)
+	_ensure_banner(screen)
 	_last_state = _policy.evaluate(system_id)
 	var state_id := str(_last_state.get("state", "error"))
 	if state_id == "ready":
@@ -71,10 +105,8 @@ func _render_state(system_id: String) -> void:
 	_banner.visible = true
 
 
-func _ensure_banner(host: Control) -> void:
-	if _banner != null and is_instance_valid(_banner):
-		return
-	var existing := host.get_node_or_null(BANNER_NAME) as PanelContainer
+func _ensure_banner(screen: Control) -> void:
+	var existing := screen.get_node_or_null(BANNER_NAME) as PanelContainer
 	if existing != null:
 		_banner = existing
 		_label = _banner.get_node_or_null("Margin/Message") as Label
@@ -90,7 +122,7 @@ func _ensure_banner(host: Control) -> void:
 	_banner.offset_bottom = 76.0
 	_banner.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_banner.z_index = 90
-	host.add_child(_banner)
+	screen.add_child(_banner)
 
 	var margin := MarginContainer.new()
 	margin.name = "Margin"
@@ -110,7 +142,7 @@ func _ensure_banner(host: Control) -> void:
 
 
 func _focus_current_screen() -> void:
-	if _start_overlay_is_visible():
+	if not _initialized or _start_overlay_is_visible():
 		return
 	var screen := FincaHubController.get_hosted_screen(FincaHubController.get_current_system_id())
 	if screen == null or not screen.is_visible_in_tree():
@@ -126,7 +158,7 @@ func _focus_current_screen() -> void:
 func _is_focus_candidate(control: Control) -> bool:
 	if control == null or not control.is_visible_in_tree():
 		return false
-	if control.focus_mode == Control.FOCUS_NONE:
+	if control.focus_mode != Control.FOCUS_ALL:
 		return false
 	if control is BaseButton and (control as BaseButton).disabled:
 		return false
@@ -141,11 +173,18 @@ func _start_overlay_is_visible() -> bool:
 	)
 
 
-func _get_screen_host() -> Control:
+func _get_main_scene() -> Control:
 	var tree := get_tree()
 	if tree == null:
 		return null
 	var scene := tree.current_scene as Control
 	if scene == null or scene.name != "Main":
+		return null
+	return scene
+
+
+func _get_screen_host() -> Control:
+	var scene := _get_main_scene()
+	if scene == null:
 		return null
 	return scene.get_node_or_null(SCREEN_HOST_PATH) as Control
