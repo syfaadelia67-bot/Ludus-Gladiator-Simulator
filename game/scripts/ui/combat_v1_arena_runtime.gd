@@ -62,10 +62,7 @@ func prepare_month_16_human_request(
 
 
 func start_month_16_beast_session(
-	player_gladiator_ids: Array,
-	player_team_id: String,
-	beast_ids: Array,
-	opponent_team_id: String
+	player_gladiator_ids: Array, player_team_id: String, beast_ids: Array, opponent_team_id: String
 ) -> Dictionary:
 	return _month_16_host.start_beasts(
 		player_gladiator_ids, player_team_id, beast_ids, opponent_team_id
@@ -73,10 +70,7 @@ func start_month_16_beast_session(
 
 
 func prepare_month_16_beast_request(
-	player_gladiator_ids: Array,
-	player_team_id: String,
-	beast_ids: Array,
-	opponent_team_id: String
+	player_gladiator_ids: Array, player_team_id: String, beast_ids: Array, opponent_team_id: String
 ) -> Dictionary:
 	return _month_16_host.prepare_beast_request(
 		player_gladiator_ids, player_team_id, beast_ids, opponent_team_id
