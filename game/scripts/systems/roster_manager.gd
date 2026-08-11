@@ -3,7 +3,6 @@ extends Node
 signal roster_changed
 signal job_assignment_changed(person_id: String, job_id: String)
 signal monthly_results(results: Dictionary)
-# Save-v14 / legacy observer alias. It mirrors the same monthly result.
 signal daily_results(results: Dictionary)
 
 const PERSON_SCRIPT = preload("res://scripts/entities/person.gd")
@@ -16,11 +15,11 @@ const JOBS := {
 	"training": "Entrenamiento — asignación mensual"
 }
 const JOB_DESCRIPTIONS := {
-	"idle": "Asignación registrada. La recuperación mensual espera balance canónico.",
-	"mining": "Asignación registrada. La producción mensual de mineral espera balance canónico.",
-	"security": "Asignación registrada. El aporte mensual de seguridad espera balance canónico.",
-	"espionage": "Asignación registrada. La información mensual espera balance canónico.",
-	"training": "Asignación registrada. Progresión y promoción mensuales esperan balance canónico."
+	"idle": "Recupera fatiga y moral una vez por mes.",
+	"mining": "Produce mineral y aumenta fatiga una vez por mes.",
+	"security": "Aporta seguridad al ludus y aumenta fatiga una vez por mes.",
+	"espionage": "Genera información y aumenta fatiga una vez por mes.",
+	"training": "Genera progreso de entrenamiento y aumenta fatiga una vez por mes."
 }
 
 var people: Array = []
@@ -192,18 +191,23 @@ func process_month() -> Dictionary:
 		"promotions": [],
 		"relationship_events": [],
 		"policy_status": str(policy.get("status", "")),
-		"work_balance_applied": false,
-		"training_balance_applied": false,
-		"fatigue_balance_applied": false,
-		"injury_recovery_balance_applied": false,
+		"work_balance_applied": bool(policy.get("work_outputs_enabled", false)),
+		"training_balance_applied": bool(policy.get("training_progress_enabled", false)),
+		"fatigue_balance_applied": bool(policy.get("fatigue_mutation_enabled", false)),
+		"injury_recovery_balance_applied": bool(
+			policy.get("injury_auto_recovery_enabled", false)
+		),
 		"duplicate_call_ignored": false,
 	}
 	for person in people:
+		var previous_role := str(person.role)
 		var result: Dictionary = person.process_month()
 		totals.ore += int(result.ore)
 		totals.security += int(result.security)
 		totals.intel += int(result.intel)
 		totals.training += int(result.training)
+		if previous_role == "slave" and str(person.role) == "gladiator":
+			totals.promotions.append(person.id)
 
 	totals.relationship_events = RelationshipManager.process_month(totals)
 	totals.security += EstateManager.get_security_bonus()
@@ -212,14 +216,12 @@ func process_month() -> Dictionary:
 	last_processed_month = month
 	last_monthly_result = totals.duplicate(true)
 	monthly_results.emit(totals.duplicate(true))
-	# Legacy signal mirrors the monthly result. It is not a second tick.
 	daily_results.emit(totals.duplicate(true))
 	roster_changed.emit()
 	return totals
 
 
 func process_day() -> Dictionary:
-	# Save-v14 / legacy caller adapter only.
 	return process_month()
 
 
