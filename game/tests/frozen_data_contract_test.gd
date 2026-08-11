@@ -83,12 +83,12 @@ func _assert_changed_demo_facility_contract_is_rejected(validator) -> void:
 	var buildings := snapshot["buildings"] as Array
 	for entry_value in buildings:
 		var entry := entry_value as Dictionary
-		if str(entry.get("id", "")) == "forge":
-			entry["base_cost"] = 321
+		if str(entry.get("id", "")) == "mine":
+			entry["base_cost"] = 301
 	var errors: Array[String] = validator.validate_snapshot(snapshot)
 	assert(
 		_contains_error(errors, "non-canonical base_cost"),
-		"Changing a frozen demo facility cost must fail the contract"
+		"Changing the frozen Mine cost must fail the contract"
 	)
 
 
