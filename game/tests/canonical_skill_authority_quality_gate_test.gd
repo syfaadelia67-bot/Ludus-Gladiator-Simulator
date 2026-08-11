@@ -4,6 +4,8 @@ const CANONICAL_COMBAT_FILES: Array[String] = [
 	"res://scripts/combat/combat_simulator.gd",
 	"res://scripts/combat/combat_exchange_coordinator.gd",
 	"res://scripts/combat/combat_policy_contract.gd",
+	"res://scripts/combat/combat_skill_runtime_resolver.gd",
+	"res://scripts/combat/combat_intent_source_collector.gd",
 	"res://scripts/combat/combat_1v1_loop.gd",
 	"res://scripts/combat/combat_1v2_loop.gd",
 	"res://scripts/combat/combat_2v2_loop.gd",
@@ -31,8 +33,11 @@ func _initialize() -> void:
 				"Combat V1 must not reference legacy skill authority '%s': %s" % [forbidden, path],
 			)
 	var policy := _source("res://scripts/combat/combat_policy_contract.gd")
-	assert(policy.contains('desired_action.get("skill_id", "")'))
-	assert(policy.contains("skill activation is unavailable"))
+	assert(policy.contains("CombatSkillRuntimeResolverScript"))
+	assert(policy.contains("resolve_desired_action"))
+	var resolver := _source("res://scripts/combat/combat_skill_runtime_resolver.gd")
+	assert(resolver.contains('"damage_authority": "combat_simulator"'))
+	assert(resolver.contains('"winner_authority": "combat_simulator"'))
 	print("Canonical skill authority quality gate: OK")
 	quit(0)
 
