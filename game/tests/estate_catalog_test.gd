@@ -125,10 +125,13 @@ func _ready() -> void:
 		estate.get_effective_max_level("stable") == 0,
 		"Locked full-game facilities must cap at 0 in demo"
 	)
-	assert(
-		not estate.can_upgrade("mine"),
-		"Mine upgrades must remain blocked until its frozen monthly cost is recovered"
-	)
+	assert(estate.can_upgrade("mine"), "Mine upgrades must be enabled after cost freeze")
+	assert(estate.get_upgrade_cost("mine") == 300, "Mine level I must cost 300 denarii")
+	estate.levels["mine"] = 1
+	assert(estate.get_upgrade_cost("mine") == 495, "Mine level II must cost 495 denarii")
+	estate.levels["mine"] = 2
+	assert(estate.get_upgrade_cost("mine") == 816, "Mine level III must cost 816 denarii")
+	estate.levels["mine"] = 0
 	assert(not estate.can_upgrade("stable"), "Full-game facilities must not be upgradeable in demo")
 	assert(estate.get_security_bonus() == 0, "The full-game wall must not affect demo security")
 
