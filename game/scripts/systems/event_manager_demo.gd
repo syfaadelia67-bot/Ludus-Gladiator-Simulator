@@ -71,14 +71,22 @@ const CHAIN_EVENTS := {
 var queued_chain_event: String = ""
 var queued_chain_month: int = 0
 var months_without_event: int = 0
+var last_processed_month: int = 0
 var _monthly_policy = MonthlyEventRuntimePolicyScript.new()
 
 
 func process_month() -> Dictionary:
+	var month := GameState.get_month()
+	if month == last_processed_month:
+		return _normalize_event_month(pending_event) if not pending_event.is_empty() else {}
+	last_processed_month = month
+
 	_process_monthly_active_effects()
+	_tick_monthly_cooldowns()
 	if not pending_event.is_empty():
-		return _normalize_event_month(pending_event)
-	if not queued_chain_event.is_empty() and GameState.get_month() >= queued_chain_month:
+		pending_event = _normalize_event_month(pending_event)
+		return pending_event.duplicate(true)
+	if not queued_chain_event.is_empty() and month >= queued_chain_month:
 		pending_event = _build_chain_event(queued_chain_event)
 		queued_chain_event = ""
 		queued_chain_month = 0
@@ -88,11 +96,17 @@ func process_month() -> Dictionary:
 		events_changed.emit()
 		return pending_event.duplicate(true)
 
-	# Random event cadence, weekly cooldown values and weekly timed-effect values
-	# are legacy balance. They stay fail-closed until monthly numbers are frozen.
 	months_without_event += 1
 	weeks_without_event = months_without_event
-	return {}
+	var event_id := _pick_monthly_event()
+	if event_id.is_empty():
+		return {}
+	pending_event = _build_monthly_event(event_id)
+	months_without_event = 0
+	weeks_without_event = 0
+	event_started.emit(pending_event.duplicate(true))
+	events_changed.emit()
+	return pending_event.duplicate(true)
 
 
 func process_week() -> Dictionary:
@@ -106,6 +120,7 @@ func process_day() -> Dictionary:
 func resolve_choice(choice_id: String) -> Dictionary:
 	if pending_event.is_empty():
 		return {"success": false, "reason": "No hay un evento pendiente."}
+	pending_event = _normalize_event_month(pending_event)
 	var selected := _find_choice(pending_event, choice_id)
 	if selected.is_empty():
 		return {"success": false, "reason": "La decisión seleccionada no existe."}
@@ -115,9 +130,11 @@ func resolve_choice(choice_id: String) -> Dictionary:
 	var current_id := str(pending_event.get("id", ""))
 	var result := super.resolve_choice(choice_id)
 	if bool(result.get("success", false)):
-		# The base Save-v14 kernel writes a legacy cooldown value. Canonical monthly
-		# scheduling does not consume it, so remove it rather than reinterpret it.
-		cooldowns.erase(current_id)
+		var cooldown_months := _monthly_policy.get_event_cooldown_months(current_id)
+		if cooldown_months > 0:
+			cooldowns[current_id] = cooldown_months
+		else:
+			cooldowns.erase(current_id)
 		result["month"] = GameState.get_month()
 		result["week"] = GameState.get_month()
 		_queue_followup(current_id, choice_id)
@@ -192,9 +209,11 @@ func export_state() -> Dictionary:
 	data["queued_chain_event"] = queued_chain_event
 	data["queued_chain_month"] = queued_chain_month
 	data["months_without_event"] = months_without_event
+	data["last_processed_month"] = last_processed_month
 	# Save-v14 compatibility aliases. Their values mirror canonical months only.
 	data["queued_chain_week"] = queued_chain_month
 	data["weeks_without_event"] = months_without_event
+	data["last_processed_week"] = last_processed_month
 	return data
 
 
@@ -207,15 +226,22 @@ func import_state(data: Dictionary) -> void:
 	months_without_event = maxi(
 		0, int(data.get("months_without_event", data.get("weeks_without_event", 0)))
 	)
+	last_processed_month = maxi(
+		0,
+		int(
+			data.get(
+				"last_processed_month",
+				data.get("last_processed_week", GameState.get_month())
+			)
+		),
+	)
 	weeks_without_event = months_without_event
-	# Legacy cooldown values are retained by old saves but are not canonical
-	# monthly timing and therefore cannot affect event selection.
-	cooldowns.clear()
 	if not queued_chain_event.is_empty() and not CHAIN_EVENTS.has(queued_chain_event):
 		queued_chain_event = ""
 		queued_chain_month = 0
 	if not pending_event.is_empty():
 		pending_event = _normalize_event_month(pending_event)
+	_normalize_active_effects()
 
 
 func _queue_followup(event_id: String, choice_id: String) -> void:
@@ -239,7 +265,39 @@ func _build_chain_event(event_id: String) -> Dictionary:
 	data["week"] = month
 	data["chapter"] = str(CampaignManager.get_chapter_for_month(month).get("id", "ruins"))
 	data["chain_event"] = true
-	return data
+	return _normalize_event_month(data)
+
+
+func _build_monthly_event(event_id: String) -> Dictionary:
+	if not EVENTS.has(event_id):
+		return {}
+	var data: Dictionary = EVENTS[event_id].duplicate(true)
+	var month := GameState.get_month()
+	data["id"] = event_id
+	data["month"] = month
+	data["week"] = month
+	data["chapter"] = str(CampaignManager.get_chapter_for_month(month).get("id", "ruins"))
+	return _normalize_event_month(data)
+
+
+func _pick_monthly_event() -> String:
+	var chapter_id := str(
+		CampaignManager.get_chapter_for_month(GameState.get_month()).get("id", "ruins")
+	)
+	var candidates: Array[String] = []
+	for raw_event_id in MonthlyEventRuntimePolicyScript.EVENT_RULES.keys():
+		var event_id := str(raw_event_id)
+		if not EVENTS.has(event_id):
+			continue
+		if int(cooldowns.get(event_id, 0)) > 0:
+			continue
+		var event_data := EVENTS[event_id] as Dictionary
+		if not event_data.get("chapters", []).has(chapter_id):
+			continue
+		var weight := _monthly_policy.get_event_weight(event_id)
+		for _index in range(weight):
+			candidates.append(event_id)
+	return "" if candidates.is_empty() else candidates.pick_random()
 
 
 func _normalize_event_month(event: Dictionary) -> Dictionary:
@@ -253,15 +311,44 @@ func _normalize_event_month(event: Dictionary) -> Dictionary:
 		var choice := raw_choice as Dictionary
 		if str(choice.get("label", "")) == "Racionar durante una semana":
 			choice["label"] = "Racionar temporalmente"
+		var effects_value: Variant = choice.get("effects", {})
+		if not effects_value is Dictionary:
+			continue
+		var effects := effects_value as Dictionary
+		var timed_value: Variant = effects.get("timed", {})
+		if timed_value is Dictionary and not (timed_value as Dictionary).is_empty():
+			effects["timed"] = _monthly_policy.normalize_authored_timed_effect(
+				timed_value as Dictionary
+			)
+			choice["effects"] = effects
 	return normalized
+
+
+func _normalize_active_effects() -> void:
+	for index in range(active_effects.size()):
+		active_effects[index] = _monthly_policy.normalize_authored_timed_effect(active_effects[index])
+
+
+func _tick_monthly_cooldowns() -> void:
+	for raw_event_id in cooldowns.keys():
+		var event_id := str(raw_event_id)
+		var remaining := int(cooldowns.get(event_id, 0)) - 1
+		if remaining <= 0:
+			cooldowns.erase(event_id)
+		else:
+			cooldowns[event_id] = remaining
 
 
 func _process_monthly_active_effects() -> void:
 	var expired: Array[Dictionary] = []
+	var resources_changed := false
 	for effect in active_effects:
 		if not _monthly_policy.is_canonical_monthly_effect(effect):
 			continue
-		GameState.denarii = maxi(0, GameState.denarii + int(effect.get("monthly_denarii", 0)))
+		var monthly_denarii := int(effect.get("monthly_denarii", 0))
+		if monthly_denarii != 0:
+			GameState.denarii = maxi(0, GameState.denarii + monthly_denarii)
+			resources_changed = true
 		effect["months"] = int(effect.get("months", 1)) - 1
 		if int(effect.get("months", 0)) <= 0:
 			GameState.reputation = maxi(
@@ -271,7 +358,9 @@ func _process_monthly_active_effects() -> void:
 	for effect in expired:
 		active_effects.erase(effect)
 		effect_expired.emit(effect.duplicate(true))
-	if not expired.is_empty():
+	if resources_changed:
+		GameState.resources_changed.emit()
+	if resources_changed or not expired.is_empty():
 		events_changed.emit()
 
 
