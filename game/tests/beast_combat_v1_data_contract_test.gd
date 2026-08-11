@@ -19,15 +19,24 @@ func run() -> void:
 func _test_canonical_catalog(contract) -> void:
 	var errors: Array[String] = contract.validate_entries(DataRepository.beasts)
 	assert(errors.is_empty(), "Canonical beast profiles must validate cleanly: %s" % [errors])
-	assert(contract.get_profile("boar") == {
-		"FUE": 7, "AGI": 5, "TEC": 6, "RES": 6, "PV": 56, "stamina": 10
-	})
-	assert(contract.get_profile("lion") == {
-		"FUE": 8, "AGI": 9, "TEC": 8, "RES": 5, "PV": 55, "stamina": 10
-	})
-	assert(contract.get_profile("bear") == {
-		"FUE": 10, "AGI": 4, "TEC": 5, "RES": 8, "PV": 68, "stamina": 10
-	})
+	assert(
+		(
+			contract.get_profile("boar")
+			== {"FUE": 7, "AGI": 5, "TEC": 6, "RES": 6, "PV": 56, "stamina": 10}
+		)
+	)
+	assert(
+		(
+			contract.get_profile("lion")
+			== {"FUE": 8, "AGI": 9, "TEC": 8, "RES": 5, "PV": 55, "stamina": 10}
+		)
+	)
+	assert(
+		(
+			contract.get_profile("bear")
+			== {"FUE": 10, "AGI": 4, "TEC": 5, "RES": 8, "PV": 68, "stamina": 10}
+		)
+	)
 
 
 func _test_changed_stat_is_rejected(contract) -> void:
