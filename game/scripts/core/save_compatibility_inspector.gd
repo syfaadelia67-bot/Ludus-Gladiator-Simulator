@@ -109,6 +109,7 @@ func _metadata(payload: Dictionary) -> Dictionary:
 	var game_state: Dictionary = payload.get("game_state", {})
 	var owner_profile: Dictionary = payload.get("owner", {}).get("profile", {})
 	var campaign: Dictionary = payload.get("campaign", {})
+	var tournament: Dictionary = payload.get("tournaments", {})
 	var month := maxi(
 		1, int(game_state.get("month", game_state.get("week", game_state.get("day", 1))))
 	)
@@ -125,6 +126,14 @@ func _metadata(payload: Dictionary) -> Dictionary:
 		"wins": maxi(0, int(campaign.get("wins", 0))),
 		"losses": maxi(0, int(campaign.get("losses", 0))),
 		"defeat_reason": str(campaign.get("defeat_reason", "")),
+		"final_combat_resolved": bool(campaign.get("final_combat_resolved", false)),
+		"gt1_player_points": clampi(int(tournament.get("gt1_player_points", 0)), 0, 27),
+		"gt1_player_wins": clampi(int(tournament.get("gt1_player_wins", 0)), 0, 9),
+		"gt1_player_bouts": clampi(int(tournament.get("gt1_player_bouts", 0)), 0, 9),
+		"gt1_placement": clampi(int(tournament.get("gt1_placement", 0)), 0, 8),
+		"gt1_medal": str(tournament.get("gt1_medal", "")),
+		"gt1_standings_resolved": bool(tournament.get("gt1_standings_resolved", false)),
+		"gt1_tiebreak_required": bool(tournament.get("gt1_tiebreak_required", false)),
 		"saved_at_unix": int(payload.get("saved_at_unix", 0)),
 		"combat_v1_runtime_present": payload.get("combat_v1_runtime", null) is Dictionary,
 	}
