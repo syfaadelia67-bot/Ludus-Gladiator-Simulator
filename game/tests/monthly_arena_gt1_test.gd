@@ -1,6 +1,9 @@
 extends Node
 
 const GT1RivalResultRegistryScript = preload("res://scripts/combat/gt1_rival_result_registry.gd")
+const MonthlyArenaCombatRuntimeScript = preload(
+	"res://scripts/combat/monthly_arena_combat_runtime.gd"
+)
 const RIVAL_IDS: Array[String] = [
 	"cassianus",
 	"flavianus",
@@ -14,6 +17,7 @@ const RIVAL_IDS: Array[String] = [
 
 func run() -> void:
 	_test_regular_month_arena_schedule()
+	_test_non_gt_rival_snapshot_selection()
 	_test_grand_tournament_schedule()
 	_test_gt1_scoring_and_gold()
 	_test_gt1_tie_requires_tiebreak()
@@ -33,6 +37,23 @@ func _test_regular_month_arena_schedule() -> void:
 	assert(contract.get("underworld_available_every_month") == true)
 	assert(contract.get("official_minor_available_on_non_gt_months") == true)
 	assert(contract.get("legacy_non_gt_schedule_allowed") == false)
+
+
+func _test_non_gt_rival_snapshot_selection() -> void:
+	DataRepository.load_all()
+	var runtime = MonthlyArenaCombatRuntimeScript.new()
+	var contract := runtime.get_contract()
+	assert(str(contract.get("opponent_team_id", "")) == "rival_team")
+	var selection: Dictionary = runtime._select_canonical_opponents(
+		{"id": "qa_underworld_month_1", "scheduled_month": 1, "difficulty": 1},
+		1,
+		"rival_team",
+	)
+	assert(selection.get("status") == "ready")
+	assert(not str(selection.get("rival_ludus_id", "")).is_empty())
+	var fighters := selection.get("fighters", []) as Array
+	assert(fighters.size() == 1)
+	assert(str((fighters[0] as Dictionary).get("team", "")) == "rival_team")
 
 
 func _test_grand_tournament_schedule() -> void:
