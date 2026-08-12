@@ -114,6 +114,8 @@ func _test_execution() -> void:
 
 func _test_counterattack() -> void:
 	var state := _base_state_1v1()
+	(_fighter_ref(state, "a").get("stats", {}) as Dictionary)["TEC"] = 6
+	(_fighter_ref(state, "b").get("stats", {}) as Dictionary)["TEC"] = 20
 	var result := _resolve_1v1(
 		state,
 		{"actor_id": "a", "action_id": "light", "target_id": "b"},

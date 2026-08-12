@@ -3,10 +3,18 @@ extends Node
 
 func run() -> void:
 	var economy_script := FileAccess.get_file_as_string("res://scripts/systems/economy_manager.gd")
-	var wrapper_script := FileAccess.get_file_as_string("res://scripts/systems/economy_manager_weekly.gd")
-	var beast_registry := FileAccess.get_file_as_string("res://scripts/systems/owned_beast_registry.gd")
-	var planning_script := FileAccess.get_file_as_string("res://scripts/systems/weekly_planning_controller.gd")
-	var audit_script := FileAccess.get_file_as_string("res://scripts/systems/demo_economy_balance_controller.gd")
+	var wrapper_script := FileAccess.get_file_as_string(
+		"res://scripts/systems/economy_manager_weekly.gd"
+	)
+	var beast_registry := FileAccess.get_file_as_string(
+		"res://scripts/systems/owned_beast_registry.gd"
+	)
+	var planning_script := FileAccess.get_file_as_string(
+		"res://scripts/systems/weekly_planning_controller.gd"
+	)
+	var audit_script := FileAccess.get_file_as_string(
+		"res://scripts/systems/demo_economy_balance_controller.gd"
+	)
 	var panel_script := FileAccess.get_file_as_string("res://scripts/ui/economy_panel.gd")
 	var save_script := FileAccess.get_file_as_string("res://scripts/core/save_manager_demo.gd")
 	var project := FileAccess.get_file_as_string("res://project.godot")
@@ -37,7 +45,9 @@ func run() -> void:
 
 	assert(beast_registry.contains("var owned_beasts: Array[Dictionary] = []"))
 	assert(beast_registry.contains("func get_owned_count()"))
-	assert(beast_registry.contains("func register_owned_beast(instance_id: String, beast_id: String)"))
+	assert(
+		beast_registry.contains("func register_owned_beast(instance_id: String, beast_id: String)")
+	)
 	assert(beast_registry.contains("func export_state()"))
 	assert(beast_registry.contains("func import_state(data: Dictionary)"))
 	assert(save_script.contains('payload["owned_beasts"] = OwnedBeastRegistry.export_state()'))
