@@ -46,7 +46,9 @@ func _ready() -> void:
 		project.contains('NewCampaignCoordinator="*res://scripts/core/new_campaign_coordinator.gd"')
 	)
 	assert(
-		project.contains('CombatV1SessionStore="*res://scripts/systems/combat_v1_session_store.gd"')
+		project.contains(
+			'CombatV1SessionStore="*res://scripts/systems/combat_v1_session_store_monthly.gd"'
+		)
 	)
 	assert(project.contains('OwnedBeastRegistry="*res://scripts/systems/owned_beast_registry.gd"'))
 	assert(project.find("SaveManager=") < project.find("NewCampaignCoordinator="))
