@@ -96,10 +96,7 @@ func import_state(data: Dictionary, current_day: int = -1) -> void:
 		if not raw_entry is Dictionary:
 			continue
 		var entry: Dictionary = raw_entry.duplicate(true)
-		var month := maxi(
-			1,
-			int(entry.get("month", entry.get("week", entry.get("day", 1))))
-		)
+		var month := maxi(1, int(entry.get("month", entry.get("week", entry.get("day", 1)))))
 		entry["month"] = month
 		entry["week"] = month
 		entry["day"] = month
@@ -113,10 +110,7 @@ func get_entries() -> Array[Dictionary]:
 	var result := super.get_entries()
 	for entry in result:
 		if entry is Dictionary:
-			var month := maxi(
-				1,
-				int(entry.get("month", entry.get("week", entry.get("day", 1))))
-			)
+			var month := maxi(1, int(entry.get("month", entry.get("week", entry.get("day", 1)))))
 			entry["month"] = month
 			entry["week"] = month
 			entry["day"] = month
