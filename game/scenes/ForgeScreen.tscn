@@ -28,7 +28,7 @@ layout_mode = 2
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 24
-text = "FORJA · CATÁLOGO PARCIAL"
+text = "FORJA"
 
 [node name="BackToFinca" type="Button" parent="ForgePanel/Header"]
 layout_mode = 2
@@ -39,16 +39,16 @@ tooltip_text = "Regresar al centro del ludus."
 custom_minimum_size = Vector2(450, 240)
 layout_mode = 2
 bbcode_enabled = true
-text = "Seleccioná una entrada del catálogo provisional."
+text = "Seleccioná una receta del catálogo de la forja."
 
 [node name="CraftItem" type="Button" parent="ForgePanel"]
 layout_mode = 2
-text = "Fabricación pendiente de balance"
+text = "SELECCIONÁ UNA RECETA"
 disabled = true
 
 [node name="InventoryTitle" type="Label" parent="ForgePanel"]
 layout_mode = 2
-text = "INVENTARIO REAL"
+text = "INVENTARIO"
 
 [node name="Inventory" type="RichTextLabel" parent="ForgePanel"]
 custom_minimum_size = Vector2(450, 170)
