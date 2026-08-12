@@ -63,6 +63,12 @@ func build_fighter(
 			"legacy_unmapped": {},
 		}
 
+	var skill_context_value: Variant = equipment_stats.get("skill_context", {})
+	var skill_context := (
+		(skill_context_value as Dictionary).duplicate(true)
+		if skill_context_value is Dictionary
+		else {}
+	)
 	return {
 		"status": "ready",
 		"errors": [],
@@ -71,6 +77,7 @@ func build_fighter(
 		{
 			"id": fighter_id,
 			"team": team_id,
+			"entity_type": "gladiator",
 			"stats": (adapted.get("stats", {}) as Dictionary).duplicate(true),
 			"stamina": float(person_source.get("stamina", 10.0)),
 			"equipment":
@@ -78,6 +85,7 @@ func build_fighter(
 				"power": int(equipment_stats.get("power", 0)),
 				"defense": int(equipment_stats.get("defense", 0)),
 			},
+			"equipment_context": skill_context,
 		},
 		"legacy_separate": legacy_separate.duplicate(true),
 		"legacy_unmapped": legacy_separate.duplicate(true),
@@ -104,5 +112,6 @@ func get_contract() -> Dictionary:
 		"intelligence_used_by_combat_v1": false,
 		"missing_canonical_stats": "fail_closed",
 		"equipment_source": "explicit_power_defense_snapshot",
+		"skill_equipment_context_source": "explicit_canonical_equipped_slots_and_tags",
 		"save_version_change_required": false,
 	}
