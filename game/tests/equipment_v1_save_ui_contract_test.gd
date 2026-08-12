@@ -36,10 +36,16 @@ func _initialize() -> void:
 	assert(equipment_ui_text.contains("Combat V1 hasta congelar el catálogo definitivo"))
 
 	assert(forge_scene_text.contains('path="res://scripts/ui/forge_screen_v1.gd"'))
-	assert(forge_scene_text.contains("Fabricación pendiente de balance"))
-	assert(forge_ui_text.contains("catálogo parcial legacy"))
-	assert(forge_ui_text.contains("fabricación permanece deshabilitada"))
-	assert(not forge_ui_text.contains("Fabricaste"))
+	assert(forge_scene_text.contains('text = "FORJA"'))
+	assert(forge_scene_text.contains("Seleccioná una receta del catálogo de la forja."))
+	assert(forge_scene_text.contains('text = "SELECCIONÁ UNA RECETA"'))
+	assert(not forge_scene_text.contains("Fabricación pendiente de balance"))
+	assert(not forge_scene_text.contains("CATÁLOGO PARCIAL"))
+	assert(forge_ui_text.contains("var can_craft :="))
+	assert(forge_ui_text.contains('craft_button.text = "FABRICAR"'))
+	assert(forge_ui_text.contains("EquipmentManager.craft(selected_recipe_id)"))
+	assert(forge_ui_text.contains("_on_craft_completed"))
+	assert(not forge_ui_text.contains("fabricación permanece deshabilitada"))
 
 	var equipment_scene := load("res://scenes/EquipmentScreen.tscn") as PackedScene
 	var forge_scene := load("res://scenes/ForgeScreen.tscn") as PackedScene
