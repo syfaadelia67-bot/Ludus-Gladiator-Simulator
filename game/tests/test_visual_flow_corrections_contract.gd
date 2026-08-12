@@ -5,6 +5,10 @@ func _ready() -> void:
 	var hud_bootstrap := FileAccess.get_file_as_string("res://scripts/ui/main_ui_bootstrap.gd")
 	var hub := FileAccess.get_file_as_string("res://scripts/ui/finca_hub_controller.gd")
 	var arena_screen := FileAccess.get_file_as_string("res://scripts/ui/arena_screen.gd")
+	var monthly_arena := FileAccess.get_file_as_string("res://scripts/ui/arena_screen_monthly.gd")
+	var monthly_tournaments := FileAccess.get_file_as_string(
+		"res://scripts/ui/tournaments_panel_monthly.gd"
+	)
 	var event_modal := FileAccess.get_file_as_string(
 		"res://scripts/ui/weekly_event_modal_presenter.gd"
 	)
@@ -21,7 +25,8 @@ func _ready() -> void:
 
 	assert(hud_bootstrap.contains("FincaHubController.prepare_scene()"))
 	assert(hud_bootstrap.contains("_open_finca_as_primary_view"))
-	assert(hub.contains('"arena": "res://scenes/ArenaScreen.tscn"'))
+	assert(hub.contains('"arena": "res://scenes/ArenaScreenMonthly.tscn"'))
+	assert(hub.contains('"torneos": "res://scenes/TournamentsPanelMonthly.tscn"'))
 	assert(hub.contains('"gladiator_dossier": "res://scenes/GladiatorDossierPanel.tscn"'))
 	assert(hub.contains("func _show_hosted_screen"))
 	assert(hub.contains("func open_gladiator_dossier("))
@@ -32,6 +37,13 @@ func _ready() -> void:
 	assert(arena_screen.contains("CombatV1ArenaRuntimeScript"))
 	assert(arena_screen.contains("_arena_runtime.build_snapshot"))
 	assert(not arena_screen.contains("CombatManager"))
+	assert(monthly_arena.contains("CombatV1ArenaRuntimeMonthlyScript"))
+	assert(monthly_arena.contains("start_non_gt_contract"))
+	assert(monthly_arena.contains('FincaHubController.open_system("torneos")'))
+	assert(monthly_arena.contains("CombatV1SessionStore.set_non_gt_session"))
+	assert(monthly_arena.contains("monthly_non_gt_gt1_points_authority"))
+	assert(monthly_tournaments.contains("TournamentManager.accept_event_team"))
+	assert(monthly_tournaments.contains("two_distinct_available_gladiators"))
 
 	assert(event_modal.contains("MonthlyEventModal"))
 	assert(event_modal.contains("set_tab_hidden"))
@@ -66,6 +78,11 @@ func _ready() -> void:
 	assert(not project.contains("all_tabs_ui_bootstrap.gd"))
 	assert(project.contains("SpecializationMasteryController="))
 	assert(project.contains("GladiatorDossierPresenter="))
+	assert(
+		project.contains(
+			'CombatV1SessionStore="*res://scripts/systems/combat_v1_session_store_monthly.gd"'
+		)
+	)
 	assert(not project.contains("ArenaOpponentPreviewPresenter="))
 	assert(not project.contains("ArenaFinaleWarningPresenter="))
 
