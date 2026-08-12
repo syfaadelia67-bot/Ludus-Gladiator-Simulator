@@ -1,6 +1,7 @@
 extends RefCounted
 
 const CombatActionCatalogScript = preload("res://scripts/combat/combat_action_catalog.gd")
+const DEMO_RUNTIME_RANK := 1
 
 var _action_catalog = CombatActionCatalogScript.new()
 
@@ -36,20 +37,26 @@ func resolve_desired_action(
 			["Skill %s maps to unsupported action %s" % [skill_id, mapped_action_id]],
 		)
 
+	var equipment_errors := _validate_equipment_requirements(fighter, mechanics)
+	if not equipment_errors.is_empty():
+		return _rejected("skill_equipment_requirement_failed", equipment_errors)
+
+	var activation := {
+		"skill_id": skill_id,
+		"rank": DEMO_RUNTIME_RANK,
+		"mapped_action_id": mapped_action_id,
+		"mechanics": mechanics.duplicate(true),
+		"progression": (entry.get("progression", {}) as Dictionary).duplicate(true),
+	}
 	var resolved := desired_action.duplicate(true)
 	resolved["action_id"] = mapped_action_id
+	resolved["skill_activation"] = activation.duplicate(true)
 	resolved.erase("skill_id")
 	return {
 		"status": "ready",
 		"errors": [],
 		"desired_action": resolved,
-		"skill_activation":
-		{
-			"skill_id": skill_id,
-			"mapped_action_id": mapped_action_id,
-			"mechanics": mechanics.duplicate(true),
-			"progression": (entry.get("progression", {}) as Dictionary).duplicate(true),
-		},
+		"skill_activation": activation.duplicate(true),
 	}
 
 
@@ -57,12 +64,40 @@ func get_contract() -> Dictionary:
 	return {
 		"status": "frozen",
 		"authority": "skill_intent_translation_only",
+		"runtime_rank": DEMO_RUNTIME_RANK,
+		"higher_rank_runtime_enabled": false,
+		"activation_embedded_in_translated_intent": true,
+		"equipment_requirements_enforced": true,
+		"specialized_category_is_activation_gate": false,
 		"damage_authority": "combat_simulator",
 		"ko_authority": "combat_simulator",
 		"winner_authority": "combat_simulator",
 		"beast_skills_allowed": false,
 		"save_version_change_required": false,
 	}
+
+
+func _validate_equipment_requirements(
+	fighter: Dictionary, mechanics: Dictionary
+) -> Array[String]:
+	var errors: Array[String] = []
+	var context := fighter.get("equipment_context", {}) as Dictionary
+	for raw_requirement in mechanics.get("equipment_requirements", []) as Array:
+		var requirement := str(raw_requirement)
+		var met := false
+		match requirement:
+			"weapon":
+				met = bool(context.get("has_weapon", false))
+			"shield":
+				met = bool(context.get("has_shield", false))
+			_:
+				met = (context.get("tags", []) as Array).has(requirement)
+		if not met:
+			errors.append(
+				"Fighter %s does not meet skill equipment requirement: %s"
+				% [str(fighter.get("id", "")), requirement]
+			)
+	return errors
 
 
 func _rejected(reason: String, errors: Array) -> Dictionary:
