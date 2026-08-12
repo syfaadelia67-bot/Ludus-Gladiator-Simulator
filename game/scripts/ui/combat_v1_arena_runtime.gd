@@ -210,7 +210,8 @@ func get_player_option_contracts(session: Dictionary = {}) -> Array[Dictionary]:
 			"target_required": int(targets.get("count", 0)) > 0,
 			"target_relationship": str(targets.get("relationship", "")),
 			"manual_target_required": str(targets.get("relationship", "")) == "enemy",
-			"equipment_requirements": (mechanics.get("equipment_requirements", []) as Array).duplicate(),
+			"equipment_requirements":
+			(mechanics.get("equipment_requirements", []) as Array).duplicate(),
 			"available": true,
 			"unavailable_reason": "",
 		}
@@ -346,10 +347,7 @@ func _single_active_ally_id(state: Dictionary, team_id: String, actor_id: String
 
 
 func _is_active(fighter: Dictionary) -> bool:
-	return (
-		int(fighter.get("current_pv", (fighter.get("stats", {}) as Dictionary).get("PV", 0)))
-		> 0
-	)
+	return int(fighter.get("current_pv", (fighter.get("stats", {}) as Dictionary).get("PV", 0))) > 0
 
 
 func _active_state(session: Dictionary) -> Dictionary:

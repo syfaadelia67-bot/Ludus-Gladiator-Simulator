@@ -31,8 +31,10 @@ func validate_intent(state: Dictionary, intent: Dictionary) -> Array[String]:
 		var forbidden := status.get("forbidden_actions", []) as Array
 		if forbidden.has(action_id):
 			errors.append(
-				"Fighter %s cannot use %s while affected by %s"
-				% [str(actor.get("id", "")), action_id, str(status.get("id", "skill_status"))]
+				(
+					"Fighter %s cannot use %s while affected by %s"
+					% [str(actor.get("id", "")), action_id, str(status.get("id", "skill_status"))]
+				)
 			)
 
 	var activation := get_activation(intent)
@@ -45,8 +47,10 @@ func validate_intent(state: Dictionary, intent: Dictionary) -> Array[String]:
 		var requirement := str(raw_requirement)
 		if not _meets_equipment_requirement(actor, requirement):
 			errors.append(
-				"Fighter %s does not meet skill equipment requirement: %s"
-				% [str(actor.get("id", "")), requirement]
+				(
+					"Fighter %s does not meet skill equipment requirement: %s"
+					% [str(actor.get("id", "")), requirement]
+				)
 			)
 	return errors
 
@@ -74,13 +78,16 @@ func apply_preparation(state: Dictionary, intents: Array) -> Array[Dictionary]:
 				ally["stamina"] = minf(capacity, before + restore)
 				if bool(effects.get("clear_vulnerable", false)):
 					ally["vulnerable"] = false
-				results.append(
-					{
-						"skill_id": skill_id,
-						"actor_id": str(intent.get("actor_id", "")),
-						"target_id": target_id,
-						"stamina_restored": float(ally.get("stamina", 0.0)) - before,
-					}
+				(
+					results
+					. append(
+						{
+							"skill_id": skill_id,
+							"actor_id": str(intent.get("actor_id", "")),
+							"target_id": target_id,
+							"stamina_restored": float(ally.get("stamina", 0.0)) - before,
+						}
+					)
 				)
 			"provoke":
 				var target_id := str(intent.get("target_id", ""))
@@ -90,31 +97,29 @@ func apply_preparation(state: Dictionary, intents: Array) -> Array[Dictionary]:
 					{
 						"id": "provoke",
 						"source_actor_id": str(intent.get("actor_id", "")),
-						"damage_penalty_vs_others": int(
-							effects.get("marked_target_damage_penalty_vs_others", 0)
-						),
-						"remaining_exchanges": maxi(
-							1, int(effects.get("mark_duration_exchanges", 1))
-						),
+						"damage_penalty_vs_others":
+						int(effects.get("marked_target_damage_penalty_vs_others", 0)),
+						"remaining_exchanges":
+						maxi(1, int(effects.get("mark_duration_exchanges", 1))),
 						"fresh": true,
 						"consume_current_exchange": true,
 					}
 				)
-				results.append(
-					{
-						"skill_id": skill_id,
-						"actor_id": str(intent.get("actor_id", "")),
-						"target_id": target_id,
-					}
+				(
+					results
+					. append(
+						{
+							"skill_id": skill_id,
+							"actor_id": str(intent.get("actor_id", "")),
+							"target_id": target_id,
+						}
+					)
 				)
 	return results
 
 
 func resolve_attack_context(
-	state: Dictionary,
-	intents: Array,
-	intent: Dictionary,
-	used_interceptors: Dictionary
+	state: Dictionary, intents: Array, intent: Dictionary, used_interceptors: Dictionary
 ) -> Dictionary:
 	var actor_id := str(intent.get("actor_id", ""))
 	var original_target_id := str(intent.get("target_id", ""))
@@ -152,7 +157,8 @@ func resolve_attack_context(
 		"skill_effects": effects.duplicate(true),
 		"intercepted": not interception.is_empty(),
 		"interceptor_id": str(interception.get("actor_id", "")),
-		"interceptor_damage_reduction_bonus": int(
+		"interceptor_damage_reduction_bonus":
+		int(
 			(_effects(interception.get("activation", {}) as Dictionary)).get(
 				"interceptor_damage_reduction_bonus", 0
 			)
@@ -185,8 +191,8 @@ func apply_attack_modifiers(
 	if bool(result.get("hit", false)):
 		match skill_id:
 			"charge":
-				result["damage"] = int(result.get("damage", 0)) + int(
-					effects.get("damage_bonus", 0)
+				result["damage"] = (
+					int(result.get("damage", 0)) + int(effects.get("damage_bonus", 0))
 				)
 			"execution":
 				var defender := attack_context.get("defender", {}) as Dictionary
@@ -194,8 +200,9 @@ func apply_attack_modifiers(
 				var max_pv := maxf(1.0, float(stats.get("PV", 1.0)))
 				var ratio := float(defender.get("current_pv", max_pv)) / max_pv
 				if ratio <= float(effects.get("target_pv_ratio_threshold", 0.0)):
-					result["damage"] = int(result.get("damage", 0)) + int(
-						effects.get("damage_bonus_when_threshold_met", 0)
+					result["damage"] = (
+						int(result.get("damage", 0))
+						+ int(effects.get("damage_bonus_when_threshold_met", 0))
 					)
 
 	var target_id := str(attack_context.get("target_id", ""))
@@ -219,7 +226,9 @@ func apply_attack_modifiers(
 	return result
 
 
-func apply_post_hit_effects(state: Dictionary, intents: Array, attack_results: Array) -> Array[Dictionary]:
+func apply_post_hit_effects(
+	state: Dictionary, intents: Array, attack_results: Array
+) -> Array[Dictionary]:
 	var results: Array[Dictionary] = []
 	for raw_result in attack_results:
 		var attack := raw_result as Dictionary
@@ -250,7 +259,8 @@ func apply_post_hit_effects(state: Dictionary, intents: Array, attack_results: A
 					target_id,
 					{
 						"id": "immobilization",
-						"forbidden_actions": (effects.get("forbidden_actions", []) as Array).duplicate(),
+						"forbidden_actions":
+						(effects.get("forbidden_actions", []) as Array).duplicate(),
 						"remaining_exchanges": maxi(1, int(effects.get("duration_exchanges", 1))),
 						"fresh": true,
 						"consume_current_exchange": false,
@@ -277,22 +287,25 @@ func build_counterattack_results(intents: Array, attack_results: Array) -> Array
 		var base_damage := int((attack.get("damage_result", {}) as Dictionary).get("damage", 0))
 		var ratio := float(effects.get("riposte_damage_ratio", 0.0))
 		var damage := maxi(1, int(round(float(base_damage) * ratio)))
-		counters.append(
-			{
-				"status": "resolved",
-				"errors": [],
-				"actor_id": defender_id,
-				"target_id": str(attack.get("actor_id", "")),
-				"action_id": "counterattack",
-				"skill_id": "counterattack",
-				"defense_action_id": "",
-				"accuracy_result": {},
-				"damage_result": {},
-				"defense_result": {},
-				"hit": true,
-				"damage": damage,
-				"counterattack": true,
-			}
+		(
+			counters
+			. append(
+				{
+					"status": "resolved",
+					"errors": [],
+					"actor_id": defender_id,
+					"target_id": str(attack.get("actor_id", "")),
+					"action_id": "counterattack",
+					"skill_id": "counterattack",
+					"defense_action_id": "",
+					"accuracy_result": {},
+					"damage_result": {},
+					"defense_result": {},
+					"hit": true,
+					"damage": damage,
+					"counterattack": true,
+				}
+			)
 		)
 	return counters
 
@@ -372,7 +385,10 @@ func _find_interceptor(
 		if used_interceptors.has(actor_id):
 			continue
 		var interceptor := _find_fighter(state, actor_id)
-		if interceptor.is_empty() or str(interceptor.get("team", "")) != str(protected.get("team", "")):
+		if (
+			interceptor.is_empty()
+			or str(interceptor.get("team", "")) != str(protected.get("team", ""))
+		):
 			continue
 		candidates.append({"actor_id": actor_id, "activation": activation.duplicate(true)})
 	candidates.sort_custom(

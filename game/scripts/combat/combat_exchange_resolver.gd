@@ -50,7 +50,9 @@ func resolve_exchange(state: Dictionary, intents: Array) -> Dictionary:
 	var working_state := runtime_state.duplicate(true)
 	var spend_results: Array = _spend_all_actions(working_state, intents)
 	_apply_preparation_commit(working_state, intents)
-	var skill_preparation_results := _skill_effect_resolver.apply_preparation(working_state, intents)
+	var skill_preparation_results := _skill_effect_resolver.apply_preparation(
+		working_state, intents
+	)
 	var offense_snapshot := working_state.duplicate(true)
 	var attack_results: Array = _resolve_offense_phase(offense_snapshot, intents)
 	var offense_errors: Array[String] = _collect_attack_errors(attack_results)
@@ -134,7 +136,9 @@ func _validate_skill_intents(state: Dictionary, intents: Array) -> Array[String]
 	var errors: Array[String] = []
 	for raw_intent in intents:
 		if raw_intent is Dictionary:
-			errors.append_array(_skill_effect_resolver.validate_intent(state, raw_intent as Dictionary))
+			errors.append_array(
+				_skill_effect_resolver.validate_intent(state, raw_intent as Dictionary)
+			)
 	return errors
 
 
@@ -148,7 +152,9 @@ func _validate_stamina_payments(state: Dictionary, intents: Array) -> Array[Stri
 		var base_cost := _stamina_resolver.get_action_cost(action_id)
 		var cost := _skill_effect_resolver.get_stamina_cost(intent, base_cost)
 		if fighter.is_empty() or not _stamina_resolver.can_pay_cost(fighter, cost):
-			errors.append("Fighter %s cannot pay Stamina cost %d for %s" % [actor_id, cost, action_id])
+			errors.append(
+				"Fighter %s cannot pay Stamina cost %d for %s" % [actor_id, cost, action_id]
+			)
 	return errors
 
 
@@ -204,7 +210,9 @@ func _resolve_offense_phase(state: Dictionary, intents: Array) -> Array:
 		var accuracy: Dictionary = _accuracy_resolver.resolve_hit(attacker, defender, action_id)
 		var damage: Dictionary = _damage_resolver.resolve_damage(attacker, defender, action_id)
 		var attack_result := _base_attack_result(actor_id, target_id, action_id, accuracy, damage)
-		attack_result["original_target_id"] = str(attack_context.get("original_target_id", target_id))
+		attack_result["original_target_id"] = str(
+			attack_context.get("original_target_id", target_id)
+		)
 		attack_result["skill_id"] = str(attack_context.get("skill_id", ""))
 		attack_result["intercepted"] = bool(attack_context.get("intercepted", false))
 		attack_result["interceptor_id"] = str(attack_context.get("interceptor_id", ""))

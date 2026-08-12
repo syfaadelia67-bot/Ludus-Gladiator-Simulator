@@ -27,12 +27,15 @@ func _initialize() -> void:
 func _test_charge_uses_skill_cost_and_effect() -> void:
 	var state := _state_1v1(_fighter("p", "player"), _fighter("e", "enemy"))
 	var charge := _skill_intent(state, "p", "charge", "e")
-	var result := _simulator.resolve_exchange(
-		state,
-		[
-			charge,
-			{"actor_id": "e", "action_id": "block", "target_id": ""},
-		]
+	var result := (
+		_simulator
+		. resolve_exchange(
+			state,
+			[
+				charge,
+				{"actor_id": "e", "action_id": "block", "target_id": ""},
+			]
+		)
 	)
 	assert(result.get("status") == "resolved")
 	var player := _fighter_from(result.get("state", {}) as Dictionary, "p")
@@ -49,12 +52,15 @@ func _test_counterattack_requires_successful_parry() -> void:
 	var attacker := _fighter("e", "enemy", 1, 5, 10, true, false)
 	var state := _state_1v1(defender, attacker)
 	var counter := _skill_intent(state, "p", "counterattack", "")
-	var result := _simulator.resolve_exchange(
-		state,
-		[
-			counter,
-			{"actor_id": "e", "action_id": "light", "target_id": "p"},
-		]
+	var result := (
+		_simulator
+		. resolve_exchange(
+			state,
+			[
+				counter,
+				{"actor_id": "e", "action_id": "light", "target_id": "p"},
+			]
+		)
 	)
 	assert(result.get("status") == "resolved")
 	var found_counter := false
@@ -70,10 +76,13 @@ func _test_counterattack_requires_successful_parry() -> void:
 func _test_equipment_requirements_fail_closed() -> void:
 	var no_shield := _fighter("p", "player", 10, 5, 10, true, false)
 	var state := _state_1v1(no_shield, _fighter("e", "enemy"))
-	var translated := _skill_resolver.resolve_desired_action(
-		no_shield,
-		{"actor_id": "p", "skill_id": "closed_guard", "target_id": ""},
-		_mechanics,
+	var translated := (
+		_skill_resolver
+		. resolve_desired_action(
+			no_shield,
+			{"actor_id": "p", "skill_id": "closed_guard", "target_id": ""},
+			_mechanics,
+		)
 	)
 	assert(translated.get("status") == "rejected")
 	assert(str(translated.get("reason", "")) == "equipment_requirement_missing")
@@ -84,24 +93,30 @@ func _test_disarm_and_immobilization_persist_to_next_exchange() -> void:
 	target["equipment"] = {"power": 10, "defense": 0}
 	var state := _state_1v1(_fighter("p", "player", 20, 5, 10, true, false), target)
 	var disarm := _skill_intent(state, "p", "disarm", "e")
-	var first := _simulator.resolve_exchange(
-		state,
-		[
-			disarm,
-			{"actor_id": "e", "action_id": "block", "target_id": ""},
-		]
+	var first := (
+		_simulator
+		. resolve_exchange(
+			state,
+			[
+				disarm,
+				{"actor_id": "e", "action_id": "block", "target_id": ""},
+			]
+		)
 	)
 	assert(first.get("status") == "resolved")
 	var disarmed := _fighter_from(first.get("state", {}) as Dictionary, "e")
 	assert(_has_status(disarmed, "disarm"))
 
 	var second_state := first.get("state", {}) as Dictionary
-	var second := _simulator.resolve_exchange(
-		second_state,
-		[
-			{"actor_id": "p", "action_id": "block", "target_id": ""},
-			{"actor_id": "e", "action_id": "light", "target_id": "p"},
-		]
+	var second := (
+		_simulator
+		. resolve_exchange(
+			second_state,
+			[
+				{"actor_id": "p", "action_id": "block", "target_id": ""},
+				{"actor_id": "e", "action_id": "light", "target_id": "p"},
+			]
+		)
 	)
 	assert(second.get("status") == "resolved")
 	assert(not _has_status(_fighter_from(second.get("state", {}) as Dictionary, "e"), "disarm"))
@@ -110,33 +125,44 @@ func _test_disarm_and_immobilization_persist_to_next_exchange() -> void:
 		_fighter("p", "player", 20, 5, 10, true, false), _fighter("e", "enemy")
 	)
 	var immobilize := _skill_intent(immobilize_state, "p", "immobilization", "e")
-	var imm_first := _simulator.resolve_exchange(
-		immobilize_state,
-		[
-			immobilize,
-			{"actor_id": "e", "action_id": "block", "target_id": ""},
-		]
+	var imm_first := (
+		_simulator
+		. resolve_exchange(
+			immobilize_state,
+			[
+				immobilize,
+				{"actor_id": "e", "action_id": "block", "target_id": ""},
+			]
+		)
 	)
 	assert(imm_first.get("status") == "resolved")
 	var immobilized := _fighter_from(imm_first.get("state", {}) as Dictionary, "e")
 	assert(_has_status(immobilized, "immobilization"))
-	var imm_second := _simulator.resolve_exchange(
-		imm_first.get("state", {}) as Dictionary,
-		[
-			{"actor_id": "p", "action_id": "block", "target_id": ""},
-			{"actor_id": "e", "action_id": "dodge", "target_id": ""},
-		]
+	var imm_second := (
+		_simulator
+		. resolve_exchange(
+			imm_first.get("state", {}) as Dictionary,
+			[
+				{"actor_id": "p", "action_id": "block", "target_id": ""},
+				{"actor_id": "e", "action_id": "dodge", "target_id": ""},
+			]
+		)
 	)
 	assert(imm_second.get("status") == "rejected")
 	assert(str(imm_second.get("reason", "")) == "invalid_skill_activation")
 
 
-func _skill_intent(state: Dictionary, actor_id: String, skill_id: String, target_id: String) -> Dictionary:
+func _skill_intent(
+	state: Dictionary, actor_id: String, skill_id: String, target_id: String
+) -> Dictionary:
 	var fighter := _fighter_from(state, actor_id)
-	var result := _skill_resolver.resolve_desired_action(
-		fighter,
-		{"actor_id": actor_id, "skill_id": skill_id, "target_id": target_id},
-		_mechanics,
+	var result := (
+		_skill_resolver
+		. resolve_desired_action(
+			fighter,
+			{"actor_id": actor_id, "skill_id": skill_id, "target_id": target_id},
+			_mechanics,
+		)
 	)
 	assert(result.get("status") == "ready")
 	return (result.get("desired_action", {}) as Dictionary).duplicate(true)
@@ -161,7 +187,8 @@ func _fighter(
 		"stats": {"FUE": 10, "AGI": agi, "TEC": tec, "RES": 5, "PV": 50},
 		"stamina": float(stamina),
 		"equipment": {"power": 4, "defense": 4},
-		"equipment_context": {
+		"equipment_context":
+		{
 			"has_weapon": has_weapon,
 			"has_shield": has_shield,
 			"tags": [],

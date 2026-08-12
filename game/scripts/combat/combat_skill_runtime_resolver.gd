@@ -77,9 +77,7 @@ func get_contract() -> Dictionary:
 	}
 
 
-func _validate_equipment_requirements(
-	fighter: Dictionary, mechanics: Dictionary
-) -> Array[String]:
+func _validate_equipment_requirements(fighter: Dictionary, mechanics: Dictionary) -> Array[String]:
 	var errors: Array[String] = []
 	var context := fighter.get("equipment_context", {}) as Dictionary
 	for raw_requirement in mechanics.get("equipment_requirements", []) as Array:
@@ -94,8 +92,10 @@ func _validate_equipment_requirements(
 				met = (context.get("tags", []) as Array).has(requirement)
 		if not met:
 			errors.append(
-				"Fighter %s does not meet skill equipment requirement: %s"
-				% [str(fighter.get("id", "")), requirement]
+				(
+					"Fighter %s does not meet skill equipment requirement: %s"
+					% [str(fighter.get("id", "")), requirement]
+				)
 			)
 	return errors
 

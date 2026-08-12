@@ -41,7 +41,12 @@ func build_from_live_roster(
 		var skill_context = equipment_manager.call("get_combat_v1_skill_context", person)
 		if not equipped_stats is Dictionary or not skill_context is Dictionary:
 			return _invalid(
-				["GT I equipment source returned invalid Combat V1 context for gladiator %s" % person_id]
+				[
+					(
+						"GT I equipment source returned invalid Combat V1 context for gladiator %s"
+						% person_id
+					)
+				]
 			)
 		var snapshot := (equipped_stats as Dictionary).duplicate(true)
 		snapshot["skill_context"] = (skill_context as Dictionary).duplicate(true)

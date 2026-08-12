@@ -203,7 +203,7 @@ func _test_disarm() -> void:
 		{"actor_id": "a", "action_id": "block"},
 		{"actor_id": "b", "action_id": "light", "target_id": "a"},
 	)
-	var damage_result := (_attack_by_actor(second, "b").get("damage_result", {}) as Dictionary)
+	var damage_result := _attack_by_actor(second, "b").get("damage_result", {}) as Dictionary
 	var attacker_equipment := damage_result.get("attacker_equipment", {}) as Dictionary
 	assert(is_equal_approx(float(attacker_equipment.get("power", 0.0)), 8.0))
 	assert(not _has_status(_fighter(second.state, "b"), "disarm"))
@@ -218,12 +218,15 @@ func _test_immobilization() -> void:
 		{"actor_id": "b", "action_id": "block"},
 	)
 	assert(_has_status(_fighter(first.state, "b"), "immobilization"))
-	var second := _simulator.resolve_exchange(
-		first.state,
-		[
-			{"actor_id": "a", "action_id": "block"},
-			{"actor_id": "b", "action_id": "dodge"},
-		],
+	var second := (
+		_simulator
+		. resolve_exchange(
+			first.state,
+			[
+				{"actor_id": "a", "action_id": "block"},
+				{"actor_id": "b", "action_id": "dodge"},
+			],
+		)
 	)
 	assert(second.get("status") == "rejected")
 	assert(second.get("reason") == "invalid_skill_activation")
@@ -270,9 +273,12 @@ func _test_equipment_requirements_fail_closed() -> void:
 	var low_stamina := _base_state_1v1()
 	_fighter_ref(low_stamina, "a")["stamina"] = 5.0
 	var charge_intent := _skill_intent(low_stamina, "a", "charge", "b")
-	var rejected := _simulator.resolve_exchange(
-		low_stamina,
-		[charge_intent, {"actor_id": "b", "action_id": "block"}],
+	var rejected := (
+		_simulator
+		. resolve_exchange(
+			low_stamina,
+			[charge_intent, {"actor_id": "b", "action_id": "block"}],
+		)
 	)
 	assert(rejected.get("status") == "rejected")
 	assert(rejected.get("reason") == "insufficient_stamina")
@@ -306,7 +312,9 @@ func _assert_all_skills_observed() -> void:
 		"interception",
 	]
 	for skill_id in expected:
-		assert(_observed_skills.has(skill_id), "Missing behavior assertion for skill: %s" % skill_id)
+		assert(
+			_observed_skills.has(skill_id), "Missing behavior assertion for skill: %s" % skill_id
+		)
 	assert(_observed_skills.size() == 12)
 
 
@@ -331,14 +339,18 @@ func _resolve_1v1(state: Dictionary, first: Dictionary, second: Dictionary) -> D
 
 func _resolve(state: Dictionary, intents: Array) -> Dictionary:
 	var result := _simulator.resolve_exchange(state, intents)
-	assert(result.get("status") == "resolved", "Exchange should resolve: %s" % [result.get("errors", [])])
+	assert(
+		result.get("status") == "resolved",
+		"Exchange should resolve: %s" % [result.get("errors", [])]
+	)
 	return result
 
 
 func _base_state_1v1() -> Dictionary:
 	return {
 		"format": "1v1",
-		"fighters": [
+		"fighters":
+		[
 			_make_fighter("a", "player"),
 			_make_fighter("b", "enemy"),
 		],
@@ -348,7 +360,8 @@ func _base_state_1v1() -> Dictionary:
 func _base_state_2v2() -> Dictionary:
 	return {
 		"format": "2v2",
-		"fighters": [
+		"fighters":
+		[
 			_make_fighter("a", "player"),
 			_make_fighter("c", "player"),
 			_make_fighter("b", "enemy"),
@@ -385,7 +398,8 @@ func _make_fighter(fighter_id: String, team_id: String) -> Dictionary:
 		"stats": {"FUE": 20, "AGI": 5, "TEC": 20, "RES": 8, "PV": 100},
 		"stamina": 10.0,
 		"equipment": {"power": 10, "defense": 4},
-		"equipment_context": {
+		"equipment_context":
+		{
 			"has_weapon": true,
 			"has_shield": true,
 			"tags": ["sword", "shield"],

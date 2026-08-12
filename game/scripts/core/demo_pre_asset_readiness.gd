@@ -11,12 +11,8 @@ const CombatSkillRuntimeResolverScript = preload(
 const CombatSkillEffectResolverScript = preload(
 	"res://scripts/combat/combat_skill_effect_resolver.gd"
 )
-const CombatExchangeResolverScript = preload(
-	"res://scripts/combat/combat_exchange_resolver.gd"
-)
-const CombatV1ArenaRuntimeScript = preload(
-	"res://scripts/ui/combat_v1_arena_runtime.gd"
-)
+const CombatExchangeResolverScript = preload("res://scripts/combat/combat_exchange_resolver.gd")
+const CombatV1ArenaRuntimeScript = preload("res://scripts/ui/combat_v1_arena_runtime.gd")
 const CanonicalSkillMechanicsContractScript = preload(
 	"res://scripts/core/canonical_skill_mechanics_contract.gd"
 )
@@ -271,8 +267,10 @@ func _append_skill_mechanics_blocker(blockers: Array[Dictionary]) -> void:
 		and exchange.get("status") == "frozen"
 		and exchange.get("skill_stamina_costs_enabled") == true
 		and exchange.get("skill_effects_enabled") == true
-		and exchange.get("skill_effect_authority")
-		== "combat_skill_effect_resolver_under_combat_simulator"
+		and (
+			exchange.get("skill_effect_authority")
+			== "combat_skill_effect_resolver_under_combat_simulator"
+		)
 		and arena.get("status") == "frozen"
 		and arena.get("player_option_source") == "base_actions_plus_canonical_rank_1_skills"
 		and int(arena.get("skill_runtime_rank", 0)) == 1
@@ -315,18 +313,7 @@ func _append_monthly_economy_blocker(blockers: Array[Dictionary]) -> void:
 			)
 		)
 		return
-	if not EconomyManager.has_method("get_finance_scope_contract"):
-		blockers.append(
-			_blocker(
-				"monthly_economy_runtime",
-				"architecture",
-				"EconomyManager does not expose its fail-closed demo finance boundary.",
-				false
-			)
-		)
-		return
 	var contract: Dictionary = EconomyManager.get_monthly_runtime_contract()
-	var finance: Dictionary = EconomyManager.get_finance_scope_contract()
 	var ready: bool = (
 		contract.get("status") == "frozen"
 		and contract.get("authority") == "monthly_economy_runtime"
@@ -339,14 +326,11 @@ func _append_monthly_economy_blocker(blockers: Array[Dictionary]) -> void:
 		and contract.get("daily_economy_is_authority") == false
 		and contract.get("legacy_weekly_economy_is_authority") == false
 		and contract.get("invent_unfrozen_values_allowed") == false
-		and finance.get("status") == "frozen"
-		and finance.get("scope") == "demo_monthly_finance_boundary"
-		and finance.get("sponsor_contract_creation_enabled") == false
-		and finance.get("loan_origination_enabled") == false
-		and finance.get("legacy_finance_state_read_only") == true
-		and finance.get("invent_missing_balance_allowed") == false
+		and contract.get("sponsor_demo_available") == false
+		and contract.get("loan_demo_available") == false
+		and contract.get("bankruptcy_demo_available") == false
+		and contract.get("unfrozen_actions_fail_closed") == true
 		and contract.get("save_version_change_required") == false
-		and finance.get("save_version_change_required") == false
 	)
 	if not ready:
 		(
@@ -355,7 +339,7 @@ func _append_monthly_economy_blocker(blockers: Array[Dictionary]) -> void:
 				_blocker(
 					"monthly_economy_runtime",
 					"architecture",
-					"Canonical monthly operating-cost runtime is incomplete or still grants authority to legacy daily/weekly economy.",
+					"Canonical monthly operating costs or the fail-closed demo finance boundary are incomplete.",
 					false
 				)
 			)

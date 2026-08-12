@@ -123,8 +123,10 @@ func _validate_base_targets(
 			errors.append("Desired action references unknown target: %s" % target_id)
 		elif not legal_targets.has(target_id):
 			errors.append(
-				"Desired action %s target %s is not a legal %s target"
-				% [action_id, target_id, relationship]
+				(
+					"Desired action %s target %s is not a legal %s target"
+					% [action_id, target_id, relationship]
+				)
 			)
 	elif not target_id.is_empty():
 		errors.append("Desired action %s does not accept an explicit target" % action_id)
@@ -157,16 +159,15 @@ func _validate_skill_targets(
 			if str(target.get("team", "")) == str(actor.get("team", "")):
 				errors.append("Skill %s requires an enemy target" % skill_id)
 		"ally":
-			if (
-				target_id == actor_id
-				or str(target.get("team", "")) != str(actor.get("team", ""))
-			):
+			if target_id == actor_id or str(target.get("team", "")) != str(actor.get("team", "")):
 				errors.append("Skill %s requires another active ally target" % skill_id)
 		"self":
 			if target_id != actor_id:
 				errors.append("Skill %s requires self target" % skill_id)
 		_:
-			errors.append("Skill %s has unsupported target relationship: %s" % [skill_id, relationship])
+			errors.append(
+				"Skill %s has unsupported target relationship: %s" % [skill_id, relationship]
+			)
 	return errors
 
 
