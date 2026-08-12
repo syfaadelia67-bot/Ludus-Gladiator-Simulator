@@ -33,7 +33,9 @@ func accept_event(event_id: String, fighter_id: String) -> bool:
 		contract_failed.emit("El evento seleccionado ya no está disponible.")
 		return false
 	if not _is_canonical_competition(str(event.get("competition", ""))):
-		contract_failed.emit("La competición seleccionada no pertenece al calendario mensual canónico.")
+		contract_failed.emit(
+			"La competición seleccionada no pertenece al calendario mensual canónico."
+		)
 		return false
 	return super.accept_event(event_id, fighter_id)
 
@@ -44,7 +46,9 @@ func accept_event_team(event_id: String, fighter_ids: Array) -> bool:
 		contract_failed.emit("El evento seleccionado ya no está disponible.")
 		return false
 	if not _is_canonical_competition(str(event.get("competition", ""))):
-		contract_failed.emit("La competición seleccionada no pertenece al calendario mensual canónico.")
+		contract_failed.emit(
+			"La competición seleccionada no pertenece al calendario mensual canónico."
+		)
 		return false
 	if int(event.get("scheduled_month", GameState.get_month())) != GameState.get_month():
 		contract_failed.emit("Solo podés inscribirte en competiciones del mes actual.")
@@ -69,7 +73,9 @@ func accept_event_team(event_id: String, fighter_ids: Array) -> bool:
 			contract_failed.emit("Seleccioná gladiadores válidos para la competición.")
 			return false
 		if not fighter.is_available_for_combat():
-			contract_failed.emit("Uno de los gladiadores seleccionados no está disponible para competir.")
+			contract_failed.emit(
+				"Uno de los gladiadores seleccionados no está disponible para competir."
+			)
 			return false
 		if _has_active_contract_for_fighter(fighter_id):
 			contract_failed.emit("Uno de los gladiadores ya tiene un combate programado este mes.")
