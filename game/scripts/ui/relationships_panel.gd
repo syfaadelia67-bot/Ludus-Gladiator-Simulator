@@ -29,7 +29,7 @@ var selected_person_id := ""
 var selected_partner_id := ""
 var interaction_in_progress := false
 var refresh_pending := false
-var last_feedback := "Dos intervenciones disponibles por semana."
+var last_feedback := "Dos intervenciones disponibles por mes."
 
 func _ready() -> void:
     back_button.pressed.connect(_return_to_finca)
@@ -80,7 +80,7 @@ func _refresh_overview() -> void:
     tension_label.text = "TENSIÓN · %d" % int(overview.get("tension", 0))
     mentorships_label.text = "MENTORÍAS · %d" % int(overview.get("mentorships", 0))
     conflicts_label.text = "CONFLICTOS · %d" % int(overview.get("conflicts", 0))
-    interventions_label.text = "INTERVENCIONES %d/%d" % [
+    interventions_label.text = "INTERVENCIONES DEL MES %d/%d" % [
         int(overview.get("interventions_remaining", 0)),
         RelationshipManager.MAX_WEEKLY_INTERVENTIONS
     ]
@@ -236,7 +236,7 @@ func _refresh_detail() -> void:
         var action: Dictionary = action_data
         var action_id := str(action.get("id", ""))
         var allowed := bool(action.get("allowed", false))
-        var reason := str(action.get("reason", ""))
+        var reason := _monthly_reason(str(action.get("reason", "")))
         var button := Button.new()
         button.custom_minimum_size = Vector2(0, 58)
         button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -248,7 +248,9 @@ func _refresh_detail() -> void:
         ]
         button.tooltip_text = reason if not allowed else "Aplicar intervención"
         button.modulate = Color(1, 1, 1, 0.72) if not allowed else Color.WHITE
-        button.pressed.connect(_attempt_interaction.bind(action_id, allowed, reason))
+        button.disabled = not allowed
+        if allowed:
+            button.pressed.connect(_attempt_interaction.bind(action_id, true, ""))
         actions.add_child(button)
 
 func _attempt_interaction(interaction_id: String, allowed: bool, blocked_reason: String) -> void:
@@ -265,7 +267,7 @@ func _attempt_interaction(interaction_id: String, allowed: bool, blocked_reason:
     interaction_in_progress = false
 
     var success := bool(result.get("success", false))
-    var description := str(result.get("description", "No se pudo realizar la intervención."))
+    var description := _monthly_reason(str(result.get("description", "No se pudo realizar la intervención.")))
     if success:
         last_feedback = "INTERVENCIÓN APLICADA · %s · Restan %d" % [
             description,
@@ -310,11 +312,20 @@ func _refresh_events() -> void:
         if not event_value is Dictionary:
             continue
         var event: Dictionary = event_value
-        lines.append("• %s" % str(event.get("description", "Cambio social")))
+        lines.append("• %s" % _monthly_reason(str(event.get("description", "Cambio social"))))
         count += 1
         if count >= 8:
             break
     recent_events.text = "\n".join(lines) if not lines.is_empty() else "Todavía no hay acontecimientos sociales."
+
+func _monthly_reason(value: String) -> String:
+    return (
+        value
+        .replace("esta semana", "este mes")
+        .replace("semanales", "mensuales")
+        .replace("semanal", "mensual")
+        .replace("semana", "mes")
+    )
 
 func _clear_children(container: Node) -> void:
     for child in container.get_children():
