@@ -52,8 +52,12 @@ func _refresh() -> void:
 	if next_rank.is_empty():
 		next_rank_label.text = "[b]Rango máximo alcanzado[/b]\nEl ludus ya obtuvo el mayor rango disponible."
 	else:
+		var next_rank_format := (
+			"[b]Próximo rango: %s[/b]\nRequiere %d reputación, "
+			+ "%d victorias y %d denarios.\nDesbloqueo: %s"
+		)
 		next_rank_label.text = (
-			"[b]Próximo rango: %s[/b]\nRequiere %d reputación, %d victorias y %d denarios.\nDesbloqueo: %s"
+			next_rank_format
 			% [
 				next_rank.get("name", "Rango"),
 				int(next_rank.get("reputation", 0)),
