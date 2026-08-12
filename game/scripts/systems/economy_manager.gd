@@ -12,12 +12,8 @@ signal loan_failed(reason: String)
 signal bankruptcy_warning(level: int, message: String)
 
 const MonthlyEconomyRuntimeScript = preload("res://scripts/systems/monthly_economy_runtime.gd")
-const PENDING_SPONSOR_REASON := (
-	"Patrocinadores no están habilitados en la demo hasta congelar su balance mensual."
-)
-const PENDING_LOAN_REASON := (
-	"Préstamos no están habilitados en la demo hasta congelar cuotas, interés y quiebra mensual."
-)
+const PENDING_SPONSOR_REASON := "Patrocinadores fuera de demo: balance mensual pendiente."
+const PENDING_LOAN_REASON := "Préstamos fuera de demo: balance mensual y quiebra pendientes."
 
 # Legacy sponsor/loan catalogs remain available for Save v14 compatibility only.
 const SPONSORS := {
@@ -110,9 +106,7 @@ func sign_contract(sponsor_id: String) -> bool:
 	if not SPONSORS.has(sponsor_id):
 		contract_failed.emit("El patrocinador seleccionado no existe.")
 		return false
-	contract_failed.emit(
-		"Patrocinadores no están habilitados en la demo mensual hasta congelar su balance."
-	)
+	contract_failed.emit(PENDING_SPONSOR_REASON)
 	return false
 
 
@@ -120,7 +114,7 @@ func take_loan(loan_id: String) -> bool:
 	if not LOAN_PRODUCTS.has(loan_id):
 		loan_failed.emit("El préstamo seleccionado no existe.")
 		return false
-	loan_failed.emit("Préstamos no están habilitados en la demo mensual hasta congelar su balance.")
+	loan_failed.emit(PENDING_LOAN_REASON)
 	return false
 
 
