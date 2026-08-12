@@ -15,8 +15,12 @@ func _ready() -> void:
 	super._ready()
 	_install_non_gt_controls()
 	TournamentManager.calendar_changed.connect(_refresh_non_gt_controls)
-	TournamentManager.contract_accepted.connect(func(_contract: Dictionary): _refresh_non_gt_controls())
-	TournamentManager.contract_cancelled.connect(func(_contract: Dictionary): _refresh_non_gt_controls())
+	TournamentManager.contract_accepted.connect(
+		func(_contract: Dictionary): _refresh_non_gt_controls()
+	)
+	TournamentManager.contract_cancelled.connect(
+		func(_contract: Dictionary): _refresh_non_gt_controls()
+	)
 	_refresh_all()
 
 
@@ -44,6 +48,15 @@ func _install_non_gt_controls() -> void:
 func _refresh_all() -> void:
 	super._refresh_all()
 	_refresh_non_gt_controls()
+	if _series_setup_panel != null:
+		var status := str(_session.get("status", ""))
+		var monthly_finished := (
+			str(_session.get("session_kind", "")) == "monthly_non_gt"
+			and status == "encounter_finished"
+		)
+		_series_setup_panel.set_session_active(
+			status == "combat_running" or (status == "encounter_finished" and not monthly_finished)
+		)
 
 
 func _refresh_non_gt_controls() -> void:
@@ -74,7 +87,9 @@ func _refresh_non_gt_controls() -> void:
 	for raw_event in TournamentManager.get_month_schedule(GameState.get_month()):
 		if not raw_event is Dictionary:
 			continue
-		if str((raw_event as Dictionary).get("competition", "")) in ["underworld", "official_minor"]:
+		if str((raw_event as Dictionary).get("competition", "")) in [
+			"underworld", "official_minor"
+		]:
 			non_gt_count += 1
 	_non_gt_status.text = (
 		"Hay %d oportunidad(es) no-GT este mes. Inscribí gladiadores desde Torneos."
@@ -175,7 +190,9 @@ func _refresh_event() -> void:
 		if not raw_event is Dictionary:
 			continue
 		var event := raw_event as Dictionary
-		names.append("%s (%s)" % [str(event.get("name", "Arena")), str(event.get("format", ""))])
+		names.append(
+			"%s (%s)" % [str(event.get("name", "Arena")), str(event.get("format", ""))]
+		)
 	event_header.text = "MES %d · ARENA" % month
 	if names.is_empty():
 		event_conditions.text = "[b]COMBAT V1[/b]\nNo hay combates programados este mes."
@@ -189,13 +206,19 @@ func _refresh_event() -> void:
 
 func _refresh_encounter_panel() -> void:
 	var contract := _current_non_gt_contract()
-	if contract.is_empty() and str(_session.get("session_kind", "")) != "monthly_non_gt":
+	if (
+		contract.is_empty()
+		and str(_session.get("session_kind", "")) != "monthly_non_gt"
+	):
 		super._refresh_encounter_panel()
 		return
 	var source := contract if not contract.is_empty() else _session
 	opponent_info.text = (
 		"[b]COMBATE MENSUAL NO-GT[/b]\n%s · Formato %s\n"
-		% [str(source.get("name", source.get("event_name", "Arena"))), str(source.get("format", ""))]
+		% [
+			str(source.get("name", source.get("event_name", "Arena"))),
+			str(source.get("format", "")),
+		]
 		+ "El rival se toma del catálogo Combat V1 canónico de los Ludi rivales."
 	)
 	combat_conditions.text = (
@@ -204,7 +227,10 @@ func _refresh_encounter_panel() -> void:
 	)
 	difficulty.text = "[b]DIFICULTAD[/b]\n%d" % int(source.get("difficulty", 1))
 	if str(source.get("competition", "")) == "underworld":
-		rewards.text = "[b]PREMIO[/b]\n%d denarios por victoria." % int(source.get("reward_per_win", 60))
+		rewards.text = (
+			"[b]PREMIO[/b]\n%d denarios por victoria."
+			% int(source.get("reward_per_win", 60))
+		)
 	else:
 		rewards.text = (
 			"[b]PREMIO[/b]\nCampeón %d · Eliminado %d denarios."
@@ -217,7 +243,9 @@ func _render_stage(snapshot: Dictionary) -> void:
 	super._render_stage(snapshot)
 	if str(_session.get("session_kind", "")) != "monthly_non_gt":
 		return
-	action_text.text = "Intercambio Combat V1 · %s" % str(_session.get("event_name", "Arena mensual"))
+	action_text.text = (
+		"Intercambio Combat V1 · %s" % str(_session.get("event_name", "Arena mensual"))
+	)
 	selected_prep.text = (
 		"[b]SESIÓN MENSUAL COMBAT V1[/b]\nMes %d · %s · %s\nRival: %s"
 		% [
@@ -235,7 +263,9 @@ func _clear_stage() -> void:
 	if not contract.is_empty():
 		enemy_name.text = "Rival mensual canónico"
 		action_text.text = "Contrato listo: %s" % str(contract.get("name", "Arena"))
-	elif TournamentManager.get_month_schedule(GameState.get_month()).size() > 0:
+	elif (
+		TournamentManager.get_month_schedule(GameState.get_month()).size() > 0
+	):
 		enemy_name.text = "Cartelera mensual disponible"
 		action_text.text = "Elegí e inscribite en un combate desde Torneos"
 
