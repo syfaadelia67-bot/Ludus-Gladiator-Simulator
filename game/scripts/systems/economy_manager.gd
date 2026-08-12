@@ -1,7 +1,7 @@
-extends Node
-
-# Compatibility facade: public Save/UI methods stay stable while new logic lives in focused runtimes.
+# Compatibility facade: Save/UI public methods stay stable.
+# New economy logic belongs in focused runtimes.
 # gdlint: disable=max-public-methods
+extends Node
 
 signal economy_changed
 signal daily_economy_processed(report: Dictionary)
