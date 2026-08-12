@@ -139,21 +139,7 @@ func advance_exchange_with_ai_requests(ai_requests_by_actor: Dictionary) -> Dict
 	if str(_session.get("status", "")) != "combat_running":
 		return _ui_rejected("no_active_session", ["No hay una sesión Combat V1 activa."])
 
-	var option_id := _selected_action_id()
-	var targets_by_actor: Dictionary = {}
-	if _arena_runtime.option_requires_manual_target(_session, option_id):
-		var target_id := _selected_target_id()
-		if target_id.is_empty():
-			return _ui_rejected(
-				"target_required",
-				["La opción seleccionada requiere un objetivo enemigo explícito."],
-			)
-		for actor_id in _arena_runtime.get_active_player_ids(_session):
-			targets_by_actor[actor_id] = target_id
-
-	var intents_result: Dictionary = _arena_runtime.build_player_intents(
-		_session, option_id, targets_by_actor
-	)
+	var intents_result := _build_monthly_player_intents()
 	if str(intents_result.get("status", "")) != "ready":
 		_render_error(intents_result)
 		return intents_result
@@ -183,6 +169,21 @@ func advance_exchange_with_ai_requests(ai_requests_by_actor: Dictionary) -> Dict
 		_render_encounter_finished()
 		_show_result_view()
 	return _session.duplicate(true)
+
+
+func _build_monthly_player_intents() -> Dictionary:
+	var option_id := _selected_action_id()
+	var targets_by_actor: Dictionary = {}
+	if _arena_runtime.option_requires_manual_target(_session, option_id):
+		var target_id := _selected_target_id()
+		if target_id.is_empty():
+			return _ui_rejected(
+				"target_required",
+				["La opción seleccionada requiere un objetivo enemigo explícito."],
+			)
+		for actor_id in _arena_runtime.get_active_player_ids(_session):
+			targets_by_actor[actor_id] = target_id
+	return _arena_runtime.build_player_intents(_session, option_id, targets_by_actor)
 
 
 func _refresh_event() -> void:
