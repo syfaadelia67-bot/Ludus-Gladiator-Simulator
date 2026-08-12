@@ -175,7 +175,7 @@ func _append_gt1_progress(lines: Array[String]) -> void:
 	var progress := summary.get("encounter_progress", {}) as Dictionary
 	var points_per_win := int(summary.get("points_per_win", 3))
 	lines.append("")
-	lines.append("[b]Progreso del Gran Torneo[/b]")
+	lines.append("[b]Progreso del Torneo de Marte[/b]")
 	lines.append("Combates: %d/9" % int(summary.get("player_bouts", 0)))
 	lines.append("Victorias: %d" % int(summary.get("player_wins", 0)))
 	lines.append("PTS: %d/%d" % [int(summary.get("player_points", 0)), 9 * points_per_win])
@@ -226,10 +226,7 @@ func _append_gt1_tiebreak_status(lines: Array[String], summary: Dictionary) -> v
 			lines.append("Participa un gladiador disponible por Ludus.")
 			if bool(snapshot.get("requires_external_rival_snapshot", false)):
 				lines.append(
-					(
-						"[i]Pendiente del snapshot Combat V1 explícito del rival; "
-						+ "no se generarán estadísticas rivales.[/i]"
-					)
+					"[i]Pendientes los datos explícitos del rival; no se generarán estadísticas.[/i]"
 				)
 		"non_podium_data_required":
 			lines.append(
@@ -296,6 +293,7 @@ func _on_accepted(contract: Dictionary) -> void:
 			_scheduled_month(contract),
 		]
 	)
+	_refresh_all()
 	call_deferred("_scroll_to_contracts")
 
 
@@ -303,6 +301,7 @@ func _on_cancelled(contract: Dictionary) -> void:
 	status.text = (
 		"Contrato cancelado. Penalización: %d denarios." % int(contract.get("cancel_penalty", 0))
 	)
+	_refresh_all()
 	call_deferred("_scroll_to_contracts")
 
 
