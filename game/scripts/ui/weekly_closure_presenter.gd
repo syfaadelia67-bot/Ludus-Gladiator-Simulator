@@ -106,6 +106,7 @@ func open_summary() -> void:
 func _render() -> void:
 	var summary := WeeklyPlanningController.get_summary()
 	var economy: Dictionary = summary.get("economy", {})
+	var recovery: Dictionary = summary.get("recovery", {})
 	var lines: Array[String] = []
 	lines.append(
 		"[b]Mes %d → Mes %d[/b]" % [int(summary.get("month", 1)), int(summary.get("next_month", 2))]
@@ -173,7 +174,10 @@ func _render() -> void:
 					)
 				)
 			)
-		lines.append("• La recuperación automática permanece pendiente de balance mensual.")
+		if bool(recovery.get("injury_auto_recovery_active", false)):
+			lines.append("• La recuperación automática se procesa al cierre de cada mes.")
+		else:
+			lines.append("• La recuperación automática no está activa para este estado.")
 
 	var fight: Dictionary = summary.get("fight", {})
 	lines.append("\n[b]ARENA[/b]")
