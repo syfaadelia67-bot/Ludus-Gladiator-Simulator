@@ -24,9 +24,10 @@ func _initialize() -> void:
     assert(hub_text.contains("var packed := load(scene_path) as PackedScene"))
 
     for routed_scene in [
-        "FincaScreen.tscn", "BarracksScreen.tscn", "MarketScreen.tscn", "ArenaScreen.tscn",
-        "PersonalScreen.tscn", "EquipmentScreen.tscn", "ForgeScreen.tscn",
-        "CampaignPanel.tscn", "RelationshipsPanel.tscn", "RivalsPanel.tscn"
+        "FincaScreen.tscn", "BarracksScreen.tscn", "MarketScreen.tscn",
+        "ArenaScreenMonthly.tscn", "TournamentsPanelMonthly.tscn", "PersonalScreen.tscn",
+        "EquipmentScreen.tscn", "ForgeScreen.tscn", "CampaignPanel.tscn",
+        "RelationshipsPanel.tscn", "RivalsPanel.tscn"
     ]:
         assert(hub_text.contains(routed_scene))
 
@@ -62,10 +63,14 @@ func _initialize() -> void:
 
     var market_scene := load("res://scenes/MarketScreen.tscn")
     var barracks_scene := load("res://scenes/BarracksScreen.tscn")
+    var arena_scene := load("res://scenes/ArenaScreenMonthly.tscn")
+    var tournaments_scene := load("res://scenes/TournamentsPanelMonthly.tscn")
     var hud_scene := load("res://scenes/UnifiedHudShell.tscn")
     assert(market_scene is PackedScene)
     assert(barracks_scene is PackedScene)
+    assert(arena_scene is PackedScene)
+    assert(tournaments_scene is PackedScene)
     assert(hud_scene is PackedScene)
 
-    print("Primary ScreenHost, circular HUD and 16:9 cover navigation contract: OK")
+    print("Primary monthly ScreenHost, circular HUD and 16:9 cover navigation contract: OK")
     quit()
