@@ -14,7 +14,9 @@ extends Control
 
 @onready var people_list: ItemList = $Margin/Main/Body/PeoplePanel/Margin/Content/PeopleList
 @onready var selected_summary: Label = $Margin/Main/Body/PeoplePanel/Margin/Content/SelectedSummary
-@onready var bond_cards: VBoxContainer = $Margin/Main/Body/BondsPanel/Margin/Content/Scroll/BondCards
+@onready var bond_cards: VBoxContainer = get_node(
+	"Margin/Main/Body/BondsPanel/Margin/Content/Scroll/BondCards"
+)
 
 @onready var detail_title: Label = $Margin/Main/Body/DetailPanel/Margin/Scroll/Content/DetailTitle
 @onready var tone_label: Label = $Margin/Main/Body/DetailPanel/Margin/Scroll/Content/Tone
@@ -22,8 +24,9 @@ extends Control
 @onready var effect_label: Label = $Margin/Main/Body/DetailPanel/Margin/Scroll/Content/Effect
 @onready var actions: VBoxContainer = $Margin/Main/Body/DetailPanel/Margin/Scroll/Content/Actions
 @onready var status_label: Label = $Margin/Main/Body/DetailPanel/Margin/Scroll/Content/Status
-@onready
-var recent_events: RichTextLabel = $Margin/Main/Body/DetailPanel/Margin/Scroll/Content/RecentEvents
+@onready var recent_events: RichTextLabel = get_node(
+	"Margin/Main/Body/DetailPanel/Margin/Scroll/Content/RecentEvents"
+)
 
 var person_ids: Array[String] = []
 var selected_person_id := ""
@@ -252,8 +255,12 @@ func _refresh_detail() -> void:
 
 	detail_title.text = "%s ↔ %s" % [person.display_name, partner.display_name]
 	tone_label.text = str(relation.get("tone", relation.get("state_label", "Neutral"))).to_upper()
+	var metrics_format := (
+		"[b]AFINIDAD[/b] %d\n[b]RESPETO[/b] %d\n[b]RIVALIDAD[/b] %d\n"
+		+ "[b]CELOS[/b] %d\n[b]MENTORÍA[/b] %d\n\nÚltimo cambio: %s"
+	)
 	metrics.text = (
-		"[b]AFINIDAD[/b] %d\n[b]RESPETO[/b] %d\n[b]RIVALIDAD[/b] %d\n[b]CELOS[/b] %d\n[b]MENTORÍA[/b] %d\n\nÚltimo cambio: %s"
+		metrics_format
 		% [
 			int(relation.get("affinity", 0)),
 			int(relation.get("respect", 0)),
