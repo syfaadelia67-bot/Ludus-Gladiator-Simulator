@@ -110,6 +110,7 @@ func advance_exchange(
 	)
 
 
+# gdlint: disable=max-returns
 func build_player_intents(
 	session: Dictionary, option_id: String, targets_by_actor: Dictionary = {}
 ) -> Dictionary:
@@ -168,6 +169,7 @@ func build_player_intents(
 	}
 
 
+# gdlint: enable=max-returns
 func build_snapshot(session: Dictionary) -> Dictionary:
 	return _presentation.build(session, TournamentManager.get_gt1_summary())
 
