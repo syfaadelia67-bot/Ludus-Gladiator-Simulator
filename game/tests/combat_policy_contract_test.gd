@@ -6,7 +6,7 @@ const CombatPolicyContractScript = preload("res://scripts/combat/combat_policy_c
 func _ready() -> void:
 	var policy = CombatPolicyContractScript.new()
 	_assert_valid_intent(policy)
-	_assert_unfrozen_skill_is_rejected(policy)
+	_assert_skill_without_catalog_is_rejected(policy)
 	_assert_missing_enemy_target_is_rejected(policy)
 	_assert_ally_target_is_rejected(policy)
 	_assert_no_target_actions_reject_explicit_target(policy)
@@ -33,7 +33,7 @@ func _assert_valid_intent(policy) -> void:
 		)
 
 
-func _assert_unfrozen_skill_is_rejected(policy) -> void:
+func _assert_skill_without_catalog_is_rejected(policy) -> void:
 	var desired := {
 		"actor_id": "a1",
 		"action_id": "light",
@@ -41,7 +41,7 @@ func _assert_unfrozen_skill_is_rejected(policy) -> void:
 		"skill_id": "feint",
 	}
 	var errors: Array[String] = policy.validate_desired_action(_state(), desired)
-	assert(_contains_error(errors, "skill activation is unavailable"))
+	assert(_contains_error(errors, "Unknown Combat V1 skill: feint"))
 	assert(not policy.is_valid_desired_action(_state(), desired))
 
 
