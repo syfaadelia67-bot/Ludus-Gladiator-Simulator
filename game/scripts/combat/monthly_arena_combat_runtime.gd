@@ -29,7 +29,9 @@ func start_contract(contract: Dictionary, player_team_id: String = "player") -> 
 	var player_ids := _contract_player_ids(contract)
 	var opponent_count := _opponent_count_for_format(str(contract.get("format", "")))
 	var opponent_team_id := "rival_monthly"
-	var opponent_result := _select_canonical_opponents(contract, opponent_count, opponent_team_id)
+	var opponent_result := _select_canonical_opponents(
+		contract, opponent_count, opponent_team_id
+	)
 	if str(opponent_result.get("status", "")) != "ready":
 		return _rejected(
 			"monthly_rival_selection_failed",
@@ -180,7 +182,9 @@ func _build_player_fighter(player_id: String, player_team_id: String) -> Diction
 	if person == null or str(person.role) != "gladiator":
 		return _source_rejected(["No existe el gladiador seleccionado: %s" % player_id])
 	if not person.is_available_for_combat():
-		return _source_rejected(["El gladiador %s no está disponible para combatir." % player_id])
+		return _source_rejected(
+			["El gladiador %s no está disponible para combatir." % player_id]
+		)
 	var equipped_stats: Variant = EquipmentManager.get_combat_v1_equipped_stats(person)
 	var skill_context: Variant = EquipmentManager.get_combat_v1_skill_context(person)
 	if not equipped_stats is Dictionary or not skill_context is Dictionary:
@@ -199,7 +203,9 @@ func _select_canonical_opponents(
 		return _source_rejected(["No hay Ludi rivales canónicos disponibles."])
 	var ludi := ludi_value as Array
 	var month := maxi(1, int(contract.get("scheduled_month", GameState.get_month())))
-	var seed_offset := month + int(contract.get("difficulty", 1)) + str(contract.get("id", "")).length()
+	var seed_offset := (
+		month + int(contract.get("difficulty", 1)) + str(contract.get("id", "")).length()
+	)
 	var start_index := seed_offset % ludi.size()
 
 	for offset in range(ludi.size()):
@@ -245,7 +251,9 @@ func _select_canonical_opponents(
 				"fighter_ids": selected_ids.duplicate(),
 				"fighters": selected_fighters.duplicate(true),
 			}
-	return _source_rejected(["Ningún Ludus rival tiene suficientes snapshots Combat V1 válidos."])
+	return _source_rejected(
+		["Ningún Ludus rival tiene suficientes snapshots Combat V1 válidos."]
+	)
 
 
 func _start_loop(state: Dictionary) -> Dictionary:
@@ -275,7 +283,10 @@ func _validate_contract_start(contract: Dictionary, player_team_id: String) -> A
 	var player_ids := _contract_player_ids(contract)
 	var expected_players := 2 if format_id == "2v2" else 1
 	if player_ids.size() != expected_players:
-		errors.append("El formato %s requiere %d gladiador(es) del jugador." % [format_id, expected_players])
+		errors.append(
+			"El formato %s requiere %d gladiador(es) del jugador."
+			% [format_id, expected_players]
+		)
 	return errors
 
 
@@ -318,7 +329,11 @@ func _opponent_count_for_format(format_id: String) -> int:
 
 
 func _source_rejected(errors: Array) -> Dictionary:
-	return {"status": "rejected", "reason": "source_unavailable", "errors": errors.duplicate()}
+	return {
+		"status": "rejected",
+		"reason": "source_unavailable",
+		"errors": errors.duplicate(),
+	}
 
 
 func _rejected(reason: String, errors: Array, source: Dictionary) -> Dictionary:
