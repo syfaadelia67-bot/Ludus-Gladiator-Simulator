@@ -1,5 +1,12 @@
 extends Control
 
+var person_ids: Array[String] = []
+var selected_person_id := ""
+var selected_partner_id := ""
+var interaction_in_progress := false
+var refresh_pending := false
+var last_feedback := "Dos intervenciones disponibles por mes."
+
 @onready var back_button: Button = $Margin/Main/Header/Row/BackToFinca
 @onready var interventions_label: Label = $Margin/Main/Header/Row/Interventions
 @onready var cohesion_label: Label = $Margin/Main/Overview/Row/Cohesion
@@ -27,13 +34,6 @@ extends Control
 @onready var recent_events: RichTextLabel = get_node(
 	"Margin/Main/Body/DetailPanel/Margin/Scroll/Content/RecentEvents"
 )
-
-var person_ids: Array[String] = []
-var selected_person_id := ""
-var selected_partner_id := ""
-var interaction_in_progress := false
-var refresh_pending := false
-var last_feedback := "Dos intervenciones disponibles por mes."
 
 
 func _ready() -> void:
