@@ -42,57 +42,20 @@ func accept_event(event_id: String, fighter_id: String) -> bool:
 
 func accept_event_team(event_id: String, fighter_ids: Array) -> bool:
 	var event := _find_event(event_id)
-	if event.is_empty():
-		contract_failed.emit("El evento seleccionado ya no está disponible.")
-		return false
-	if not _is_canonical_competition(str(event.get("competition", ""))):
-		contract_failed.emit(
-			"La competición seleccionada no pertenece al calendario mensual canónico."
-		)
-		return false
-	if int(event.get("scheduled_month", GameState.get_month())) != GameState.get_month():
-		contract_failed.emit("Solo podés inscribirte en competiciones del mes actual.")
+	var validation := _validate_team_event_acceptance(event, fighter_ids)
+	if not bool(validation.get("ready", false)):
+		contract_failed.emit(str(validation.get("reason", "Inscripción de equipo rechazada.")))
 		return false
 
-	var expected_size := maxi(1, int(event.get("team_size", 1)))
-	if expected_size <= 1 or fighter_ids.size() != expected_size:
-		contract_failed.emit(
-			"La competición requiere seleccionar exactamente %d gladiadores." % expected_size
-		)
-		return false
-
-	var resolved_ids: Array[String] = []
-	var fighter_names: Array[String] = []
-	for raw_id in fighter_ids:
-		var fighter_id := str(raw_id)
-		if fighter_id.is_empty() or resolved_ids.has(fighter_id):
-			contract_failed.emit("La selección de gladiadores debe ser completa y sin duplicados.")
-			return false
-		var fighter = RosterManager.get_person(fighter_id)
-		if fighter == null or str(fighter.role) != "gladiator":
-			contract_failed.emit("Seleccioná gladiadores válidos para la competición.")
-			return false
-		if not fighter.is_available_for_combat():
-			contract_failed.emit(
-				"Uno de los gladiadores seleccionados no está disponible para competir."
-			)
-			return false
-		if _has_active_contract_for_fighter(fighter_id):
-			contract_failed.emit("Uno de los gladiadores ya tiene un combate programado este mes.")
-			return false
-		resolved_ids.append(fighter_id)
-		fighter_names.append(str(fighter.display_name))
-
-	if GameState.reputation < int(event.get("min_reputation", 0)):
-		contract_failed.emit("La reputación del ludus es insuficiente.")
-		return false
 	var fee := int(event.get("entry_fee", 0))
 	if not GameState.spend_denarii(fee):
 		contract_failed.emit("No hay suficientes denarios para pagar la inscripción.")
 		return false
 
+	var resolved_ids := validation.get("fighter_ids", []) as Array
+	var fighter_names := validation.get("fighter_names", []) as Array
 	var contract := event.duplicate(true)
-	contract["fighter_id"] = resolved_ids[0]
+	contract["fighter_id"] = str(resolved_ids[0])
 	contract["fighter_ids"] = resolved_ids.duplicate()
 	contract["fighter_name"] = " + ".join(fighter_names)
 	contract["fighter_names"] = fighter_names.duplicate()
@@ -227,6 +190,51 @@ func _build_canonical_month_schedule(month: int) -> Array[Dictionary]:
 		if _has_second_official(month):
 			schedule.append(_build_minor_event(month, 2))
 	return schedule
+
+
+func _validate_team_event_acceptance(event: Dictionary, fighter_ids: Array) -> Dictionary:
+	var reason := ""
+	var resolved_ids: Array[String] = []
+	var fighter_names: Array[String] = []
+	var expected_size := maxi(1, int(event.get("team_size", 1)))
+
+	if event.is_empty():
+		reason = "El evento seleccionado ya no está disponible."
+	elif not _is_canonical_competition(str(event.get("competition", ""))):
+		reason = "La competición seleccionada no pertenece al calendario mensual canónico."
+	elif int(event.get("scheduled_month", GameState.get_month())) != GameState.get_month():
+		reason = "Solo podés inscribirte en competiciones del mes actual."
+	elif expected_size <= 1 or fighter_ids.size() != expected_size:
+		reason = "La competición requiere seleccionar exactamente %d gladiadores." % expected_size
+
+	if reason.is_empty():
+		for raw_id in fighter_ids:
+			var fighter_id := str(raw_id)
+			var fighter = RosterManager.get_person(fighter_id)
+			if fighter_id.is_empty() or resolved_ids.has(fighter_id):
+				reason = "La selección de gladiadores debe ser completa y sin duplicados."
+				break
+			if fighter == null or str(fighter.role) != "gladiator":
+				reason = "Seleccioná gladiadores válidos para la competición."
+				break
+			if not fighter.is_available_for_combat():
+				reason = "Uno de los gladiadores seleccionados no está disponible para competir."
+				break
+			if _has_active_contract_for_fighter(fighter_id):
+				reason = "Uno de los gladiadores ya tiene un combate programado este mes."
+				break
+			resolved_ids.append(fighter_id)
+			fighter_names.append(str(fighter.display_name))
+
+	if reason.is_empty() and GameState.reputation < int(event.get("min_reputation", 0)):
+		reason = "La reputación del ludus es insuficiente."
+
+	return {
+		"ready": reason.is_empty(),
+		"reason": reason,
+		"fighter_ids": resolved_ids.duplicate(),
+		"fighter_names": fighter_names.duplicate(),
+	}
 
 
 func _is_canonical_competition(competition: String) -> bool:
