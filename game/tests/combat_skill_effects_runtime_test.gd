@@ -49,7 +49,8 @@ func _test_charge_uses_skill_cost_and_effect() -> void:
 
 func _test_counterattack_requires_successful_parry() -> void:
 	var defender := _fighter("p", "player", 20, 5, 10, true, false)
-	var attacker := _fighter("e", "enemy", 1, 5, 10, true, false)
+	# TEC 6 => light attack score 7: it hits AGI 5, then TEC 20 can parry it.
+	var attacker := _fighter("e", "enemy", 6, 5, 10, true, false)
 	var state := _state_1v1(defender, attacker)
 	var counter := _skill_intent(state, "p", "counterattack", "")
 	var result := (
@@ -85,7 +86,7 @@ func _test_equipment_requirements_fail_closed() -> void:
 		)
 	)
 	assert(translated.get("status") == "rejected")
-	assert(str(translated.get("reason", "")) == "equipment_requirement_missing")
+	assert(str(translated.get("reason", "")) == "skill_equipment_requirement_failed")
 
 
 func _test_disarm_and_immobilization_persist_to_next_exchange() -> void:
