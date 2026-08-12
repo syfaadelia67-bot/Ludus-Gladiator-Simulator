@@ -33,6 +33,29 @@ func get_combat_v1_equipped_stats(person) -> Dictionary:
 	)
 
 
+func get_combat_v1_skill_context(person) -> Dictionary:
+	var loadout := super.get_equipped_loadout(person)
+	var slots := loadout.get("slots", {}) as Dictionary
+	var right_hand := super.get_item(str(slots.get("right_hand", "")))
+	var left_hand := super.get_item(str(slots.get("left_hand", "")))
+	var tags := (loadout.get("tags", []) as Array).duplicate()
+	var has_weapon := not right_hand.is_empty() and get_item_slot(right_hand) == "right_hand"
+	var has_shield := (
+		not left_hand.is_empty()
+		and (
+			str(left_hand.get("type", "")) == "shield"
+			or (left_hand.get("tags", []) as Array).has("shield")
+		)
+	)
+	return {
+		"status": "frozen",
+		"has_weapon": has_weapon,
+		"has_shield": has_shield,
+		"tags": tags,
+		"source": "canonical_equipped_slots_and_tags",
+	}
+
+
 func get_legacy_equipped_stats(person) -> Dictionary:
 	return super.get_equipped_stats(person)
 
