@@ -120,15 +120,11 @@ func _refresh() -> void:
 	loan_selector.disabled = true
 	sign_button.disabled = true
 	loan_button.disabled = true
-	sign_button.tooltip_text = str(
-		data.get("sponsor_unavailable_reason", "Fuera de la demo.")
-	)
-	loan_button.tooltip_text = str(
-		data.get("loan_unavailable_reason", "Fuera de la demo.")
-	)
-	status.text = (
-		"Economía mensual activa · sponsors y préstamos fuera del alcance funcional de la demo."
-	)
+	var sponsor_reason := str(data.get("sponsor_unavailable_reason", "Fuera de la demo."))
+	var loan_reason := str(data.get("loan_unavailable_reason", "Fuera de la demo."))
+	sign_button.tooltip_text = sponsor_reason
+	loan_button.tooltip_text = loan_reason
+	status.text = "Economía mensual activa · sponsors/préstamos fuera de demo."
 
 
 func _refresh_contracts() -> void:
