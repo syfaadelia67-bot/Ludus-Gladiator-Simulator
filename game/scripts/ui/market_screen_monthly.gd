@@ -1,8 +1,8 @@
 extends "res://scripts/ui/market_screen.gd"
 
-# Active demo presentation for Part 3. The legacy screen remains as a base so
-# stable node paths and purchase rendering stay intact while all temporal copy
-# and scheduling are month-native and fail closed around unfrozen balance.
+# Active monthly demo presentation. Authored unique gladiators are the canonical
+# recruit stock. Procedural recruit/equipment generation stays disabled by the
+# frozen monthly market policy; equipment is obtained through the demo Forge.
 
 
 func _ready() -> void:
@@ -42,10 +42,7 @@ func _open_fighters() -> void:
 	equipment_view.visible = false
 	equipment_view.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	section_title.text = "MERCADO DE LUCHADORES"
-	feedback.text = (
-		"Las ofertas canónicas permanecen hasta que se congele "
-		+ "la cadencia mensual del mercado."
-	)
+	feedback.text = "Los gladiadores únicos disponibles se actualizan con el avance mensual."
 	_refresh_fighter_offers()
 
 
@@ -60,20 +57,20 @@ func _open_equipment() -> void:
 	equipment_view.visible = true
 	equipment_view.mouse_filter = Control.MOUSE_FILTER_PASS
 	section_title.text = "MERCADO DE EQUIPAMIENTO"
-	feedback.text = ("La renovación manual permanece bloqueada hasta congelar su balance mensual.")
+	feedback.text = "En la demo, el equipamiento se obtiene mediante la Forja."
 	_refresh_equipment_offers()
 
 
 func _refresh_rotation_label() -> void:
-	rotation_label.text = "ROTACIÓN DEL MERCADO · PENDIENTE DE BALANCE MENSUAL"
+	rotation_label.text = "MERCADO DE LUCHADORES · ACTUALIZACIÓN MENSUAL"
 
 
 func _refresh_fighter_offers() -> void:
 	super._refresh_fighter_offers()
 	if MarketManager.get_offers().is_empty():
 		fighter_details.text = (
-			"[b]NO HAY OFERTAS DISPONIBLES[/b]\n\n"
-			+ "La próxima rotación no se programará hasta congelar la cadencia mensual."
+			"[b]NO HAY GLADIADORES DISPONIBLES[/b]\n\n"
+			+ "No hay otro gladiador único disponible para contratar este mes."
 		)
 
 
@@ -81,18 +78,20 @@ func _refresh_equipment_offers() -> void:
 	super._refresh_equipment_offers()
 	if MarketManager.get_equipment_offers().is_empty():
 		equipment_details.text = (
-			"[b]SIN EQUIPAMIENTO DISPONIBLE[/b]\n\n"
-			+ "La generación y renovación de objetos esperan balance mensual congelado."
+			"[b]SIN STOCK DE EQUIPAMIENTO EN EL MERCADO[/b]\n\n"
+			+ "Durante la demo, fabricá armas y protecciones desde la Forja."
 		)
 	_refresh_controls()
 
 
 func _refresh_equipment_only() -> void:
-	MarketManager.refresh_equipment_market(true)
+	# Kept wired for scene/node compatibility. The frozen demo policy intentionally
+	# exposes no manual equipment-market refresh.
+	feedback.text = "La renovación manual de equipamiento no está disponible en la demo."
 
 
 func _refresh_controls() -> void:
-	equipment_refresh_button.text = "RENOVACIÓN MANUAL · PENDIENTE"
+	equipment_refresh_button.text = "RENOVACIÓN MANUAL NO DISPONIBLE"
 	equipment_refresh_button.disabled = true
 	if not selected_fighter_offer_id.is_empty():
 		_refresh_fighter_details()
