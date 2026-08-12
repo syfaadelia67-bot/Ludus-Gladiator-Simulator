@@ -110,7 +110,9 @@ func sign_contract(sponsor_id: String) -> bool:
 	if not SPONSORS.has(sponsor_id):
 		contract_failed.emit("El patrocinador seleccionado no existe.")
 		return false
-	contract_failed.emit(PENDING_SPONSOR_REASON)
+	contract_failed.emit(
+		"Patrocinadores no están habilitados en la demo mensual hasta congelar su balance."
+	)
 	return false
 
 
@@ -118,8 +120,25 @@ func take_loan(loan_id: String) -> bool:
 	if not LOAN_PRODUCTS.has(loan_id):
 		loan_failed.emit("El préstamo seleccionado no existe.")
 		return false
-	loan_failed.emit(PENDING_LOAN_REASON)
+	loan_failed.emit(
+		"Préstamos no están habilitados en la demo mensual hasta congelar su balance."
+	)
 	return false
+
+
+func get_finance_scope_contract() -> Dictionary:
+	return {
+		"status": "frozen",
+		"scope": "demo_monthly_finance_boundary",
+		"sponsor_contract_creation_enabled": false,
+		"loan_origination_enabled": false,
+		"legacy_finance_state_read_only": true,
+		"sponsor_monthly_balance_status": "pending_design",
+		"loan_monthly_balance_status": "pending_design",
+		"bankruptcy_monthly_balance_status": "pending_design",
+		"invent_missing_balance_allowed": false,
+		"save_version_change_required": false,
+	}
 
 
 func get_monthly_population_snapshot() -> Dictionary:

@@ -28,6 +28,7 @@ func _ready() -> void:
 	EconomyManager.bankruptcy_warning.connect(_on_bankruptcy_warning)
 	GameState.resources_changed.connect(_refresh)
 	_populate_options()
+	_apply_demo_finance_boundary()
 	_refresh()
 
 
@@ -54,12 +55,29 @@ func _populate_options() -> void:
 		loan_selector.add_item("%s — fuera de demo" % str(data.get("name", loan_id)))
 
 
+func _apply_demo_finance_boundary() -> void:
+	var contract := EconomyManager.get_finance_scope_contract()
+	var message := (
+		"Patrocinadores y préstamos están preservados para Save v14, pero no pueden contratarse "
+		+ "en la demo hasta congelar su balance mensual."
+	)
+	sponsor_selector.disabled = true
+	loan_selector.disabled = true
+	sign_button.disabled = true
+	loan_button.disabled = true
+	sponsor_selector.tooltip_text = message
+	loan_selector.tooltip_text = message
+	sign_button.tooltip_text = message
+	loan_button.tooltip_text = message
+	status.text = message if bool(contract.get("legacy_finance_state_read_only", false)) else ""
+
+
 func _on_sign_contract() -> void:
-	_show_error(EconomyManager.PENDING_SPONSOR_REASON)
+	_show_error("Patrocinadores no están habilitados en la demo mensual.")
 
 
 func _on_take_loan() -> void:
-	_show_error(EconomyManager.PENDING_LOAN_REASON)
+	_show_error("Préstamos no están habilitados en la demo mensual.")
 
 
 func _on_selection_changed(_index: int) -> void:
