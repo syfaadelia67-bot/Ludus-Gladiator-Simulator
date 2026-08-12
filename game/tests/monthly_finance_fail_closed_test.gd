@@ -13,9 +13,9 @@ func _initialize() -> void:
 	assert(finance.get("unfrozen_actions_fail_closed") == true)
 	assert(finance.get("invent_unfrozen_values_allowed") == false)
 
-	var before_contracts := manager.active_contracts.size()
-	var before_loans := manager.active_loans.size()
-	var before_serial := manager.serial
+	var before_contracts: int = manager.active_contracts.size()
+	var before_loans: int = manager.active_loans.size()
+	var before_serial: int = int(manager.serial)
 	assert(not manager.sign_contract("local_merchant"))
 	assert(not manager.take_loan("small"))
 	assert(manager.active_contracts.size() == before_contracts)
