@@ -3,6 +3,9 @@ extends Node
 
 func run() -> void:
 	var economy_script := FileAccess.get_file_as_string(
+		"res://scripts/systems/economy_manager.gd"
+	)
+	var wrapper_script := FileAccess.get_file_as_string(
 		"res://scripts/systems/economy_manager_weekly.gd"
 	)
 	var beast_registry := FileAccess.get_file_as_string(
@@ -20,11 +23,10 @@ func run() -> void:
 
 	assert(economy_script.contains("func get_monthly_projection()"))
 	assert(economy_script.contains("func get_monthly_operating_cost_breakdown()"))
-	assert(economy_script.contains("func get_monthly_operating_costs()"))
-	assert(economy_script.contains("MonthlyOperatingCostCalculatorScript.new()"))
-	assert(economy_script.contains('"Costos operativos mensuales"'))
+	assert(economy_script.contains("MonthlyEconomyRuntimeScript.new()"))
+	assert(economy_script.contains('"Costos operativos mensuales'))
 	assert(economy_script.contains("last_processed_month"))
-	assert(economy_script.contains('"duplicate_call_ignored"'))
+	assert(economy_script.contains('cached["duplicate_call_ignored"] = true'))
 	assert(economy_script.contains("func process_week()"))
 	assert(economy_script.contains("func process_day()"))
 	assert(economy_script.count("return process_month()") >= 2)
@@ -34,6 +36,17 @@ func run() -> void:
 	assert(economy_script.contains("OwnedBeastRegistry.get_owned_count()"))
 	assert(economy_script.contains('"beast_count_source_ready": true'))
 	assert(not economy_script.contains("DataRepository.beasts.size()"))
+	assert(economy_script.contains('"sponsor_income": 0'))
+	assert(economy_script.contains('"loan_payments": 0'))
+	assert(economy_script.contains('"sponsor_balance_status": "pending_monthly_design"'))
+	assert(economy_script.contains('"loan_balance_status": "pending_monthly_design"'))
+
+	assert(wrapper_script.contains("func get_monthly_operating_costs()"))
+	assert(wrapper_script.contains("func get_monthly_fixed_costs()"))
+	assert(wrapper_script.contains("func get_weekly_projection()"))
+	assert(wrapper_script.contains("return get_monthly_projection()"))
+	assert(not wrapper_script.contains("super.process_day()"))
+
 	assert(beast_registry.contains("var owned_beasts: Array[Dictionary] = []"))
 	assert(beast_registry.contains("func get_owned_count()"))
 	assert(
