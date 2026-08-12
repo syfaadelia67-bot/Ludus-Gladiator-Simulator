@@ -123,7 +123,9 @@ func _refresh() -> void:
 	sign_button.tooltip_text = str(
 		data.get("sponsor_unavailable_reason", "Fuera de la demo.")
 	)
-	loan_button.tooltip_text = str(data.get("loan_unavailable_reason", "Fuera de la demo."))
+	loan_button.tooltip_text = str(
+		data.get("loan_unavailable_reason", "Fuera de la demo.")
+	)
 	status.text = (
 		"Economía mensual activa · sponsors y préstamos fuera del alcance funcional de la demo."
 	)
