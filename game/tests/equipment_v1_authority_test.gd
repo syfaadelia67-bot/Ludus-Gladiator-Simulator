@@ -53,6 +53,16 @@ func _ready() -> void:
 	assert(manager_text.contains("func reconcile_inventory_ownership() -> void:"))
 	assert(manager_text.contains("func get_combat_v1_equipped_stats(person) -> Dictionary:"))
 
+	var forge_text := FileAccess.get_file_as_string("res://scripts/ui/forge_screen_v1.gd")
+	assert(forge_text.contains("var can_craft :="))
+	assert(forge_text.contains('craft_button.text = "FABRICAR"'))
+	assert(forge_text.contains("bool(data.get(\"balance_ready\", false))"))
+	assert(forge_text.contains("GameState.ore >= ore_cost"))
+	assert(forge_text.contains("GameState.denarii >= denarii_cost"))
+	assert(not forge_text.contains("Fabricación pendiente de balance"))
+	assert(not forge_text.contains("LEGACY / PENDIENTE"))
+	assert(not forge_text.contains("catálogo parcial legacy"))
+
 	var project_text := FileAccess.get_file_as_string("res://project.godot")
 	assert(
 		project_text.contains(
