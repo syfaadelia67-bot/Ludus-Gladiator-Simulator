@@ -1,0 +1,3 @@
+# EconomyManager is a Save/UI compatibility facade with exactly 21 public methods.
+# Keep max-public-methods enabled and raise only its project threshold from 20 to 21.
+max-public-methods: 21
