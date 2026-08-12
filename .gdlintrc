@@ -1,7 +1,0 @@
-# Project-specific GDScript quality thresholds.
-# Long contract/reason strings remain readable, compatibility facades may expose
-# more public methods, and guard-clause-heavy transactional functions stay flat.
-# The checks remain enabled globally; only their failure thresholds are adjusted.
-max-line-length: 160
-max-public-methods: 30
-max-returns: 10
