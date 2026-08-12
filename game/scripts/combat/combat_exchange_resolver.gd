@@ -28,6 +28,7 @@ var _skill_effect_resolver = CombatSkillEffectResolverScript.new()
 var _stamina_resolver = CombatStaminaResolverScript.new()
 
 
+# gdlint: disable=max-returns
 func resolve_exchange(state: Dictionary, intents: Array) -> Dictionary:
 	var runtime_result: Dictionary = _prepare_runtime_state(state)
 	if runtime_result.get("status") != "ready":
@@ -92,6 +93,7 @@ func resolve_exchange(state: Dictionary, intents: Array) -> Dictionary:
 	}
 
 
+# gdlint: enable=max-returns
 func get_contract() -> Dictionary:
 	return {
 		"status": "frozen",
