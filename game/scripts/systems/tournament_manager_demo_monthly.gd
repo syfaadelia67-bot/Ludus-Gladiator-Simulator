@@ -52,7 +52,9 @@ func accept_event_team(event_id: String, fighter_ids: Array) -> bool:
 
 	var expected_size := maxi(1, int(event.get("team_size", 1)))
 	if expected_size <= 1 or fighter_ids.size() != expected_size:
-		contract_failed.emit("La competición requiere seleccionar exactamente %d gladiadores." % expected_size)
+		contract_failed.emit(
+			"La competición requiere seleccionar exactamente %d gladiadores." % expected_size
+		)
 		return false
 
 	var resolved_ids: Array[String] = []
