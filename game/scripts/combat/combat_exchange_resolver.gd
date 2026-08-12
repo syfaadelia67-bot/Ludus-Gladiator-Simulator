@@ -11,6 +11,9 @@ const CombatResolutionOrderBoundaryScript = preload(
 const CombatRuntimeStateBuilderScript = preload(
 	"res://scripts/combat/combat_runtime_state_builder.gd"
 )
+const CombatSkillEffectResolverScript = preload(
+	"res://scripts/combat/combat_skill_effect_resolver.gd"
+)
 const CombatStaminaResolverScript = preload("res://scripts/combat/combat_stamina_resolver.gd")
 
 const OFFENSE_ACTIONS: Array[String] = ["light", "heavy"]
@@ -21,6 +24,7 @@ var _damage_resolver = CombatDamageResolverScript.new()
 var _defensive_resolver = CombatDefensiveEffectResolverScript.new()
 var _order_boundary = CombatResolutionOrderBoundaryScript.new()
 var _runtime_builder = CombatRuntimeStateBuilderScript.new()
+var _skill_effect_resolver = CombatSkillEffectResolverScript.new()
 var _stamina_resolver = CombatStaminaResolverScript.new()
 
 
@@ -36,6 +40,9 @@ func resolve_exchange(state: Dictionary, intents: Array) -> Dictionary:
 	if plan.get("status") != "ready":
 		return _rejected("invalid_intents", plan.get("errors", []) as Array, state, intents)
 
+	var skill_errors := _validate_skill_intents(runtime_state, intents)
+	if not skill_errors.is_empty():
+		return _rejected("invalid_skill_activation", skill_errors, state, intents)
 	var payment_errors: Array[String] = _validate_stamina_payments(runtime_state, intents)
 	if not payment_errors.is_empty():
 		return _rejected("insufficient_stamina", payment_errors, state, intents)
@@ -43,15 +50,23 @@ func resolve_exchange(state: Dictionary, intents: Array) -> Dictionary:
 	var working_state := runtime_state.duplicate(true)
 	var spend_results: Array = _spend_all_actions(working_state, intents)
 	_apply_preparation_commit(working_state, intents)
+	var skill_preparation_results := _skill_effect_resolver.apply_preparation(working_state, intents)
 	var offense_snapshot := working_state.duplicate(true)
 	var attack_results: Array = _resolve_offense_phase(offense_snapshot, intents)
 	var offense_errors: Array[String] = _collect_attack_errors(attack_results)
 	if not offense_errors.is_empty():
 		return _rejected("offense_resolution_failed", offense_errors, state, intents)
 
+	var skill_post_hit_results := _skill_effect_resolver.apply_post_hit_effects(
+		working_state, intents, attack_results
+	)
 	_commit_damage(working_state, attack_results)
+	var skill_post_commit_results := _skill_effect_resolver.apply_post_commit(
+		working_state, intents
+	)
 	var ko_fighter_ids: Array[String] = _collect_knockouts(working_state)
 	var recovery_results: Array = _recover_all_fighters(working_state)
+	_skill_effect_resolver.decay_statuses(working_state)
 	var final_errors: Array[String] = _runtime_builder.validate_runtime_state(working_state)
 	if not final_errors.is_empty():
 		return _rejected("invalid_result_state", final_errors, state, intents)
@@ -65,6 +80,9 @@ func resolve_exchange(state: Dictionary, intents: Array) -> Dictionary:
 		"resolution_plan": plan.duplicate(true),
 		"stamina_spend_results": spend_results.duplicate(true),
 		"attack_results": attack_results.duplicate(true),
+		"skill_preparation_results": skill_preparation_results.duplicate(true),
+		"skill_post_hit_results": skill_post_hit_results.duplicate(true),
+		"skill_post_commit_results": skill_post_commit_results.duplicate(true),
 		"stamina_recovery_results": recovery_results.duplicate(true),
 		"ko_fighter_ids": ko_fighter_ids.duplicate(),
 		"surrender_resolved": false,
@@ -81,6 +99,10 @@ func get_contract() -> Dictionary:
 		"offense_commit": "simultaneous",
 		"damage_aggregation": "sum_per_target_then_commit",
 		"stamina_cost_timing": "before_preparation_commit",
+		"skill_stamina_costs_enabled": true,
+		"skill_effects_enabled": true,
+		"skill_effect_authority": "combat_skill_effect_resolver_under_combat_simulator",
+		"skill_status_scope": "combat_runtime_state_only",
 		"stamina_recovery_timing": "end_exchange",
 		"ko_evaluation_timing": "after_offense_commit",
 		"surrender_resolved": false,
@@ -108,6 +130,14 @@ func _looks_like_runtime_state(state: Dictionary) -> bool:
 	return true
 
 
+func _validate_skill_intents(state: Dictionary, intents: Array) -> Array[String]:
+	var errors: Array[String] = []
+	for raw_intent in intents:
+		if raw_intent is Dictionary:
+			errors.append_array(_skill_effect_resolver.validate_intent(state, raw_intent as Dictionary))
+	return errors
+
+
 func _validate_stamina_payments(state: Dictionary, intents: Array) -> Array[String]:
 	var errors: Array[String] = []
 	for raw_intent in intents:
@@ -115,8 +145,10 @@ func _validate_stamina_payments(state: Dictionary, intents: Array) -> Array[Stri
 		var actor_id := str(intent.get("actor_id", ""))
 		var action_id := str(intent.get("action_id", ""))
 		var fighter: Dictionary = _find_fighter(state, actor_id)
-		if fighter.is_empty() or not _stamina_resolver.can_pay(fighter, action_id):
-			errors.append("Fighter %s cannot pay Stamina cost for %s" % [actor_id, action_id])
+		var base_cost := _stamina_resolver.get_action_cost(action_id)
+		var cost := _skill_effect_resolver.get_stamina_cost(intent, base_cost)
+		if fighter.is_empty() or not _stamina_resolver.can_pay_cost(fighter, cost):
+			errors.append("Fighter %s cannot pay Stamina cost %d for %s" % [actor_id, cost, action_id])
 	return errors
 
 
@@ -129,7 +161,12 @@ func _spend_all_actions(state: Dictionary, intents: Array) -> Array:
 		var fighter_index: int = _find_fighter_index(state, actor_id)
 		var fighters := state.get("fighters", []) as Array
 		var fighter := fighters[fighter_index] as Dictionary
-		var spend_result: Dictionary = _stamina_resolver.spend(fighter, action_id)
+		var base_cost := _stamina_resolver.get_action_cost(action_id)
+		var cost := _skill_effect_resolver.get_stamina_cost(intent, base_cost)
+		var source_id := _skill_effect_resolver.get_skill_id(intent)
+		if source_id.is_empty():
+			source_id = action_id
+		var spend_result: Dictionary = _stamina_resolver.spend_cost(fighter, cost, source_id)
 		fighters[fighter_index] = (spend_result.get("fighter", {}) as Dictionary).duplicate(true)
 		results.append(spend_result.duplicate(true))
 	return results
@@ -151,20 +188,31 @@ func _apply_preparation_commit(state: Dictionary, intents: Array) -> void:
 func _resolve_offense_phase(state: Dictionary, intents: Array) -> Array:
 	var results: Array = []
 	var defense_by_actor: Dictionary = _build_defense_action_map(intents)
+	var used_interceptors: Dictionary = {}
 	for raw_intent in intents:
 		var intent := raw_intent as Dictionary
 		var action_id := str(intent.get("action_id", ""))
 		if not OFFENSE_ACTIONS.has(action_id):
 			continue
+		var attack_context := _skill_effect_resolver.resolve_attack_context(
+			state, intents, intent, used_interceptors
+		)
 		var actor_id := str(intent.get("actor_id", ""))
-		var target_id := str(intent.get("target_id", ""))
-		var attacker: Dictionary = _find_fighter(state, actor_id)
-		var defender: Dictionary = _find_fighter(state, target_id)
+		var target_id := str(attack_context.get("target_id", intent.get("target_id", "")))
+		var attacker := attack_context.get("attacker", {}) as Dictionary
+		var defender := attack_context.get("defender", {}) as Dictionary
 		var accuracy: Dictionary = _accuracy_resolver.resolve_hit(attacker, defender, action_id)
 		var damage: Dictionary = _damage_resolver.resolve_damage(attacker, defender, action_id)
 		var attack_result := _base_attack_result(actor_id, target_id, action_id, accuracy, damage)
+		attack_result["original_target_id"] = str(attack_context.get("original_target_id", target_id))
+		attack_result["skill_id"] = str(attack_context.get("skill_id", ""))
+		attack_result["intercepted"] = bool(attack_context.get("intercepted", false))
+		attack_result["interceptor_id"] = str(attack_context.get("interceptor_id", ""))
 		var defense_action_id := str(defense_by_actor.get(target_id, ""))
-		if DEFENSE_ACTIONS.has(defense_action_id):
+		if (
+			DEFENSE_ACTIONS.has(defense_action_id)
+			and not _skill_effect_resolver.should_bypass_defense(attack_context, defense_action_id)
+		):
 			var defended: Dictionary = _defensive_resolver.resolve_against_attack(
 				attacker, defender, action_id, defense_action_id, accuracy, damage
 			)
@@ -174,7 +222,16 @@ func _resolve_offense_phase(state: Dictionary, intents: Array) -> Array:
 			attack_result["errors"] = (defended.get("errors", []) as Array).duplicate()
 			attack_result["hit"] = bool(defended.get("hit", false))
 			attack_result["damage"] = int(defended.get("damage", 0))
+		elif DEFENSE_ACTIONS.has(defense_action_id):
+			attack_result["defense_action_id"] = defense_action_id
+			attack_result["defense_bypassed_by_skill"] = true
+		attack_result = _skill_effect_resolver.apply_attack_modifiers(
+			state, intents, intent, attack_context, attack_result
+		)
 		results.append(attack_result)
+	var counter_results := _skill_effect_resolver.build_counterattack_results(intents, results)
+	for counter in counter_results:
+		results.append(counter)
 	return results
 
 
@@ -290,6 +347,9 @@ func _rejected(reason: String, errors: Array, state: Dictionary, intents: Array)
 		"resolution_plan": {},
 		"stamina_spend_results": [],
 		"attack_results": [],
+		"skill_preparation_results": [],
+		"skill_post_hit_results": [],
+		"skill_post_commit_results": [],
 		"stamina_recovery_results": [],
 		"ko_fighter_ids": [],
 		"surrender_resolved": false,
