@@ -12,9 +12,14 @@ signal loan_failed(reason: String)
 signal bankruptcy_warning(level: int, message: String)
 
 const MonthlyEconomyRuntimeScript = preload("res://scripts/systems/monthly_economy_runtime.gd")
+const PENDING_SPONSOR_REASON := (
+	"Patrocinadores no están habilitados en la demo hasta congelar su balance mensual."
+)
+const PENDING_LOAN_REASON := (
+	"Préstamos no están habilitados en la demo hasta congelar cuotas, interés y quiebra mensual."
+)
 
-# Legacy sponsor/loan catalogs remain available for compatibility only.
-# Their cadence and balance are not authoritative for the monthly demo runtime.
+# Legacy sponsor/loan catalogs remain available for Save v14 compatibility only.
 const SPONSORS := {
 	"local_merchant":
 	{
@@ -78,8 +83,10 @@ func get_sponsor_ids() -> Array[String]:
 func get_sponsor(sponsor_id: String) -> Dictionary:
 	var data: Dictionary = SPONSORS.get(sponsor_id, {}).duplicate(true)
 	data["id"] = sponsor_id
-	data["eligible"] = GameState.reputation >= int(data.get("required_reputation", 999))
+	data["eligible"] = false
+	data["demo_available"] = false
 	data["monthly_authority"] = false
+	data["unavailable_reason"] = PENDING_SPONSOR_REASON
 	return data
 
 
@@ -93,7 +100,9 @@ func get_loan_ids() -> Array[String]:
 func get_loan_product(loan_id: String) -> Dictionary:
 	var data: Dictionary = LOAN_PRODUCTS.get(loan_id, {}).duplicate(true)
 	data["id"] = loan_id
+	data["demo_available"] = false
 	data["monthly_authority"] = false
+	data["unavailable_reason"] = PENDING_LOAN_REASON
 	return data
 
 
@@ -101,58 +110,16 @@ func sign_contract(sponsor_id: String) -> bool:
 	if not SPONSORS.has(sponsor_id):
 		contract_failed.emit("El patrocinador seleccionado no existe.")
 		return false
-	for contract in active_contracts:
-		if str(contract.get("sponsor_id", "")) == sponsor_id:
-			contract_failed.emit("Ya existe un contrato activo con este patrocinador.")
-			return false
-	var sponsor: Dictionary = SPONSORS[sponsor_id]
-	var required_reputation := int(sponsor.get("required_reputation", 0))
-	if GameState.reputation < required_reputation:
-		contract_failed.emit("La reputación del ludus es insuficiente para este contrato.")
-		return false
-	serial += 1
-	var contract := {
-		"id": "contract_%d" % serial,
-		"sponsor_id": sponsor_id,
-		"name": sponsor.get("name", sponsor_id),
-		"legacy_days_remaining": int(sponsor.get("duration", 10)),
-		"legacy_daily_income": int(sponsor.get("daily_income", 0)),
-		"victory_bonus": int(sponsor.get("victory_bonus", 0)),
-		"failure_penalty": int(sponsor.get("failure_penalty", 0)),
-		"victories": 0,
-		"defeats": 0,
-		"monthly_balance_status": "pending",
-	}
-	active_contracts.append(contract)
-	contract_signed.emit(contract.duplicate(true))
-	economy_changed.emit()
-	return true
+	contract_failed.emit(PENDING_SPONSOR_REASON)
+	return false
 
 
 func take_loan(loan_id: String) -> bool:
 	if not LOAN_PRODUCTS.has(loan_id):
 		loan_failed.emit("El préstamo seleccionado no existe.")
 		return false
-	if active_loans.size() >= 3:
-		loan_failed.emit("El ludus ya tiene demasiadas deudas activas.")
-		return false
-	var product: Dictionary = LOAN_PRODUCTS[loan_id]
-	serial += 1
-	var principal := int(product.get("principal", 0))
-	var loan := {
-		"id": "loan_%d" % serial,
-		"loan_id": loan_id,
-		"name": product.get("name", loan_id),
-		"principal": principal,
-		"legacy_interest": float(product.get("interest", 1.0)),
-		"legacy_term": int(product.get("term", 12)),
-		"remaining": principal,
-		"monthly_balance_status": "pending",
-	}
-	active_loans.append(loan)
-	loan_taken.emit(loan.duplicate(true))
-	economy_changed.emit()
-	return true
+	loan_failed.emit(PENDING_LOAN_REASON)
+	return false
 
 
 func get_monthly_population_snapshot() -> Dictionary:
@@ -285,7 +252,7 @@ func process_week() -> Dictionary:
 
 
 func register_combat_result(victory: bool) -> void:
-	# Sponsor rewards/penalties remain quarantined until monthly sponsor balance is frozen.
+	# Preserve counters for legacy Save v14 contracts without granting payout authority.
 	for contract in active_contracts:
 		if victory:
 			contract["victories"] = int(contract.get("victories", 0)) + 1
@@ -312,7 +279,7 @@ func get_bankruptcy_level() -> int:
 
 
 func get_bankruptcy_message() -> String:
-	return "La política mensual de quiebra está pendiente de balance congelado."
+	return "Sponsors, préstamos y quiebra mensual están fuera del alcance funcional de la demo."
 
 
 func get_summary() -> Dictionary:
@@ -326,6 +293,11 @@ func get_summary() -> Dictionary:
 		"total_debt": get_total_debt(),
 		"contracts": active_contracts.size(),
 		"loans": active_loans.size(),
+		"sponsor_demo_available": false,
+		"loan_demo_available": false,
+		"bankruptcy_demo_available": false,
+		"sponsor_unavailable_reason": PENDING_SPONSOR_REASON,
+		"loan_unavailable_reason": PENDING_LOAN_REASON,
 		"missed_payments": missed_payments,
 		"insolvency_days": insolvency_days,
 		"bankruptcy_level": 0,
@@ -337,7 +309,12 @@ func get_summary() -> Dictionary:
 
 
 func get_monthly_runtime_contract() -> Dictionary:
-	return _monthly_runtime.get_contract()
+	var contract := _monthly_runtime.get_contract()
+	contract["sponsor_demo_available"] = false
+	contract["loan_demo_available"] = false
+	contract["bankruptcy_demo_available"] = false
+	contract["unfrozen_actions_fail_closed"] = true
+	return contract
 
 
 func export_state() -> Dictionary:
