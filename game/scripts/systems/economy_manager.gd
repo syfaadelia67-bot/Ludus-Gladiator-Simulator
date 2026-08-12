@@ -317,7 +317,10 @@ func get_bankruptcy_message() -> String:
 
 func get_summary() -> Dictionary:
 	var projection := get_monthly_projection()
+	var breakdown := get_monthly_operating_cost_breakdown()
 	return {
+		"monthly_operating_costs": int(breakdown.get("total", 0)),
+		"monthly_operating_cost_breakdown": breakdown.duplicate(true),
 		"monthly_fixed_costs": int(projection.get("fixed_costs", 0)),
 		"daily_fixed_costs": int(projection.get("fixed_costs", 0)),
 		"total_debt": get_total_debt(),
@@ -380,6 +383,8 @@ func _add_income(amount: int, reason: String) -> void:
 func _record_entry(amount: int, reason: String) -> void:
 	if amount < 0:
 		total_expenses += abs(amount)
-	ledger.push_front({"day": GameState.day, "amount": amount, "reason": reason})
+	ledger.push_front(
+		{"month": GameState.get_month(), "day": GameState.day, "amount": amount, "reason": reason}
+	)
 	if ledger.size() > 80:
 		ledger.resize(80)
