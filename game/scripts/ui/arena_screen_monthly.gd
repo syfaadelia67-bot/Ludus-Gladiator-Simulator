@@ -49,6 +49,10 @@ func _refresh_all() -> void:
 	super._refresh_all()
 	_refresh_non_gt_controls()
 	if _series_setup_panel != null:
+		var has_tournament_of_mars := not TournamentManager.get_gt1_encounter(
+			GameState.get_month()
+		).is_empty()
+		_series_setup_panel.visible = has_tournament_of_mars
 		var status := str(_session.get("status", ""))
 		var monthly_finished := (
 			str(_session.get("session_kind", "")) == "monthly_non_gt"
