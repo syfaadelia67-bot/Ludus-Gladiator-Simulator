@@ -55,6 +55,11 @@ func run() -> void:
 		)
 	)
 
+	var rivals := payload.get("rivals", {}) as Dictionary
+	assert(rivals.has("last_processed_month"))
+	assert(rivals.has("monthly_policy_status"))
+	assert(int(rivals.get("last_processed_month", -1)) == RivalManager.last_processed_month)
+
 	var equipment := payload.get("equipment", {}) as Dictionary
 	assert(bool(equipment.get("canonical_slots_persisted", false)))
 	assert(equipment.has("runtime_policy_status"))
