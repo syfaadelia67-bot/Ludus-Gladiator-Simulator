@@ -17,7 +17,7 @@ const SCREEN_SCENES := {
 	"barracks": "res://scenes/BarracksScreen.tscn",
 	"bestias": "res://scenes/BeastAreaScreen.tscn",
 	"mercado": "res://scenes/MarketScreen.tscn",
-	"arena": "res://scenes/ArenaScreen.tscn",
+	"arena": "res://scenes/ArenaScreenMonthly.tscn",
 	"equipamiento": "res://scenes/EquipmentScreen.tscn",
 	"personal": "res://scenes/PersonalScreen.tscn",
 	"forja": "res://scenes/ForgeScreen.tscn",
