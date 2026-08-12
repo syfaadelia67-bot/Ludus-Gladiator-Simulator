@@ -13,6 +13,7 @@ func _ready() -> void:
     CampaignManager.rank_promoted.connect(_on_rank_promoted)
     CampaignManager.objective_completed.connect(_on_objective_completed)
     CampaignManager.campaign_finished.connect(_on_campaign_finished)
+    LudusOwnerManager.owner_configured.connect(func(_profile: Dictionary): _refresh())
     _refresh()
 
 func _unhandled_key_input(event: InputEvent) -> void:
@@ -27,9 +28,14 @@ func _refresh() -> void:
     var summary: Dictionary = CampaignManager.get_summary()
     var rank: Dictionary = summary.get("rank", {})
     var next_rank: Dictionary = summary.get("next_rank", {})
+    var owner_profile := LudusOwnerManager.get_profile()
+    var owner_name := str(owner_profile.get("display_name", "")).strip_edges()
+    var owner_title := LudusOwnerManager.get_title_label()
+    var owner_identity := owner_title if owner_name.is_empty() else "%s %s" % [owner_title, owner_name]
 
-    rank_label.text = "%s — Victorias %d | Derrotas %d" % [
-        rank.get("name", "Ludus desconocido"),
+    rank_label.text = "%s — Rango: %s\nVictorias %d | Derrotas %d" % [
+        owner_identity,
+        rank.get("name", "Sin rango"),
         int(summary.get("wins", 0)),
         int(summary.get("losses", 0))
     ]
@@ -51,7 +57,7 @@ func _refresh() -> void:
             summary.get("defeat_reason", "El ludus aseguró su legado imperial.")
         ]
     else:
-        ending.text = "[b]META FINAL[/b]\n70 de reputación, 25 victorias y rango Ludus imperial."
+        ending.text = "[b]META FINAL[/b]\nCompletá el Torneo de Marte y alcanzá el podio en el mes 20."
 
     _rebuild_objectives()
 
