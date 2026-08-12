@@ -55,7 +55,12 @@ func _initialize() -> void:
     assert(screen_text.contains("INTERVENCIÓN APLICADA"))
     assert(screen_text.contains("interaction_in_progress"))
     assert(screen_text.contains("refresh_pending"))
-    assert(not screen_text.contains("button.disabled = not bool(action.get(\"allowed\""))
+    assert(screen_text.contains('last_feedback := "Dos intervenciones disponibles por mes."'))
+    assert(screen_text.contains('interventions_label.text = "INTERVENCIONES DEL MES %d/%d"'))
+    assert(screen_text.contains("button.disabled = not allowed"))
+    assert(screen_text.contains("if allowed:"))
+    assert(screen_text.contains("func _monthly_reason"))
+    assert(screen_text.contains('replace("semana", "mes")'))
     assert(screen_text.contains("FincaHubController.show_finca()"))
     assert(not screen_text.contains("_selected_id"))
 
