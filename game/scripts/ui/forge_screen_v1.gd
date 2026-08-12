@@ -15,7 +15,9 @@ func _ready() -> void:
 	craft_button.pressed.connect(_on_craft_item)
 	EstateManager.estate_changed.connect(_refresh_recipes)
 	EquipmentManager.inventory_changed.connect(_refresh_inventory)
+	EquipmentManager.craft_completed.connect(_on_craft_completed)
 	EquipmentManager.craft_failed.connect(_show_error)
+	GameState.resources_changed.connect(_refresh_recipe_details)
 	_refresh_recipes()
 	_refresh_inventory()
 
@@ -49,7 +51,10 @@ func _refresh_recipes() -> void:
 	for index in range(ids.size()):
 		var recipe_id := str(ids[index])
 		var data := EquipmentManager.get_recipe(recipe_id)
-		recipe_list.add_item("%s — LEGACY / PENDIENTE" % data.get("name", recipe_id))
+		var required_level := int(data.get("forge_level", 1))
+		var unlocked := bool(data.get("unlocked", false))
+		var marker := "" if unlocked else " · REQUIERE FORJA %d" % required_level
+		recipe_list.add_item("%s%s" % [data.get("name", recipe_id), marker])
 		recipe_list.set_item_metadata(index, recipe_id)
 	if ids.is_empty():
 		selected_recipe_id = ""
@@ -64,21 +69,63 @@ func _refresh_recipes() -> void:
 
 func _refresh_recipe_details() -> void:
 	var data := EquipmentManager.get_recipe(selected_recipe_id)
-	craft_button.disabled = true
-	craft_button.text = "Fabricación pendiente de balance"
 	if data.is_empty():
-		recipe_details.text = "Seleccioná una entrada del catálogo provisional."
+		craft_button.disabled = true
+		craft_button.text = "SELECCIONÁ UNA RECETA"
+		recipe_details.text = "Seleccioná una receta del catálogo de la forja."
 		return
+
+	var required_level := int(data.get("forge_level", 1))
+	var unlocked := bool(data.get("unlocked", false))
+	var ore_cost := int(data.get("ore", 0))
+	var denarii_cost := int(data.get("denarii", 0))
+	var enough_ore := GameState.ore >= ore_cost
+	var enough_denarii := GameState.denarii >= denarii_cost
+	var can_craft := (
+		bool(data.get("balance_ready", false))
+		and unlocked
+		and enough_ore
+		and enough_denarii
+		and not CampaignManager.campaign_over
+	)
+	craft_button.disabled = not can_craft
+	if CampaignManager.campaign_over:
+		craft_button.text = "CAMPAÑA FINALIZADA"
+	elif not unlocked:
+		craft_button.text = "REQUIERE FORJA NIVEL %d" % required_level
+	elif not enough_ore or not enough_denarii:
+		craft_button.text = "RECURSOS INSUFICIENTES"
+	else:
+		craft_button.text = "FABRICAR"
+
 	var slot_id := EquipmentManager.get_item_slot(data)
+	var power := int(data.get("power", 0))
+	var defense := int(data.get("defense", 0))
+	var stat_lines: Array[String] = []
+	if power > 0:
+		stat_lines.append("Poder base: +%d" % power)
+	if defense > 0:
+		stat_lines.append("Defensa base: +%d" % defense)
+	if stat_lines.is_empty():
+		stat_lines.append("Sin bonificación directa de poder o defensa")
+
+	var availability := "Disponible" if unlocked else "Requiere nivel %d de Forja" % required_level
+	var resource_status := (
+		"Recursos disponibles"
+		if enough_ore and enough_denarii
+		else "Faltan recursos para fabricar"
+	)
 	var lines: Array[String] = [
 		"[b]%s[/b]" % data.get("name", selected_recipe_id),
 		"Ranura: %s" % EquipmentManager.get_slot_label(slot_id),
-		"Forja estructural requerida (legacy): nivel %d" % int(data.get("forge_level", 0)),
+		"Nivel de Forja: %d · %s" % [required_level, availability],
+		"Costo: %d mineral · %d denarios" % [ore_cost, denarii_cost],
+		"%s" % resource_status,
 		"",
-		"[color=orange]Esta entrada pertenece al catálogo parcial legacy.[/color]",
-		"Costos de mineral/denarios, power/defense y calidad todavía no son balance canónico.",
-		"La fabricación permanece deshabilitada hasta congelar el catálogo definitivo.",
 	]
+	lines.append_array(stat_lines)
+	lines.append("")
+	lines.append("Calidad al fabricar: Común, Superior o Magistral.")
 	recipe_details.text = "\n".join(lines)
 
 
@@ -96,9 +143,10 @@ func _refresh_inventory() -> void:
 			equipped_text = " · equipado por %s" % owner
 		lines.append(
 			(
-				"• %s · %s%s"
+				"• %s · %s · %s%s"
 				% [
 					item.get("name", "Objeto"),
+					item.get("quality", "Común"),
 					EquipmentManager.get_slot_label(slot_id),
 					equipped_text
 				]
@@ -107,5 +155,15 @@ func _refresh_inventory() -> void:
 	inventory.text = "\n".join(lines)
 
 
+func _on_craft_completed(item_name: String, cost_ore: int, cost_denarii: int) -> void:
+	_refresh_inventory()
+	_refresh_recipe_details()
+	recipe_details.text += (
+		"\n\n[color=green]Fabricado: %s · costo %d mineral / %d denarios.[/color]"
+		% [item_name, cost_ore, cost_denarii]
+	)
+
+
 func _show_error(reason: String) -> void:
-	recipe_details.text = "[color=orange]%s[/color]" % reason
+	_refresh_recipe_details()
+	recipe_details.text += "\n\n[color=orange]%s[/color]" % reason
