@@ -44,10 +44,13 @@ func _test_non_gt_rival_snapshot_selection() -> void:
 	var runtime = MonthlyArenaCombatRuntimeScript.new()
 	var contract := runtime.get_contract()
 	assert(str(contract.get("opponent_team_id", "")) == "rival_team")
-	var selection: Dictionary = runtime._select_canonical_opponents(
-		{"id": "qa_underworld_month_1", "scheduled_month": 1, "difficulty": 1},
-		1,
-		"rival_team",
+	var selection: Dictionary = (
+		runtime
+		. _select_canonical_opponents(
+			{"id": "qa_underworld_month_1", "scheduled_month": 1, "difficulty": 1},
+			1,
+			"rival_team",
+		)
 	)
 	assert(selection.get("status") == "ready")
 	assert(not str(selection.get("rival_ludus_id", "")).is_empty())

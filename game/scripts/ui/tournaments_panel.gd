@@ -225,8 +225,11 @@ func _append_gt1_tiebreak_status(lines: Array[String], summary: Dictionary) -> v
 			)
 			lines.append("Participa un gladiador disponible por Ludus.")
 			if bool(snapshot.get("requires_external_rival_snapshot", false)):
-				lines.append(
-					"[i]Pendientes los datos explícitos del rival; no se generarán estadísticas.[/i]"
+				(
+					lines
+					. append(
+						"[i]Pendientes los datos explícitos del rival; no se generarán estadísticas.[/i]"
+					)
 				)
 		"non_podium_data_required":
 			lines.append(

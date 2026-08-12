@@ -6,7 +6,9 @@ func _initialize() -> void:
 	var scene := FileAccess.get_file_as_string("res://scenes/ArenaScreen.tscn")
 	var monthly_scene := FileAccess.get_file_as_string("res://scenes/ArenaScreenMonthly.tscn")
 	var controller := FileAccess.get_file_as_string("res://scripts/ui/arena_screen.gd")
-	var monthly_controller := FileAccess.get_file_as_string("res://scripts/ui/arena_screen_monthly.gd")
+	var monthly_controller := FileAccess.get_file_as_string(
+		"res://scripts/ui/arena_screen_monthly.gd"
+	)
 	var runtime := FileAccess.get_file_as_string("res://scripts/ui/combat_v1_arena_runtime.gd")
 	var bootstrap := FileAccess.get_file_as_string("res://scripts/ui/main_ui_bootstrap.gd")
 	var hub := FileAccess.get_file_as_string("res://scripts/ui/finca_hub_controller.gd")

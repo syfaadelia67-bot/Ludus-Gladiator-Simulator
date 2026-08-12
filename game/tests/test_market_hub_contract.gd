@@ -38,7 +38,11 @@ func _initialize() -> void:
 	assert(scene_text.contains("LUCHADORES"))
 	assert(scene_text.contains("EQUIPAMIENTO"))
 	assert(scene_text.contains("RENOVACIÓN MANUAL NO DISPONIBLE"))
-	assert(scene_text.contains("Durante la demo, las armas y protecciones se obtienen mediante la Forja."))
+	assert(
+		scene_text.contains(
+			"Durante la demo, las armas y protecciones se obtienen mediante la Forja."
+		)
+	)
 	assert(not scene_text.contains("RENOVACIÓN MANUAL · PENDIENTE"))
 	assert(not scene_text.contains("RENOVAR EQUIPAMIENTO · 100"))
 	assert(not scene_text.to_lower().contains("semana"))

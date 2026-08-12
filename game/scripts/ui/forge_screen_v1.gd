@@ -111,9 +111,7 @@ func _refresh_recipe_details() -> void:
 
 	var availability := "Disponible" if unlocked else "Requiere nivel %d de Forja" % required_level
 	var resource_status := (
-		"Recursos disponibles"
-		if enough_ore and enough_denarii
-		else "Faltan recursos para fabricar"
+		"Recursos disponibles" if enough_ore and enough_denarii else "Faltan recursos para fabricar"
 	)
 	var lines: Array[String] = [
 		"[b]%s[/b]" % data.get("name", selected_recipe_id),
