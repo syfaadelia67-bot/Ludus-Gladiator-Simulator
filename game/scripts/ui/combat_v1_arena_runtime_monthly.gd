@@ -11,7 +11,9 @@ var _monthly_runtime = MonthlyArenaCombatRuntimeScript.new()
 var _monthly_intent_collector = CombatIntentSourceCollectorScript.new()
 
 
-func start_non_gt_contract(contract: Dictionary, player_team_id: String = "player") -> Dictionary:
+func start_non_gt_contract(
+	contract: Dictionary, player_team_id: String = "player"
+) -> Dictionary:
 	return _monthly_runtime.start_contract(contract, player_team_id)
 
 
