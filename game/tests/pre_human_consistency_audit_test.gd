@@ -33,8 +33,8 @@ func _ready() -> void:
 	assert(bridge.contains('"combat_history_authority": "observer_only_after_completed_bout"'))
 	assert(bridge.contains('"legacy_combat_history_source_allowed": false'))
 
-	assert(closure.contains('summary.get("recovery", {})'))
-	assert(closure.contains('recovery.get("injury_auto_recovery_active", false)'))
+	assert(closure.contains('summary.get("roster_policy", {})'))
+	assert(closure.contains('roster_policy.get("injury_auto_recovery_enabled", false)'))
 	assert(closure.contains("La recuperación automática se procesa al cierre de cada mes."))
 	assert(not closure.contains("La recuperación automática permanece pendiente de balance mensual."))
 
