@@ -3,9 +3,10 @@ extends Node
 
 func run() -> void:
 	_test_old_v14_partial_gt1_recovers_without_inventing_state()
+	_test_rival_monthly_state_roundtrip_and_reconciliation()
 	_test_corrupt_runtime_section_is_rejected()
 	_reset_runtime()
-	print("Save v14 Combat V1 recovery tests passed")
+	print("Save v14 Combat V1 and monthly rival recovery tests passed")
 
 
 func _test_old_v14_partial_gt1_recovers_without_inventing_state() -> void:
@@ -30,6 +31,52 @@ func _test_old_v14_partial_gt1_recovers_without_inventing_state() -> void:
 	assert((TournamentManager.export_state().get("history", []) as Array).is_empty())
 
 
+func _test_rival_monthly_state_roundtrip_and_reconciliation() -> void:
+	_reset_runtime()
+	GameState.day = 7
+	RivalManager._seed_rivals()
+	RivalManager.process_month()
+	assert(RivalManager.last_processed_month == 7)
+
+	var payload := SaveManager._build_payload()
+	var saved_rivals := payload.get("rivals", {}) as Dictionary
+	assert(int(saved_rivals.get("last_processed_month", -1)) == 7)
+
+	RivalManager.rivals.assign(
+		[
+			{
+				"id": "house_varro",
+				"name": "Legacy Varro",
+				"last_management_month": 0,
+			}
+		]
+	)
+	RivalManager.last_processed_month = 0
+	assert(SaveManager._apply_payload(payload))
+
+	var canonical_ids: Array[String] = []
+	for rival in RivalManager.get_rivals():
+		canonical_ids.append(str(rival.get("id", "")))
+	var expected_ids: Array[String] = []
+	for identity in DataRepository.get_rival_ludi():
+		expected_ids.append(str(identity.get("id", "")))
+	canonical_ids.sort()
+	expected_ids.sort()
+	assert(canonical_ids == expected_ids)
+	assert(RivalManager.last_processed_month == 7)
+	assert(RivalManager.process_month().is_empty())
+
+	var old_v14_payload := payload.duplicate(true)
+	var old_rivals := old_v14_payload.get("rivals", {}) as Dictionary
+	old_rivals.erase("last_processed_month")
+	old_rivals.erase("monthly_policy_status")
+	old_v14_payload["rivals"] = old_rivals
+	RivalManager.last_processed_month = 0
+	assert(SaveManager._apply_payload(old_v14_payload))
+	assert(RivalManager.last_processed_month == 7)
+	assert(RivalManager.process_month().is_empty())
+
+
 func _test_corrupt_runtime_section_is_rejected() -> void:
 	_reset_runtime()
 	var payload := SaveManager._build_payload()
@@ -40,4 +87,5 @@ func _test_corrupt_runtime_section_is_rejected() -> void:
 func _reset_runtime() -> void:
 	CombatV1SessionStore.clear_all()
 	TournamentManager.import_state({})
+	RivalManager._seed_rivals()
 	GameState.day = 1
