@@ -13,31 +13,33 @@ const RIVAL_IDS: Array[String] = [
 
 
 func run() -> void:
-	_test_management_only_month_schedule()
+	_test_regular_month_arena_schedule()
 	_test_grand_tournament_schedule()
 	_test_gt1_scoring_and_gold()
 	_test_gt1_tie_requires_tiebreak()
 	print("Monthly Arena and GT I tests passed")
 
 
-func _test_management_only_month_schedule() -> void:
+func _test_regular_month_arena_schedule() -> void:
 	var schedule := TournamentManager.get_month_schedule(1)
-	assert(schedule.is_empty())
-	assert(_count_competition(schedule, "underworld") == 0)
-	assert(_count_competition(schedule, "official_minor") == 0)
+	assert(schedule.size() >= 2)
+	assert(_count_competition(schedule, "underworld") == 1)
+	assert(_count_competition(schedule, "official_minor") >= 1)
 	assert(_count_competition(schedule, "grand_tournament") == 0)
 	var contract := TournamentManager.get_non_gt_activity_contract()
-	assert(contract.get("non_gt_mode") == "management_only")
+	assert(contract.get("non_gt_mode") == "management_plus_arena")
 	assert(contract.get("non_gt_combat_required") == false)
-	assert(contract.get("non_gt_combat_optional") == false)
+	assert(contract.get("non_gt_combat_optional") == true)
+	assert(contract.get("underworld_available_every_month") == true)
+	assert(contract.get("official_minor_available_on_non_gt_months") == true)
 	assert(contract.get("legacy_non_gt_schedule_allowed") == false)
 
 
 func _test_grand_tournament_schedule() -> void:
 	for month in [13, 16, 20]:
 		var schedule := TournamentManager.get_month_schedule(month)
-		assert(schedule.size() == 1)
-		assert(_count_competition(schedule, "underworld") == 0)
+		assert(schedule.size() == 2)
+		assert(_count_competition(schedule, "underworld") == 1)
 		assert(_count_competition(schedule, "grand_tournament") == 1)
 		assert(_count_competition(schedule, "official_minor") == 0)
 
