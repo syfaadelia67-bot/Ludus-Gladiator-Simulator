@@ -7,7 +7,8 @@ func run() -> void:
 
     assert(hub.contains('const SCREEN_HOST_NAME := "ScreenHost"'))
     assert(hub.contains('"finca": "res://scenes/FincaScreen.tscn"'))
-    assert(hub.contains('"arena": "res://scenes/ArenaScreen.tscn"'))
+    assert(hub.contains('"arena": "res://scenes/ArenaScreenMonthly.tscn"'))
+    assert(hub.contains('"torneos": "res://scenes/TournamentsPanelMonthly.tscn"'))
     assert(hub.contains("func show_finca()"))
     assert(hub.contains("func open_system(system_id: String)"))
     assert(hub.contains("func get_hosted_screen(system_id: String)"))
@@ -20,4 +21,4 @@ func run() -> void:
     assert(project.contains("FincaHubController="))
     assert(not project.contains("FincaBuildingNavigationController="))
     assert(not project.contains("FincaReturnNavigationController="))
-    print("Finca ScreenHost navigation contract: OK")
+    print("Finca ScreenHost monthly navigation contract: OK")
