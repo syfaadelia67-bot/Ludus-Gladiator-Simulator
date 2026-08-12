@@ -38,11 +38,14 @@ func build_from_live_roster(
 		var person_id := str(person.id)
 		people_by_id[person_id] = person
 		var equipped_stats = equipment_manager.call("get_combat_v1_equipped_stats", person)
-		if not equipped_stats is Dictionary:
+		var skill_context = equipment_manager.call("get_combat_v1_skill_context", person)
+		if not equipped_stats is Dictionary or not skill_context is Dictionary:
 			return _invalid(
-				["GT I equipment source returned invalid stats for gladiator %s" % person_id]
+				["GT I equipment source returned invalid Combat V1 context for gladiator %s" % person_id]
 			)
-		equipment_by_id[person_id] = (equipped_stats as Dictionary).duplicate(true)
+		var snapshot := (equipped_stats as Dictionary).duplicate(true)
+		snapshot["skill_context"] = (skill_context as Dictionary).duplicate(true)
+		equipment_by_id[person_id] = snapshot
 	return build_from_sources(
 		month,
 		player_team_id,
@@ -144,8 +147,10 @@ func get_contract() -> Dictionary:
 		"status": "frozen",
 		"player_source": "RosterManager.get_gladiators",
 		"equipment_source": "EquipmentManager.get_combat_v1_equipped_stats",
+		"skill_equipment_context_source": "EquipmentManager.get_combat_v1_skill_context",
 		"equipment_balance_status": "frozen_demo_v1_authored_catalog",
 		"canonical_item_power_defense_enabled": true,
+		"canonical_skill_equipment_requirements_enabled": true,
 		"legacy_item_power_defense_allowed": false,
 		"fighter_adapter": "CombatRosterFighterAdapter.build_from_person",
 		"opponent_source": "explicit_external_combat_v1_snapshots",
@@ -173,6 +178,7 @@ func _resolve_live_sources() -> Dictionary:
 	if (
 		equipment_manager == null
 		or not equipment_manager.has_method("get_combat_v1_equipped_stats")
+		or not equipment_manager.has_method("get_combat_v1_skill_context")
 	):
 		errors.append(
 			"GT I live roster builder could not resolve canonical Combat V1 equipment snapshots"
