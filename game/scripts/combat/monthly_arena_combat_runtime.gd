@@ -12,6 +12,7 @@ const RivalSnapshotProviderScript = preload(
 )
 
 const NON_GT_COMPETITIONS := ["underworld", "official_minor"]
+const CANONICAL_RIVAL_TEAM_ID := "rival_team"
 
 var _combat_contract = CombatContractScript.new()
 var _fighter_adapter = CombatRosterFighterAdapterScript.new()
@@ -28,7 +29,7 @@ func start_contract(contract: Dictionary, player_team_id: String = "player") -> 
 
 	var player_ids := _contract_player_ids(contract)
 	var opponent_count := _opponent_count_for_format(str(contract.get("format", "")))
-	var opponent_team_id := "rival_monthly"
+	var opponent_team_id := CANONICAL_RIVAL_TEAM_ID
 	var opponent_result := _select_canonical_opponents(contract, opponent_count, opponent_team_id)
 	if str(opponent_result.get("status", "")) != "ready":
 		return _rejected(
@@ -137,6 +138,7 @@ func get_contract() -> Dictionary:
 		"formats": ["1v1", "1v2", "2v2"],
 		"player_source": "live_roster_and_equipment_snapshots",
 		"opponent_source": "canonical_rival_combat_v1_snapshots",
+		"opponent_team_id": CANONICAL_RIVAL_TEAM_ID,
 		"generated_opponents_allowed": false,
 		"combat_authority": "combat_simulator",
 		"reward_and_reputation_authority": "tournament_manager",
