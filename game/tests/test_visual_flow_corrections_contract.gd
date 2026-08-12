@@ -11,13 +11,20 @@ func _ready() -> void:
 	var mastery := FileAccess.get_file_as_string(
 		"res://scripts/systems/specialization_mastery_controller.gd"
 	)
-	var dossier := FileAccess.get_file_as_string("res://scripts/ui/gladiator_dossier_presenter.gd")
+	var dossier_panel := FileAccess.get_file_as_string(
+		"res://scripts/ui/gladiator_dossier_panel.gd"
+	)
+	var dossier_facade := FileAccess.get_file_as_string(
+		"res://scripts/ui/gladiator_dossier_presenter.gd"
+	)
 	var project := FileAccess.get_file_as_string("res://project.godot")
 
 	assert(hud_bootstrap.contains("FincaHubController.prepare_scene()"))
 	assert(hud_bootstrap.contains("_open_finca_as_primary_view"))
 	assert(hub.contains('"arena": "res://scenes/ArenaScreen.tscn"'))
+	assert(hub.contains('"gladiator_dossier": "res://scenes/GladiatorDossierPanel.tscn"'))
 	assert(hub.contains("func _show_hosted_screen"))
+	assert(hub.contains("func open_gladiator_dossier("))
 	assert(arena_screen.contains("BackToFinca"))
 	assert(arena_screen.contains("FincaHubController.show_finca()"))
 	assert(arena_screen.contains('FincaHubController.open_system("personal")'))
@@ -40,13 +47,20 @@ func _ready() -> void:
 	assert(mastery.contains("func _compatible_equipment_bonus"))
 	assert(mastery.contains("EquipmentManager.get_equipped_tags(person)"))
 
-	assert(dossier.contains("Información"))
-	assert(dossier.contains("Equipamiento"))
-	assert(dossier.contains("Habilidades"))
-	assert(dossier.contains("Rasgos"))
-	assert(dossier.contains("Especialización"))
-	assert(dossier.contains("RETRATO PENDIENTE"))
-	assert(dossier.contains("SpecializationMasteryController.get_progress"))
+	assert(dossier_panel.contains('"information": "INFORMACIÓN"'))
+	assert(dossier_panel.contains('"equipment": "EQUIPAMIENTO"'))
+	assert(dossier_panel.contains('"skills": "HABILIDADES"'))
+	assert(dossier_panel.contains('"traits": "RASGOS"'))
+	assert(dossier_panel.contains('"specialization": "ESPECIALIZACIÓN"'))
+	assert(dossier_panel.contains("func open_gladiator("))
+	assert(dossier_panel.contains("GladiatorProgressionManager.get_record"))
+	assert(dossier_panel.contains("EquipmentManager.get_equipped_stats"))
+	assert(dossier_panel.contains("Pack000Assets.get_texture"))
+
+	assert(dossier_facade.contains("Compatibility facade only."))
+	assert(dossier_facade.contains("FincaHubController.open_gladiator_dossier(person_id)"))
+	assert(not dossier_facade.contains("_attach_when_ready"))
+	assert(not dossier_facade.contains("ROSTER_LIST_PATH"))
 
 	assert(project.contains('AllTabsUIBootstrap="*res://scripts/ui/main_ui_bootstrap.gd"'))
 	assert(not project.contains("all_tabs_ui_bootstrap.gd"))
