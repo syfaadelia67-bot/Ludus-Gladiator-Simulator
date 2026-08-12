@@ -144,7 +144,8 @@ func get_contract() -> Dictionary:
 		"status": "frozen",
 		"player_source": "RosterManager.get_gladiators",
 		"equipment_source": "EquipmentManager.get_combat_v1_equipped_stats",
-		"equipment_balance_status": "pending_frozen_equipment_catalog",
+		"equipment_balance_status": "frozen_demo_v1_authored_catalog",
+		"canonical_item_power_defense_enabled": true,
 		"legacy_item_power_defense_allowed": false,
 		"fighter_adapter": "CombatRosterFighterAdapter.build_from_person",
 		"opponent_source": "explicit_external_combat_v1_snapshots",
@@ -187,13 +188,4 @@ func _resolve_live_sources() -> Dictionary:
 
 
 func _invalid(errors: Array[String]) -> Dictionary:
-	return {
-		"status": "invalid",
-		"errors": errors.duplicate(),
-		"month": 0,
-		"format": "",
-		"player_team_id": "",
-		"bout_states": [],
-		"source": "",
-		"opponent_source": "",
-	}
+	return {"status": "invalid", "errors": errors.duplicate()}
