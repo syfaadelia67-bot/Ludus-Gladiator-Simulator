@@ -4,6 +4,7 @@ const MonthlyNonGTActivityPolicyScript = preload(
 	"res://scripts/systems/monthly_non_gt_activity_policy.gd"
 )
 const CANONICAL_COMPETITIONS := ["grand_tournament", "underworld", "official_minor"]
+const GT1_DISPLAY_NAME := "Torneo de Marte"
 
 var _non_gt_activity_policy = MonthlyNonGTActivityPolicyScript.new()
 
@@ -25,6 +26,23 @@ func prepare_month(month: int, force: bool = false) -> void:
 func get_month_schedule(month: int = 0) -> Array:
 	var resolved_month := GameState.get_month() if month <= 0 else maxi(1, month)
 	return _build_canonical_month_schedule(resolved_month).duplicate(true)
+
+
+func get_gt1_encounter(month: int = 0) -> Dictionary:
+	var encounter := super.get_gt1_encounter(month)
+	_apply_gt1_display_name(encounter)
+	return encounter
+
+
+func get_gt1_summary() -> Dictionary:
+	var summary := super.get_gt1_summary()
+	summary["name"] = GT1_DISPLAY_NAME
+	summary["display_name"] = GT1_DISPLAY_NAME
+	return summary
+
+
+func get_gt1_display_name() -> String:
+	return GT1_DISPLAY_NAME
 
 
 func accept_event(event_id: String, fighter_id: String) -> bool:
@@ -96,11 +114,25 @@ func register_combat_result(fighter_id: String, victory: bool) -> Dictionary:
 	if not _is_canonical_competition(str(matching.get("competition", ""))):
 		contract_failed.emit("El contrato activo no pertenece a una competición mensual canónica.")
 		return {}
-	return super.register_combat_result(fighter_id, victory)
+	var result := super.register_combat_result(fighter_id, victory)
+	_apply_gt1_display_name(result)
+	_normalize_gt1_presentation_data()
+	return result
+
+
+func register_grand_tournament_fight_result(
+	victory: bool, month: int = 0, forfeit: bool = false
+) -> Dictionary:
+	var result := super.register_grand_tournament_fight_result(victory, month, forfeit)
+	_apply_gt1_display_name(result)
+	_normalize_gt1_presentation_data()
+	return result
 
 
 func process_month() -> Array:
-	return super.process_month()
+	var results := super.process_month()
+	_normalize_gt1_presentation_data()
+	return results
 
 
 func process_week() -> Array:
@@ -114,6 +146,7 @@ func process_day() -> Array:
 func import_state(data: Dictionary) -> void:
 	super.import_state(data)
 	_quarantine_unsupported_contracts()
+	_normalize_gt1_presentation_data()
 	prepare_month(GameState.get_month(), true)
 
 
@@ -183,7 +216,9 @@ func _build_canonical_month_schedule(month: int) -> Array[Dictionary]:
 	if bool(policy.get("underworld_available", false)):
 		schedule.append(_build_underworld_event(month))
 	if bool(policy.get("gt1_month", false)):
-		schedule.append(_build_gt1_event(month))
+		var gt_event := _build_gt1_event(month)
+		_apply_gt1_display_name(gt_event)
+		schedule.append(gt_event)
 		return schedule
 	if bool(policy.get("official_minor_available", false)):
 		schedule.append(_build_minor_event(month, 1))
@@ -235,6 +270,27 @@ func _validate_team_event_acceptance(event: Dictionary, fighter_ids: Array) -> D
 		"fighter_ids": resolved_ids.duplicate(),
 		"fighter_names": fighter_names.duplicate(),
 	}
+
+
+func _apply_gt1_display_name(record: Dictionary) -> void:
+	if record.is_empty():
+		return
+	var competition := str(record.get("competition", ""))
+	var tournament_id := str(record.get("tournament_id", record.get("id", "")))
+	if competition != "grand_tournament" and tournament_id != GT1_ID:
+		return
+	record["name"] = GT1_DISPLAY_NAME
+	record["tournament_name"] = GT1_DISPLAY_NAME
+	record["display_name"] = GT1_DISPLAY_NAME
+
+
+func _normalize_gt1_presentation_data() -> void:
+	for event in available_events:
+		_apply_gt1_display_name(event)
+	for contract in active_contracts:
+		_apply_gt1_display_name(contract)
+	for entry in history:
+		_apply_gt1_display_name(entry)
 
 
 func _is_canonical_competition(competition: String) -> bool:
