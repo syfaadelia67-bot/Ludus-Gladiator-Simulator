@@ -21,7 +21,7 @@ class FakePerson:
 
 
 func _initialize() -> void:
-	_test_live_autoload_roster_quarantines_legacy_equipment_stats()
+	_test_live_autoload_roster_snapshots_canonical_equipment_stats()
 	_test_month_20_builds_real_2v2_snapshots()
 	_test_month_13_requires_same_live_gladiator()
 	_test_unavailable_gladiator_fails_closed()
@@ -35,7 +35,7 @@ func _initialize() -> void:
 	quit(1)
 
 
-func _test_live_autoload_roster_quarantines_legacy_equipment_stats() -> void:
+func _test_live_autoload_roster_snapshots_canonical_equipment_stats() -> void:
 	var roster_manager = root.get_node_or_null("RosterManager")
 	var equipment_manager = root.get_node_or_null("EquipmentManager")
 	_assert_true(
@@ -101,12 +101,22 @@ func _test_live_autoload_roster_quarantines_legacy_equipment_stats() -> void:
 	_assert_eq(
 		contract.get("equipment_source"),
 		"EquipmentManager.get_combat_v1_equipped_stats",
-		"GT I must consume the Combat V1-safe equipment boundary",
+		"GT I must consume the canonical Combat V1 equipment boundary",
+	)
+	_assert_eq(
+		contract.get("equipment_balance_status"),
+		"frozen_demo_v1_authored_catalog",
+		"GT I equipment balance must reflect the frozen demo catalog",
+	)
+	_assert_eq(
+		contract.get("canonical_item_power_defense_enabled"),
+		true,
+		"canonical equipped power/defense must be enabled",
 	)
 	_assert_eq(
 		contract.get("legacy_item_power_defense_allowed"),
 		false,
-		"legacy item power/defense must remain quarantined from Combat V1",
+		"legacy arbitrary item authority must remain quarantined",
 	)
 	var opponents := [
 		[_opponent("live_x", "rival", 0)],
@@ -137,12 +147,12 @@ func _test_live_autoload_roster_quarantines_legacy_equipment_stats() -> void:
 	_assert_eq(
 		first_equipment,
 		first_expected,
-		"GT I builder must snapshot the compact canonical Combat V1-safe equipment state",
+		"GT I builder must snapshot canonical equipped Combat V1 stats",
 	)
 	_assert_eq(
 		first_equipment,
-		{"power": 0, "defense": 0},
-		"legacy item power/defense must be neutral while equipment balance is pending",
+		{"power": 9, "defense": 3},
+		"common-quality equipped stats must enter Combat V1 unchanged",
 	)
 
 	var stored_item: Dictionary = equipment_manager.get_item(item_id)
@@ -170,16 +180,16 @@ func _test_live_autoload_roster_quarantines_legacy_equipment_stats() -> void:
 	_assert_eq(
 		second_equipment,
 		second_expected,
-		"a new GT I build must re-read the compact canonical equipment boundary",
+		"a new GT I build must re-read the canonical equipped snapshot boundary",
 	)
 	_assert_eq(
 		second_equipment,
-		{"power": 0, "defense": 0},
-		"changing quarantined legacy item power must not alter Combat V1",
+		{"power": 17, "defense": 3},
+		"a newly built state must reflect the current equipped item snapshot",
 	)
 	_assert_eq(
 		first_equipment,
-		{"power": 0, "defense": 0},
+		{"power": 9, "defense": 3},
 		"previous GT I state must remain an immutable build-time equipment snapshot",
 	)
 	_assert_eq(
