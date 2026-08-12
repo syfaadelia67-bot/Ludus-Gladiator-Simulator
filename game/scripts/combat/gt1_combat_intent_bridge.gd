@@ -62,6 +62,7 @@ func advance_exchange(
 	)
 	if next.get("status") == "rejected":
 		return next
+	_register_completed_bout_history(session, next)
 	next["last_intent_providers"] = (
 		(collection.get("providers_by_actor", {}) as Dictionary).duplicate(true)
 	)
@@ -86,8 +87,28 @@ func get_contract() -> Dictionary:
 		"runtime": "gt1_combat_runtime",
 		"combat_authority": "combat_simulator",
 		"scoring_authority": "tournament_manager",
+		"combat_history_authority": "observer_only_after_completed_bout",
+		"combat_history_source": "CombatHistoryManager.register_gt1_bout",
+		"legacy_combat_history_source_allowed": false,
 		"bridge_may_resolve_combat": false,
 	}
+
+
+func _register_completed_bout_history(previous: Dictionary, next: Dictionary) -> void:
+	var previous_completed := int(previous.get("completed_bouts", 0))
+	var next_completed := int(next.get("completed_bouts", 0))
+	if next_completed != previous_completed + 1:
+		return
+	if not CombatHistoryManager.has_method("register_gt1_bout"):
+		return
+	CombatHistoryManager.register_gt1_bout(
+		int(next.get("month", previous.get("month", 0))),
+		int(next.get("encounter", previous.get("encounter", 0))),
+		next_completed,
+		str(next.get("player_team_id", previous.get("player_team_id", ""))),
+		next.get("last_combat_result", {}) as Dictionary,
+		next.get("last_tournament_result", {}) as Dictionary,
+	)
 
 
 func _rejected(reason: String, errors: Array, session: Dictionary) -> Dictionary:
