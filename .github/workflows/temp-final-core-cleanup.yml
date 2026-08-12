@@ -1,0 +1,57 @@
+name: Temporary Final Core Cleanup
+
+on:
+  pull_request:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: temp-final-core-cleanup-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  fix:
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Check out PR head
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          ref: ${{ github.head_ref }}
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Type readiness booleans, free standalone repository, and self-delete
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+
+          readiness = Path('game/scripts/core/demo_pre_asset_readiness.gd')
+          text = readiness.read_text(encoding='utf-8')
+          count = text.count('\tvar ready := (')
+          if count != 7:
+              raise SystemExit(f'expected 7 untyped readiness booleans, found {count}')
+          text = text.replace('\tvar ready := (', '\tvar ready: bool = (')
+          readiness.write_text(text, encoding='utf-8')
+
+          test = Path('game/tests/combat_skill_runtime_resolver_test.gd')
+          text = test.read_text(encoding='utf-8')
+          old = '\t_assert_authority_boundary(resolver.get_contract())\n\tprint("Combat V1 skill runtime resolver: OK")\n\tquit(0)'
+          new = '\t_assert_authority_boundary(resolver.get_contract())\n\trepository.free()\n\tprint("Combat V1 skill runtime resolver: OK")\n\tquit(0)'
+          if old not in text:
+              raise SystemExit('standalone skill test cleanup anchor not found')
+          test.write_text(text.replace(old, new, 1), encoding='utf-8')
+          PY
+
+          rm .github/workflows/temp-final-core-cleanup.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add game/scripts/core/demo_pre_asset_readiness.gd \
+                  game/tests/combat_skill_runtime_resolver_test.gd \
+                  .github/workflows/temp-final-core-cleanup.yml
+          git commit -m 'Close residual Core readiness checks'
+          git push origin "HEAD:${GITHUB_HEAD_REF}"
