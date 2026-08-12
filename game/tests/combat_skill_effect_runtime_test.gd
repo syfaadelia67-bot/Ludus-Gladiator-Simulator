@@ -231,7 +231,13 @@ func _test_immobilization() -> void:
 		)
 	)
 	assert(second.get("status") == "rejected")
-	assert(second.get("reason") == "invalid_skill_activation")
+	assert(second.get("reason") == "invalid_intents")
+	assert(
+		_contains(
+			second.get("errors", []) as Array,
+			"cannot use dodge while affected by immobilization",
+		)
+	)
 	_observed_skills["immobilization"] = true
 
 
@@ -448,8 +454,8 @@ func _has_status(fighter: Dictionary, status_id: String) -> bool:
 	return false
 
 
-func _contains(errors: Array[String], fragment: String) -> bool:
+func _contains(errors: Array, fragment: String) -> bool:
 	for error_message in errors:
-		if error_message.contains(fragment):
+		if str(error_message).contains(fragment):
 			return true
 	return false
