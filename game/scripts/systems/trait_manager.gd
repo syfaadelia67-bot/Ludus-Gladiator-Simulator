@@ -4,6 +4,14 @@ signal trait_awarded(person_id: String, trait_id: String)
 signal traits_changed(person_id: String)
 
 const MAX_NORMAL_TRAITS := 3
+const LEGACY_TRAIT_DISPLAY_NAMES := {
+	"arena_lover": "Amante de la arena",
+	"popular": "Popular",
+	"vengeful": "Vengativo",
+	"freedom_seeker": "Ansía la libertad",
+	"superstitious": "Supersticioso",
+	"mentor": "Mentor",
+}
 
 var catalog: Dictionary = {}
 var achievement_state: Dictionary = {}
@@ -42,7 +50,9 @@ func get_obtainable_trait_ids() -> Array[String]:
 
 
 func get_trait_name(trait_id: String) -> String:
-	return str(catalog.get(trait_id, {}).get("name", trait_id.capitalize()))
+	if catalog.has(trait_id):
+		return str((catalog[trait_id] as Dictionary).get("name", trait_id.capitalize()))
+	return str(LEGACY_TRAIT_DISPLAY_NAMES.get(trait_id, trait_id.capitalize()))
 
 
 func ensure_gladiator_origin_traits(person) -> void:
