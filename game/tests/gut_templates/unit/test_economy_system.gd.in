@@ -70,4 +70,24 @@ func test_bankruptcy_legacy_thresholds_are_quarantined() -> void:
     manager.insolvency_days = 20
 
     assert_eq(manager.get_bankruptcy_level(), 0)
-    assert_true(manager.get_bankruptcy_message().contains("pendiente"))
+    assert_true(manager.get_bankruptcy_message().contains("fuera del alcance"))
+
+
+func test_sponsors_and_loans_fail_closed_without_mutating_legacy_state() -> void:
+    var contracts_before: int = manager.active_contracts.size()
+    var loans_before: int = manager.active_loans.size()
+    var serial_before: int = manager.serial
+
+    assert_false(manager.sign_contract("local_merchant"))
+    assert_false(manager.take_loan("small"))
+
+    assert_eq(manager.active_contracts.size(), contracts_before)
+    assert_eq(manager.active_loans.size(), loans_before)
+    assert_eq(manager.serial, serial_before)
+    assert_false(bool(manager.get_sponsor("local_merchant").get("demo_available", true)))
+    assert_false(bool(manager.get_loan_product("small").get("demo_available", true)))
+    var contract: Dictionary = manager.get_monthly_runtime_contract()
+    assert_true(bool(contract.get("unfrozen_actions_fail_closed", false)))
+    assert_false(bool(contract.get("sponsor_demo_available", true)))
+    assert_false(bool(contract.get("loan_demo_available", true)))
+    assert_false(bool(contract.get("bankruptcy_demo_available", true)))
