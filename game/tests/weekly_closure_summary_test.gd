@@ -9,6 +9,9 @@ func run() -> void:
 		"res://scripts/systems/monthly_turn_closure_policy.gd"
 	)
 	var economy_source := FileAccess.get_file_as_string(
+		"res://scripts/systems/economy_manager.gd"
+	)
+	var economy_wrapper := FileAccess.get_file_as_string(
 		"res://scripts/systems/economy_manager_weekly.gd"
 	)
 	var presenter_source := FileAccess.get_file_as_string(
@@ -42,12 +45,24 @@ func run() -> void:
 		"Debe existir una proyección económica mensual canónica."
 	)
 	_assert(
-		economy_source.contains("get_monthly_fixed_costs()"),
-		"La proyección mensual debe exponer los costos económicos del turno."
+		economy_source.contains("func get_monthly_operating_cost_breakdown"),
+		"La proyección mensual debe exponer el desglose de costos del turno."
 	)
-	_assert(economy_source.contains("active_loans"), "La proyección debe considerar préstamos.")
 	_assert(
-		economy_source.contains("active_contracts"), "La proyección debe considerar patrocinadores."
+		economy_source.contains('"sponsor_balance_status": "pending_monthly_design"'),
+		"Patrocinadores deben permanecer fuera del balance mensual hasta diseño aprobado."
+	)
+	_assert(
+		economy_source.contains('"loan_balance_status": "pending_monthly_design"'),
+		"Préstamos deben permanecer fuera del balance mensual hasta diseño aprobado."
+	)
+	_assert(
+		economy_wrapper.contains("func get_weekly_projection()"),
+		"La API semanal debe conservarse sólo como alias de compatibilidad."
+	)
+	_assert(
+		economy_wrapper.contains("return get_monthly_projection()"),
+		"El alias semanal no debe tener autoridad económica propia."
 	)
 	_assert(
 		controller_source.contains("GameState.get_month_closure_status()"),
