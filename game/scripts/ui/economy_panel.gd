@@ -47,33 +47,23 @@ func _populate_options() -> void:
 	for sponsor_id in sponsor_ids:
 		var data := EconomyManager.get_sponsor(sponsor_id)
 		sponsor_selector.add_item(
-			"%s — Rep. %d" % [data.get("name", sponsor_id), int(data.get("required_reputation", 0))]
+			"%s — fuera de demo" % str(data.get("name", sponsor_id))
 		)
 	loan_selector.clear()
 	loan_ids = EconomyManager.get_loan_ids()
 	for loan_id in loan_ids:
 		var data := EconomyManager.get_loan_product(loan_id)
 		loan_selector.add_item(
-			"%s — %d denarios" % [data.get("name", loan_id), int(data.get("principal", 0))]
+			"%s — fuera de demo" % str(data.get("name", loan_id))
 		)
 
 
 func _on_sign_contract() -> void:
-	if sponsor_selector.selected < 0 or sponsor_ids.is_empty():
-		_show_error("Seleccioná un patrocinador.")
-		return
-	if EconomyManager.sign_contract(sponsor_ids[sponsor_selector.selected]):
-		status.text = "Contrato firmado correctamente."
-		call_deferred("_scroll_to_ledger")
+	_show_error(EconomyManager.PENDING_SPONSOR_REASON)
 
 
 func _on_take_loan() -> void:
-	if loan_selector.selected < 0 or loan_ids.is_empty():
-		_show_error("Seleccioná un préstamo.")
-		return
-	if EconomyManager.take_loan(loan_ids[loan_selector.selected]):
-		status.text = "El préstamo fue depositado en la tesorería."
-		call_deferred("_scroll_to_ledger")
+	_show_error(EconomyManager.PENDING_LOAN_REASON)
 
 
 func _on_selection_changed(_index: int) -> void:
@@ -93,15 +83,13 @@ func _refresh() -> void:
 	var breakdown: Dictionary = data.get("monthly_operating_cost_breakdown", {})
 	summary.text = (
 		(
-			"[b]TESORERÍA[/b]\nCosto operativo mensual: %d | Deuda: %d | Contratos: %d | Préstamos: %d\n"
+			"[b]TESORERÍA[/b]\nCosto operativo mensual: %d | Deuda legacy: %d\n"
 			+ "Base: %d | Esclavos: %d | Gladiadores: %d | Bestias: %d\n"
 			+ "Ingresos históricos: %d | Gastos históricos: %d\n[color=orange]%s[/color]"
 		)
 		% [
 			int(data.get("monthly_operating_costs", data.get("monthly_fixed_costs", 0))),
 			int(data.get("total_debt", 0)),
-			int(data.get("contracts", 0)),
-			int(data.get("loans", 0)),
 			int(breakdown.get("fixed_expense", 0)),
 			int(breakdown.get("slave_cost", 0)),
 			int(breakdown.get("gladiator_cost", 0)),
@@ -114,63 +102,34 @@ func _refresh() -> void:
 	_refresh_contracts()
 	_refresh_loans()
 	_refresh_ledger()
-	if sponsor_selector.selected >= 0 and sponsor_selector.selected < sponsor_ids.size():
-		var sponsor := EconomyManager.get_sponsor(sponsor_ids[sponsor_selector.selected])
-		sign_button.disabled = not bool(sponsor.get("eligible", false))
-		sign_button.tooltip_text = (
-			"Anticipo %d | Ingreso mensual %d | Duración %d meses"
-			% [
-				int(sponsor.get("upfront", 0)),
-				int(sponsor.get("monthly_income", sponsor.get("weekly_income", 0))),
-				int(sponsor.get("duration_months", sponsor.get("duration_weeks", 0))),
-			]
-		)
+	sponsor_selector.disabled = true
+	loan_selector.disabled = true
+	sign_button.disabled = true
+	loan_button.disabled = true
+	sign_button.tooltip_text = str(data.get("sponsor_unavailable_reason", "Fuera de la demo."))
+	loan_button.tooltip_text = str(data.get("loan_unavailable_reason", "Fuera de la demo."))
+	status.text = "Economía mensual activa · sponsors y préstamos fuera del alcance funcional de la demo."
 
 
 func _refresh_contracts() -> void:
 	if EconomyManager.active_contracts.is_empty():
-		contracts.text = "[b]CONTRATOS ACTIVOS[/b]\nNinguno"
+		contracts.text = "[b]CONTRATOS LEGACY[/b]\nNinguno · no se pueden crear nuevos en la demo."
 		return
-	var lines: Array[String] = ["[b]CONTRATOS ACTIVOS[/b]"]
+	var lines: Array[String] = ["[b]CONTRATOS LEGACY · SOLO COMPATIBILIDAD SAVE v14[/b]"]
 	for contract in EconomyManager.active_contracts:
-		(
-			lines
-			. append(
-				(
-					"• %s — %d meses — +%d/mes — V:%d D:%d"
-					% [
-						contract.get("name", "Contrato"),
-						int(contract.get("months_remaining", contract.get("weeks_remaining", 0))),
-						int(contract.get("monthly_income", contract.get("weekly_income", 0))),
-						int(contract.get("victories", 0)),
-						int(contract.get("defeats", 0)),
-					]
-				)
-			)
-		)
+		lines.append("• %s · sin efecto económico mensual" % contract.get("name", "Contrato"))
 	contracts.text = "\n".join(lines)
 
 
 func _refresh_loans() -> void:
 	if EconomyManager.active_loans.is_empty():
-		loans.text = "[b]DEUDAS ACTIVAS[/b]\nNinguna"
+		loans.text = "[b]DEUDAS LEGACY[/b]\nNinguna · no se pueden crear nuevas en la demo."
 		return
-	var lines: Array[String] = ["[b]DEUDAS ACTIVAS[/b]"]
+	var lines: Array[String] = ["[b]DEUDAS LEGACY · SOLO COMPATIBILIDAD SAVE v14[/b]"]
 	for loan in EconomyManager.active_loans:
-		(
-			lines
-			. append(
-				(
-					"• %s — Debe %d — %d meses — Cuota mensual %d — Impagos %d"
-					% [
-						loan.get("name", "Préstamo"),
-						int(loan.get("remaining", 0)),
-						int(loan.get("months_remaining", loan.get("weeks_remaining", 0))),
-						int(loan.get("installment", 0)),
-						int(loan.get("missed", 0)),
-					]
-				)
-			)
+		lines.append(
+			"• %s · saldo legacy %d · sin cuota mensual activa"
+			% [loan.get("name", "Préstamo"), int(loan.get("remaining", 0))]
 		)
 	loans.text = "\n".join(lines)
 
@@ -180,19 +139,14 @@ func _refresh_ledger() -> void:
 	for index in range(mini(12, EconomyManager.ledger.size())):
 		var entry: Dictionary = EconomyManager.ledger[index]
 		var amount := int(entry.get("amount", 0))
-		(
-			lines
-			. append(
-				(
-					"Mes %d | %s%d | %s"
-					% [
-						int(entry.get("month", entry.get("week", entry.get("day", 0)))),
-						"+" if amount >= 0 else "",
-						amount,
-						entry.get("reason", "Movimiento"),
-					]
-				)
-			)
+		lines.append(
+			"Mes %d | %s%d | %s"
+			% [
+				int(entry.get("month", entry.get("week", entry.get("day", 0)))),
+				"+" if amount >= 0 else "",
+				amount,
+				entry.get("reason", "Movimiento"),
+			]
 		)
 	ledger.text = "\n".join(lines)
 
