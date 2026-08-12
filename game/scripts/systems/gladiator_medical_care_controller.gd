@@ -96,6 +96,8 @@ func can_purchase_treatment(person_id: String, treatment_id: String) -> bool:
 	return GameState.denarii >= get_treatment_cost(treatment_id)
 
 
+# Guard-clause validation is clearer here than deeply nested treatment logic.
+# gdlint: disable=max-returns
 func purchase_treatment(person_id: String, treatment_id: String) -> bool:
 	if not MONTHLY_ROSTER_WORK_POLICY.INJURY_TREATMENT_ENABLED:
 		treatment_failed.emit("Tratamientos médicos deshabilitados por política mensual.")
@@ -163,6 +165,7 @@ func purchase_treatment(person_id: String, treatment_id: String) -> bool:
 	return true
 
 
+# gdlint: enable=max-returns
 func set_priority(person_id: String) -> bool:
 	var person = RosterManager.get_person(person_id)
 	if person == null or person.role != "gladiator" or person.injury_days <= 0:

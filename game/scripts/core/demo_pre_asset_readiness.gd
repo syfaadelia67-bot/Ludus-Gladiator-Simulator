@@ -1,5 +1,8 @@
 extends RefCounted
 
+# Readiness failure reasons are intentionally descriptive; keep the contract readable.
+# gdlint: disable=max-line-length
+
 const CombatBeastFighterAdapterScript = preload(
 	"res://scripts/combat/combat_beast_fighter_adapter.gd"
 )

@@ -90,6 +90,8 @@ func get_operation(operation_id: String) -> Dictionary:
 	return data
 
 
+# Guard clauses keep invalid rival operations fail-closed before any resource mutation.
+# gdlint: disable=max-returns
 func run_operation(rival_id: String, operation_id: String, agent_id: String = "") -> Dictionary:
 	_ensure_canonical_rivals()
 	var month := GameState.get_month()
@@ -208,6 +210,7 @@ func run_operation(rival_id: String, operation_id: String, agent_id: String = ""
 	return result
 
 
+# gdlint: enable=max-returns
 func process_month() -> Array:
 	_ensure_canonical_rivals()
 	var month := GameState.get_month()
