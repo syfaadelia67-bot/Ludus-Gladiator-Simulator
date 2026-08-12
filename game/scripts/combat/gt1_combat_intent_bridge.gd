@@ -101,13 +101,16 @@ func _register_completed_bout_history(previous: Dictionary, next: Dictionary) ->
 		return
 	if not CombatHistoryManager.has_method("register_gt1_bout"):
 		return
-	CombatHistoryManager.register_gt1_bout(
-		int(next.get("month", previous.get("month", 0))),
-		int(next.get("encounter", previous.get("encounter", 0))),
-		next_completed,
-		str(next.get("player_team_id", previous.get("player_team_id", ""))),
-		next.get("last_combat_result", {}) as Dictionary,
-		next.get("last_tournament_result", {}) as Dictionary,
+	(
+		CombatHistoryManager
+		. register_gt1_bout(
+			int(next.get("month", previous.get("month", 0))),
+			int(next.get("encounter", previous.get("encounter", 0))),
+			next_completed,
+			str(next.get("player_team_id", previous.get("player_team_id", ""))),
+			next.get("last_combat_result", {}) as Dictionary,
+			next.get("last_tournament_result", {}) as Dictionary,
+		)
 	)
 
 
