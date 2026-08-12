@@ -106,9 +106,9 @@ func _ready() -> void:
 	assert(not injured.is_available_for_combat())
 	assert((first.get("promotions", []) as Array).has("monthly_trainee"))
 
-	var miner_fatigue_after := miner.fatigue
-	var trainee_training_after := trainee.training
-	var injured_recovery_after := injured.injury_days
+	var miner_fatigue_after: int = int(miner.fatigue)
+	var trainee_training_after: int = int(trainee.training)
+	var injured_recovery_after: int = int(injured.injury_days)
 	var duplicate := RosterManager.process_day()
 	assert(duplicate.get("duplicate_call_ignored") == true)
 	assert(RosterManager.last_processed_month == 4)
