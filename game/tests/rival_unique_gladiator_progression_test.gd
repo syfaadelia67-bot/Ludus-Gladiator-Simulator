@@ -18,19 +18,37 @@ func run() -> void:
 
 	var initial := RivalUniqueGladiatorController.get_profile("brannoc")
 	_assert(not initial.is_empty(), "Brannoc debe tener un perfil dentro del Ludus rival.")
-	_assert(str(initial.get("rival_id", "")) == "varro", "El perfil debe conservar el Ludus Varro canónico.")
+	_assert(
+		str(initial.get("rival_id", "")) == "varro",
+		"El perfil debe conservar el Ludus Varro canónico."
+	)
 	_assert(int(initial.get("level", 0)) == 1, "El rival único debe comenzar en nivel 1.")
 
 	RivalUniqueGladiatorController._on_week_advanced(4)
 	var progressed := RivalUniqueGladiatorController.get_profile("brannoc")
-	_assert(int(progressed.get("last_progress_week", 0)) == 4, "El perfil debe registrar el turno procesado.")
-	_assert(int(progressed.get("experience", 0)) > 0, "El gladiador rival debe ganar experiencia por turno.")
+	_assert(
+		int(progressed.get("last_progress_week", 0)) == 4,
+		"El perfil debe registrar el turno procesado."
+	)
+	_assert(
+		int(progressed.get("experience", 0)) > 0,
+		"El gladiador rival debe ganar experiencia por turno."
+	)
 
 	var opponent_a := RivalUniqueGladiatorController.get_opponent_for_week(4, "official")
 	var opponent_b := RivalUniqueGladiatorController.get_opponent_for_week(4, "official")
-	_assert(str(opponent_a.get("gladiator_id", "")) == "brannoc", "El rival único debe estar disponible como oponente.")
-	_assert(opponent_a == opponent_b, "La selección del oponente debe ser determinista para el mismo turno.")
-	_assert(str(opponent_a.get("rival_name", "")).contains("Varro"), "El oponente debe exponer el nombre de su Ludus.")
+	_assert(
+		str(opponent_a.get("gladiator_id", "")) == "brannoc",
+		"El rival único debe estar disponible como oponente."
+	)
+	_assert(
+		opponent_a == opponent_b,
+		"La selección del oponente debe ser determinista para el mismo turno."
+	)
+	_assert(
+		str(opponent_a.get("rival_name", "")).contains("Varro"),
+		"El oponente debe exponer el nombre de su Ludus."
+	)
 	_assert(
 		RivalUniqueGladiatorController.get_opponent_for_week(4, "beast_hunt").is_empty(),
 		"Las cacerías de bestias no deben usar gladiadores rivales.",
@@ -38,12 +56,20 @@ func run() -> void:
 
 	RivalUniqueGladiatorController.register_combat_result("brannoc", true)
 	var defeated := RivalUniqueGladiatorController.get_profile("brannoc")
-	_assert(int(defeated.get("losses", 0)) == 1, "La victoria del jugador debe registrar una derrota rival.")
-	_assert(int(defeated.get("arena_appearances", 0)) == 1, "La aparición en Arena debe registrarse.")
+	_assert(
+		int(defeated.get("losses", 0)) == 1,
+		"La victoria del jugador debe registrar una derrota rival."
+	)
+	_assert(
+		int(defeated.get("arena_appearances", 0)) == 1, "La aparición en Arena debe registrarse."
+	)
 
 	RivalUniqueGladiatorController.register_combat_result("brannoc", false)
 	var victorious := RivalUniqueGladiatorController.get_profile("brannoc")
-	_assert(int(victorious.get("wins", 0)) == 1, "La derrota del jugador debe registrar una victoria rival.")
+	_assert(
+		int(victorious.get("wins", 0)) == 1,
+		"La derrota del jugador debe registrar una victoria rival."
+	)
 
 	RivalManager.rivals = previous_rivals
 	UniqueGladiatorManager.states = previous_states

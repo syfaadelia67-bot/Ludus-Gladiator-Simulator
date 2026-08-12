@@ -8,9 +8,7 @@ func run() -> void:
 	var closure_policy_source := FileAccess.get_file_as_string(
 		"res://scripts/systems/monthly_turn_closure_policy.gd"
 	)
-	var economy_source := FileAccess.get_file_as_string(
-		"res://scripts/systems/economy_manager.gd"
-	)
+	var economy_source := FileAccess.get_file_as_string("res://scripts/systems/economy_manager.gd")
 	var economy_wrapper := FileAccess.get_file_as_string(
 		"res://scripts/systems/economy_manager_weekly.gd"
 	)

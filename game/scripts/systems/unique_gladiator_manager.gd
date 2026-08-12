@@ -98,8 +98,7 @@ func reconcile_from_world() -> void:
 		var state: Dictionary = states[gladiator_id]
 		state["status"] = "market"
 		state["available_week"] = maxi(
-			1,
-			int(raw_offer.get("available_week", entry.get("minimum_week", GameState.get_week())))
+			1, int(raw_offer.get("available_week", entry.get("minimum_week", GameState.get_week())))
 		)
 		state["expires_week"] = maxi(
 			int(state["available_week"]), int(raw_offer.get("expires_week", GameState.get_week()))

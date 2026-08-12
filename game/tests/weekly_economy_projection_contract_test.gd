@@ -2,9 +2,7 @@ extends Node
 
 
 func run() -> void:
-	var economy_script := FileAccess.get_file_as_string(
-		"res://scripts/systems/economy_manager.gd"
-	)
+	var economy_script := FileAccess.get_file_as_string("res://scripts/systems/economy_manager.gd")
 	var wrapper_script := FileAccess.get_file_as_string(
 		"res://scripts/systems/economy_manager_weekly.gd"
 	)

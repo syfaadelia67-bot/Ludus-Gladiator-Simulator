@@ -29,7 +29,7 @@ func resolve_desired_action(
 		return _rejected("skill_not_frozen", ["Skill %s is not frozen" % skill_id])
 	var mechanics := entry.get("mechanics", {}) as Dictionary
 	var mapping := mechanics.get("action_mapping", {}) as Dictionary
-	var mapped_action_id := str(mapping.get("base_action_id", ""))
+	var mapped_action_id := str(mapping.get("base_action", ""))
 	if not _action_catalog.is_action_id_valid(mapped_action_id):
 		return _rejected(
 			"invalid_skill_action_mapping",

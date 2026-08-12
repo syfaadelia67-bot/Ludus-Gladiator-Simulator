@@ -101,13 +101,18 @@ func _build_report(blockers: Array[Dictionary]) -> Dictionary:
 	var design_blocked_count := 0
 	var implementation_blocked_count := 0
 	for blocker in blockers:
-		lines.append(
-			"%s · %s · %s"
-			% [
-				str(blocker.get("code", "")),
-				str(blocker.get("category", "")),
-				str(blocker.get("reason", "")),
-			]
+		(
+			lines
+			. append(
+				(
+					"%s · %s · %s"
+					% [
+						str(blocker.get("code", "")),
+						str(blocker.get("category", "")),
+						str(blocker.get("reason", "")),
+					]
+				)
+			)
 		)
 		if bool(blocker.get("design_blocked", false)):
 			design_blocked_count += 1
@@ -132,12 +137,15 @@ func _append_rival_snapshot_blocker(blockers: Array[Dictionary]) -> void:
 	)
 	if readiness.get("ready") == true:
 		return
-	blockers.append(
-		_blocker(
-			"rival_combat_v1_snapshots_missing",
-			"gt1_rivals",
-			"Canonical rival Combat V1 roster coverage is incomplete or does not match the three frozen demo archetypes for all seven Ludi.",
-			true
+	(
+		blockers
+		. append(
+			_blocker(
+				"rival_combat_v1_snapshots_missing",
+				"gt1_rivals",
+				"Canonical rival Combat V1 roster coverage is incomplete or does not match the three frozen demo archetypes for all seven Ludi.",
+				true
+			)
 		)
 	)
 
@@ -171,12 +179,15 @@ func _append_rival_results_provider_blocker(blockers: Array[Dictionary]) -> void
 	)
 	if ready:
 		return
-	blockers.append(
-		_blocker(
-			"gt1_rival_results_provider",
-			"architecture",
-			"GT I rival standings require a campaign-owned, explicit external-results provider that cannot generate, randomize, partially register or overwrite rival scores.",
-			false
+	(
+		blockers
+		. append(
+			_blocker(
+				"gt1_rival_results_provider",
+				"architecture",
+				"GT I rival standings require a campaign-owned, explicit external-results provider that cannot generate, randomize, partially register or overwrite rival scores.",
+				false
+			)
 		)
 	)
 
@@ -282,12 +293,15 @@ func _append_monthly_economy_blocker(blockers: Array[Dictionary]) -> void:
 		and contract.get("save_version_change_required") == false
 	)
 	if not ready:
-		blockers.append(
-			_blocker(
-				"monthly_economy_runtime",
-				"architecture",
-				"Canonical monthly operating-cost runtime is incomplete or still grants authority to legacy daily/weekly economy.",
-				false
+		(
+			blockers
+			. append(
+				_blocker(
+					"monthly_economy_runtime",
+					"architecture",
+					"Canonical monthly operating-cost runtime is incomplete or still grants authority to legacy daily/weekly economy.",
+					false
+				)
 			)
 		)
 
@@ -320,12 +334,15 @@ func _append_monthly_market_blocker(blockers: Array[Dictionary]) -> void:
 		and contract.get("save_version_change_required") == false
 	)
 	if not ready:
-		blockers.append(
-			_blocker(
-				"monthly_market_cadence",
-				"architecture",
-				"Canonical monthly market cadence is incomplete or still grants authority to procedural/legacy refresh paths.",
-				false
+		(
+			blockers
+			. append(
+				_blocker(
+					"monthly_market_cadence",
+					"architecture",
+					"Canonical monthly market cadence is incomplete or still grants authority to procedural/legacy refresh paths.",
+					false
+				)
 			)
 		)
 
@@ -371,12 +388,15 @@ func _append_monthly_roster_blocker(blockers: Array[Dictionary]) -> void:
 		and contract.get("save_version_change_required") == false
 	)
 	if not ready:
-		blockers.append(
-			_blocker(
-				"monthly_roster_work_recovery",
-				"architecture",
-				"Monthly roster work, training, fatigue, recovery or treatment runtime is incomplete or diverges from the authored one-turn migration contract.",
-				false
+		(
+			blockers
+			. append(
+				_blocker(
+					"monthly_roster_work_recovery",
+					"architecture",
+					"Monthly roster work, training, fatigue, recovery or treatment runtime is incomplete or diverges from the authored one-turn migration contract.",
+					false
+				)
 			)
 		)
 
@@ -386,12 +406,15 @@ func _append_equipment_blocker(blockers: Array[Dictionary]) -> void:
 		not EquipmentManager.has_method("get_runtime_policy")
 		or not EquipmentManager.has_method("get_combat_v1_equipped_stats")
 	):
-		blockers.append(
-			_blocker(
-				"equipment_catalog_and_forge_balance",
-				"equipment",
-				"EquipmentManager does not expose the canonical demo equipment runtime and Combat V1 snapshot APIs.",
-				false
+		(
+			blockers
+			. append(
+				_blocker(
+					"equipment_catalog_and_forge_balance",
+					"equipment",
+					"EquipmentManager does not expose the canonical demo equipment runtime and Combat V1 snapshot APIs.",
+					false
+				)
 			)
 		)
 		return
@@ -413,8 +436,10 @@ func _append_equipment_blocker(blockers: Array[Dictionary]) -> void:
 		and is_equal_approx(float(multipliers.get("Superior", 0.0)), 1.15)
 		and is_equal_approx(float(multipliers.get("Magistral", 0.0)), 1.35)
 		and contract.get("item_power_defense_combat_v1_enabled") == true
-		and contract.get("combat_v1_stat_source")
-		== "canonical_equipped_items_after_quality_multiplier"
+		and (
+			contract.get("combat_v1_stat_source")
+			== "canonical_equipped_items_after_quality_multiplier"
+		)
 		and contract.get("legacy_ability_tag_gating_authoritative") == false
 		and contract.get("catalog_breadth_ready") == true
 		and contract.get("full_game_catalog_frozen") == false
@@ -423,13 +448,17 @@ func _append_equipment_blocker(blockers: Array[Dictionary]) -> void:
 		and contract.get("save_version_change_required") == false
 	)
 	if not ready:
-		blockers.append(
-			_blocker(
-				"equipment_catalog_and_forge_balance",
-				"equipment",
-				"The authored 15-item demo catalog, forge recipes, quality multipliers or Combat V1 power/defense authority are incomplete.",
-				false
+		(
+			blockers
+			. append(
+				_blocker(
+					"equipment_catalog_and_forge_balance",
+					"equipment",
+					"The authored 15-item demo catalog, forge recipes, quality multipliers or Combat V1 power/defense authority are incomplete.",
+					false
+				)
 			)
+		)
 
 
 func _append_monthly_event_blocker(blockers: Array[Dictionary]) -> void:
@@ -476,13 +505,17 @@ func _append_monthly_event_blocker(blockers: Array[Dictionary]) -> void:
 		and contract.get("save_version_change_required") == false
 	)
 	if not ready:
-		blockers.append(
-			_blocker(
-				"monthly_event_cadence",
-				"events",
-				"Authored event weights, monthly cooldowns, timed effects or exactly-once monthly scheduling are incomplete.",
-				false
+		(
+			blockers
+			. append(
+				_blocker(
+					"monthly_event_cadence",
+					"events",
+					"Authored event weights, monthly cooldowns, timed effects or exactly-once monthly scheduling are incomplete.",
+					false
+				)
 			)
+		)
 
 
 func _append_monthly_rival_blocker(blockers: Array[Dictionary]) -> void:
@@ -560,13 +593,17 @@ func _append_monthly_rival_blocker(blockers: Array[Dictionary]) -> void:
 		and contract.get("save_version_change_required") == false
 	)
 	if not ready:
-		blockers.append(
-			_blocker(
-				"monthly_rival_management",
-				"rivals",
-				"Canonical seven-Ludus management, authored operation balance, monthly retaliation or GT I isolation are incomplete.",
-				false
+		(
+			blockers
+			. append(
+				_blocker(
+					"monthly_rival_management",
+					"rivals",
+					"Canonical seven-Ludus management, authored operation balance, monthly retaliation or GT I isolation are incomplete.",
+					false
+				)
 			)
+		)
 
 
 func _append_non_gt_loop_blocker(blockers: Array[Dictionary]) -> void:
@@ -589,13 +626,17 @@ func _append_non_gt_loop_blocker(blockers: Array[Dictionary]) -> void:
 		and contract.get("save_version_change_required") == false
 	)
 	if not ready:
-		blockers.append(
-			_blocker(
-				"months_without_gt1_loop",
-				"campaign",
-				"The demo management-only loop outside GT I is incomplete or still depends on legacy Arena schedules/objectives.",
-				false
+		(
+			blockers
+			. append(
+				_blocker(
+					"months_without_gt1_loop",
+					"campaign",
+					"The demo management-only loop outside GT I is incomplete or still depends on legacy Arena schedules/objectives.",
+					false
+				)
 			)
+		)
 
 
 func _append_authority_boundary_blockers(blockers: Array[Dictionary]) -> void:
