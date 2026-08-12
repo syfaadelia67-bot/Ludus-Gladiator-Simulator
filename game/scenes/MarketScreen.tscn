@@ -183,7 +183,7 @@ text = "OFERTAS DE LUCHADORES"
 [node name="Help" type="Label" parent="ContentShell/FightersView/OffersPanel/Margin/Content"]
 layout_mode = 2
 autowrap_mode = 3
-text = "Las ofertas canónicas permanecen disponibles hasta que se congele una cadencia mensual de rotación."
+text = "Los gladiadores únicos disponibles se actualizan con el avance mensual."
 
 [node name="List" type="ItemList" parent="ContentShell/FightersView/OffersPanel/Margin/Content"]
 custom_minimum_size = Vector2(0, 420)
@@ -278,12 +278,12 @@ layout_mode = 2
 icon = ExtResource("5_gold")
 expand_icon = true
 disabled = true
-text = "RENOVACIÓN MANUAL · PENDIENTE"
+text = "RENOVACIÓN MANUAL NO DISPONIBLE"
 
 [node name="Help" type="Label" parent="ContentShell/EquipmentView/OffersPanel/Margin/Content"]
 layout_mode = 2
 autowrap_mode = 3
-text = "La generación y renovación manual de equipamiento esperan balance mensual congelado."
+text = "Durante la demo, las armas y protecciones se obtienen mediante la Forja."
 
 [node name="List" type="ItemList" parent="ContentShell/EquipmentView/OffersPanel/Margin/Content"]
 custom_minimum_size = Vector2(0, 390)
@@ -328,11 +328,12 @@ custom_minimum_size = Vector2(0, 280)
 layout_mode = 2
 bbcode_enabled = true
 fit_content = true
-text = "Seleccioná un objeto."
+text = "Durante la demo, fabricá equipamiento desde la Forja."
 
 [node name="Buy" type="Button" parent="ContentShell/EquipmentView/DetailsPanel/Margin/Scroll/Content"]
 custom_minimum_size = Vector2(0, 58)
 layout_mode = 2
 icon = ExtResource("5_gold")
 expand_icon = true
-text = "COMPRAR EQUIPAMIENTO"
+disabled = true
+text = "EQUIPAMIENTO DISPONIBLE EN FORJA"
