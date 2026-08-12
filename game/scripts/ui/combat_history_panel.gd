@@ -61,16 +61,21 @@ func refresh() -> void:
 			else ("Rendición" if bool(entry.get("surrendered", false)) else "Derrota")
 		)
 		var flawless_mark: String = " ★" if bool(entry.get("flawless", false)) else ""
-		history_list.add_item(
-			"Mes %d · %s · %s contra %s · %s%s"
-			% [
-				_entry_month(entry),
-				str(entry.get("event_name", "Combate")),
-				str(entry.get("fighter", "Gladiador")),
-				str(entry.get("enemy", "Rival")),
-				result_text,
-				flawless_mark,
-			]
+		(
+			history_list
+			. add_item(
+				(
+					"Mes %d · %s · %s contra %s · %s%s"
+					% [
+						_entry_month(entry),
+						str(entry.get("event_name", "Combate")),
+						str(entry.get("fighter", "Gladiador")),
+						str(entry.get("enemy", "Rival")),
+						result_text,
+						flawless_mark,
+					]
+				)
+			)
 		)
 	if visible_entries.is_empty():
 		details_label.text = "Todavía no hay combates registrados."
@@ -93,23 +98,31 @@ func _show_entry(index: int) -> void:
 		else ("RENDICIÓN" if bool(entry.get("surrendered", false)) else "DERROTA")
 	)
 	var max_health: int = maxi(1, int(entry.get("player_max_health", 1)))
-	var health_percent: float = float(int(entry.get("player_health", 0))) / float(max_health) * 100.0
+	var health_percent: float = (
+		float(int(entry.get("player_health", 0))) / float(max_health) * 100.0
+	)
 	var injury: String = str(entry.get("injury", ""))
 	var performance: String = (
 		"Victoria impecable" if bool(entry.get("flawless", false)) else "Combate estándar"
 	)
 	var lines: Array[String] = [
 		"[b]%s — %s[/b]" % [str(entry.get("event_name", "Combate")), status],
-		"Mes %d | %s contra %s"
-		% [
-			_entry_month(entry),
-			str(entry.get("fighter", "Gladiador")),
-			str(entry.get("enemy", "Rival")),
-		],
-		"Rondas: %d | Vida restante: %.0f%% | %s"
-		% [int(entry.get("rounds", 0)), health_percent, performance],
-		"Premio: %d denarios | Reputación: %+d"
-		% [int(entry.get("reward", 0)), int(entry.get("reputation", 0))],
+		(
+			"Mes %d | %s contra %s"
+			% [
+				_entry_month(entry),
+				str(entry.get("fighter", "Gladiador")),
+				str(entry.get("enemy", "Rival")),
+			]
+		),
+		(
+			"Rondas: %d | Vida restante: %.0f%% | %s"
+			% [int(entry.get("rounds", 0)), health_percent, performance]
+		),
+		(
+			"Premio: %d denarios | Reputación: %+d"
+			% [int(entry.get("reward", 0)), int(entry.get("reputation", 0))]
+		),
 		"Herida: %s" % (injury if not injury.is_empty() else "Ninguna"),
 	]
 	var technique_stats: Dictionary = entry.get("technique_stats", {}) as Dictionary
@@ -118,20 +131,24 @@ func _show_entry(index: int) -> void:
 		for value: Variant in technique_stats.values():
 			if value is Dictionary:
 				var technique: Dictionary = value as Dictionary
-				lines.append(
-					"• %s: %d uso(s), %d daño"
-					% [
-						str(technique.get("name", "Técnica")),
-						int(technique.get("uses", 0)),
-						int(technique.get("damage", 0)),
-					]
+				(
+					lines
+					. append(
+						(
+							"• %s: %d uso(s), %d daño"
+							% [
+								str(technique.get("name", "Técnica")),
+								int(technique.get("uses", 0)),
+								int(technique.get("damage", 0)),
+							]
+						)
+					)
 				)
 	var status_stats: Dictionary = entry.get("status_stats", {}) as Dictionary
 	if not status_stats.is_empty():
 		lines.append("[b]Estados provocados[/b]")
 		for status_name: Variant in status_stats.keys():
 			lines.append(
-				"• %s: %d"
-				% [str(status_name).capitalize(), int(status_stats.get(status_name, 0))]
+				"• %s: %d" % [str(status_name).capitalize(), int(status_stats.get(status_name, 0))]
 			)
 	details_label.text = "\n".join(lines)
