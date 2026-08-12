@@ -1,0 +1,74 @@
+name: Temporary Audit Final Format Lint
+
+on:
+  pull_request:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: temp-audit-final-format-lint-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  patch:
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Check out PR head
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          ref: ${{ github.head_ref }}
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Patch deterministic counterattack fixture and format
+        shell: bash
+        env:
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path('game/tests/combat_skill_effect_runtime_test.gd')
+          text = path.read_text(encoding='utf-8')
+          old = '''func _test_counterattack() -> void:\n\tvar state := _base_state_1v1()\n\tvar result := _resolve_1v1('''
+          new = '''func _test_counterattack() -> void:\n\tvar state := _base_state_1v1()\n\t(_fighter_ref(state, "a").get("stats", {}) as Dictionary)["TEC"] = 6\n\t(_fighter_ref(state, "b").get("stats", {}) as Dictionary)["TEC"] = 20\n\tvar result := _resolve_1v1('''
+          if old not in text:
+              raise SystemExit('counterattack fixture anchor not found')
+          path.write_text(text.replace(old, new, 1), encoding='utf-8')
+          PY
+          python3 -m venv .ci-venv
+          .ci-venv/bin/python -m pip install --disable-pip-version-check --no-input 'gdtoolkit==4.5.0'
+          git diff --name-only -z --diff-filter=ACMR "$PR_BASE_SHA" HEAD -- '*.gd' > changed-gdscript.bin
+          mapfile -d '' FILES < changed-gdscript.bin
+          .ci-venv/bin/gdformat "${FILES[@]}"
+          set +e
+          .ci-venv/bin/gdlint "${FILES[@]}" > audit-gdlint.log 2>&1
+          echo $? > audit-gdlint.status
+          set -e
+
+      - name: Commit formatted audit source and self-delete
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm .github/workflows/temp-audit-final-format-lint.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- '*.gd' .github/workflows/temp-audit-final-format-lint.yml
+          if ! git diff --cached --quiet; then
+            git commit -m 'Audit: normalize final skill runtime tests'
+            git push origin "HEAD:${GITHUB_HEAD_REF}"
+          fi
+
+      - name: Upload lint capture
+        if: always()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        with:
+          name: audit-gdlint-capture-${{ github.run_attempt }}
+          path: |
+            audit-gdlint.log
+            audit-gdlint.status
+          if-no-files-found: error
+          retention-days: 1
