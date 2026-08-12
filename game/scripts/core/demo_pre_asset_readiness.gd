@@ -278,7 +278,7 @@ func _append_monthly_economy_blocker(blockers: Array[Dictionary]) -> void:
 		)
 		return
 	var contract: Dictionary = EconomyManager.get_monthly_runtime_contract()
-	var ready := (
+	var ready: bool = (
 		contract.get("status") == "frozen"
 		and contract.get("authority") == "monthly_economy_runtime"
 		and contract.get("period") == "month"
@@ -318,7 +318,7 @@ func _append_monthly_market_blocker(blockers: Array[Dictionary]) -> void:
 		)
 		return
 	var contract: Dictionary = MarketManager.get_market_rotation_policy()
-	var ready := (
+	var ready: bool = (
 		contract.get("status") == "frozen"
 		and contract.get("authority") == "monthly_market_policy"
 		and contract.get("month_native") == true
@@ -361,7 +361,7 @@ func _append_monthly_roster_blocker(blockers: Array[Dictionary]) -> void:
 	var contract: Dictionary = RosterManager.get_monthly_work_policy()
 	var treatment_costs := contract.get("treatment_costs", {}) as Dictionary
 	var treatment_recovery := contract.get("treatment_recovery_months", {}) as Dictionary
-	var ready := (
+	var ready: bool = (
 		contract.get("status") == "frozen"
 		and contract.get("authority") == "monthly_roster_work_policy"
 		and contract.get("period") == "month"
@@ -420,7 +420,7 @@ func _append_equipment_blocker(blockers: Array[Dictionary]) -> void:
 		return
 	var contract: Dictionary = EquipmentManager.get_runtime_policy()
 	var multipliers := contract.get("quality_multipliers", {}) as Dictionary
-	var ready := (
+	var ready: bool = (
 		contract.get("status") == "frozen"
 		and contract.get("authority") == "equipment_runtime_policy"
 		and contract.get("catalog_scope") == "demo_v1_authored_catalog"
@@ -477,7 +477,7 @@ func _append_monthly_event_blocker(blockers: Array[Dictionary]) -> void:
 	var timed_effect_months := contract.get("timed_effect_months", {}) as Dictionary
 	var grain_rule := event_rules.get("grain_shortage", {}) as Dictionary
 	var patron_rule := event_rules.get("patron_invitation", {}) as Dictionary
-	var ready := (
+	var ready: bool = (
 		contract.get("status") == "frozen"
 		and contract.get("authority") == "monthly_event_runtime_policy"
 		and contract.get("scheduler_authority") == "event_manager_demo.process_month"
@@ -548,7 +548,7 @@ func _append_monthly_rival_blocker(blockers: Array[Dictionary]) -> void:
 			runtime_ids.append(str((raw_rival as Dictionary).get("id", "")))
 	canonical_ids.sort()
 	runtime_ids.sort()
-	var ready := (
+	var ready: bool = (
 		contract.get("status") == "frozen"
 		and contract.get("authority") == "monthly_rival_management_policy"
 		and contract.get("period") == "month"
@@ -609,7 +609,7 @@ func _append_monthly_rival_blocker(blockers: Array[Dictionary]) -> void:
 func _append_non_gt_loop_blocker(blockers: Array[Dictionary]) -> void:
 	var contract := MonthlyNonGTActivityPolicyScript.new().get_contract()
 	var retired := contract.get("retired_demo_objectives", []) as Array
-	var ready := (
+	var ready: bool = (
 		contract.get("status") == "frozen"
 		and contract.get("authority") == "monthly_non_gt_activity_policy"
 		and contract.get("scope") == "demo_months_1_to_20"

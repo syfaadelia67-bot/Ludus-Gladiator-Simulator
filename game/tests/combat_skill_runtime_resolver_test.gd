@@ -14,6 +14,7 @@ func _initialize() -> void:
 	_assert_skill_translation(resolver, indexed)
 	_assert_beast_rejection(resolver, indexed)
 	_assert_authority_boundary(resolver.get_contract())
+	repository.free()
 	print("Combat V1 skill runtime resolver: OK")
 	quit(0)
 
