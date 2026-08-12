@@ -46,16 +46,12 @@ func _populate_options() -> void:
 	sponsor_ids = EconomyManager.get_sponsor_ids()
 	for sponsor_id in sponsor_ids:
 		var data := EconomyManager.get_sponsor(sponsor_id)
-		sponsor_selector.add_item(
-			"%s — fuera de demo" % str(data.get("name", sponsor_id))
-		)
+		sponsor_selector.add_item("%s — fuera de demo" % str(data.get("name", sponsor_id)))
 	loan_selector.clear()
 	loan_ids = EconomyManager.get_loan_ids()
 	for loan_id in loan_ids:
 		var data := EconomyManager.get_loan_product(loan_id)
-		loan_selector.add_item(
-			"%s — fuera de demo" % str(data.get("name", loan_id))
-		)
+		loan_selector.add_item("%s — fuera de demo" % str(data.get("name", loan_id)))
 
 
 func _on_sign_contract() -> void:
@@ -128,8 +124,10 @@ func _refresh_loans() -> void:
 	var lines: Array[String] = ["[b]DEUDAS LEGACY · SOLO COMPATIBILIDAD SAVE v14[/b]"]
 	for loan in EconomyManager.active_loans:
 		lines.append(
-			"• %s · saldo legacy %d · sin cuota mensual activa"
-			% [loan.get("name", "Préstamo"), int(loan.get("remaining", 0))]
+			(
+				"• %s · saldo legacy %d · sin cuota mensual activa"
+				% [loan.get("name", "Préstamo"), int(loan.get("remaining", 0))]
+			)
 		)
 	loans.text = "\n".join(lines)
 
@@ -139,14 +137,19 @@ func _refresh_ledger() -> void:
 	for index in range(mini(12, EconomyManager.ledger.size())):
 		var entry: Dictionary = EconomyManager.ledger[index]
 		var amount := int(entry.get("amount", 0))
-		lines.append(
-			"Mes %d | %s%d | %s"
-			% [
-				int(entry.get("month", entry.get("week", entry.get("day", 0)))),
-				"+" if amount >= 0 else "",
-				amount,
-				entry.get("reason", "Movimiento"),
-			]
+		(
+			lines
+			. append(
+				(
+					"Mes %d | %s%d | %s"
+					% [
+						int(entry.get("month", entry.get("week", entry.get("day", 0)))),
+						"+" if amount >= 0 else "",
+						amount,
+						entry.get("reason", "Movimiento"),
+					]
+				)
+			)
 		)
 	ledger.text = "\n".join(lines)
 

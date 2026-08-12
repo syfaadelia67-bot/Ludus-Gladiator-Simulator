@@ -19,6 +19,7 @@ var _session: Dictionary = {}
 var _last_snapshot: Dictionary = {}
 var _fighter_ids: Array[String] = []
 var _action_ids: Array[String] = []
+var _option_contracts_by_id: Dictionary = {}
 var _target_ids: Array[String] = []
 var _selected_fighter_id := ""
 var _ai_request_provider: Callable = Callable()
@@ -132,13 +133,14 @@ func advance_exchange_with_ai_requests(ai_requests_by_actor: Dictionary) -> Dict
 	if str(_session.get("status", "")) != "combat_running":
 		return _ui_rejected("no_active_session", ["No hay una sesión Combat V1 activa."])
 
-	var action_id := _selected_action_id()
+	var option_id := _selected_action_id()
 	var targets_by_actor: Dictionary = {}
-	if _arena_runtime.action_requires_target(action_id):
+	if _arena_runtime.option_requires_manual_target(_session, option_id):
 		var target_id := _selected_target_id()
 		if target_id.is_empty():
 			return _ui_rejected(
-				"target_required", ["La acción seleccionada requiere un objetivo explícito."]
+				"target_required",
+				["La opción seleccionada requiere un objetivo enemigo explícito."]
 			)
 		for actor_id in _arena_runtime.get_active_player_ids(_session):
 			targets_by_actor[actor_id] = target_id
@@ -147,7 +149,7 @@ func advance_exchange_with_ai_requests(ai_requests_by_actor: Dictionary) -> Dict
 		_arena_runtime
 		. build_player_intents(
 			_session,
-			action_id,
+			option_id,
 			targets_by_actor,
 		)
 	)
@@ -200,6 +202,9 @@ func get_ui_contract() -> Dictionary:
 		"legacy_combat_authority_allowed": false,
 		"legacy_energy_authority_allowed": false,
 		"legacy_ability_plan_allowed": false,
+		"canonical_rank_1_skills_enabled": true,
+		"skill_option_source": "DataRepository.skill_mechanics_v1",
+		"ally_skill_targeting": "automatic_single_active_ally",
 		"opponent_selection_is_external": false,
 		"explicit_series_selection_required": true,
 		"generated_opponents_allowed": false,
@@ -255,16 +260,33 @@ func _configure_legacy_scene_controls() -> void:
 
 
 func _populate_actions() -> void:
+	var previous_id := _selected_action_id()
 	action_selector.clear()
 	_action_ids.clear()
-	for contract in _arena_runtime.get_action_contracts():
-		var action_id := str(contract.get("id", ""))
-		if action_id.is_empty():
+	_option_contracts_by_id.clear()
+	var first_available_index := -1
+	for raw_contract in _arena_runtime.get_player_option_contracts(_session):
+		var contract := raw_contract as Dictionary
+		var option_id := str(contract.get("id", ""))
+		if option_id.is_empty():
 			continue
-		_action_ids.append(action_id)
-		action_selector.add_item(str(ACTION_LABELS.get(action_id, action_id)))
-	if not _action_ids.is_empty():
-		action_selector.select(0)
+		var label := str(ACTION_LABELS.get(option_id, contract.get("name", option_id)))
+		if str(contract.get("option_type", "action")) == "skill":
+			label += " · SKILL"
+		_action_ids.append(option_id)
+		_option_contracts_by_id[option_id] = contract.duplicate(true)
+		action_selector.add_item(label)
+		var item_index := action_selector.item_count - 1
+		var available := bool(contract.get("available", true))
+		action_selector.set_item_disabled(item_index, not available)
+		if available and first_available_index < 0:
+			first_available_index = item_index
+	if _action_ids.is_empty():
+		return
+	var selected_index := _action_ids.find(previous_id)
+	if selected_index < 0 or action_selector.is_item_disabled(selected_index):
+		selected_index = maxi(0, first_available_index)
+	action_selector.select(selected_index)
 
 
 func _refresh_all() -> void:
@@ -272,6 +294,7 @@ func _refresh_all() -> void:
 	_refresh_roster()
 	_refresh_snapshot()
 	_refresh_encounter_panel()
+	_populate_actions()
 	_refresh_combat_controls()
 	if _series_setup_panel != null:
 		_series_setup_panel.set_session_active(
@@ -287,7 +310,7 @@ func _refresh_event() -> void:
 		event_conditions.text = (
 			"[b]COMBAT V1[/b]\n"
 			+ "Este mes no contiene un encuentro GT I congelado. "
-			+ "La actividad de Arena fuera de XIII, XVI y XX sigue pendiente de definición."
+			+ "En la demo, los meses fuera de XIII, XVI y XX son de gestión y no abren combates de Arena."
 		)
 		return
 	event_header.text = "MES %d · %s" % [month, str(encounter.get("tournament_name", "GT I"))]
@@ -492,28 +515,38 @@ func _refresh_encounter_panel() -> void:
 
 func _refresh_combat_controls() -> void:
 	_refresh_targets()
-	var action_id := _selected_action_id()
-	var target_required := _arena_runtime.action_requires_target(action_id)
+	var option_id := _selected_action_id()
+	var option_contract := _option_contracts_by_id.get(option_id, {}) as Dictionary
+	var target_required := _arena_runtime.option_requires_manual_target(_session, option_id)
 	target_selector.visible = target_required
 	var session_running := str(_session.get("status", "")) == "combat_running"
 	var provider_ready := _ai_request_provider.is_valid()
+	var option_ready := bool(option_contract.get("available", true)) and not option_id.is_empty()
 	var target_ready := not target_required or not _selected_target_id().is_empty()
-	start_button.disabled = not session_running or not provider_ready or not target_ready
+	start_button.disabled = (
+		not session_running or not provider_ready or not option_ready or not target_ready
+	)
 
-	var action_contract: Dictionary = {}
-	for contract in _arena_runtime.get_action_contracts():
-		if str(contract.get("id", "")) == action_id:
-			action_contract = contract
-			break
+	var option_name := str(ACTION_LABELS.get(option_id, option_contract.get("name", option_id)))
+	var option_type := str(option_contract.get("option_type", "action"))
+	var target_relationship := str(option_contract.get("target_relationship", "none"))
+	var availability_note := ""
+	if not option_ready:
+		availability_note = (
+			"\n[color=orange]%s[/color]"
+			% str(option_contract.get("unavailable_reason", "Opción no disponible."))
+		)
 	plan_summary.text = (
 		(
-			"[b]ACCIÓN COMBAT V1[/b]\n%s · Stamina %d\nObjetivo: %s\n"
-			+ "La acción se valida por contrato antes de llegar al simulador."
+			"[b]%s COMBAT V1[/b]\n%s · Stamina %d\nObjetivo: %s%s\n"
+			+ "CombatSimulator conserva daño, KO y ganador."
 		)
 		% [
-			str(ACTION_LABELS.get(action_id, action_id)),
-			int(action_contract.get("stamina_cost", 0)),
-			"explícito" if target_required else "no requerido",
+			"SKILL RANK 1" if option_type == "skill" else "ACCIÓN",
+			option_name,
+			int(option_contract.get("stamina_cost", 0)),
+			target_relationship,
+			availability_note,
 		]
 	)
 
@@ -521,6 +554,8 @@ func _refresh_combat_controls() -> void:
 		start_button.text = "ESPERANDO SERIE GT I"
 	elif not provider_ready:
 		start_button.text = "ESPERANDO POLÍTICA LIMBOAI"
+	elif not option_ready:
+		start_button.text = "OPCIÓN NO DISPONIBLE"
 	elif not target_ready:
 		start_button.text = "SELECCIONÁ OBJETIVO"
 	else:
@@ -530,7 +565,10 @@ func _refresh_combat_controls() -> void:
 func _refresh_targets() -> void:
 	var previous := _selected_target_id()
 	target_selector.clear()
-	_target_ids = _arena_runtime.get_active_enemy_ids(_session)
+	_target_ids.clear()
+	var option_id := _selected_action_id()
+	if _arena_runtime.option_requires_manual_target(_session, option_id):
+		_target_ids = _arena_runtime.get_active_enemy_ids(_session)
 	for target_id in _target_ids:
 		target_selector.add_item(target_id)
 	if _target_ids.is_empty():
