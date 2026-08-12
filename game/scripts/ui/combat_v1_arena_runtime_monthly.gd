@@ -11,9 +11,7 @@ var _monthly_runtime = MonthlyArenaCombatRuntimeScript.new()
 var _monthly_intent_collector = CombatIntentSourceCollectorScript.new()
 
 
-func start_non_gt_contract(
-	contract: Dictionary, player_team_id: String = "player"
-) -> Dictionary:
+func start_non_gt_contract(contract: Dictionary, player_team_id: String = "player") -> Dictionary:
 	return _monthly_runtime.start_contract(contract, player_team_id)
 
 
@@ -31,11 +29,14 @@ func advance_exchange(
 		)
 	DataRepository.load_all()
 	_monthly_intent_collector.set_skill_mechanics(DataRepository.get_skill_mechanics_v1())
-	var collected := _monthly_intent_collector.collect(
-		state,
-		str(session.get("player_team_id", "")),
-		player_intents_by_actor,
-		ai_requests_by_actor,
+	var collected := (
+		_monthly_intent_collector
+		. collect(
+			state,
+			str(session.get("player_team_id", "")),
+			player_intents_by_actor,
+			ai_requests_by_actor,
+		)
 	)
 	if str(collected.get("status", "")) != "ready":
 		return _rejected(
@@ -43,17 +44,15 @@ func advance_exchange(
 			collected.get("errors", []) as Array,
 		)
 
-	var next := _monthly_runtime.advance_exchange(
-		session, collected.get("intents", []) as Array
-	)
+	var next := _monthly_runtime.advance_exchange(session, collected.get("intents", []) as Array)
 	if str(next.get("status", "")) == "rejected":
 		return next
 	next["last_intent_providers"] = (
-		collected.get("providers_by_actor", {}) as Dictionary
-	).duplicate(true)
+		(collected.get("providers_by_actor", {}) as Dictionary).duplicate(true)
+	)
 	next["last_skill_activations"] = (
-		collected.get("skill_activations_by_actor", {}) as Dictionary
-	).duplicate(true)
+		(collected.get("skill_activations_by_actor", {}) as Dictionary).duplicate(true)
+	)
 	return next
 
 
@@ -76,14 +75,17 @@ func build_snapshot(session: Dictionary) -> Dictionary:
 			continue
 		var fighter := raw_fighter as Dictionary
 		var stats := fighter.get("stats", {}) as Dictionary
-		fighters.append(
-			{
-				"id": str(fighter.get("id", "")),
-				"team": str(fighter.get("team", "")),
-				"current_pv": int(fighter.get("current_pv", stats.get("PV", 0))),
-				"max_pv": int(stats.get("PV", 1)),
-				"stamina": float(fighter.get("stamina", 0.0)),
-			}
+		(
+			fighters
+			. append(
+				{
+					"id": str(fighter.get("id", "")),
+					"team": str(fighter.get("team", "")),
+					"current_pv": int(fighter.get("current_pv", stats.get("PV", 0))),
+					"max_pv": int(stats.get("PV", 1)),
+					"stamina": float(fighter.get("stamina", 0.0)),
+				}
+			)
 		)
 	return {
 		"status": "ready",
