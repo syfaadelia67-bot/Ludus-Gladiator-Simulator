@@ -1,0 +1,107 @@
+name: Temporary Arena Skill UI Patch
+
+on:
+  pull_request:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: temp-audit-arena-skill-ui-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  patch:
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Check out PR head
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          ref: ${{ github.head_ref }}
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Patch Arena option UI, format, commit and self-delete
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+
+          path = Path('game/scripts/ui/arena_screen.gd')
+          text = path.read_text(encoding='utf-8')
+
+          def replace_between(start, end, replacement):
+              global text
+              a = text.find(start)
+              if a < 0:
+                  raise SystemExit(f'missing start anchor: {start}')
+              b = text.find(end, a)
+              if b < 0:
+                  raise SystemExit(f'missing end anchor: {end}')
+              text = text[:a] + replacement + text[b:]
+
+          needle = 'var _action_ids: Array[String] = []\nvar _target_ids: Array[String] = []'
+          replacement = 'var _action_ids: Array[String] = []\nvar _option_contracts_by_id: Dictionary = {}\nvar _target_ids: Array[String] = []'
+          if needle not in text:
+              raise SystemExit('option contract variable anchor missing')
+          text = text.replace(needle, replacement, 1)
+
+          replace_between(
+              'func advance_exchange_with_ai_requests(ai_requests_by_actor: Dictionary) -> Dictionary:\n',
+              '\n\nfunc get_ui_contract() -> Dictionary:',
+              '''func advance_exchange_with_ai_requests(ai_requests_by_actor: Dictionary) -> Dictionary:\n\tif str(_session.get("status", "")) != "combat_running":\n\t\treturn _ui_rejected("no_active_session", ["No hay una sesión Combat V1 activa."])\n\n\tvar option_id := _selected_action_id()\n\tvar targets_by_actor: Dictionary = {}\n\tif _arena_runtime.option_requires_manual_target(_session, option_id):\n\t\tvar target_id := _selected_target_id()\n\t\tif target_id.is_empty():\n\t\t\treturn _ui_rejected(\n\t\t\t\t"target_required", ["La opción seleccionada requiere un objetivo enemigo explícito."]\n\t\t\t)\n\t\tfor actor_id in _arena_runtime.get_active_player_ids(_session):\n\t\t\ttargets_by_actor[actor_id] = target_id\n\n\tvar intents_result: Dictionary = (\n\t\t_arena_runtime\n\t\t. build_player_intents(\n\t\t\t_session,\n\t\t\toption_id,\n\t\t\ttargets_by_actor,\n\t\t)\n\t)\n\tif str(intents_result.get("status", "")) != "ready":\n\t\t_render_error(intents_result)\n\t\treturn intents_result\n\n\tvar next: Dictionary = (\n\t\t_arena_runtime\n\t\t. advance_exchange(\n\t\t\t_session,\n\t\t\tintents_result.get("player_intents_by_actor", {}) as Dictionary,\n\t\t\tai_requests_by_actor,\n\t\t)\n\t)\n\tif str(next.get("status", "")) == "rejected":\n\t\t_render_error(next)\n\t\treturn next\n\tif not CombatV1SessionStore.set_gt1_session(next):\n\t\tvar persistence_error := _ui_rejected(\n\t\t\t"session_persistence_rejected",\n\t\t\t["El nuevo estado GT I no superó el contrato de persistencia Save v14."],\n\t\t)\n\t\t_render_error(persistence_error)\n\t\treturn persistence_error\n\n\t_session = next.duplicate(true)\n\t_refresh_all()\n\tif str(_session.get("status", "")) == "encounter_finished":\n\t\t_render_encounter_finished()\n\t\t_show_result_view()\n\treturn _session.duplicate(true)\n'''
+          )
+
+          old = '\t\t"legacy_ability_plan_allowed": false,\n\t\t"opponent_selection_is_external": false,'
+          new = '\t\t"legacy_ability_plan_allowed": false,\n\t\t"canonical_rank_1_skills_enabled": true,\n\t\t"skill_option_source": "DataRepository.skill_mechanics_v1",\n\t\t"ally_skill_targeting": "automatic_single_active_ally",\n\t\t"opponent_selection_is_external": false,'
+          if old not in text:
+              raise SystemExit('UI contract insertion anchor missing')
+          text = text.replace(old, new, 1)
+
+          replace_between(
+              'func _populate_actions() -> void:\n',
+              '\n\nfunc _refresh_all() -> void:',
+              '''func _populate_actions() -> void:\n\tvar previous_id := _selected_action_id()\n\taction_selector.clear()\n\t_action_ids.clear()\n\t_option_contracts_by_id.clear()\n\tvar first_available_index := -1\n\tfor raw_contract in _arena_runtime.get_player_option_contracts(_session):\n\t\tvar contract := raw_contract as Dictionary\n\t\tvar option_id := str(contract.get("id", ""))\n\t\tif option_id.is_empty():\n\t\t\tcontinue\n\t\tvar label := str(ACTION_LABELS.get(option_id, contract.get("name", option_id)))\n\t\tif str(contract.get("option_type", "action")) == "skill":\n\t\t\tlabel += " · SKILL"\n\t\t_action_ids.append(option_id)\n\t\t_option_contracts_by_id[option_id] = contract.duplicate(true)\n\t\taction_selector.add_item(label)\n\t\tvar item_index := action_selector.item_count - 1\n\t\tvar available := bool(contract.get("available", true))\n\t\taction_selector.set_item_disabled(item_index, not available)\n\t\tif available and first_available_index < 0:\n\t\t\tfirst_available_index = item_index\n\tif _action_ids.is_empty():\n\t\treturn\n\tvar selected_index := _action_ids.find(previous_id)\n\tif selected_index < 0 or action_selector.is_item_disabled(selected_index):\n\t\tselected_index = maxi(0, first_available_index)\n\taction_selector.select(selected_index)\n'''
+          )
+
+          old = '\t_refresh_encounter_panel()\n\t_refresh_combat_controls()'
+          new = '\t_refresh_encounter_panel()\n\t_populate_actions()\n\t_refresh_combat_controls()'
+          if old not in text:
+              raise SystemExit('refresh_all action population anchor missing')
+          text = text.replace(old, new, 1)
+
+          old = 'La actividad de Arena fuera de XIII, XVI y XX sigue pendiente de definición.'
+          new = 'En la demo, los meses fuera de XIII, XVI y XX son de gestión y no abren combates de Arena.'
+          if old not in text:
+              raise SystemExit('non-GT Arena copy anchor missing')
+          text = text.replace(old, new, 1)
+
+          replace_between(
+              'func _refresh_combat_controls() -> void:\n',
+              '\n\nfunc _refresh_targets() -> void:',
+              '''func _refresh_combat_controls() -> void:\n\t_refresh_targets()\n\tvar option_id := _selected_action_id()\n\tvar option_contract := _option_contracts_by_id.get(option_id, {}) as Dictionary\n\tvar target_required := _arena_runtime.option_requires_manual_target(_session, option_id)\n\ttarget_selector.visible = target_required\n\tvar session_running := str(_session.get("status", "")) == "combat_running"\n\tvar provider_ready := _ai_request_provider.is_valid()\n\tvar option_ready := bool(option_contract.get("available", true)) and not option_id.is_empty()\n\tvar target_ready := not target_required or not _selected_target_id().is_empty()\n\tstart_button.disabled = not session_running or not provider_ready or not option_ready or not target_ready\n\n\tvar option_name := str(ACTION_LABELS.get(option_id, option_contract.get("name", option_id)))\n\tvar option_type := str(option_contract.get("option_type", "action"))\n\tvar target_relationship := str(option_contract.get("target_relationship", "none"))\n\tvar availability_note := ""\n\tif not option_ready:\n\t\tavailability_note = "\\n[color=orange]%s[/color]" % str(\n\t\t\toption_contract.get("unavailable_reason", "Opción no disponible.")\n\t\t)\n\tplan_summary.text = (\n\t\t(\n\t\t\t"[b]%s COMBAT V1[/b]\\n%s · Stamina %d\\nObjetivo: %s%s\\n"\n\t\t\t+ "CombatSimulator conserva daño, KO y ganador."\n\t\t)\n\t\t% [\n\t\t\t"SKILL RANK 1" if option_type == "skill" else "ACCIÓN",\n\t\t\toption_name,\n\t\t\tint(option_contract.get("stamina_cost", 0)),\n\t\t\ttarget_relationship,\n\t\t\tavailability_note,\n\t\t]\n\t)\n\n\tif not session_running:\n\t\tstart_button.text = "ESPERANDO SERIE GT I"\n\telif not provider_ready:\n\t\tstart_button.text = "ESPERANDO POLÍTICA LIMBOAI"\n\telif not option_ready:\n\t\tstart_button.text = "OPCIÓN NO DISPONIBLE"\n\telif not target_ready:\n\t\tstart_button.text = "SELECCIONÁ OBJETIVO"\n\telse:\n\t\tstart_button.text = "RESOLVER INTERCAMBIO"\n'''
+          )
+
+          replace_between(
+              'func _refresh_targets() -> void:\n',
+              '\n\nfunc _selected_action_id() -> String:',
+              '''func _refresh_targets() -> void:\n\tvar previous := _selected_target_id()\n\ttarget_selector.clear()\n\t_target_ids.clear()\n\tvar option_id := _selected_action_id()\n\tif _arena_runtime.option_requires_manual_target(_session, option_id):\n\t\t_target_ids = _arena_runtime.get_active_enemy_ids(_session)\n\tfor target_id in _target_ids:\n\t\ttarget_selector.add_item(target_id)\n\tif _target_ids.is_empty():\n\t\treturn\n\tvar index := _target_ids.find(previous)\n\tif index < 0:\n\t\tindex = 0\n\ttarget_selector.select(index)\n'''
+          )
+
+          path.write_text(text, encoding='utf-8')
+          PY
+
+          python3 -m venv .ci-venv
+          .ci-venv/bin/python -m pip install --disable-pip-version-check --no-input 'gdtoolkit==4.5.0'
+          .ci-venv/bin/gdformat game/scripts/ui/arena_screen.gd game/scripts/ui/economy_panel.gd
+
+          rm .github/workflows/temp-audit-arena-skill-ui.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add game/scripts/ui/arena_screen.gd game/scripts/ui/economy_panel.gd \
+                  .github/workflows/temp-audit-arena-skill-ui.yml
+          git commit -m 'Audit: expose Combat V1 skills and quarantine economy UI'
+          git push origin "HEAD:${GITHUB_HEAD_REF}"
