@@ -3,12 +3,14 @@ extends SceneTree
 const CombatSkillRuntimeResolverScript = preload(
 	"res://scripts/combat/combat_skill_runtime_resolver.gd"
 )
+const DataRepositoryScript = preload("res://scripts/core/data_repository.gd")
 
 
 func _initialize() -> void:
-	DataRepository.load_all()
+	var repository = DataRepositoryScript.new()
+	repository.load_all()
 	var resolver = CombatSkillRuntimeResolverScript.new()
-	var indexed := _index(DataRepository.get_skill_mechanics_v1())
+	var indexed := _index(repository.get_skill_mechanics_v1())
 	_assert_skill_translation(resolver, indexed)
 	_assert_beast_rejection(resolver, indexed)
 	_assert_authority_boundary(resolver.get_contract())
