@@ -12,30 +12,44 @@ const RECOVERY_AMOUNT := 2
 const RECOVERY_TIMING := "end_exchange"
 
 
+func get_action_cost(action_id: String) -> int:
+	return int(ACTION_COSTS.get(action_id, -1))
+
+
 func can_pay(fighter: Dictionary, action_id: String) -> bool:
-	if not ACTION_COSTS.has(action_id):
+	return can_pay_cost(fighter, get_action_cost(action_id))
+
+
+func can_pay_cost(fighter: Dictionary, cost: int) -> bool:
+	if cost < 0:
 		return false
 	if not fighter.has("stamina") or not _is_numeric(fighter["stamina"]):
 		return false
-	return float(fighter["stamina"]) >= float(ACTION_COSTS[action_id])
+	return float(fighter["stamina"]) >= float(cost)
 
 
 func spend(fighter: Dictionary, action_id: String) -> Dictionary:
-	if not ACTION_COSTS.has(action_id):
+	var cost := get_action_cost(action_id)
+	if cost < 0:
 		return _invalid("unsupported_stamina_action", fighter)
+	return spend_cost(fighter, cost, action_id)
+
+
+func spend_cost(fighter: Dictionary, cost: int, source_id: String = "") -> Dictionary:
+	if cost < 0:
+		return _invalid("invalid_stamina_cost", fighter)
 	if not fighter.has("stamina") or not _is_numeric(fighter["stamina"]):
 		return _invalid("invalid_stamina", fighter)
 	var current := float(fighter["stamina"])
-	var cost := float(ACTION_COSTS[action_id])
-	if current < cost:
+	if current < float(cost):
 		return _invalid("insufficient_stamina", fighter)
 	var updated := fighter.duplicate(true)
-	updated["stamina"] = current - cost
+	updated["stamina"] = current - float(cost)
 	return {
 		"status": "resolved",
 		"errors": [],
-		"action_id": action_id,
-		"cost": int(cost),
+		"action_id": source_id,
+		"cost": cost,
 		"fighter": updated,
 	}
 
@@ -66,6 +80,8 @@ func get_contract() -> Dictionary:
 	return {
 		"status": "frozen",
 		"action_costs": ACTION_COSTS.duplicate(true),
+		"explicit_cost_override_allowed": true,
+		"explicit_cost_authority": "combat_skill_effect_resolver",
 		"recovery_amount": RECOVERY_AMOUNT,
 		"recovery_timing": RECOVERY_TIMING,
 		"insufficient_stamina_behavior": "reject_action",
