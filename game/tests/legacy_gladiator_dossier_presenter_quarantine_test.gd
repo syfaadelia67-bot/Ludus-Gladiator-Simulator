@@ -16,8 +16,10 @@ func run() -> void:
 	var contract := facade.get_contract() as Dictionary
 	assert(contract.get("status") == "compatibility_facade")
 	assert(
-		contract.get("canonical_dossier_authority")
-		== "FincaHubController_hosted_GladiatorDossierPanel"
+		(
+			contract.get("canonical_dossier_authority")
+			== "FincaHubController_hosted_GladiatorDossierPanel"
+		)
 	)
 	assert(contract.get("legacy_node_search_allowed") == false)
 	assert(contract.get("legacy_overlay_build_allowed") == false)
