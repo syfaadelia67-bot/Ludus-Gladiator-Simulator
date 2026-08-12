@@ -2,6 +2,15 @@ extends "res://scripts/ui/arena_screen_monthly.gd"
 
 const TOURNAMENT_DISPLAY_NAME := "Torneo de Marte"
 const INTERNAL_TOURNAMENT_LABELS := ["Gran Torneo de Roma", "GT I", "GT1"]
+const INTERNAL_PRESENTATION_REPLACEMENTS := [
+	["0 puntos GT I", "0 puntos del Torneo de Marte"],
+	["puntos GT I", "puntos del Torneo de Marte"],
+	["COMBAT V1", "COMBATE"],
+	["Combat V1", "combate"],
+	["CombatSimulator", "Sistema de combate"],
+	["TournamentManager", "Arena"],
+	["Save v14", "partida guardada"],
+]
 
 
 func _ready() -> void:
@@ -57,6 +66,8 @@ func _sanitize_node(node: Node) -> void:
 
 func _sanitize_text(value: String) -> String:
 	var sanitized := value
+	for replacement in INTERNAL_PRESENTATION_REPLACEMENTS:
+		sanitized = sanitized.replace(str(replacement[0]), str(replacement[1]))
 	for internal_label in INTERNAL_TOURNAMENT_LABELS:
 		sanitized = sanitized.replace(str(internal_label), TOURNAMENT_DISPLAY_NAME)
 	return sanitized
