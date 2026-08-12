@@ -6,6 +6,7 @@ const DEMO_RUNTIME_RANK := 1
 var _action_catalog = CombatActionCatalogScript.new()
 
 
+# gdlint: disable=max-returns
 func resolve_desired_action(
 	fighter: Dictionary, desired_action: Dictionary, skill_mechanics_by_id: Dictionary
 ) -> Dictionary:
@@ -60,6 +61,7 @@ func resolve_desired_action(
 	}
 
 
+# gdlint: enable=max-returns
 func get_contract() -> Dictionary:
 	return {
 		"status": "frozen",
