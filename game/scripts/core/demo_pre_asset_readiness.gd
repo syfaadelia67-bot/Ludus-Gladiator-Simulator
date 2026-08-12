@@ -649,16 +649,21 @@ func _append_monthly_rival_blocker(blockers: Array[Dictionary]) -> void:
 func _append_non_gt_loop_blocker(blockers: Array[Dictionary]) -> void:
 	var contract := MonthlyNonGTActivityPolicyScript.new().get_contract()
 	var retired := contract.get("retired_demo_objectives", []) as Array
+	var competitions := contract.get("canonical_non_gt_competitions", []) as Array
 	var ready: bool = (
 		contract.get("status") == "frozen"
 		and contract.get("authority") == "monthly_non_gt_activity_policy"
 		and contract.get("scope") == "demo_months_1_to_20"
-		and contract.get("non_gt_mode") == "management_only"
+		and contract.get("non_gt_mode") == "management_plus_arena"
 		and contract.get("non_gt_combat_required") == false
-		and contract.get("non_gt_combat_optional") == false
+		and contract.get("non_gt_combat_optional") == true
+		and contract.get("underworld_available_every_month") == true
+		and contract.get("official_minor_available_on_non_gt_months") == true
 		and contract.get("demo_loop_frozen") == true
-		and contract.get("full_game_non_gt_arena_deferred") == true
+		and contract.get("full_game_non_gt_arena_deferred") == false
+		and contract.get("canonical_non_gt_schedule_allowed") == true
 		and contract.get("legacy_non_gt_schedule_allowed") == false
+		and competitions == ["underworld", "official_minor"]
 		and contract.get("campaign_combat_progress_source") == "gt1_combat_v1"
 		and retired == ["first_fight", "first_victory", "three_victories"]
 		and contract.get("replacement_objectives_required") == false
@@ -672,7 +677,7 @@ func _append_non_gt_loop_blocker(blockers: Array[Dictionary]) -> void:
 				_blocker(
 					"months_without_gt1_loop",
 					"campaign",
-					"The demo management-only loop outside GT I is incomplete or still depends on legacy Arena schedules/objectives.",
+					"The demo management-plus-Arena loop outside the Tournament of Mars is incomplete or still depends on legacy schedules/objectives.",
 					false
 				)
 			)
