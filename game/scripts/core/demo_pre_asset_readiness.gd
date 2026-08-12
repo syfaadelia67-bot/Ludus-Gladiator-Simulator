@@ -8,6 +8,15 @@ const CombatBeastFighterAdapterScript = preload(
 const CombatSkillRuntimeResolverScript = preload(
 	"res://scripts/combat/combat_skill_runtime_resolver.gd"
 )
+const CombatSkillEffectResolverScript = preload(
+	"res://scripts/combat/combat_skill_effect_resolver.gd"
+)
+const CombatExchangeResolverScript = preload(
+	"res://scripts/combat/combat_exchange_resolver.gd"
+)
+const CombatV1ArenaRuntimeScript = preload(
+	"res://scripts/ui/combat_v1_arena_runtime.gd"
+)
 const CanonicalSkillMechanicsContractScript = preload(
 	"res://scripts/core/canonical_skill_mechanics_contract.gd"
 )
@@ -82,8 +91,8 @@ func get_contract() -> Dictionary:
 		"legacy_weekly_authority_allowed": false,
 		"invent_missing_balance_allowed": false,
 		"skill_mechanics_source_fail_closed": true,
-		"skill_runtime_quality_gate": "combat_skill_runtime_resolver_contract",
-		"monthly_economy_quality_gate": "economy_manager_monthly_runtime_contract",
+		"skill_runtime_quality_gate": "real_skill_effects_plus_player_options_contract",
+		"monthly_economy_quality_gate": "monthly_runtime_plus_fail_closed_finance_contract",
 		"monthly_market_quality_gate": "market_manager_monthly_policy_contract",
 		"monthly_roster_quality_gate": "roster_manager_monthly_work_policy_contract",
 		"equipment_quality_gate": "equipment_runtime_policy_contract",
@@ -237,15 +246,41 @@ func _append_pending_building_balance_blockers(blockers: Array[Dictionary]) -> v
 
 
 func _append_skill_mechanics_blocker(blockers: Array[Dictionary]) -> void:
-	var runtime_contract := CombatSkillRuntimeResolverScript.new().get_contract()
+	var translation := CombatSkillRuntimeResolverScript.new().get_contract()
+	var effects := CombatSkillEffectResolverScript.new().get_contract()
+	var exchange := CombatExchangeResolverScript.new().get_contract()
+	var arena := CombatV1ArenaRuntimeScript.new().get_contract()
 	var runtime_ready: bool = (
-		runtime_contract.get("status") == "frozen"
-		and runtime_contract.get("authority") == "skill_intent_translation_only"
-		and runtime_contract.get("damage_authority") == "combat_simulator"
-		and runtime_contract.get("ko_authority") == "combat_simulator"
-		and runtime_contract.get("winner_authority") == "combat_simulator"
-		and runtime_contract.get("beast_skills_allowed") == false
-		and runtime_contract.get("save_version_change_required") == false
+		translation.get("status") == "frozen"
+		and translation.get("authority") == "skill_intent_translation_only"
+		and int(translation.get("runtime_rank", 0)) == 1
+		and translation.get("higher_rank_runtime_enabled") == false
+		and translation.get("equipment_requirements_enforced") == true
+		and translation.get("damage_authority") == "combat_simulator"
+		and translation.get("ko_authority") == "combat_simulator"
+		and translation.get("winner_authority") == "combat_simulator"
+		and translation.get("beast_skills_allowed") == false
+		and effects.get("status") == "frozen"
+		and effects.get("authority") == "combat_simulator_subordinate_skill_effects"
+		and int(effects.get("runtime_rank", 0)) == 1
+		and effects.get("higher_rank_runtime_enabled") == false
+		and effects.get("equipment_requirements_enforced") == true
+		and effects.get("damage_authority") == "combat_simulator"
+		and effects.get("ko_authority") == "combat_simulator"
+		and effects.get("winner_authority") == "combat_simulator"
+		and exchange.get("status") == "frozen"
+		and exchange.get("skill_stamina_costs_enabled") == true
+		and exchange.get("skill_effects_enabled") == true
+		and exchange.get("skill_effect_authority")
+		== "combat_skill_effect_resolver_under_combat_simulator"
+		and arena.get("status") == "frozen"
+		and arena.get("player_option_source") == "base_actions_plus_canonical_rank_1_skills"
+		and int(arena.get("skill_runtime_rank", 0)) == 1
+		and arena.get("higher_skill_ranks_exposed") == false
+		and arena.get("combat_authority") == "combat_simulator"
+		and translation.get("save_version_change_required") == false
+		and effects.get("save_version_change_required") == false
+		and arena.get("save_version_change_required") == false
 	)
 	var readiness := CanonicalSkillMechanicsContractScript.new().evaluate(
 		DataRepository.get_skills(), DataRepository.get_skill_mechanics_v1(), runtime_ready
@@ -260,7 +295,10 @@ func _append_skill_mechanics_blocker(blockers: Array[Dictionary]) -> void:
 		% [missing_mechanics.size(), missing_progression.size()]
 	)
 	if design_ready:
-		reason = "Canonical skill design is frozen, but the Combat V1 skill resolver is not ready."
+		reason = (
+			"Canonical skill design is frozen, but real skill effects, rank-1 player options, "
+			+ "equipment requirements or CombatSimulator authority are incomplete."
+		)
 	blockers.append(
 		_blocker("canonical_skill_mechanics_not_frozen", "skills", reason, not design_ready)
 	)
@@ -277,7 +315,18 @@ func _append_monthly_economy_blocker(blockers: Array[Dictionary]) -> void:
 			)
 		)
 		return
+	if not EconomyManager.has_method("get_finance_scope_contract"):
+		blockers.append(
+			_blocker(
+				"monthly_economy_runtime",
+				"architecture",
+				"EconomyManager does not expose its fail-closed demo finance boundary.",
+				false
+			)
+		)
+		return
 	var contract: Dictionary = EconomyManager.get_monthly_runtime_contract()
+	var finance: Dictionary = EconomyManager.get_finance_scope_contract()
 	var ready: bool = (
 		contract.get("status") == "frozen"
 		and contract.get("authority") == "monthly_economy_runtime"
@@ -290,7 +339,14 @@ func _append_monthly_economy_blocker(blockers: Array[Dictionary]) -> void:
 		and contract.get("daily_economy_is_authority") == false
 		and contract.get("legacy_weekly_economy_is_authority") == false
 		and contract.get("invent_unfrozen_values_allowed") == false
+		and finance.get("status") == "frozen"
+		and finance.get("scope") == "demo_monthly_finance_boundary"
+		and finance.get("sponsor_contract_creation_enabled") == false
+		and finance.get("loan_origination_enabled") == false
+		and finance.get("legacy_finance_state_read_only") == true
+		and finance.get("invent_missing_balance_allowed") == false
 		and contract.get("save_version_change_required") == false
+		and finance.get("save_version_change_required") == false
 	)
 	if not ready:
 		(
