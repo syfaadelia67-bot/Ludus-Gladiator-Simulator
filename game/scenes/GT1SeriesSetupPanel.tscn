@@ -21,7 +21,7 @@ theme_override_constants/separation = 8
 [node name="Title" type="Label" parent="Margin/Content"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 20
-text = "ARMADO DE SERIE GT I"
+text = "ARMADO DEL TORNEO DE MARTE"
 
 [node name="SourceSummary" type="RichTextLabel" parent="Margin/Content"]
 custom_minimum_size = Vector2(0, 64)
@@ -157,4 +157,4 @@ text = "Seleccioná todos los participantes de la serie."
 custom_minimum_size = Vector2(0, 50)
 layout_mode = 2
 disabled = true
-text = "INICIAR SERIE GT I"
+text = "INICIAR TORNEO DE MARTE"
