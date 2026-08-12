@@ -18,6 +18,11 @@ func _initialize() -> void:
     assert(script_text.contains("_add_objective_card"))
     assert(script_text.contains("TextServer.AUTOWRAP_WORD_SMART"))
     assert(script_text.contains("FincaHubController.show_finca()"))
+    assert(script_text.contains("LudusOwnerManager.get_profile()"))
+    assert(script_text.contains("LudusOwnerManager.get_title_label()"))
+    assert(script_text.contains('"%s — Rango: %s\\nVictorias %d | Derrotas %d"'))
+    assert(script_text.contains("Completá el Torneo de Marte"))
+    assert(not script_text.contains('rank.get("name", "Ludus desconocido")'))
 
     var campaign_scene := load("res://scenes/CampaignPanel.tscn")
     var campaign_script := load("res://scripts/ui/campaign_panel.gd")
