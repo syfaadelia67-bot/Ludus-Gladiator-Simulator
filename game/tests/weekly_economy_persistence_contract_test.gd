@@ -33,13 +33,17 @@ func run() -> void:
 		"Préstamos deben quedar explícitamente fuera de demo."
 	)
 	_assert(
-		economy_source.contains("func sign_contract(sponsor_id: String) -> bool:")
-		and economy_source.contains("contract_failed.emit("),
+		(
+			economy_source.contains("func sign_contract(sponsor_id: String) -> bool:")
+			and economy_source.contains("contract_failed.emit(")
+		),
 		"Firmar sponsors debe fallar cerrado y emitir el motivo."
 	)
 	_assert(
-		economy_source.contains("func take_loan(loan_id: String) -> bool:")
-		and economy_source.contains("loan_failed.emit("),
+		(
+			economy_source.contains("func take_loan(loan_id: String) -> bool:")
+			and economy_source.contains("loan_failed.emit(")
+		),
 		"Tomar préstamos debe fallar cerrado y emitir el motivo."
 	)
 	_assert(
