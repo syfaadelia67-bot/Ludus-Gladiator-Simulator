@@ -42,11 +42,19 @@ jobs:
 
           readiness = Path('game/scripts/core/demo_pre_asset_readiness.gd')
           text = readiness.read_text(encoding='utf-8')
-          old = '''\t\t\t\tfalse\n\t\t\t)\n\n\nfunc _append_monthly_event_blocker'''
-          new = '''\t\t\t\tfalse\n\t\t\t)\n\t\t)\n\n\nfunc _append_monthly_event_blocker'''
-          if old not in text:
-              raise SystemExit('readiness equipment blocker closing anchor not found')
-          readiness.write_text(text.replace(old, new, 1), encoding='utf-8')
+          next_functions = [
+              '_append_monthly_event_blocker',
+              '_append_monthly_rival_blocker',
+              '_append_non_gt_loop_blocker',
+              '_append_authority_boundary_blockers',
+          ]
+          for next_function in next_functions:
+              old = f'''\t\t\t\tfalse\n\t\t\t)\n\n\nfunc {next_function}'''
+              new = f'''\t\t\t\tfalse\n\t\t\t)\n\t\t)\n\n\nfunc {next_function}'''
+              if old not in text:
+                  raise SystemExit(f'readiness closing anchor not found before {next_function}')
+              text = text.replace(old, new, 1)
+          readiness.write_text(text, encoding='utf-8')
           PY
 
           python3 -m venv .ci-venv
