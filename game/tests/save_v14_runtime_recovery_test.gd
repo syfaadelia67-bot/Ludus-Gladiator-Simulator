@@ -42,14 +42,18 @@ func _test_rival_monthly_state_roundtrip_and_reconciliation() -> void:
 	var saved_rivals := payload.get("rivals", {}) as Dictionary
 	assert(int(saved_rivals.get("last_processed_month", -1)) == 7)
 
-	RivalManager.rivals.assign(
-		[
-			{
-				"id": "house_varro",
-				"name": "Legacy Varro",
-				"last_management_month": 0,
-			}
-		]
+	(
+		RivalManager
+		. rivals
+		. assign(
+			[
+				{
+					"id": "house_varro",
+					"name": "Legacy Varro",
+					"last_management_month": 0,
+				}
+			]
+		)
 	)
 	RivalManager.last_processed_month = 0
 	assert(SaveManager._apply_payload(payload))
