@@ -76,7 +76,6 @@ func _test_counterattack_requires_successful_parry() -> void:
 
 func _test_equipment_requirements_fail_closed() -> void:
 	var no_shield := _fighter("p", "player", 10, 5, 10, true, false)
-	var state := _state_1v1(no_shield, _fighter("e", "enemy"))
 	var translated := (
 		_skill_resolver
 		. resolve_desired_action(
@@ -150,7 +149,13 @@ func _test_disarm_and_immobilization_persist_to_next_exchange() -> void:
 		)
 	)
 	assert(imm_second.get("status") == "rejected")
-	assert(str(imm_second.get("reason", "")) == "invalid_skill_activation")
+	assert(str(imm_second.get("reason", "")) == "invalid_intents")
+	assert(
+		_contains_error(
+			imm_second.get("errors", []) as Array,
+			"cannot use dodge while affected by immobilization",
+		)
+	)
 
 
 func _skill_intent(
@@ -208,6 +213,13 @@ func _fighter_from(state: Dictionary, fighter_id: String) -> Dictionary:
 func _has_status(fighter: Dictionary, status_id: String) -> bool:
 	for raw_status in fighter.get("skill_statuses", []) as Array:
 		if str((raw_status as Dictionary).get("id", "")) == status_id:
+			return true
+	return false
+
+
+func _contains_error(errors: Array, fragment: String) -> bool:
+	for error_value in errors:
+		if str(error_value).contains(fragment):
 			return true
 	return false
 
