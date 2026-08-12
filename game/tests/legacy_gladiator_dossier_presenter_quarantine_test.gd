@@ -23,10 +23,8 @@ func run() -> void:
 	assert(not presenter.contains("No se pudo conectar la ficha del gladiador"))
 
 	assert(personal.contains("FincaHubController.open_gladiator_dossier("))
-	assert(
-		router.contains('"gladiator_dossier": "res://scenes/GladiatorDossierPanel.tscn"')
-	)
+	assert(router.contains('"gladiator_dossier": "res://scenes/GladiatorDossierPanel.tscn"'))
 	assert(router.contains("func open_gladiator_dossier("))
-	assert(router.contains("screen.call(\"open_gladiator\""))
+	assert(router.contains('screen.call("open_gladiator"'))
 
 	print("Legacy gladiator dossier presenter compatibility facade: OK")
