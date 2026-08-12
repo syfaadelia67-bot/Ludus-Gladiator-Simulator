@@ -16,6 +16,10 @@ func _ready() -> void:
 	var presenter := FileAccess.get_file_as_string(
 		"res://scripts/ui/chapter_objective_presenter.gd"
 	)
+	var arena_runtime := FileAccess.get_file_as_string(
+		"res://scripts/combat/monthly_arena_combat_runtime.gd"
+	)
+	var arena_screen := FileAccess.get_file_as_string("res://scripts/ui/arena_screen_monthly.gd")
 
 	assert(
 		project.contains(
@@ -42,6 +46,12 @@ func _ready() -> void:
 	assert(policy.contains('"campaign_combat_progress_source": "gt1_combat_v1"'))
 	assert(policy.contains('"replacement_objectives_required": false'))
 	assert(policy.contains("RETIRED_DEMO_OBJECTIVES"))
+
+	assert(arena_runtime.contains('const CANONICAL_RIVAL_TEAM_ID := "rival_team"'))
+	assert(arena_runtime.contains("var opponent_team_id := CANONICAL_RIVAL_TEAM_ID"))
+	assert(not arena_runtime.contains('"rival_monthly"'))
+	assert(arena_screen.contains("_series_setup_panel.visible = has_tournament_of_mars"))
+	assert(arena_screen.contains("TournamentManager.get_gt1_encounter"))
 
 	assert(not campaign.contains("CombatManager.combat_finished.connect"))
 	assert(campaign.contains("_sync_approved_combat_progress"))
