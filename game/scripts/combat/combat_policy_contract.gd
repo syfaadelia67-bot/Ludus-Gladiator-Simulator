@@ -8,11 +8,15 @@ const CombatTargetResolverScript = preload("res://scripts/combat/combat_target_r
 const CombatSkillRuntimeResolverScript = preload(
 	"res://scripts/combat/combat_skill_runtime_resolver.gd"
 )
+const CombatSkillEffectResolverScript = preload(
+	"res://scripts/combat/combat_skill_effect_resolver.gd"
+)
 
 var _combat_contract = CombatContractScript.new()
 var _fighter_action_policy = CombatFighterActionPolicyScript.new()
 var _target_resolver = CombatTargetResolverScript.new()
 var _skill_runtime_resolver = CombatSkillRuntimeResolverScript.new()
+var _skill_effect_resolver = CombatSkillEffectResolverScript.new()
 var _skill_mechanics_by_id: Dictionary = {}
 
 
@@ -50,8 +54,10 @@ func validate_desired_action(state: Dictionary, desired_action: Dictionary) -> A
 			errors.append(str(raw_error))
 		return errors
 	var resolved_action := translated.get("desired_action", {}) as Dictionary
+	var activation := translated.get("skill_activation", {}) as Dictionary
+	if activation.is_empty():
+		activation = _skill_effect_resolver.get_activation(resolved_action)
 	var action_id := str(resolved_action.get("action_id", ""))
-	var target_id := str(resolved_action.get("target_id", ""))
 
 	if action_id.is_empty():
 		errors.append("Desired action is missing action_id")
@@ -59,38 +65,14 @@ func validate_desired_action(state: Dictionary, desired_action: Dictionary) -> A
 		errors.append("Desired action uses unsupported action: %s" % action_id)
 	elif not _fighter_action_policy.is_action_allowed(actor, action_id):
 		errors.append("Desired action %s is not allowed for actor %s" % [action_id, actor_id])
-
+	errors.append_array(_skill_effect_resolver.validate_intent(state, resolved_action))
 	if not errors.is_empty():
 		return errors
 
-	var target_result: Dictionary = _target_resolver.inspect_action_targets(
-		state, actor_id, action_id
-	)
-	if target_result.get("status") != "ready":
-		errors.append(
-			"Desired action target rules are unavailable: %s" % str(target_result.get("status", ""))
-		)
+	if not activation.is_empty():
+		errors.append_array(_validate_skill_targets(state, actor, resolved_action, activation))
 		return errors
-
-	var target_required := bool(target_result.get("target_required", false))
-	var relationship := str(target_result.get("target_relationship", ""))
-	var legal_targets := target_result.get("legal_targets", []) as Array
-	if target_required:
-		if target_id.is_empty():
-			errors.append(
-				"Desired action %s requires exactly one %s target" % [action_id, relationship]
-			)
-		elif not _fighter_exists(state, target_id):
-			errors.append("Desired action references unknown target: %s" % target_id)
-		elif not legal_targets.has(target_id):
-			errors.append(
-				(
-					"Desired action %s target %s is not a legal %s target"
-					% [action_id, target_id, relationship]
-				)
-			)
-	elif not target_id.is_empty():
-		errors.append("Desired action %s does not accept an explicit target" % action_id)
+	_validate_base_targets(state, actor_id, action_id, resolved_action, errors)
 	return errors
 
 
@@ -111,6 +93,88 @@ func resolve_desired_action(state: Dictionary, desired_action: Dictionary) -> Di
 
 func is_valid_desired_action(state: Dictionary, desired_action: Dictionary) -> bool:
 	return validate_desired_action(state, desired_action).is_empty()
+
+
+func _validate_base_targets(
+	state: Dictionary,
+	actor_id: String,
+	action_id: String,
+	resolved_action: Dictionary,
+	errors: Array[String]
+) -> void:
+	var target_id := str(resolved_action.get("target_id", ""))
+	var target_result: Dictionary = _target_resolver.inspect_action_targets(
+		state, actor_id, action_id
+	)
+	if target_result.get("status") != "ready":
+		errors.append(
+			"Desired action target rules are unavailable: %s" % str(target_result.get("status", ""))
+		)
+		return
+	var target_required := bool(target_result.get("target_required", false))
+	var relationship := str(target_result.get("target_relationship", ""))
+	var legal_targets := target_result.get("legal_targets", []) as Array
+	if target_required:
+		if target_id.is_empty():
+			errors.append(
+				"Desired action %s requires exactly one %s target" % [action_id, relationship]
+			)
+		elif not _fighter_exists(state, target_id):
+			errors.append("Desired action references unknown target: %s" % target_id)
+		elif not legal_targets.has(target_id):
+			errors.append(
+				"Desired action %s target %s is not a legal %s target"
+				% [action_id, target_id, relationship]
+			)
+	elif not target_id.is_empty():
+		errors.append("Desired action %s does not accept an explicit target" % action_id)
+
+
+func _validate_skill_targets(
+	state: Dictionary, actor: Dictionary, intent: Dictionary, activation: Dictionary
+) -> Array[String]:
+	var errors: Array[String] = []
+	var mechanics := activation.get("mechanics", {}) as Dictionary
+	var targets := mechanics.get("targets", {}) as Dictionary
+	var relationship := str(targets.get("relationship", ""))
+	var count := int(targets.get("count", 0))
+	var target_id := str(intent.get("target_id", ""))
+	var skill_id := str(activation.get("skill_id", ""))
+	if count <= 0:
+		if not target_id.is_empty():
+			errors.append("Skill %s does not accept an explicit target" % skill_id)
+		return errors
+	if target_id.is_empty():
+		errors.append("Skill %s requires exactly one %s target" % [skill_id, relationship])
+		return errors
+	var target := _find_fighter(state, target_id)
+	if target.is_empty() or not _is_active_fighter(target):
+		errors.append("Skill %s references an unavailable target: %s" % [skill_id, target_id])
+		return errors
+	var actor_id := str(actor.get("id", ""))
+	match relationship:
+		"enemy":
+			if str(target.get("team", "")) == str(actor.get("team", "")):
+				errors.append("Skill %s requires an enemy target" % skill_id)
+		"ally":
+			if (
+				target_id == actor_id
+				or str(target.get("team", "")) != str(actor.get("team", ""))
+			):
+				errors.append("Skill %s requires another active ally target" % skill_id)
+		"self":
+			if target_id != actor_id:
+				errors.append("Skill %s requires self target" % skill_id)
+		_:
+			errors.append("Skill %s has unsupported target relationship: %s" % [skill_id, relationship])
+	return errors
+
+
+func _is_active_fighter(fighter: Dictionary) -> bool:
+	var pv := float((fighter.get("stats", {}) as Dictionary).get("PV", 0.0))
+	if fighter.has("current_pv"):
+		pv = float(fighter.get("current_pv", pv))
+	return pv > 0.0
 
 
 func _fighter_exists(state: Dictionary, fighter_id: String) -> bool:
