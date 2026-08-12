@@ -1,10 +1,10 @@
 extends VBoxContainer
 
+var visible_entries: Array[Dictionary] = []
+
 @onready var summary_label: RichTextLabel = $Summary
 @onready var history_list: ItemList = $HistoryList
 @onready var details_label: RichTextLabel = $Details
-
-var visible_entries: Array[Dictionary] = []
 
 
 func _ready() -> void:
@@ -33,8 +33,14 @@ func refresh() -> void:
 	if not milestone_parts.is_empty():
 		milestone_text = "\n[b]Próximos hitos[/b] · %s" % " | ".join(milestone_parts)
 
+	var summary_format := (
+		"[b]RESUMEN DE LA ARENA[/b]\n"
+		+ "Combates: %d | Victorias: %d | Derrotas: %d | Rendiciones: %d | Efectividad: %.1f%%\n"
+		+ "Racha actual: %d | Mejor racha: %d | Victorias impecables: %d | Bestias vencidas: %d\n"
+		+ "Premios: %d denarios | Reputación: %+d\n[b]Títulos[/b] · %s%s"
+	)
 	summary_label.text = (
-		"[b]RESUMEN DE LA ARENA[/b]\nCombates: %d | Victorias: %d | Derrotas: %d | Rendiciones: %d | Efectividad: %.1f%%\nRacha actual: %d | Mejor racha: %d | Victorias impecables: %d | Bestias vencidas: %d\nPremios: %d denarios | Reputación: %+d\n[b]Títulos[/b] · %s%s"
+		summary_format
 		% [
 			int(summary.get("total", 0)),
 			int(summary.get("wins", 0)),
