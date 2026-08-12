@@ -26,7 +26,7 @@ const SCREEN_SCENES := {
 	"eventos": "res://scenes/EventsPanel.tscn",
 	"rivales": "res://scenes/RivalsPanel.tscn",
 	"economia": "res://scenes/EconomyPanel.tscn",
-	"torneos": "res://scenes/TournamentsPanel.tscn",
+	"torneos": "res://scenes/TournamentsPanelMonthly.tscn",
 	"progresion": "res://scenes/ProgressionPanel.tscn",
 	"personalidad": "res://scenes/PersonalityPanel.tscn",
 	"relaciones": "res://scenes/RelationshipsPanel.tscn",
