@@ -64,6 +64,7 @@ func _build_payload() -> Dictionary:
 	# Combat V1 beast stats remain separately blocked until they are frozen.
 	payload["owned_beasts"] = OwnedBeastRegistry.export_state()
 	_inject_monthly_market_state(payload)
+	_inject_monthly_rival_state(payload)
 	_inject_equipment_runtime_state(payload)
 	# Additive v14 runtime section: active Combat V1 state, including consecutive
 	# carryover and championship rematch state, never changes SAVE_VERSION.
@@ -129,6 +130,15 @@ func _inject_monthly_market_state(payload: Dictionary) -> void:
 	payload["market"] = market_data
 
 
+func _inject_monthly_rival_state(payload: Dictionary) -> void:
+	var rival_data := payload.get("rivals", {}) as Dictionary
+	rival_data["last_processed_month"] = RivalManager.last_processed_month
+	rival_data["monthly_policy_status"] = str(
+		RivalManager.get_monthly_management_contract().get("status", "")
+	)
+	payload["rivals"] = rival_data
+
+
 func _inject_equipment_runtime_state(payload: Dictionary) -> void:
 	var equipment_data := payload.get("equipment", {}) as Dictionary
 	equipment_data["runtime_policy_status"] = str(
@@ -146,6 +156,16 @@ func _apply_payload(data: Dictionary) -> bool:
 	GameState.day = maxi(
 		1, int(game_data.get("month", game_data.get("week", game_data.get("day", 1))))
 	)
+
+	var rival_data: Dictionary = data.get("rivals", {})
+	RivalManager.reconcile_canonical_rivals()
+	var reconciled_last_month := RivalManager.last_processed_month
+	RivalManager.last_processed_month = clampi(
+		int(rival_data.get("last_processed_month", reconciled_last_month)),
+		0,
+		GameState.get_month(),
+	)
+
 	var roster_data: Dictionary = data.get("roster", {})
 	RosterManager.last_processed_month = maxi(0, int(roster_data.get("last_processed_month", 0)))
 	var last_roster_result: Variant = roster_data.get("last_monthly_result", {})
