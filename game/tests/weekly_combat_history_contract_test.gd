@@ -25,7 +25,9 @@ func run() -> void:
 	assert(bridge_source.contains("CombatHistoryManager"))
 	assert(bridge_source.contains("register_gt1_bout("))
 	assert(bridge_source.contains("next_completed != previous_completed + 1"))
-	assert(bridge_source.contains('"combat_history_authority": "observer_only_after_completed_bout"'))
+	assert(
+		bridge_source.contains('"combat_history_authority": "observer_only_after_completed_bout"')
+	)
 
 	assert(
 		project_source.contains(
