@@ -33,8 +33,8 @@ func _ready() -> void:
 	assert(wrapper.contains("CANONICAL_COMPETITIONS"))
 	assert(wrapper.contains("func accept_event_team"))
 	assert(wrapper.contains("func get_active_contract_for_event"))
-	assert(wrapper.contains("return super.register_combat_result(fighter_id, victory)"))
-	assert(wrapper.contains("return super.process_month()"))
+	assert(wrapper.contains("var result := super.register_combat_result(fighter_id, victory)"))
+	assert(wrapper.contains("var results := super.process_month()"))
 	assert(not wrapper.contains("_quarantine_legacy_non_gt_contracts"))
 
 	assert(policy.contains('"non_gt_mode": "management_plus_arena"'))
