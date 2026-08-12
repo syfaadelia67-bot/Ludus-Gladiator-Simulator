@@ -23,8 +23,8 @@ func _ready() -> void:
 	assert(history.contains('entry["month"] = month'))
 	assert(history.contains('entry["week"] = month'))
 	assert(history.contains('entry["day"] = month'))
-	assert(history.contains('"result_authority": "combat_simulator"'))
-	assert(history.contains('"scoring_authority": "TournamentManager"'))
+	assert(history.contains('entry["result_authority"] = "combat_simulator"'))
+	assert(history.contains('entry["scoring_authority"] = "TournamentManager"'))
 	assert(not history.contains("_connect_combat_manager"))
 	assert(not history.contains("CombatManager.combat_finished"))
 
