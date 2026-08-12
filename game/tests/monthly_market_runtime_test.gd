@@ -57,8 +57,12 @@ func _assert_runtime_is_fail_closed() -> void:
 
 	var policy := MarketManager.get_market_rotation_policy()
 	assert(policy.get("month_native") == true)
-	assert(policy.get("auto_rotation_enabled") == false)
+	assert(policy.get("authored_unique_sync_enabled") == true)
+	assert(int(policy.get("authored_unique_sync_cadence_months", 0)) == 1)
+	assert(policy.get("procedural_auto_rotation_enabled") == false)
 	assert(policy.get("manual_equipment_refresh_enabled") == false)
+	assert(policy.get("procedural_recruit_generation_enabled") == false)
+	assert(policy.get("procedural_equipment_generation_enabled") == false)
 	assert(MarketManager.last_market_rotation_month == 1)
 	assert(MarketManager.get_next_auto_refresh_month() == -1)
 	assert(MarketManager.get_months_until_auto_refresh() == -1)
