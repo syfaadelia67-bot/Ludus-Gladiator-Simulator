@@ -61,7 +61,14 @@ func _assert_skill_authority() -> void:
 	assert(CanonicalSkillCatalog.get_specialized_skills(DataRepository).size() == 4)
 	for skill in skills:
 		assert(skill.keys().size() == 3, "Canonical skills must expose identity only")
-	assert(DataRepository.get_skill_mechanics_v1().is_empty())
+	var mechanics := DataRepository.get_skill_mechanics_v1()
+	assert(mechanics.size() == 12)
+	assert(_sorted_ids(mechanics) == EXPECTED_SKILLS)
+	for raw_entry in mechanics:
+		var entry := raw_entry as Dictionary
+		assert(entry.get("status") == "frozen")
+		assert(not (entry.get("mechanics", {}) as Dictionary).is_empty())
+		assert((entry.get("progression", {}) as Dictionary).get("status") == "frozen")
 	assert(CanonicalSkillCatalog.can_progress_skills() == false)
 	assert(_sorted_ids(DataRepository.abilities) == EXPECTED_LEGACY_ABILITIES)
 	var policy := ReconciliationPolicy.get_contract()
