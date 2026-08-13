@@ -13,6 +13,7 @@ const INTERNAL_PRESENTATION_REPLACEMENTS := [
 	["CombatSimulator", "Sistema de combate"],
 	["TournamentManager", "Arena"],
 	["Save v14", "partida guardada"],
+	["recover", "Recuperar"],
 ]
 
 var _arena_ai_provider = ArenaLimboAIRequestProviderScript.new()
