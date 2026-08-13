@@ -6,12 +6,23 @@ const ArenaLimboAIRequestProviderScript = preload(
 const CombatV1ArenaRuntimeMonthlyScript = preload(
 	"res://scripts/ui/combat_v1_arena_runtime_monthly.gd"
 )
+const ArenaScreenMonthlyScript = preload("res://scripts/ui/arena_screen_monthly.gd")
+const FunctionalUiStatePolicyScript = preload("res://scripts/ui/demo_functional_ui_state_policy.gd")
 
 const MAX_EXCHANGES_PER_COMBAT := 400
 
 
 func run() -> void:
 	DataRepository.load_all()
+	CampaignManager.campaign_over = false
+	GameState.day = 1
+	TournamentManager.prepare_month(1, true)
+	var arena_state := FunctionalUiStatePolicyScript.new().evaluate("arena")
+	assert(
+		str(arena_state.get("state", "")) == "ready",
+		"Mes 1 Arena must be ready because canonical non-GT combat is available",
+	)
+
 	_add_test_gladiator("qa_arena_1v1", "QA Arena 1v1")
 	_add_test_gladiator("qa_arena_1v2", "QA Arena 1v2")
 	_add_test_gladiator("qa_arena_2v2_a", "QA Arena 2v2 A")
@@ -40,8 +51,10 @@ func _assert_playable_format(
 	if int(event.get("team_size", 1)) > 1:
 		accepted = TournamentManager.accept_event_team(event_id, player_ids)
 	else:
-		accepted = TournamentManager.accept_event(event_id, player_ids[0])
-	assert(accepted, "Real monthly event must be accepted for %s" % format_id)
+		var arena_screen = ArenaScreenMonthlyScript.new()
+		accepted = arena_screen.accept_non_gt_event_for_fighter(event_id, player_ids[0])
+		arena_screen.free()
+	assert(accepted, "Real monthly event must be accepted from the Arena path for %s" % format_id)
 	if not accepted:
 		return
 
