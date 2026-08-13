@@ -2,7 +2,13 @@ extends RefCounted
 
 const CombatActionCatalogScript = preload("res://scripts/combat/combat_action_catalog.gd")
 
-const BEAST_ALLOWED_ACTION_IDS: Array[String] = ["light", "heavy", "dodge", "reposition"]
+const BEAST_ALLOWED_ACTION_IDS: Array[String] = [
+	"light",
+	"heavy",
+	"dodge",
+	"reposition",
+	"recover",
+]
 const BEAST_FORBIDDEN_ACTION_IDS: Array[String] = ["block", "parry"]
 
 var _action_catalog = CombatActionCatalogScript.new()
@@ -39,6 +45,7 @@ func get_contract() -> Dictionary:
 		"beast_forbidden_action_ids": BEAST_FORBIDDEN_ACTION_IDS.duplicate(),
 		"beast_block_allowed": false,
 		"beast_parry_allowed": false,
+		"beast_recover_allowed": true,
 		"beast_skills_allowed": false,
 		"result_authority": "combat_simulator",
 		"save_version_change_required": false,
