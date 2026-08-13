@@ -64,7 +64,9 @@ func _test_d6(contract) -> void:
 	_assert_eq(d6.get("recovery_amount"), 2, "D6 recovery amount must remain frozen")
 	_assert_eq(d6.get("recovery_timing"), "end_exchange", "recovery happens once per exchange")
 	_assert_eq(d6.get("recovery_action_id"), "recover", "D6 must expose a recovery turn")
-	_assert_eq(d6.get("recovery_action_cost"), 0, "recovery turn must remain payable at zero stamina")
+	_assert_eq(
+		d6.get("recovery_action_cost"), 0, "recovery turn must remain payable at zero stamina"
+	)
 	_assert_eq(d6.get("cost_table_status"), "frozen", "cost table must be frozen")
 	_assert_eq(d6.get("recovery_amount_status"), "frozen", "recovery amount must be frozen")
 	_assert_eq(d6.get("recovery_timing_status"), "frozen", "recovery timing must be frozen")
