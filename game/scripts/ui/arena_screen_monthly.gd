@@ -8,6 +8,7 @@ var _non_gt_panel: VBoxContainer
 var _non_gt_status: Label
 var _non_gt_start_button: Button
 var _open_tournaments_button: Button
+var _quick_non_gt_button: Button
 
 
 func _ready() -> void:
@@ -27,6 +28,15 @@ func _ready() -> void:
 func _install_non_gt_controls() -> void:
 	if _non_gt_panel != null:
 		return
+	_quick_non_gt_button = Button.new()
+	_quick_non_gt_button.name = "QuickMonthlyArenaAction"
+	_quick_non_gt_button.custom_minimum_size = Vector2(250.0, 48.0)
+	_quick_non_gt_button.tooltip_text = (
+		"Inscribir al gladiador seleccionado en Bajo Mundo o iniciar su contrato activo."
+	)
+	event_conditions.get_parent().add_child(_quick_non_gt_button)
+	_quick_non_gt_button.pressed.connect(_on_quick_non_gt_action)
+
 	_non_gt_panel = VBoxContainer.new()
 	_non_gt_panel.name = "MonthlyArenaSetup"
 	_non_gt_status = Label.new()
@@ -34,7 +44,7 @@ func _install_non_gt_controls() -> void:
 	_non_gt_start_button = Button.new()
 	_non_gt_start_button.text = "INICIAR COMBATE MENSUAL"
 	_open_tournaments_button = Button.new()
-	_open_tournaments_button.text = "VER TORNEOS DEL MES"
+	_open_tournaments_button.text = "VER TODOS LOS TORNEOS DEL MES"
 	_non_gt_panel.add_child(_non_gt_status)
 	_non_gt_panel.add_child(_non_gt_start_button)
 	_non_gt_panel.add_child(_open_tournaments_button)
@@ -85,6 +95,11 @@ func _refresh_non_gt_controls() -> void:
 		_non_gt_start_button.text = (
 			"COMBATE MENSUAL EN CURSO" if running_non_gt else "INICIAR COMBATE MENSUAL"
 		)
+		if _quick_non_gt_button != null:
+			_quick_non_gt_button.disabled = running_non_gt
+			_quick_non_gt_button.text = (
+				"COMBATE EN CURSO" if running_non_gt else "INICIAR %s" % str(contract.get("name", "COMBATE"))
+			)
 		return
 
 	var non_gt_count := 0
@@ -97,10 +112,92 @@ func _refresh_non_gt_controls() -> void:
 		):
 			non_gt_count += 1
 	_non_gt_status.text = (
-		"Hay %d oportunidad(es) no-GT este mes. Inscribí gladiadores desde Torneos." % non_gt_count
-	)
+		"Hay %d oportunidad(es) de Arena este mes. Bajo Mundo se puede inscribir acá; "
+		+ "los demás torneos están en Torneos."
+	) % non_gt_count
 	_non_gt_start_button.disabled = true
 	_non_gt_start_button.text = "INSCRIPCIÓN REQUERIDA"
+
+	if _quick_non_gt_button == null:
+		return
+	var underworld := _available_underworld_event()
+	if underworld.is_empty():
+		_quick_non_gt_button.disabled = true
+		_quick_non_gt_button.text = "BAJO MUNDO YA INSCRIPTO"
+		return
+	if _selected_fighter_id.is_empty():
+		_quick_non_gt_button.disabled = true
+		_quick_non_gt_button.text = "SELECCIONÁ UN GLADIADOR"
+		return
+	_quick_non_gt_button.disabled = false
+	_quick_non_gt_button.text = "INSCRIBIR EN BAJO MUNDO · 1v1"
+
+
+func _on_quick_non_gt_action() -> void:
+	var contract := _current_non_gt_contract()
+	if not contract.is_empty():
+		_start_non_gt_contract()
+		return
+	var underworld := _available_underworld_event()
+	if underworld.is_empty():
+		_render_error(
+			_ui_rejected(
+				"monthly_event_unavailable",
+				["Bajo Mundo ya no está disponible para inscripción este mes."],
+			)
+		)
+		return
+	if _selected_fighter_id.is_empty():
+		_render_error(
+			_ui_rejected(
+				"fighter_required",
+				["Seleccioná un gladiador de tu roster antes de inscribirlo."],
+			)
+		)
+		return
+	accept_non_gt_event_for_fighter(str(underworld.get("id", "")), _selected_fighter_id)
+
+
+func accept_non_gt_event_for_fighter(event_id: String, fighter_id: String) -> bool:
+	if event_id.is_empty() or fighter_id.is_empty():
+		return false
+	var event := _find_available_non_gt_event(event_id)
+	if event.is_empty():
+		return false
+	if bool(event.get("requires_team_selection", false)) or int(event.get("team_size", 1)) > 1:
+		return false
+	return TournamentManager.accept_event(event_id, fighter_id)
+
+
+func _available_underworld_event() -> Dictionary:
+	for raw_event in TournamentManager.get_available_events():
+		if not raw_event is Dictionary:
+			continue
+		var event := raw_event as Dictionary
+		if bool(event.get("accepted", false)):
+			continue
+		if int(event.get("scheduled_month", 0)) != GameState.get_month():
+			continue
+		if str(event.get("competition", "")) == "underworld":
+			return event.duplicate(true)
+	return {}
+
+
+func _find_available_non_gt_event(event_id: String) -> Dictionary:
+	for raw_event in TournamentManager.get_available_events():
+		if not raw_event is Dictionary:
+			continue
+		var event := raw_event as Dictionary
+		if str(event.get("id", "")) != event_id:
+			continue
+		if bool(event.get("accepted", false)):
+			return {}
+		if int(event.get("scheduled_month", 0)) != GameState.get_month():
+			return {}
+		if str(event.get("competition", "")) not in ["underworld", "official_minor"]:
+			return {}
+		return event.duplicate(true)
+	return {}
 
 
 func _start_non_gt_contract() -> void:
@@ -205,14 +302,28 @@ func _refresh_event() -> void:
 		return
 	event_conditions.text = (
 		"[b]CARTELERA MENSUAL[/b]\n%s\n" % " · ".join(names)
-		+ "GT I conserva sus puntos propios; Bajo Mundo y torneos menores tienen recompensas separadas."
+		+ "Torneo de Marte conserva sus puntos propios; Bajo Mundo y torneos menores tienen recompensas separadas."
 	)
 
 
 func _refresh_encounter_panel() -> void:
 	var contract := _current_non_gt_contract()
 	if contract.is_empty() and str(_session.get("session_kind", "")) != "monthly_non_gt":
-		super._refresh_encounter_panel()
+		var underworld := _available_underworld_event()
+		opponent_info.text = (
+			"[b]ARENA DEL MES[/b]\n"
+			+ (
+				"Bajo Mundo está disponible para el gladiador seleccionado."
+				if not underworld.is_empty()
+				else "Elegí otra oportunidad disponible desde Torneos."
+			)
+		)
+		difficulty.text = "[b]DIFICULTAD[/b]\nSe define por el combate elegido."
+		rewards.text = "[b]PREMIO[/b]\nBajo Mundo paga 60 denarios por victoria."
+		entry_info.text = "[b]ENTRADA[/b]\nBajo Mundo: sin coste de inscripción."
+		combat_conditions.text = (
+			"[b]AUTORIDAD[/b]\nEl sistema de combate resuelve el encuentro; Arena registra el resultado."
+		)
 		return
 	var source := contract if not contract.is_empty() else _session
 	opponent_info.text = (
@@ -239,7 +350,7 @@ func _refresh_encounter_panel() -> void:
 			"[b]PREMIO[/b]\nCampeón %d · Eliminado %d denarios."
 			% [int(source.get("champion_reward", 0)), int(source.get("eliminated_reward", 0))]
 		)
-	entry_info.text = "[b]ENTRADA[/b]\nContrato mensual aceptado desde Torneos."
+	entry_info.text = "[b]ENTRADA[/b]\nContrato mensual aceptado."
 
 
 func _render_stage(snapshot: Dictionary) -> void:
@@ -268,7 +379,7 @@ func _clear_stage() -> void:
 		action_text.text = "Contrato listo: %s" % str(contract.get("name", "Arena"))
 	elif TournamentManager.get_month_schedule(GameState.get_month()).size() > 0:
 		enemy_name.text = "Cartelera mensual disponible"
-		action_text.text = "Elegí e inscribite en un combate desde Torneos"
+		action_text.text = "Seleccioná un gladiador e inscribilo en Bajo Mundo"
 
 
 func _refresh_combat_controls() -> void:
@@ -333,9 +444,10 @@ func get_ui_contract() -> Dictionary:
 	contract["monthly_non_gt_enabled"] = true
 	contract["monthly_non_gt_competitions"] = ["underworld", "official_minor"]
 	contract["monthly_non_gt_formats"] = ["1v1", "1v2", "2v2"]
-	contract["monthly_non_gt_setup_source"] = "TournamentManager active contracts"
+	contract["monthly_non_gt_setup_source"] = "Arena direct Bajo Mundo enrollment + TournamentManager active contracts"
 	contract["monthly_non_gt_opponent_source"] = "canonical rival Combat V1 snapshots"
 	contract["monthly_non_gt_gt1_points_authority"] = false
+	contract["quick_underworld_enrollment"] = true
 	contract["save_version_change_required"] = false
 	return contract
 
