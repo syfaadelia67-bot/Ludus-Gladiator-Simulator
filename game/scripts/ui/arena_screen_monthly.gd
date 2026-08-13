@@ -1,9 +1,13 @@
 extends "res://scripts/ui/arena_screen.gd"
 
+const ArenaLimboAIRequestProviderScript = preload(
+	"res://scripts/combat/arena_limboai_request_provider.gd"
+)
 const CombatV1ArenaRuntimeMonthlyScript = preload(
 	"res://scripts/ui/combat_v1_arena_runtime_monthly.gd"
 )
 
+var _arena_ai_request_provider = ArenaLimboAIRequestProviderScript.new()
 var _non_gt_panel: VBoxContainer
 var _non_gt_status: Label
 var _non_gt_start_button: Button
@@ -14,6 +18,9 @@ var _quick_non_gt_button: Button
 func _ready() -> void:
 	_arena_runtime = CombatV1ArenaRuntimeMonthlyScript.new()
 	super._ready()
+	set_ai_request_provider(
+		Callable(_arena_ai_request_provider, "build_requests").bind(self, self)
+	)
 	_install_non_gt_controls()
 	TournamentManager.calendar_changed.connect(_refresh_non_gt_controls)
 	TournamentManager.contract_accepted.connect(
@@ -83,14 +90,24 @@ func _refresh_non_gt_controls() -> void:
 	)
 	if not contract.is_empty():
 		var fighters := _contract_fighter_names(contract)
-		_non_gt_status.text = (
-			"Contrato mensual: %s · %s · %s"
-			% [
-				str(contract.get("name", "Arena")),
-				str(contract.get("format", "1v1")),
-				fighters,
-			]
-		)
+		if running_non_gt:
+			_non_gt_status.text = (
+				"Combate activo: %s · %s · %s. Elegí una acción y usá RESOLVER INTERCAMBIO."
+				% [
+					str(contract.get("name", "Arena")),
+					str(contract.get("format", "1v1")),
+					fighters,
+				]
+			)
+		else:
+			_non_gt_status.text = (
+				"Contrato mensual: %s · %s · %s"
+				% [
+					str(contract.get("name", "Arena")),
+					str(contract.get("format", "1v1")),
+					fighters,
+				]
+			)
 		_non_gt_start_button.disabled = running_non_gt
 		_non_gt_start_button.text = (
 			"COMBATE MENSUAL EN CURSO" if running_non_gt else "INICIAR COMBATE MENSUAL"
@@ -98,7 +115,7 @@ func _refresh_non_gt_controls() -> void:
 		if _quick_non_gt_button != null:
 			_quick_non_gt_button.disabled = running_non_gt
 			_quick_non_gt_button.text = (
-				"COMBATE EN CURSO"
+				"COMBATE ACTIVO · RESOLVÉ INTERCAMBIOS ABAJO"
 				if running_non_gt
 				else "INICIAR %s" % str(contract.get("name", "COMBATE"))
 			)
@@ -246,7 +263,15 @@ func _accept_started_session(result: Dictionary) -> Dictionary:
 	_last_snapshot.clear()
 	_refresh_all()
 	_show_preparation_view()
+	call_deferred("_focus_running_combat_controls")
 	return _session.duplicate(true)
+
+
+func _focus_running_combat_controls() -> void:
+	if str(_session.get("status", "")) != "combat_running":
+		return
+	center_scroll.ensure_control_visible(start_button)
+	start_button.grab_focus()
 
 
 func advance_exchange_with_ai_requests(ai_requests_by_actor: Dictionary) -> Dictionary:
