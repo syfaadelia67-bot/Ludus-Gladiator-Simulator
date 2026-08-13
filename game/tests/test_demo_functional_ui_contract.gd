@@ -52,6 +52,9 @@ func run() -> void:
 	var presenter := FileAccess.get_file_as_string(
 		"res://scripts/ui/demo_functional_ui_presenter.gd"
 	)
+	var state_policy := FileAccess.get_file_as_string(
+		"res://scripts/ui/demo_functional_ui_state_policy.gd"
+	)
 	var localization := FileAccess.get_file_as_string("res://localization/shared.es.po")
 	var start_screen := FileAccess.get_file_as_string("res://scripts/ui/start_screen_controller.gd")
 	assert(
@@ -71,12 +74,13 @@ func run() -> void:
 	assert(presenter.contains("control.focus_mode != Control.FOCUS_ALL"))
 	assert(presenter.contains("_try_initialize_for_main"))
 	assert(presenter.contains("_get_main_scene() == null"))
+	assert(not state_policy.contains("UI_STATE_BLOCKED_ARENA_NON_GT"))
+	assert(not localization.contains('msgid "UI_STATE_BLOCKED_ARENA_NON_GT"'))
 	for key in [
 		"UI_STATE_LABEL_EMPTY",
 		"UI_STATE_LABEL_BLOCKED",
 		"UI_STATE_LABEL_ERROR",
 		"UI_STATE_LABEL_READ_ONLY",
-		"UI_STATE_BLOCKED_ARENA_NON_GT",
 		"UI_STATE_BLOCKED_ARENA_RIVAL_DATA",
 		"UI_STATE_COMPLETED_READ_ONLY",
 	]:
