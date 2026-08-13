@@ -20,7 +20,9 @@ func run() -> void:
 	print("Monthly Arena playable integration tests passed")
 
 
-func _assert_playable_format(format_id: String, player_ids: Array[String], opponent_count: int) -> void:
+func _assert_playable_format(
+	format_id: String, player_ids: Array[String], opponent_count: int
+) -> void:
 	var runtime = CombatV1ArenaRuntimeMonthlyScript.new()
 	var contract := {
 		"id": "qa_%s_month_1" % format_id,
@@ -35,8 +37,10 @@ func _assert_playable_format(format_id: String, player_ids: Array[String], oppon
 	var session: Dictionary = runtime.start_non_gt_contract(contract, "player")
 	assert(
 		str(session.get("status", "")) == "combat_running",
-		"%s must start a real monthly combat session: %s"
-		% [format_id, str(session.get("errors", []))]
+		(
+			"%s must start a real monthly combat session: %s"
+			% [format_id, str(session.get("errors", []))]
+		)
 	)
 	assert(str(session.get("session_kind", "")) == "monthly_non_gt")
 	assert((session.get("opponent_fighter_ids", []) as Array).size() == opponent_count)
@@ -50,7 +54,9 @@ func _assert_playable_format(format_id: String, player_ids: Array[String], oppon
 	var targets_by_actor: Dictionary = {}
 	for actor_id in active_player_ids:
 		targets_by_actor[actor_id] = enemy_ids[0]
-	var player_intents: Dictionary = runtime.build_player_intents(session, "light", targets_by_actor)
+	var player_intents: Dictionary = runtime.build_player_intents(
+		session, "light", targets_by_actor
+	)
 	assert(str(player_intents.get("status", "")) == "ready")
 
 	var ai_provider = ArenaLimboAIRequestProviderScript.new()
@@ -59,15 +65,20 @@ func _assert_playable_format(format_id: String, player_ids: Array[String], oppon
 	for actor_id in enemy_ids:
 		assert(ai_requests.has(actor_id))
 
-	var next: Dictionary = runtime.advance_exchange(
-		session,
-		player_intents.get("player_intents_by_actor", {}) as Dictionary,
-		ai_requests,
+	var next: Dictionary = (
+		runtime
+		. advance_exchange(
+			session,
+			player_intents.get("player_intents_by_actor", {}) as Dictionary,
+			ai_requests,
+		)
 	)
 	assert(
 		str(next.get("status", "")) != "rejected",
-		"%s must resolve an exchange through LimboAI + CombatSimulator: %s"
-		% [format_id, str(next.get("errors", []))]
+		(
+			"%s must resolve an exchange through LimboAI + CombatSimulator: %s"
+			% [format_id, str(next.get("errors", []))]
+		)
 	)
 	var providers := next.get("last_intent_providers", {}) as Dictionary
 	for actor_id in enemy_ids:
@@ -77,19 +88,22 @@ func _assert_playable_format(format_id: String, player_ids: Array[String], oppon
 func _add_test_gladiator(person_id: String, display_name: String) -> void:
 	if RosterManager.get_person(person_id) != null:
 		return
-	var person := LudusPerson.new(
-		{
-			"id": person_id,
-			"name": display_name,
-			"role": "gladiator",
-			"strength": 7,
-			"agility": 7,
-			"endurance": 7,
-			"resistance": 6,
-			"intelligence": 5,
-			"technique": 7,
-			"health": 58,
-			"fatigue": 0,
-		}
+	var person := (
+		LudusPerson
+		. new(
+			{
+				"id": person_id,
+				"name": display_name,
+				"role": "gladiator",
+				"strength": 7,
+				"agility": 7,
+				"endurance": 7,
+				"resistance": 6,
+				"intelligence": 5,
+				"technique": 7,
+				"health": 58,
+				"fatigue": 0,
+			}
+		)
 	)
 	assert(RosterManager.add_person(person))
