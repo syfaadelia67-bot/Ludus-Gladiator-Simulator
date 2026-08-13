@@ -91,7 +91,9 @@ func _assert_playable_format(
 	)
 
 
-func _resolve_combat_to_completion(runtime, initial_session: Dictionary, format_id: String) -> Dictionary:
+func _resolve_combat_to_completion(
+	runtime, initial_session: Dictionary, format_id: String
+) -> Dictionary:
 	var session := initial_session.duplicate(true)
 	var ai_provider = ArenaLimboAIRequestProviderScript.new()
 	var exchanges := 0
