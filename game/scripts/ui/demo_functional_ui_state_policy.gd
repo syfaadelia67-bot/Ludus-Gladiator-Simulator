@@ -102,15 +102,11 @@ func _evaluate_beast_state() -> Dictionary:
 
 func _evaluate_arena_state() -> Dictionary:
 	var month := GameState.get_month()
-	if TournamentManager.get_gt1_encounter(month).is_empty():
-		return _state(
-			"blocked",
-			"UI_STATE_LABEL_BLOCKED",
-			"UI_STATE_BLOCKED_ARENA_NON_GT",
-			{"month": month},
-		)
+	var has_gt1_session := not CombatV1SessionStore.get_gt1_session(month).is_empty()
+	var has_non_gt_session := not CombatV1SessionStore.get_non_gt_session(month).is_empty()
 	if (
-		CombatV1SessionStore.get_gt1_session(month).is_empty()
+		not has_gt1_session
+		and not has_non_gt_session
 		and DataRepository.get_rival_combat_v1_snapshots().is_empty()
 	):
 		return _state(
