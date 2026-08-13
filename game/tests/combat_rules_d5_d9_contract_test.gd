@@ -50,11 +50,21 @@ func _test_d6(contract) -> void:
 	)
 	_assert_eq(
 		d6.get("action_costs"),
-		{"light": 3, "heavy": 5, "block": 2, "parry": 3, "dodge": 4, "reposition": 2},
+		{
+			"light": 3,
+			"heavy": 5,
+			"block": 2,
+			"parry": 3,
+			"dodge": 4,
+			"reposition": 2,
+			"recover": 0,
+		},
 		"D6 action costs must remain frozen",
 	)
 	_assert_eq(d6.get("recovery_amount"), 2, "D6 recovery amount must remain frozen")
 	_assert_eq(d6.get("recovery_timing"), "end_exchange", "recovery happens once per exchange")
+	_assert_eq(d6.get("recovery_action_id"), "recover", "D6 must expose a recovery turn")
+	_assert_eq(d6.get("recovery_action_cost"), 0, "recovery turn must remain payable at zero stamina")
 	_assert_eq(d6.get("cost_table_status"), "frozen", "cost table must be frozen")
 	_assert_eq(d6.get("recovery_amount_status"), "frozen", "recovery amount must be frozen")
 	_assert_eq(d6.get("recovery_timing_status"), "frozen", "recovery timing must be frozen")
@@ -114,7 +124,7 @@ func _test_d9(contract) -> void:
 		d9.get("combat_end_condition"), "team_elimination", "combat ends on team elimination"
 	)
 	_assert_eq(d9.get("double_ko_outcome"), "double_ko", "double KO must remain explicit")
-	_assert_eq(d9.get("surrender_is_base_action"), false, "surrender is not a seventh action")
+	_assert_eq(d9.get("surrender_is_base_action"), false, "surrender is not a base action")
 	_assert_eq(d9.get("surrender_rng_allowed"), false, "probabilistic surrender remains forbidden")
 	_assert_eq(d9.get("automatic_surrender"), "disabled_v1", "automatic surrender is disabled V1")
 	_assert_eq(d9.get("surrender_rules_status"), "frozen", "D9 surrender rule must be frozen")
