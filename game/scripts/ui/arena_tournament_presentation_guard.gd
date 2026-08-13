@@ -1,5 +1,8 @@
 extends "res://scripts/ui/arena_screen_monthly.gd"
 
+const ArenaLimboAIRequestProviderScript = preload(
+	"res://scripts/combat/arena_limboai_request_provider.gd"
+)
 const TOURNAMENT_DISPLAY_NAME := "Torneo de Marte"
 const INTERNAL_TOURNAMENT_LABELS := ["Gran Torneo de Roma", "GT I", "GT1"]
 const INTERNAL_PRESENTATION_REPLACEMENTS := [
@@ -12,9 +15,12 @@ const INTERNAL_PRESENTATION_REPLACEMENTS := [
 	["Save v14", "partida guardada"],
 ]
 
+var _arena_ai_provider = ArenaLimboAIRequestProviderScript.new()
+
 
 func _ready() -> void:
 	super._ready()
+	set_ai_request_provider(Callable(self, "_build_default_ai_requests"))
 	_apply_player_facing_tournament_names()
 	visibility_changed.connect(_apply_player_facing_tournament_names)
 
@@ -37,6 +43,10 @@ func _render_encounter_finished() -> void:
 func _render_error(result: Dictionary) -> void:
 	super._render_error(result)
 	_apply_player_facing_tournament_names()
+
+
+func _build_default_ai_requests(session: Dictionary) -> Dictionary:
+	return _arena_ai_provider.build_requests(session, self, self)
 
 
 func _apply_player_facing_tournament_names() -> void:
