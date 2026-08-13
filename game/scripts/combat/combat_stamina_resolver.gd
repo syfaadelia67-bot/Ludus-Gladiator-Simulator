@@ -7,6 +7,7 @@ const ACTION_COSTS := {
 	"parry": 3,
 	"dodge": 4,
 	"reposition": 2,
+	"recover": 0,
 }
 const RECOVERY_AMOUNT := 2
 const RECOVERY_TIMING := "end_exchange"
