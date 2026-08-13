@@ -16,8 +16,10 @@ func _ready() -> void:
 
 func _assert_action_catalog(contract) -> void:
 	assert(
-		contract.ACTION_IDS
-		== ["light", "heavy", "block", "parry", "dodge", "reposition", "recover"],
+		(
+			contract.ACTION_IDS
+			== ["light", "heavy", "block", "parry", "dodge", "reposition", "recover"]
+		),
 		"Combat V1 must expose exactly the seven frozen actions"
 	)
 	for action_id in contract.ACTION_IDS:
