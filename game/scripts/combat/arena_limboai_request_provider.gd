@@ -62,7 +62,7 @@ func _select_legal_action(fighter: Dictionary) -> String:
 	var stamina := float(fighter.get("stamina", 0.0))
 	if stamina >= 3.0:
 		return "light"
-	return "block"
+	return "recover"
 
 
 func _is_active(fighter: Dictionary) -> bool:
