@@ -7,6 +7,7 @@ const CombatV1ArenaRuntimeMonthlyScript = preload(
 	"res://scripts/ui/combat_v1_arena_runtime_monthly.gd"
 )
 const ArenaScreenMonthlyScript = preload("res://scripts/ui/arena_screen_monthly.gd")
+const ArenaScreenScene = preload("res://scenes/ArenaScreenMonthly.tscn")
 const FunctionalUiStatePolicyScript = preload("res://scripts/ui/demo_functional_ui_state_policy.gd")
 
 const MAX_EXCHANGES_PER_COMBAT := 400
@@ -28,10 +29,53 @@ func run() -> void:
 	_add_test_gladiator("qa_arena_2v2_a", "QA Arena 2v2 A")
 	_add_test_gladiator("qa_arena_2v2_b", "QA Arena 2v2 B")
 
-	_assert_playable_format("1v1", ["qa_arena_1v1"], 1, true)
+	_assert_month_one_real_ui_flow("qa_arena_1v1")
 	_assert_playable_format("1v2", ["qa_arena_1v2"], 2, false)
 	_assert_playable_format("2v2", ["qa_arena_2v2_a", "qa_arena_2v2_b"], 2, false)
 	print("Monthly Arena playable integration tests passed")
+
+
+func _assert_month_one_real_ui_flow(fighter_id: String) -> void:
+	GameState.day = 1
+	TournamentManager.prepare_month(1, true)
+	var arena_screen = ArenaScreenScene.instantiate()
+	add_child(arena_screen)
+
+	var roster_list := (
+		arena_screen.get_node("Body/RosterPanel/Margin/Scroll/Content/RosterList") as ItemList
+	)
+	assert(roster_list.item_count > 0, "The real Arena roster must expose the hired gladiator")
+	var fighter_index := -1
+	for index in range(roster_list.item_count):
+		if str(roster_list.get_item_metadata(index)) == fighter_id:
+			fighter_index = index
+			break
+	assert(fighter_index >= 0, "The requested gladiator must be selectable in the real Arena UI")
+	if fighter_index < 0:
+		arena_screen.queue_free()
+		return
+	roster_list.select(fighter_index)
+	roster_list.item_selected.emit(fighter_index)
+
+	var enroll_button := (
+		arena_screen.get_node(
+			"Body/CenterPanel/Margin/Scroll/Content/EventBanner/Margin/Row/QuickMonthlyArenaAction"
+		)
+		as Button
+	)
+	assert(not enroll_button.disabled)
+	assert(enroll_button.text.begins_with("INSCRIBIR EN BAJO MUNDO"))
+	enroll_button.pressed.emit()
+	var contract := TournamentManager.get_active_contract_for_fighter(fighter_id)
+	assert(not contract.is_empty(), "Pressing the real Arena button must create the contract")
+	assert(enroll_button.text.begins_with("INICIAR Bajo Mundo"))
+
+	enroll_button.pressed.emit()
+	var session := CombatV1SessionStore.get_non_gt_session(1)
+	assert(str(session.get("status", "")) == "combat_running")
+	assert(enroll_button.disabled)
+	assert(enroll_button.text == "COMBATE EN CURSO")
+	arena_screen.queue_free()
 
 
 func _assert_playable_format(

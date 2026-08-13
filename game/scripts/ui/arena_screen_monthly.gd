@@ -125,6 +125,13 @@ func _refresh_non_gt_controls() -> void:
 
 	if _quick_non_gt_button == null:
 		return
+	if RosterManager.get_gladiators().is_empty():
+		_quick_non_gt_button.disabled = false
+		_quick_non_gt_button.text = "ELEGIR GLADIADOR EN MERCADO"
+		_quick_non_gt_button.tooltip_text = (
+			"Una campaña nueva necesita contratar su primer gladiador " + "antes de inscribirse."
+		)
+		return
 	var underworld := _available_underworld_event()
 	if underworld.is_empty():
 		_quick_non_gt_button.disabled = true
@@ -139,6 +146,9 @@ func _refresh_non_gt_controls() -> void:
 
 
 func _on_quick_non_gt_action() -> void:
+	if RosterManager.get_gladiators().is_empty():
+		FincaHubController.open_system("mercado")
+		return
 	var contract := _current_non_gt_contract()
 	if not contract.is_empty():
 		_start_non_gt_contract()
