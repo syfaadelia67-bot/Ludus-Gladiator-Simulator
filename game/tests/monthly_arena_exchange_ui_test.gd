@@ -63,19 +63,22 @@ func run() -> void:
 func _add_test_gladiator() -> void:
 	if RosterManager.get_person("qa_arena_exchange") != null:
 		return
-	var person := LudusPerson.new(
-		{
-			"id": "qa_arena_exchange",
-			"name": "QA Arena Exchange",
-			"role": "gladiator",
-			"strength": 7,
-			"agility": 7,
-			"endurance": 7,
-			"resistance": 6,
-			"intelligence": 5,
-			"technique": 7,
-			"health": 58,
-			"fatigue": 0,
-		}
+	var person := (
+		LudusPerson
+		. new(
+			{
+				"id": "qa_arena_exchange",
+				"name": "QA Arena Exchange",
+				"role": "gladiator",
+				"strength": 7,
+				"agility": 7,
+				"endurance": 7,
+				"resistance": 6,
+				"intelligence": 5,
+				"technique": 7,
+				"health": 58,
+				"fatigue": 0,
+			}
+		)
 	)
 	assert(RosterManager.add_person(person))
