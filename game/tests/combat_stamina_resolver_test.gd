@@ -9,6 +9,7 @@ func _ready() -> void:
 	_assert_spend(resolver)
 	_assert_insufficient_stamina(resolver)
 	_assert_recovery(resolver)
+	_assert_recovery_action_breaks_low_stamina_lock(resolver)
 	_assert_inputs_are_isolated(resolver)
 	print("Combat D6 stamina resolver: OK")
 	get_tree().quit(0)
@@ -20,7 +21,15 @@ func _assert_contract(resolver) -> void:
 	assert(
 		(
 			contract.get("action_costs")
-			== {"light": 3, "heavy": 5, "block": 2, "parry": 3, "dodge": 4, "reposition": 2}
+			== {
+				"light": 3,
+				"heavy": 5,
+				"block": 2,
+				"parry": 3,
+				"dodge": 4,
+				"reposition": 2,
+				"recover": 0,
+			}
 		)
 	)
 	assert(contract.get("recovery_amount") == 2)
@@ -52,6 +61,18 @@ func _assert_recovery(resolver) -> void:
 	assert((recovered.get("fighter", {}) as Dictionary).get("stamina") == 6.0)
 	var capped: Dictionary = resolver.recover(_fighter(9, 10))
 	assert((capped.get("fighter", {}) as Dictionary).get("stamina") == 10.0)
+
+
+func _assert_recovery_action_breaks_low_stamina_lock(resolver) -> void:
+	var fighter := _fighter(2, 10)
+	var spent: Dictionary = resolver.spend(fighter, "recover")
+	assert(spent.get("status") == "resolved")
+	assert(spent.get("cost") == 0)
+	assert((spent.get("fighter", {}) as Dictionary).get("stamina") == 2.0)
+	var recovered: Dictionary = resolver.recover(spent.get("fighter", {}) as Dictionary)
+	var next_fighter := recovered.get("fighter", {}) as Dictionary
+	assert(next_fighter.get("stamina") == 4.0)
+	assert(resolver.can_pay(next_fighter, "light"))
 
 
 func _assert_inputs_are_isolated(resolver) -> void:
