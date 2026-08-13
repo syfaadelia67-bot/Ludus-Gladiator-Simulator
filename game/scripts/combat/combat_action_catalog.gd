@@ -11,6 +11,7 @@ const ACTION_IDS: Array[String] = [
 	"parry",
 	"dodge",
 	"reposition",
+	"recover",
 ]
 const STAMINA_COSTS := {
 	"light": 3,
@@ -19,6 +20,7 @@ const STAMINA_COSTS := {
 	"parry": 3,
 	"dodge": 4,
 	"reposition": 2,
+	"recover": 0,
 }
 const RESOLUTION_PHASES := {
 	"light": "offense",
@@ -27,6 +29,7 @@ const RESOLUTION_PHASES := {
 	"parry": "preparation",
 	"dodge": "preparation",
 	"reposition": "preparation",
+	"recover": "preparation",
 }
 
 const ACTION_CONTRACTS := {
@@ -109,6 +112,20 @@ const ACTION_CONTRACTS := {
 		"target_count": 0,
 		"stamina_cost_status": FROZEN_STATUS,
 		"stamina_cost": 2,
+		"resolution_timing_status": FROZEN_STATUS,
+		"resolution_phase": "preparation",
+		"stat_scaling_status": PENDING_STATUS,
+		"effect_status": PENDING_STATUS,
+	},
+	"recover":
+	{
+		"id": "recover",
+		"target_rule_status": FROZEN_STATUS,
+		"target_required": false,
+		"target_relationship": TARGET_RELATIONSHIP_NONE,
+		"target_count": 0,
+		"stamina_cost_status": FROZEN_STATUS,
+		"stamina_cost": 0,
 		"resolution_timing_status": FROZEN_STATUS,
 		"resolution_phase": "preparation",
 		"stat_scaling_status": PENDING_STATUS,
