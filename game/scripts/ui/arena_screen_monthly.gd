@@ -18,9 +18,7 @@ var _quick_non_gt_button: Button
 func _ready() -> void:
 	_arena_runtime = CombatV1ArenaRuntimeMonthlyScript.new()
 	super._ready()
-	set_ai_request_provider(
-		Callable(_arena_ai_request_provider, "build_requests").bind(self, self)
-	)
+	set_ai_request_provider(Callable(_arena_ai_request_provider, "build_requests").bind(self, self))
 	_install_non_gt_controls()
 	TournamentManager.calendar_changed.connect(_refresh_non_gt_controls)
 	TournamentManager.contract_accepted.connect(
