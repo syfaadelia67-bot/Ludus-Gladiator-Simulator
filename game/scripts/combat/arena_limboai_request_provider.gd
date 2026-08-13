@@ -34,7 +34,8 @@ func build_requests(session: Dictionary, agent: Node, instance_owner: Node) -> D
 
 	player_ids.sort()
 	enemy_fighters.sort_custom(
-		func(a: Dictionary, b: Dictionary) -> bool: return str(a.get("id", "")) < str(b.get("id", ""))
+		func(a: Dictionary, b: Dictionary) -> bool:
+			return str(a.get("id", "")) < str(b.get("id", ""))
 	)
 	if player_ids.is_empty():
 		return {}
