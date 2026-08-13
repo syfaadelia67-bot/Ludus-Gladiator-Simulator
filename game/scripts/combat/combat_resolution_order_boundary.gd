@@ -7,7 +7,13 @@ const CombatRuntimeStateBuilderScript = preload(
 )
 
 const PHASE_ORDER: Array[String] = ["preparation", "offense"]
-const PREPARATION_ACTIONS: Array[String] = ["block", "parry", "dodge", "reposition"]
+const PREPARATION_ACTIONS: Array[String] = [
+	"block",
+	"parry",
+	"dodge",
+	"reposition",
+	"recover",
+]
 const OFFENSE_ACTIONS: Array[String] = ["light", "heavy"]
 
 var _combat_contract = CombatContractScript.new()
