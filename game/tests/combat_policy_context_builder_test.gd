@@ -11,6 +11,7 @@ const EXPECTED_ACTION_IDS: Array[String] = [
 	"parry",
 	"dodge",
 	"reposition",
+	"recover",
 ]
 const EXPECTED_STAMINA_COSTS := {
 	"light": 3,
@@ -19,6 +20,7 @@ const EXPECTED_STAMINA_COSTS := {
 	"parry": 3,
 	"dodge": 4,
 	"reposition": 2,
+	"recover": 0,
 }
 const EXPECTED_PHASES := {
 	"light": "offense",
@@ -27,6 +29,7 @@ const EXPECTED_PHASES := {
 	"parry": "preparation",
 	"dodge": "preparation",
 	"reposition": "preparation",
+	"recover": "preparation",
 }
 const PENDING_ACTION_FIELDS: Array[String] = [
 	"stat_scaling_status",
@@ -73,7 +76,7 @@ func _test_1v1_context(builder) -> void:
 	var legal_targets := context.get("legal_targets", {}) as Dictionary
 	_assert_eq(legal_targets.get("light"), ["b"], "light must expose enemy target")
 	_assert_eq(legal_targets.get("heavy"), ["b"], "heavy must expose enemy target")
-	for action_id in ["block", "parry", "dodge", "reposition"]:
+	for action_id in ["block", "parry", "dodge", "reposition", "recover"]:
 		_assert_eq(
 			legal_targets.get(action_id), [], "%s must expose no explicit targets" % action_id
 		)
@@ -159,7 +162,7 @@ func _assert_action_contracts(value: Variant) -> void:
 		return
 	var contracts := value as Array
 	_assert_eq(
-		contracts.size(), EXPECTED_ACTION_IDS.size(), "context must expose six action contracts"
+		contracts.size(), EXPECTED_ACTION_IDS.size(), "context must expose seven action contracts"
 	)
 	for index in range(contracts.size()):
 		var action_contract := contracts[index] as Dictionary

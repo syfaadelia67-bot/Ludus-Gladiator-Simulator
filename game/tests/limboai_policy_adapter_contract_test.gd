@@ -9,6 +9,7 @@ const EXPECTED_ACTION_IDS: Array[String] = [
 	"parry",
 	"dodge",
 	"reposition",
+	"recover",
 ]
 
 var _failures: Array[String] = []
@@ -78,6 +79,7 @@ func _initialize() -> void:
 			legal_targets.get("heavy"), ["b"], "LimboAI context must expose heavy enemy target"
 		)
 		_assert_eq(legal_targets.get("block"), [], "block must have no explicit legal targets")
+		_assert_eq(legal_targets.get("recover"), [], "recover must have no explicit legal targets")
 		_assert_true(
 			context.get("desired_action") is Dictionary, "policy context needs output slot"
 		)
@@ -189,7 +191,7 @@ func _assert_action_contracts(value: Variant) -> void:
 	if value is not Array:
 		return
 	var contracts := value as Array
-	_assert_eq(contracts.size(), EXPECTED_ACTION_IDS.size(), "six action contracts must be exposed")
+	_assert_eq(contracts.size(), EXPECTED_ACTION_IDS.size(), "seven action contracts must be exposed")
 	for index in range(contracts.size()):
 		var action_contract := contracts[index] as Dictionary
 		_assert_eq(
