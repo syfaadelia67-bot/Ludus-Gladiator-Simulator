@@ -11,8 +11,16 @@ const CombatPolicyContextBuilderScript = preload(
 )
 const CombatPolicyContractScript = preload("res://scripts/combat/combat_policy_contract.gd")
 
-const BEAST_ACTIONS: Array[String] = ["light", "heavy", "dodge", "reposition"]
-const HUMAN_ACTIONS: Array[String] = ["light", "heavy", "block", "parry", "dodge", "reposition"]
+const BEAST_ACTIONS: Array[String] = ["light", "heavy", "dodge", "reposition", "recover"]
+const HUMAN_ACTIONS: Array[String] = [
+	"light",
+	"heavy",
+	"block",
+	"parry",
+	"dodge",
+	"reposition",
+	"recover",
+]
 
 
 func _ready() -> void:
@@ -33,6 +41,7 @@ func _ready() -> void:
 	assert(action_policy.is_action_allowed(beast, "parry") == false)
 	assert(action_policy.is_action_allowed(beast, "light") == true)
 	assert(action_policy.is_action_allowed(beast, "dodge") == true)
+	assert(action_policy.is_action_allowed(beast, "recover") == true)
 
 	var block_errors: Array[String] = policy_contract.validate_desired_action(
 		state, {"actor_id": "lion_1", "action_id": "block"}
@@ -58,6 +67,13 @@ func _ready() -> void:
 			. is_empty()
 		)
 	)
+	assert(
+		(
+			policy_contract
+			. validate_desired_action(state, {"actor_id": "lion_1", "action_id": "recover"})
+			. is_empty()
+		)
+	)
 
 	var context_result: Dictionary = context_builder.build_context(state, "lion_1")
 	assert(context_result.get("status") == "ready")
@@ -67,11 +83,13 @@ func _ready() -> void:
 	assert(legal_targets.has("block") == false)
 	assert(legal_targets.has("parry") == false)
 	assert(legal_targets.get("light") == ["gladiator_1"])
-	assert((context.get("action_contracts", []) as Array).size() == 4)
+	assert(legal_targets.get("recover") == [])
+	assert((context.get("action_contracts", []) as Array).size() == 5)
 
 	var contract: Dictionary = action_policy.get_contract()
 	assert(contract.get("beast_block_allowed") == false)
 	assert(contract.get("beast_parry_allowed") == false)
+	assert(contract.get("beast_recover_allowed") == true)
 	assert(contract.get("beast_skills_allowed") == false)
 	assert(contract.get("result_authority") == "combat_simulator")
 	assert(contract.get("save_version_change_required") == false)
