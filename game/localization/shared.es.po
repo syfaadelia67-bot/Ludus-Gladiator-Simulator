@@ -36,11 +36,8 @@ msgstr "La Zona de bestias todavía no está habilitada en la finca."
 msgid "UI_STATE_EMPTY_BEASTS"
 msgstr "La Zona de bestias está disponible, pero el ludus no posee bestias."
 
-msgid "UI_STATE_BLOCKED_ARENA_NON_GT"
-msgstr "El Mes {month} es de gestión. La Arena no inventa combates fuera de los GT I XIII, XVI y XX."
-
 msgid "UI_STATE_BLOCKED_ARENA_RIVAL_DATA"
-msgstr "Este GT I espera un rival Combat V1 canónico; no se generan estadísticas rivales de reemplazo."
+msgstr "La Arena necesita datos canónicos de los Ludi rivales para iniciar el combate."
 
 msgid "UI_STATE_BLOCKED_PROGRESSION"
 msgstr "Las identidades de las 12 skills son canónicas, pero sus mecánicas y progresión Combat V1 todavía esperan diseño congelado."
