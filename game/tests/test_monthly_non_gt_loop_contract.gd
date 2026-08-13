@@ -20,6 +20,9 @@ func _ready() -> void:
 		"res://scripts/combat/monthly_arena_combat_runtime.gd"
 	)
 	var arena_screen := FileAccess.get_file_as_string("res://scripts/ui/arena_screen_monthly.gd")
+	var functional_state_policy := FileAccess.get_file_as_string(
+		"res://scripts/ui/demo_functional_ui_state_policy.gd"
+	)
 
 	assert(
 		project.contains(
@@ -52,6 +55,11 @@ func _ready() -> void:
 	assert(not arena_runtime.contains('"rival_monthly"'))
 	assert(arena_screen.contains("_series_setup_panel.visible = has_tournament_of_mars"))
 	assert(arena_screen.contains("TournamentManager.get_gt1_encounter"))
+	assert(arena_screen.contains('name = "QuickMonthlyArenaAction"'))
+	assert(arena_screen.contains("func accept_non_gt_event_for_fighter"))
+	assert(arena_screen.contains("INSCRIBIR EN BAJO MUNDO · 1v1"))
+	assert(arena_screen.contains('contract["quick_underworld_enrollment"] = true'))
+	assert(not functional_state_policy.contains("UI_STATE_BLOCKED_ARENA_NON_GT"))
 
 	assert(not campaign.contains("CombatManager.combat_finished.connect"))
 	assert(campaign.contains("_sync_approved_combat_progress"))
