@@ -10,6 +10,7 @@ const EXPECTED_ACTION_IDS: Array[String] = [
 	"parry",
 	"dodge",
 	"reposition",
+	"recover",
 ]
 const EXPECTED_STAMINA_COSTS := {
 	"light": 3,
@@ -18,6 +19,7 @@ const EXPECTED_STAMINA_COSTS := {
 	"parry": 3,
 	"dodge": 4,
 	"reposition": 2,
+	"recover": 0,
 }
 const EXPECTED_PHASES := {
 	"light": "offense",
@@ -26,6 +28,7 @@ const EXPECTED_PHASES := {
 	"parry": "preparation",
 	"dodge": "preparation",
 	"reposition": "preparation",
+	"recover": "preparation",
 }
 const PENDING_FIELDS: Array[String] = [
 	"stat_scaling_status",
@@ -56,7 +59,7 @@ func _initialize() -> void:
 
 func _test_exact_action_ids(catalog, contract) -> void:
 	_assert_eq(
-		catalog.get_action_ids(), EXPECTED_ACTION_IDS, "catalog must expose six canonical actions"
+		catalog.get_action_ids(), EXPECTED_ACTION_IDS, "catalog must expose seven canonical actions"
 	)
 	_assert_eq(
 		contract.get_action_ids(), EXPECTED_ACTION_IDS, "CombatContract must source catalog actions"
@@ -87,7 +90,7 @@ func _test_d1_target_rules_are_frozen(catalog, contract) -> void:
 		_assert_eq(
 			action_contract.get("target_count"), 1, "%s must target exactly one enemy" % action_id
 		)
-	for action_id in ["block", "parry", "dodge", "reposition"]:
+	for action_id in ["block", "parry", "dodge", "reposition", "recover"]:
 		var action_contract: Dictionary = catalog.get_action_contract(action_id)
 		_assert_eq(
 			action_contract.get("target_rule_status"), "frozen", "%s D1 must be frozen" % action_id
