@@ -31,7 +31,9 @@ func _install_non_gt_controls() -> void:
 	_quick_non_gt_button = Button.new()
 	_quick_non_gt_button.name = "QuickMonthlyArenaAction"
 	_quick_non_gt_button.custom_minimum_size = Vector2(250.0, 48.0)
-	_quick_non_gt_button.tooltip_text = ("Inscribir al gladiador seleccionado en Bajo Mundo o iniciar su contrato activo.")
+	_quick_non_gt_button.tooltip_text = (
+		"Inscribir al gladiador seleccionado en Bajo Mundo " + "o iniciar su contrato activo."
+	)
 	event_conditions.get_parent().add_child(_quick_non_gt_button)
 	_quick_non_gt_button.pressed.connect(_on_quick_non_gt_action)
 
@@ -305,7 +307,8 @@ func _refresh_event() -> void:
 		return
 	event_conditions.text = (
 		"[b]CARTELERA MENSUAL[/b]\n%s\n" % " · ".join(names)
-		+ "Torneo de Marte conserva sus puntos propios; Bajo Mundo y torneos menores tienen recompensas separadas."
+		+ "Torneo de Marte conserva sus puntos propios; "
+		+ "Bajo Mundo y torneos menores tienen recompensas separadas."
 	)
 
 
@@ -324,7 +327,10 @@ func _refresh_encounter_panel() -> void:
 		difficulty.text = "[b]DIFICULTAD[/b]\nSe define por el combate elegido."
 		rewards.text = "[b]PREMIO[/b]\nBajo Mundo paga 60 denarios por victoria."
 		entry_info.text = "[b]ENTRADA[/b]\nBajo Mundo: sin coste de inscripción."
-		combat_conditions.text = ("[b]AUTORIDAD[/b]\nEl sistema de combate resuelve el encuentro; Arena registra el resultado.")
+		combat_conditions.text = (
+			"[b]AUTORIDAD[/b]\nEl sistema de combate resuelve el encuentro; "
+			+ "Arena registra el resultado."
+		)
 		return
 	var source := contract if not contract.is_empty() else _session
 	opponent_info.text = (
@@ -445,7 +451,9 @@ func get_ui_contract() -> Dictionary:
 	contract["monthly_non_gt_enabled"] = true
 	contract["monthly_non_gt_competitions"] = ["underworld", "official_minor"]
 	contract["monthly_non_gt_formats"] = ["1v1", "1v2", "2v2"]
-	contract["monthly_non_gt_setup_source"] = "Arena direct Bajo Mundo enrollment + TournamentManager active contracts"
+	contract["monthly_non_gt_setup_source"] = (
+		"Arena direct Bajo Mundo enrollment + " + "TournamentManager active contracts"
+	)
 	contract["monthly_non_gt_opponent_source"] = "canonical rival Combat V1 snapshots"
 	contract["monthly_non_gt_gt1_points_authority"] = false
 	contract["quick_underworld_enrollment"] = true
