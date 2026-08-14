@@ -16,6 +16,7 @@ func _initialize() -> void:
 	_test_tactical_plan_uses_first_executable_order()
 	_test_tactical_plan_skips_unexecutable_order()
 	_test_automatic_policy_recovers_when_no_costly_action_is_affordable()
+	_test_automatic_policy_recovers_before_defense_cycle_deadlock()
 
 	if _failures.is_empty():
 		print("LimboAI publish desired action task: OK")
@@ -30,6 +31,7 @@ func _test_valid_proposal_publishes() -> void:
 	var fixture := _runtime_fixture()
 	var blackboard: Object = fixture.get("blackboard")
 	blackboard.call("set_var", &"combat_state", _valid_state())
+	blackboard.call("set_var", &"skill_mechanics", _skill_mechanics_fixture())
 	(
 		blackboard
 		. call(
@@ -55,6 +57,7 @@ func _test_invalid_proposal_fails_closed() -> void:
 	var fixture := _runtime_fixture()
 	var blackboard: Object = fixture.get("blackboard")
 	blackboard.call("set_var", &"combat_state", _valid_state())
+	blackboard.call("set_var", &"skill_mechanics", _skill_mechanics_fixture())
 	(
 		blackboard
 		. call(
@@ -139,10 +142,28 @@ func _test_automatic_policy_recovers_when_no_costly_action_is_affordable() -> vo
 	_release_fixture(fixture)
 
 
+func _test_automatic_policy_recovers_before_defense_cycle_deadlock() -> void:
+	var fixture := _runtime_fixture()
+	var blackboard: Object = fixture.get("blackboard")
+	var state := _valid_state()
+	(state.get("fighters", []) as Array)[0]["stamina"] = 2
+	_prepare_auto_blackboard(blackboard, state, [])
+
+	(fixture.get("bt_instance") as Object).call("update", 0.0)
+	var desired_action := blackboard.call("get_var", &"desired_action", {}) as Dictionary
+	_assert_eq(
+		desired_action.get("action_id"),
+		"recover",
+		"stamina two must recover instead of spending two on defense forever",
+	)
+	_release_fixture(fixture)
+
+
 func _prepare_auto_blackboard(blackboard: Object, state: Dictionary, tactical_plan: Array) -> void:
 	blackboard.call("set_var", &"combat_state", state)
 	blackboard.call("set_var", &"policy_proposal", {"actor_id": "a", "auto_select": true})
 	blackboard.call("set_var", &"tactical_plan", tactical_plan.duplicate(true))
+	blackboard.call("set_var", &"skill_mechanics", _skill_mechanics_fixture())
 	blackboard.call("set_var", &"exchange_index", 0)
 	blackboard.call("set_var", &"last_exchange_result", {})
 	(
@@ -153,6 +174,39 @@ func _prepare_auto_blackboard(blackboard: Object, state: Dictionary, tactical_pl
 			["light", "heavy", "block", "parry", "dodge", "recover", "reposition"],
 		)
 	)
+
+
+func _skill_mechanics_fixture() -> Array:
+	return [
+		{
+			"id": "charge",
+			"status": "frozen",
+			"mechanics":
+			{
+				"action_mapping": {"base_action": "heavy", "runtime_effect": "charge_attack"},
+				"cost": {"stamina": 6},
+				"timing": {"phase": "offense", "trigger": "declared_action"},
+				"targets": {"relationship": "enemy", "count": 1},
+				"equipment_requirements": [],
+				"effects": {"damage_bonus": 2, "self_vulnerable_after_commit": true},
+			},
+			"progression": {},
+		},
+		{
+			"id": "closed_guard",
+			"status": "frozen",
+			"mechanics":
+			{
+				"action_mapping": {"base_action": "block", "runtime_effect": "enhanced_block"},
+				"cost": {"stamina": 3},
+				"timing": {"phase": "preparation", "trigger": "declared_action"},
+				"targets": {"relationship": "self", "count": 0},
+				"equipment_requirements": ["shield"],
+				"effects": {"flat_damage_reduction_bonus": 2, "applies_to_exchange": true},
+			},
+			"progression": {},
+		},
+	]
 
 
 func _runtime_fixture() -> Dictionary:
