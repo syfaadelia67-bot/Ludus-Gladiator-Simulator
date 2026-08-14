@@ -34,30 +34,46 @@ func run() -> void:
 	assert(enroll_button.text.begins_with("INSCRIBIR EN BAJO MUNDO"))
 	enroll_button.pressed.emit()
 	assert(enroll_button.text.begins_with("INICIAR Bajo Mundo"))
+
+	# One start press is the only gameplay input required after enrollment.
 	enroll_button.pressed.emit()
+	var final_session := CombatV1SessionStore.get_non_gt_session(1)
+	assert(
+		str(final_session.get("status", "")) == "encounter_finished",
+		"Arena must finish automatically after the single start press",
+	)
+	assert(int(final_session.get("autobattle_exchanges", 0)) > 0)
+	assert(not str((final_session.get("last_combat_result", {}) as Dictionary).get("winner_team_id", "")).is_empty())
 
-	var started_session := CombatV1SessionStore.get_non_gt_session(1)
-	assert(str(started_session.get("status", "")) == "combat_running")
+	var providers := final_session.get("last_intent_providers", {}) as Dictionary
+	assert(not providers.is_empty(), "Autobattle must record the LimboAI providers")
+	for provider_name in providers.values():
+		assert(str(provider_name) == "limboai")
 
-	var exchange_button := (
+	var action_selector := (
+		arena_screen.get_node(
+			"Body/CenterPanel/Margin/Scroll/Content/PreparationView/Preparation/Margin/Content/Options/TacticSelector"
+		)
+		as OptionButton
+	)
+	var target_selector := (
+		arena_screen.get_node(
+			"Body/CenterPanel/Margin/Scroll/Content/PreparationView/Preparation/Margin/Content/Options/EnergySelector"
+		)
+		as OptionButton
+	)
+	var legacy_exchange_button := (
 		arena_screen.get_node(
 			"Body/CenterPanel/Margin/Scroll/Content/PreparationView/ActionRow/StartCombat"
 		)
 		as Button
 	)
-	assert(not exchange_button.disabled, "Started Arena combat must allow the first exchange")
-	assert(exchange_button.text == "RESOLVER INTERCAMBIO")
-	exchange_button.pressed.emit()
-
-	var advanced_session := CombatV1SessionStore.get_non_gt_session(1)
-	assert(str(advanced_session.get("status", "")) != "rejected")
-	var providers := advanced_session.get("last_intent_providers", {}) as Dictionary
-	assert(not providers.is_empty(), "The real UI must resolve intent providers on first exchange")
-	for provider_name in providers.values():
-		assert(str(provider_name) == "limboai")
+	assert(not action_selector.visible, "Autobattle must not expose a manual action selector")
+	assert(not target_selector.visible, "Autobattle must not expose a manual target selector")
+	assert(not legacy_exchange_button.visible, "Autobattle must not expose RESOLVER INTERCAMBIO")
 
 	arena_screen.queue_free()
-	print("Monthly Arena exchange UI test passed")
+	print("Monthly Arena autobattle UI test passed")
 
 
 func _add_test_gladiator() -> void:
