@@ -116,24 +116,8 @@ func _run_combat(combat_index: int, combat_seed: int, format_id: String) -> Dict
 		return _result(errors)
 
 	var player_ids := _prepare_player_team(combat_index, format_id)
-	var event := _prepare_real_event(format_id)
-	if event.is_empty():
-		errors.append("no canonical official_minor event found")
-		return _result(errors)
-	var event_id := str(event.get("id", ""))
-	if not _accept_event(event, player_ids):
-		errors.append("canonical Arena event could not be accepted")
-		return _result(errors)
-
-	var contract := TournamentManager.get_active_contract_for_event(event_id)
+	var contract := _prepare_contract(format_id, player_ids, errors)
 	if contract.is_empty():
-		errors.append("accepted event did not create an active contract")
-		return _result(errors)
-	if str(contract.get("format", "")) != format_id:
-		errors.append("contract format mismatch: %s" % str(contract.get("format", "")))
-		return _result(errors)
-	if str(contract.get("competition", "")) == "grand_tournament":
-		errors.append("combat soak unexpectedly entered Grand Tournament authority")
 		return _result(errors)
 
 	var runtime = CombatV1ArenaRuntimeMonthlyScript.new()
@@ -194,6 +178,30 @@ func _run_combat(combat_index: int, combat_seed: int, format_id: String) -> Dict
 		"skill_actions": int(event_stats.get("skill_actions", 0)),
 		"knockouts": int(event_stats.get("knockouts", 0)),
 	}
+
+
+func _prepare_contract(
+	format_id: String, player_ids: Array[String], errors: Array[String]
+) -> Dictionary:
+	var event := _prepare_real_event(format_id)
+	if event.is_empty():
+		errors.append("no canonical official_minor event found")
+		return {}
+	var event_id := str(event.get("id", ""))
+	if not _accept_event(event, player_ids):
+		errors.append("canonical Arena event could not be accepted")
+		return {}
+
+	var contract := TournamentManager.get_active_contract_for_event(event_id)
+	if contract.is_empty():
+		errors.append("accepted event did not create an active contract")
+	elif str(contract.get("format", "")) != format_id:
+		errors.append("contract format mismatch: %s" % str(contract.get("format", "")))
+	elif str(contract.get("competition", "")) == "grand_tournament":
+		errors.append("combat soak unexpectedly entered Grand Tournament authority")
+	if not errors.is_empty():
+		return {}
+	return contract
 
 
 func _prepare_player_team(combat_index: int, format_id: String) -> Array[String]:
