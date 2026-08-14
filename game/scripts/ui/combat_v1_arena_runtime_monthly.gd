@@ -69,8 +69,8 @@ func resolve_autobattle(session: Dictionary, request_provider: Callable) -> Dict
 			["La política LimboAI no está conectada al autobattle."],
 		)
 	var current := session.duplicate(true)
-	var presentation_events: Array = (
-		(current.get("presentation_events", []) as Array).duplicate(true)
+	var presentation_events: Array = (current.get("presentation_events", []) as Array).duplicate(
+		true
 	)
 	var exchanges := 0
 	while str(current.get("status", "")) == "combat_running":
