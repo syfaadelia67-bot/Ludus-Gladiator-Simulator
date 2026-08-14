@@ -16,6 +16,8 @@ func build_requests(session: Dictionary, agent: Node, instance_owner: Node) -> D
 	var player_team_id := str(session.get("player_team_id", ""))
 	if player_team_id.is_empty():
 		return {}
+	DataRepository.load_all()
+	var skill_mechanics := DataRepository.get_skill_mechanics_v1()
 
 	var fighters: Array[Dictionary] = []
 	for raw_fighter in state.get("fighters", []) as Array:
@@ -43,6 +45,7 @@ func build_requests(session: Dictionary, agent: Node, instance_owner: Node) -> D
 			"decision_context":
 			{
 				"tactical_plan": tactical_plan.duplicate(true),
+				"skill_mechanics": skill_mechanics.duplicate(true),
 				"exchange_index": int(active_loop.get("exchange_index", 0)),
 				"last_exchange_result":
 				(active_loop.get("last_exchange_result", {}) as Dictionary).duplicate(true),
