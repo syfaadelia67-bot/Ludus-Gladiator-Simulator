@@ -10,6 +10,7 @@ const LOW_RESOURCE_RATIO := 0.30
 @export var proposal_var: StringName = &"policy_proposal"
 @export var desired_action_var: StringName = &"desired_action"
 @export var policy_errors_var: StringName = &"policy_errors"
+@export var skill_mechanics_var: StringName = &"skill_mechanics"
 
 var _action_catalog = CombatActionCatalogScript.new()
 var _policy_contract = CombatPolicyContractScript.new()
@@ -22,14 +23,17 @@ func _generate_name() -> String:
 func _tick(_delta: float) -> Status:
 	var state_value: Variant = blackboard.get_var(combat_state_var, {})
 	var proposal_value: Variant = blackboard.get_var(proposal_var, {})
+	var mechanics_value: Variant = blackboard.get_var(skill_mechanics_var, [])
 	if state_value is not Dictionary or proposal_value is not Dictionary:
 		_reject(["Policy proposal requires Dictionary combat_state and policy_proposal"])
+		return FAILURE
+	if mechanics_value is not Array:
+		_reject(["Policy proposal requires Array skill_mechanics"])
 		return FAILURE
 
 	var state := state_value as Dictionary
 	var proposal := proposal_value as Dictionary
-	DataRepository.load_all()
-	_policy_contract.set_skill_mechanics(DataRepository.get_skill_mechanics_v1())
+	_policy_contract.set_skill_mechanics(mechanics_value as Array)
 
 	var desired_action := proposal.duplicate(true)
 	if bool(proposal.get("auto_select", false)):
@@ -96,9 +100,17 @@ func _build_basic_fallback(state: Dictionary, actor: Dictionary) -> Dictionary:
 	var actor_id := str(actor.get("id", ""))
 	var stamina := float(actor.get("stamina", 0.0))
 	var enemies := _active_fighters_by_relationship(state, actor, "enemy")
-	var preferred_actions: Array[String] = ["light", "block", "parry", "reposition", "recover"]
+	var available_actions := blackboard.get_var(&"available_action_ids", []) as Array
+	var light_contract := _action_catalog.get_action_contract("light")
+	var minimum_offense_stamina := float(light_contract.get("stamina_cost", 3))
+	if stamina < minimum_offense_stamina and available_actions.has("recover"):
+		var recover_action := {"actor_id": actor_id, "action_id": "recover"}
+		if _policy_contract.validate_desired_action(state, recover_action).is_empty():
+			return recover_action
+
+	var preferred_actions: Array[String] = ["light", "heavy", "block", "parry", "reposition", "recover"]
 	for action_id in preferred_actions:
-		if not (blackboard.get_var(&"available_action_ids", []) as Array).has(action_id):
+		if not available_actions.has(action_id):
 			continue
 		var contract := _action_catalog.get_action_contract(action_id)
 		if contract.is_empty() or stamina < float(contract.get("stamina_cost", 0)):
@@ -242,7 +254,10 @@ func _stamina_ratio(fighter: Dictionary) -> float:
 
 
 func _skill_mechanics(skill_id: String) -> Dictionary:
-	for raw_entry in DataRepository.get_skill_mechanics_v1():
+	var mechanics_value: Variant = blackboard.get_var(skill_mechanics_var, [])
+	if mechanics_value is not Array:
+		return {}
+	for raw_entry in mechanics_value as Array:
 		if raw_entry is Dictionary and str((raw_entry as Dictionary).get("id", "")) == skill_id:
 			return (raw_entry as Dictionary).duplicate(true)
 	return {}
