@@ -139,18 +139,19 @@ func _test_automatic_policy_recovers_when_no_costly_action_is_affordable() -> vo
 	_release_fixture(fixture)
 
 
-func _prepare_auto_blackboard(
-	blackboard: Object, state: Dictionary, tactical_plan: Array
-) -> void:
+func _prepare_auto_blackboard(blackboard: Object, state: Dictionary, tactical_plan: Array) -> void:
 	blackboard.call("set_var", &"combat_state", state)
 	blackboard.call("set_var", &"policy_proposal", {"actor_id": "a", "auto_select": true})
 	blackboard.call("set_var", &"tactical_plan", tactical_plan.duplicate(true))
 	blackboard.call("set_var", &"exchange_index", 0)
 	blackboard.call("set_var", &"last_exchange_result", {})
-	blackboard.call(
-		"set_var",
-		&"available_action_ids",
-		["light", "heavy", "block", "parry", "dodge", "recover", "reposition"],
+	(
+		blackboard
+		. call(
+			"set_var",
+			&"available_action_ids",
+			["light", "heavy", "block", "parry", "dodge", "recover", "reposition"],
+		)
 	)
 
 
