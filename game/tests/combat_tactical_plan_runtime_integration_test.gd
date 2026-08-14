@@ -22,7 +22,10 @@ func run() -> void:
 			FIGHTER_ID, [{"ability_id": "charge", "condition": "always"}]
 		)
 	)
+	var stored_record := GladiatorProgressionManager.get_record(FIGHTER_ID)
 	var stored_plan := GladiatorProgressionManager.get_tactical_plan(FIGHTER_ID)
+	print("TACTICAL BRIDGE RECORD: %s" % str(stored_record))
+	print("TACTICAL BRIDGE PLAN: %s" % str(stored_plan))
 	assert(stored_plan.size() == 1)
 	assert(str((stored_plan[0] as Dictionary).get("ability_id", "")) == "charge")
 
@@ -76,20 +79,23 @@ func run() -> void:
 
 
 func _add_player_gladiator() -> void:
-	var person := LudusPerson.new(
-		{
-			"id": FIGHTER_ID,
-			"name": "QA Tactical Runtime",
-			"role": "gladiator",
-			"strength": 7,
-			"agility": 7,
-			"endurance": 7,
-			"resistance": 6,
-			"intelligence": 5,
-			"technique": 7,
-			"health": 58,
-			"fatigue": 0,
-		}
+	var person := (
+		LudusPerson
+		. new(
+			{
+				"id": FIGHTER_ID,
+				"name": "QA Tactical Runtime",
+				"role": "gladiator",
+				"strength": 7,
+				"agility": 7,
+				"endurance": 7,
+				"resistance": 6,
+				"intelligence": 5,
+				"technique": 7,
+				"health": 58,
+				"fatigue": 0,
+			}
+		)
 	)
 	assert(RosterManager.add_person(person))
 	var record := GladiatorProgressionManager.ensure_record(FIGHTER_ID)
@@ -98,7 +104,10 @@ func _add_player_gladiator() -> void:
 
 func _underworld_event() -> Dictionary:
 	for raw_event in TournamentManager.get_available_events():
-		if raw_event is Dictionary and str((raw_event as Dictionary).get("competition", "")) == "underworld":
+		if (
+			raw_event is Dictionary
+			and str((raw_event as Dictionary).get("competition", "")) == "underworld"
+		):
 			return (raw_event as Dictionary).duplicate(true)
 	return {}
 
@@ -110,6 +119,9 @@ func _active_state(session: Dictionary) -> Dictionary:
 
 func _intent_for_actor(intents: Array, actor_id: String) -> Dictionary:
 	for raw_intent in intents:
-		if raw_intent is Dictionary and str((raw_intent as Dictionary).get("actor_id", "")) == actor_id:
+		if (
+			raw_intent is Dictionary
+			and str((raw_intent as Dictionary).get("actor_id", "")) == actor_id
+		):
 			return (raw_intent as Dictionary).duplicate(true)
 	return {}
