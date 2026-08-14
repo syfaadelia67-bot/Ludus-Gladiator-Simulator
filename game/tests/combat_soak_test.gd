@@ -186,6 +186,9 @@ func _run_combat(combat_index: int, combat_seed: int, format_id: String) -> Dict
 func _prepare_contract(
 	format_id: String, player_ids: Array[String], errors: Array[String]
 ) -> Dictionary:
+	if player_ids.is_empty():
+		errors.append("player fixture did not produce required fighter ids")
+		return {}
 	var event := _prepare_real_event(format_id)
 	if event.is_empty():
 		errors.append("no canonical official_minor event found")
@@ -254,21 +257,27 @@ func _teach_tactical_skills(fighter_id: String) -> void:
 
 func _build_tactical_plan(variant: int) -> Array[Dictionary]:
 	var plan: Array[Dictionary] = [{"ability_id": "charge", "condition": "always"}]
-	for offset in range(3):
-		var skill_index := (variant * 3 + offset) % TACTICAL_SKILLS.size()
-		if str(TACTICAL_SKILLS[skill_index]) == "charge":
-			skill_index = (skill_index + 1) % TACTICAL_SKILLS.size()
-		var condition_index := (variant + offset + 1) % TACTICAL_CONDITIONS.size()
-		(
-			plan
-			. append(
-				{
-					"ability_id": str(TACTICAL_SKILLS[skill_index]),
-					"condition": str(TACTICAL_CONDITIONS[condition_index]),
-				}
-			)
+	var cursor := variant * 3
+	while plan.size() < 4:
+		var skill_id := str(TACTICAL_SKILLS[cursor % TACTICAL_SKILLS.size()])
+		cursor += 1
+		if _plan_has_ability(plan, skill_id):
+			continue
+		var condition_index := (variant + plan.size()) % TACTICAL_CONDITIONS.size()
+		plan.append(
+			{
+				"ability_id": skill_id,
+				"condition": str(TACTICAL_CONDITIONS[condition_index]),
+			}
 		)
 	return plan
+
+
+func _plan_has_ability(plan: Array[Dictionary], ability_id: String) -> bool:
+	for order in plan:
+		if str(order.get("ability_id", "")) == ability_id:
+			return true
+	return false
 
 
 func _prepare_real_event(format_id: String) -> Dictionary:
