@@ -54,11 +54,14 @@ func _sanitize_person_record_internal(person_id: String) -> bool:
 			continue
 		if not _tactical_ability_is_available(person, ability_id):
 			continue
-		sanitized.append(
-			{
-				"ability_id": ability_id,
-				"condition": str(raw_order.get("condition", "always")),
-			}
+		(
+			sanitized
+			. append(
+				{
+					"ability_id": ability_id,
+					"condition": str(raw_order.get("condition", "always")),
+				}
+			)
 		)
 	if sanitized == current_plan:
 		return false
@@ -83,12 +86,15 @@ func get_blocked_learned_abilities(person_id: String) -> Array[Dictionary]:
 		var ability: Dictionary = GladiatorProgressionManager.abilities.get(ability_id_string, {})
 		if EquipmentManager.can_use_ability(person, ability):
 			continue
-		result.append(
-			{
-				"ability_id": ability_id_string,
-				"name": str(ability.get("name", ability_id)),
-				"requirement": EquipmentManager.get_ability_requirement(ability),
-			}
+		(
+			result
+			. append(
+				{
+					"ability_id": ability_id_string,
+					"name": str(ability.get("name", ability_id)),
+					"requirement": EquipmentManager.get_ability_requirement(ability),
+				}
+			)
 		)
 	return result
 
