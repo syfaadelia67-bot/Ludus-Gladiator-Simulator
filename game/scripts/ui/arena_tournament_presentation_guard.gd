@@ -23,6 +23,42 @@ func _ready() -> void:
 	visibility_changed.connect(_apply_player_facing_tournament_names)
 
 
+func _accept_started_session(result: Dictionary) -> Dictionary:
+	var accepted := super._accept_started_session(result)
+	if str(accepted.get("status", "")) != "combat_running":
+		return accepted
+	return _resolve_current_autobattle()
+
+
+func _resolve_current_autobattle() -> Dictionary:
+	var final_session: Dictionary = _arena_runtime.resolve_autobattle(
+		_session, Callable(self, "_build_default_ai_requests")
+	)
+	if str(final_session.get("status", "")) == "rejected":
+		_render_error(final_session)
+		return final_session
+
+	var persisted := false
+	if str(final_session.get("session_kind", "")) == "monthly_non_gt":
+		persisted = CombatV1SessionStore.set_non_gt_session(final_session)
+	else:
+		persisted = CombatV1SessionStore.set_gt1_session(final_session)
+	if not persisted:
+		var persistence_error := _ui_rejected(
+			"session_persistence_rejected",
+			["El resultado automático no superó el contrato de persistencia Save v14."],
+		)
+		_render_error(persistence_error)
+		return persistence_error
+
+	_session = final_session.duplicate(true)
+	_refresh_all()
+	if str(_session.get("status", "")) == "encounter_finished":
+		_render_encounter_finished()
+		_show_result_view()
+	return _session.duplicate(true)
+
+
 func _refresh_all() -> void:
 	super._refresh_all()
 	_apply_player_facing_tournament_names()
@@ -30,6 +66,9 @@ func _refresh_all() -> void:
 
 func _refresh_combat_controls() -> void:
 	super._refresh_combat_controls()
+	action_selector.visible = false
+	target_selector.visible = false
+	start_button.visible = false
 	_apply_player_facing_tournament_names()
 
 
