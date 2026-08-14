@@ -192,9 +192,11 @@ func _prepare_contract(
 		errors.append("canonical Arena event could not be accepted")
 		return {}
 
-	var contract := TournamentManager.get_active_contract_for_event(event_id)
+	var contract := TournamentManager.get_active_contract_for_fighter(player_ids[0])
 	if contract.is_empty():
 		errors.append("accepted event did not create an active contract")
+	elif str(contract.get("id", "")) != event_id:
+		errors.append("active contract does not match accepted event")
 	elif str(contract.get("format", "")) != format_id:
 		errors.append("contract format mismatch: %s" % str(contract.get("format", "")))
 	elif str(contract.get("competition", "")) == "grand_tournament":
@@ -274,7 +276,9 @@ func _accept_event(event: Dictionary, player_ids: Array[String]) -> bool:
 	if int(event.get("team_size", 1)) > 1:
 		return TournamentManager.accept_event_team(event_id, player_ids)
 	var arena_screen = ArenaScreenMonthlyScript.new()
-	var accepted := arena_screen.accept_non_gt_event_for_fighter(event_id, player_ids[0])
+	var accepted: bool = bool(
+		arena_screen.accept_non_gt_event_for_fighter(event_id, player_ids[0])
+	)
 	arena_screen.free()
 	return accepted
 
