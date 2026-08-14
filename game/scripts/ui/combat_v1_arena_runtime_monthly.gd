@@ -158,6 +158,7 @@ func get_contract() -> Dictionary:
 	contract["autobattle"] = "limboai_for_all_active_fighters_until_encounter_finished"
 	contract["autobattle_exchange_limit"] = MAX_AUTOBATTLE_EXCHANGES
 	contract["presentation_events"] = "derived_from_combat_simulator_exchange_results"
+	contract["presentation_skill_metadata"] = "validated_intent_collector_activation_only"
 	contract["presentation_math_authority"] = false
 	contract["manual_midfight_input_required"] = false
 	contract["save_version_change_required"] = false
@@ -171,16 +172,36 @@ func _append_presentation_events(events: Array, session: Dictionary) -> void:
 		return
 	var exchange_index := int(combat_result.get("exchange_index", 0))
 	var knocked_out_fighters := _presented_knockout_fighters(events)
+	var skill_activations := session.get("last_skill_activations", {}) as Dictionary
 	for raw_event in _presentation_event_adapter.build_exchange_events(
 		exchange_index, exchange_result
 	):
 		var event := (raw_event as Dictionary).duplicate(true)
+		_decorate_validated_skill_metadata(event, skill_activations)
 		if str(event.get("type", "")) == "fighter_knocked_out":
 			var fighter_id := str(event.get("fighter_id", ""))
 			if knocked_out_fighters.has(fighter_id):
 				continue
 			knocked_out_fighters[fighter_id] = true
 		events.append(event)
+
+
+func _decorate_validated_skill_metadata(event: Dictionary, skill_activations: Dictionary) -> void:
+	if str(event.get("type", "")) != "action_declared":
+		return
+	if not str(event.get("skill_id", "")).is_empty():
+		return
+	var actor_id := str(event.get("actor_id", ""))
+	if actor_id.is_empty() or not skill_activations.has(actor_id):
+		return
+	var activation := skill_activations.get(actor_id, {}) as Dictionary
+	var skill_id := str(activation.get("skill_id", ""))
+	var mapped_action_id := str(activation.get("mapped_action_id", ""))
+	if skill_id.is_empty() or mapped_action_id.is_empty():
+		return
+	if str(event.get("action_id", "")) != mapped_action_id:
+		return
+	event["skill_id"] = skill_id
 
 
 func _presented_knockout_fighters(events: Array) -> Dictionary:
