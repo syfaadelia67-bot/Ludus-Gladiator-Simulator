@@ -15,7 +15,7 @@ on:
   workflow_dispatch:
     inputs:
       combat_count:
-        description: 'Number of complete Combat V1 fights to simulate'
+        description: 'Total complete Combat V1 fights; must be divisible by 6'
         required: true
         default: '1500'
         type: string
@@ -36,12 +36,17 @@ env:
   GODOT_VERSION: 4.5.2
   DEFAULT_COMBAT_COUNT: '1500'
   DEFAULT_SEED_BASE: '61001'
+  SHARD_COUNT: '6'
 
 jobs:
   combat-soak:
-    name: 1500-combat headless soak
+    name: Combat soak shard ${{ matrix.shard + 1 }}/6
     runs-on: ubuntu-24.04
     timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1, 2, 3, 4, 5]
 
     steps:
       - name: Check out repository
@@ -64,38 +69,59 @@ jobs:
       - name: Import resources
         run: godot --headless --editor --path game --quit
 
-      - name: Run Combat V1 soak
+      - name: Run Combat V1 soak shard
         shell: bash
         env:
           DISPATCH_COMBAT_COUNT: ${{ inputs.combat_count }}
           DISPATCH_SEED_BASE: ${{ inputs.seed_base }}
+          SHARD_INDEX: ${{ matrix.shard }}
         run: |
           set -euo pipefail
           combat_count="${DISPATCH_COMBAT_COUNT:-${DEFAULT_COMBAT_COUNT}}"
           seed_base="${DISPATCH_SEED_BASE:-${DEFAULT_SEED_BASE}}"
+          shard_index="$SHARD_INDEX"
+
+          if ! [[ "$combat_count" =~ ^[0-9]+$ ]] || [ "$combat_count" -lt "$SHARD_COUNT" ]; then
+            echo "combat_count must be an integer >= ${SHARD_COUNT}."
+            exit 2
+          fi
+          if [ $((combat_count % SHARD_COUNT)) -ne 0 ]; then
+            echo "combat_count=${combat_count} must be divisible by ${SHARD_COUNT}."
+            exit 2
+          fi
+          if ! [[ "$seed_base" =~ ^[0-9]+$ ]]; then
+            echo 'seed_base must be a positive integer.'
+            exit 2
+          fi
+
+          per_shard=$((combat_count / SHARD_COUNT))
+          shard_seed_base=$((seed_base + shard_index * per_shard))
           mkdir -p game/test-results
+          log_path="game/test-results/combat-soak-shard-${shard_index}.log"
+
+          echo "COMBAT SOAK SHARD: index=${shard_index}/${SHARD_COUNT} · combats=${per_shard} · seed_base=${shard_seed_base}"
           set +e
           timeout --signal=TERM --kill-after=10s 1200s \
             godot --headless --path game -- \
               --test=res://tests/combat_soak_test.gd \
-              --combat-count="$combat_count" \
-              --combat-seed-base="$seed_base" \
-            2>&1 | tee game/test-results/combat-soak.log
+              --combat-count="$per_shard" \
+              --combat-seed-base="$shard_seed_base" \
+            2>&1 | tee "$log_path"
           godot_status=${PIPESTATUS[0]}
           set -e
           if [ "$godot_status" -ne 0 ]; then
-            echo "Combat soak exited with status $godot_status."
+            echo "Combat soak shard ${shard_index} exited with status $godot_status."
             exit "$godot_status"
           fi
-          grep -F "COMBAT SOAK SUMMARY: completed=${combat_count}/${combat_count}" game/test-results/combat-soak.log
-          grep -F 'failures=0' game/test-results/combat-soak.log
-          grep -F 'Combat V1 multi-format headless soak test: OK' game/test-results/combat-soak.log
+          grep -F "COMBAT SOAK SUMMARY: completed=${per_shard}/${per_shard}" "$log_path"
+          grep -F 'failures=0' "$log_path"
+          grep -F 'Combat V1 multi-format headless soak test: OK' "$log_path"
 
       - name: Upload Combat V1 soak diagnostics
         if: always()
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
         with:
-          name: combat-soak-results-${{ github.run_attempt }}
-          path: game/test-results/combat-soak.log
+          name: combat-soak-shard-${{ matrix.shard }}-results-${{ github.run_attempt }}
+          path: game/test-results/combat-soak-shard-${{ matrix.shard }}.log
           if-no-files-found: warn
           retention-days: 14
