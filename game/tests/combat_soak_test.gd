@@ -66,8 +66,10 @@ func run() -> void:
 		else:
 			for raw_error in result.get("errors", []) as Array:
 				failures.append(
-					"combat=%d format=%s seed=%d · %s"
-					% [combat_index + 1, format_id, combat_seed, str(raw_error)]
+					(
+						"combat=%d format=%s seed=%d · %s"
+						% [combat_index + 1, format_id, combat_seed, str(raw_error)]
+					)
 				)
 		total_exchanges += int(result.get("exchanges", 0))
 		total_actions += int(result.get("actions", 0))
@@ -77,27 +79,32 @@ func run() -> void:
 
 	print(
 		(
-			"COMBAT SOAK SUMMARY: completed=%d/%d · 1v1=%d · 1v2=%d · 2v2=%d · "
-			+ "exchanges=%d · actions=%d · attacks=%d · skill_actions=%d · knockouts=%d · failures=%d"
+			(
+				"COMBAT SOAK SUMMARY: completed=%d/%d · 1v1=%d · 1v2=%d · 2v2=%d · "
+				+ "exchanges=%d · actions=%d · attacks=%d · skill_actions=%d · knockouts=%d · failures=%d"
+			)
+			% [
+				completed,
+				combat_count,
+				int(totals_by_format["1v1"]),
+				int(totals_by_format["1v2"]),
+				int(totals_by_format["2v2"]),
+				total_exchanges,
+				total_actions,
+				total_attacks,
+				total_skill_actions,
+				total_knockouts,
+				failures.size(),
+			]
 		)
-		% [
-			completed,
-			combat_count,
-			int(totals_by_format["1v1"]),
-			int(totals_by_format["1v2"]),
-			int(totals_by_format["2v2"]),
-			total_exchanges,
-			total_actions,
-			total_attacks,
-			total_skill_actions,
-			total_knockouts,
-			failures.size(),
-		]
 	)
 	for failure in failures:
 		push_error("COMBAT SOAK FAILURE: %s" % failure)
 	assert(failures.is_empty(), "Combat soak detected %d failing combat(s)." % failures.size())
-	assert(total_skill_actions > 0, "Combat soak must exercise at least one Tactical Plan skill action.")
+	assert(
+		total_skill_actions > 0,
+		"Combat soak must exercise at least one Tactical Plan skill action."
+	)
 	print("Combat V1 multi-format headless soak test: OK")
 
 
@@ -138,9 +145,7 @@ func _run_combat(combat_index: int, combat_seed: int, format_id: String) -> Dict
 	var initial_state := _active_state(session)
 	var initial_fighter_ids := _fighter_ids(initial_state)
 	if initial_fighter_ids.size() != _expected_fighter_count(format_id):
-		errors.append(
-			"unexpected initial fighter count %d" % initial_fighter_ids.size()
-		)
+		errors.append("unexpected initial fighter count %d" % initial_fighter_ids.size())
 		return _result(errors)
 
 	var ai_provider = ArenaLimboAIRequestProviderScript.new()
@@ -148,8 +153,10 @@ func _run_combat(combat_index: int, combat_seed: int, format_id: String) -> Dict
 	var final_session: Dictionary = runtime.resolve_autobattle(session, request_provider)
 	if str(final_session.get("status", "")) != "encounter_finished":
 		errors.append(
-			"autobattle failed to finish: %s · %s"
-			% [str(final_session.get("reason", "")), str(final_session.get("errors", []))]
+			(
+				"autobattle failed to finish: %s · %s"
+				% [str(final_session.get("reason", "")), str(final_session.get("errors", []))]
+			)
 		)
 		return _result(errors)
 
@@ -195,20 +202,23 @@ func _prepare_player_team(combat_index: int, format_id: String) -> Array[String]
 	for slot in range(required):
 		var fighter_id := "qa_soak_%s_%d_%d" % [format_id, combat_index, slot]
 		var stat_shift := (combat_index + slot) % 5
-		var person := LudusPerson.new(
-			{
-				"id": fighter_id,
-				"name": "QA Combat Soak %d/%d" % [combat_index + 1, slot + 1],
-				"role": "gladiator",
-				"strength": 5 + stat_shift,
-				"agility": 5 + ((stat_shift + 1) % 5),
-				"endurance": 6 + ((stat_shift + 2) % 4),
-				"resistance": 5 + ((stat_shift + 3) % 5),
-				"intelligence": 5 + ((stat_shift + 4) % 4),
-				"technique": 5 + ((stat_shift + 2) % 5),
-				"health": 48 + stat_shift * 4,
-				"fatigue": 0,
-			}
+		var person := (
+			LudusPerson
+			. new(
+				{
+					"id": fighter_id,
+					"name": "QA Combat Soak %d/%d" % [combat_index + 1, slot + 1],
+					"role": "gladiator",
+					"strength": 5 + stat_shift,
+					"agility": 5 + ((stat_shift + 1) % 5),
+					"endurance": 6 + ((stat_shift + 2) % 4),
+					"resistance": 5 + ((stat_shift + 3) % 5),
+					"intelligence": 5 + ((stat_shift + 4) % 4),
+					"technique": 5 + ((stat_shift + 2) % 5),
+					"health": 48 + stat_shift * 4,
+					"fatigue": 0,
+				}
+			)
 		)
 		assert(RosterManager.add_person(person))
 		GladiatorProgressionManager.set_tactical_plan(
@@ -223,11 +233,14 @@ func _build_tactical_plan(variant: int) -> Array[Dictionary]:
 	for offset in range(4):
 		var skill_index := (variant * 3 + offset) % TACTICAL_SKILLS.size()
 		var condition_index := (variant + offset) % TACTICAL_CONDITIONS.size()
-		plan.append(
-			{
-				"ability_id": str(TACTICAL_SKILLS[skill_index]),
-				"condition": str(TACTICAL_CONDITIONS[condition_index]),
-			}
+		(
+			plan
+			. append(
+				{
+					"ability_id": str(TACTICAL_SKILLS[skill_index]),
+					"condition": str(TACTICAL_CONDITIONS[condition_index]),
+				}
+			)
 		)
 	return plan
 
@@ -360,7 +373,10 @@ func _validate_event_stream(
 					errors.append("combat_finished presentation winner equals loser")
 	if exchange_starts != exchanges:
 		errors.append(
-			"presentation exchange count mismatch: events=%d result=%d" % [exchange_starts, exchanges]
+			(
+				"presentation exchange count mismatch: events=%d result=%d"
+				% [exchange_starts, exchanges]
+			)
 		)
 	if actions <= 0:
 		errors.append("combat produced no action_declared events")
