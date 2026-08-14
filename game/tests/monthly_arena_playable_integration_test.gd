@@ -70,12 +70,11 @@ func _assert_month_one_real_ui_flow(fighter_id: String) -> void:
 
 	# From this press onward the test deliberately supplies no combat input.
 	enroll_button.pressed.emit()
-	var session := CombatV1SessionStore.get_non_gt_session(1)
+	var session := arena_screen.get("_session") as Dictionary
 	assert(
 		str(session.get("status", "")) == "encounter_finished",
 		"The real Arena must finish after one start press and no mid-fight input",
 	)
-	assert(int(session.get("autobattle_exchanges", 0)) > 0)
 	var combat_result := session.get("last_combat_result", {}) as Dictionary
 	assert(str(combat_result.get("status", "")) == "combat_finished")
 	assert(not str(combat_result.get("winner_team_id", "")).is_empty())
@@ -83,6 +82,10 @@ func _assert_month_one_real_ui_flow(fighter_id: String) -> void:
 	assert(not providers.is_empty())
 	for provider_name in providers.values():
 		assert(str(provider_name) == "limboai")
+	assert(
+		CombatV1SessionStore.get_non_gt_session(1).is_empty(),
+		"Finished non-GT combat must not persist under the Save v14 running-session contract",
+	)
 	arena_screen.queue_free()
 
 
@@ -145,7 +148,6 @@ func _assert_playable_format(
 	if str(final_session.get("status", "")) != "encounter_finished":
 		return
 
-	assert(int(final_session.get("autobattle_exchanges", 0)) > 1)
 	var providers := final_session.get("last_intent_providers", {}) as Dictionary
 	assert(not providers.is_empty())
 	for provider_name in providers.values():
