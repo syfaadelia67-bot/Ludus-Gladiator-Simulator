@@ -7,6 +7,8 @@ const MonthlyArenaCombatRuntimeScript = preload(
 	"res://scripts/combat/monthly_arena_combat_runtime.gd"
 )
 
+const MAX_AUTOBATTLE_EXCHANGES := 400
+
 var _monthly_runtime = MonthlyArenaCombatRuntimeScript.new()
 var _monthly_intent_collector = CombatIntentSourceCollectorScript.new()
 
@@ -54,6 +56,36 @@ func advance_exchange(
 		(collected.get("skill_activations_by_actor", {}) as Dictionary).duplicate(true)
 	)
 	return next
+
+
+func resolve_autobattle(session: Dictionary, request_provider: Callable) -> Dictionary:
+	if not request_provider.is_valid():
+		return _rejected(
+			"ai_provider_missing",
+			["La política LimboAI no está conectada al autobattle."],
+		)
+	var current := session.duplicate(true)
+	var exchanges := 0
+	while str(current.get("status", "")) == "combat_running":
+		if exchanges >= MAX_AUTOBATTLE_EXCHANGES:
+			return _rejected(
+				"autobattle_exchange_limit",
+				["El combate superó el límite interno de intercambios sin finalizar."],
+			)
+		var request_value: Variant = request_provider.call(current.duplicate(true))
+		if request_value is not Dictionary:
+			return _rejected(
+				"invalid_ai_requests",
+				["La política LimboAI debe devolver un Dictionary de solicitudes."],
+			)
+		var next := advance_exchange(current, {}, request_value as Dictionary)
+		if str(next.get("status", "")) == "rejected":
+			return next
+		current = next.duplicate(true)
+		exchanges += 1
+	current["autobattle_exchanges"] = exchanges
+	current["autobattle_authority"] = "limboai_intents_plus_combat_simulator"
+	return current
 
 
 func build_snapshot(session: Dictionary) -> Dictionary:
@@ -115,5 +147,8 @@ func get_contract() -> Dictionary:
 	contract["monthly_non_gt_formats"] = ["1v1", "1v2", "2v2"]
 	contract["monthly_non_gt_gt1_points_authority"] = false
 	contract["generated_opponents_allowed"] = false
+	contract["autobattle"] = "limboai_for_all_active_fighters_until_encounter_finished"
+	contract["autobattle_exchange_limit"] = MAX_AUTOBATTLE_EXCHANGES
+	contract["manual_midfight_input_required"] = false
 	contract["save_version_change_required"] = false
 	return contract
