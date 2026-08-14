@@ -1,6 +1,14 @@
 extends Node
 
 const ArenaScreenScene = preload("res://scenes/ArenaScreenMonthly.tscn")
+const ACTION_SELECTOR_PATH := (
+	"Body/CenterPanel/Margin/Scroll/Content/PreparationView/Preparation/Margin/Content/Options/"
+	+ "TacticSelector"
+)
+const TARGET_SELECTOR_PATH := (
+	"Body/CenterPanel/Margin/Scroll/Content/PreparationView/Preparation/Margin/Content/Options/"
+	+ "EnergySelector"
+)
 
 
 func run() -> void:
@@ -62,24 +70,8 @@ func run() -> void:
 	for provider_name in providers.values():
 		assert(str(provider_name) == "limboai")
 
-	var action_selector := (
-		(
-			arena_screen
-			. get_node(
-				"Body/CenterPanel/Margin/Scroll/Content/PreparationView/Preparation/Margin/Content/Options/TacticSelector"
-			)
-		)
-		as OptionButton
-	)
-	var target_selector := (
-		(
-			arena_screen
-			. get_node(
-				"Body/CenterPanel/Margin/Scroll/Content/PreparationView/Preparation/Margin/Content/Options/EnergySelector"
-			)
-		)
-		as OptionButton
-	)
+	var action_selector := arena_screen.get_node(ACTION_SELECTOR_PATH) as OptionButton
+	var target_selector := arena_screen.get_node(TARGET_SELECTOR_PATH) as OptionButton
 	var legacy_exchange_button := (
 		arena_screen.get_node(
 			"Body/CenterPanel/Margin/Scroll/Content/PreparationView/ActionRow/StartCombat"
