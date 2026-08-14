@@ -1,0 +1,191 @@
+[
+  {
+    "rival_ludus_id": "cassianus",
+    "fighter": {
+      "id": "rival_heavy",
+      "team": "rival_team",
+      "stats": {"FUE": 9, "AGI": 5, "TEC": 5, "RES": 5, "PV": 62},
+      "stamina": 10
+    }
+  },
+  {
+    "rival_ludus_id": "cassianus",
+    "fighter": {
+      "id": "rival_agile",
+      "team": "rival_team",
+      "stats": {"FUE": 5, "AGI": 9, "TEC": 8, "RES": 5, "PV": 50},
+      "stamina": 10
+    }
+  },
+  {
+    "rival_ludus_id": "cassianus",
+    "fighter": {
+      "id": "rival_technical",
+      "team": "rival_team",
+      "stats": {"FUE": 7, "AGI": 6, "TEC": 7, "RES": 5, "PV": 59},
+      "stamina": 10
+    }
+  },
+  {
+    "rival_ludus_id": "flavianus",
+    "fighter": {
+      "id": "rival_heavy",
+      "team": "rival_team",
+      "stats": {"FUE": 9, "AGI": 5, "TEC": 5, "RES": 5, "PV": 62},
+      "stamina": 10
+    }
+  },
+  {
+    "rival_ludus_id": "flavianus",
+    "fighter": {
+      "id": "rival_agile",
+      "team": "rival_team",
+      "stats": {"FUE": 5, "AGI": 9, "TEC": 8, "RES": 5, "PV": 50},
+      "stamina": 10
+    }
+  },
+  {
+    "rival_ludus_id": "flavianus",
+    "fighter": {
+      "id": "rival_technical",
+      "team": "rival_team",
+      "stats": {"FUE": 7, "AGI": 6, "TEC": 7, "RES": 5, "PV": 59},
+      "stamina": 10
+    }
+  },
+  {
+    "rival_ludus_id": "drusus",
+    "fighter": {
+      "id": "rival_heavy",
+      "team": "rival_team",
+      "stats": {"FUE": 9, "AGI": 5, "TEC": 5, "RES": 5, "PV": 62},
+      "stamina": 10
+    }
+  },
+  {
+    "rival_ludus_id": "drusus",
+    "fighter": {
+      "id": "rival_agile",
+      "team": "rival_team",
+      "stats": {"FUE": 5, "AGI": 9, "TEC": 8, "RES": 5, "PV": 50},
+      "stamina": 10
+    }
+  },
+  {
+    "rival_ludus_id": "drusus",
+    "fighter": {
+      "id": "rival_technical",
+      "team": "rival_team",
+      "stats": {"FUE": 7, "AGI": 6, "TEC": 7, "RES": 5, "PV": 59},
+      "stamina": 10
+    }
+  },
+  {
+    "rival_ludus_id": "aurelius",
+    "fighter": {
+      "id": "rival_heavy",
+      "team": "rival_team",
+      "stats": {"FUE": 9, "AGI": 5, "TEC": 5, "RES": 5, "PV": 62},
+      "stamina": 10
+    }
+  },
+  {
+    "rival_ludus_id": "aurelius",
+    "fighter": {
+      "id": "rival_agile",
+      "team": "rival_team",
+      "stats": {"FUE": 5, "AGI": 9, "TEC": 8, "RES": 5, "PV": 50},
+      "stamina": 10
+    }
+  },
+  {
+    "rival_ludus_id": "aurelius",
+    "fighter": {
+      "id": "rival_technical",
+      "team": "rival_team",
+      "stats": {"FUE": 7, "AGI": 6, "TEC": 7, "RES": 5, "PV": 59},
+      "stamina": 10
+    }
+  },
+  {
+    "rival_ludus_id": "severus",
+    "fighter": {
+      "id": "rival_heavy",
+      "team": "rival_team",
+      "stats": {"FUE": 9, "AGI": 5, "TEC": 5, "RES": 5, "PV": 62},
+      "stamina": 10
+    }
+  },
+  {
+    "rival_ludus_id": "severus",
+    "fighter": {
+      "id": "rival_agile",
+      "team": "rival_team",
+      "stats": {"FUE": 5, "AGI": 9, "TEC": 8, "RES": 5, "PV": 50},
+      "stamina": 10
+    }
+  },
+  {
+    "rival_ludus_id": "severus",
+    "fighter": {
+      "id": "rival_technical",
+      "team": "rival_team",
+      "stats": {"FUE": 7, "AGI": 6, "TEC": 7, "RES": 5, "PV": 59},
+      "stamina": 10
+    }
+  },
+  {
+    "rival_ludus_id": "marcellus",
+    "fighter": {
+      "id": "rival_heavy",
+      "team": "rival_team",
+      "stats": {"FUE": 9, "AGI": 5, "TEC": 5, "RES": 5, "PV": 62},
+      "stamina": 10
+    }
+  },
+  {
+    "rival_ludus_id": "marcellus",
+    "fighter": {
+      "id": "rival_agile",
+      "team": "rival_team",
+      "stats": {"FUE": 5, "AGI": 9, "TEC": 8, "RES": 5, "PV": 50},
+      "stamina": 10
+    }
+  },
+  {
+    "rival_ludus_id": "marcellus",
+    "fighter": {
+      "id": "rival_technical",
+      "team": "rival_team",
+      "stats": {"FUE": 7, "AGI": 6, "TEC": 7, "RES": 5, "PV": 59},
+      "stamina": 10
+    }
+  },
+  {
+    "rival_ludus_id": "varro",
+    "fighter": {
+      "id": "rival_heavy",
+      "team": "rival_team",
+      "stats": {"FUE": 9, "AGI": 5, "TEC": 5, "RES": 5, "PV": 62},
+      "stamina": 10
+    }
+  },
+  {
+    "rival_ludus_id": "varro",
+    "fighter": {
+      "id": "rival_agile",
+      "team": "rival_team",
+      "stats": {"FUE": 5, "AGI": 9, "TEC": 8, "RES": 5, "PV": 50},
+      "stamina": 10
+    }
+  },
+  {
+    "rival_ludus_id": "varro",
+    "fighter": {
+      "id": "rival_technical",
+      "team": "rival_team",
+      "stats": {"FUE": 7, "AGI": 6, "TEC": 7, "RES": 5, "PV": 59},
+      "stamina": 10
+    }
+  }
+]

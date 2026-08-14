@@ -1,0 +1,100 @@
+name: Campaign Soak
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/campaign-soak.yml'
+      - 'game/tests/campaign_soak_test.gd'
+      - 'game/scripts/core/game_state.gd'
+      - 'game/scripts/core/new_campaign_coordinator.gd'
+      - 'game/scripts/systems/campaign_manager_demo.gd'
+      - 'game/scripts/systems/event_manager_demo.gd'
+      - 'game/scripts/systems/tournament_manager_demo_monthly.gd'
+      - 'game/data/**'
+  workflow_dispatch:
+    inputs:
+      campaign_count:
+        description: 'Number of complete demo campaigns to simulate'
+        required: true
+        default: '100'
+        type: string
+      seed_base:
+        description: 'First deterministic seed'
+        required: true
+        default: '41001'
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: campaign-soak-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  GODOT_VERSION: 4.5.2
+  DEFAULT_CAMPAIGN_COUNT: '100'
+  DEFAULT_SEED_BASE: '41001'
+
+jobs:
+  campaign-soak:
+    name: 100-campaign headless soak
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Set up Godot
+        uses: chickensoft-games/setup-godot@f166999204a4f2722c6fe042fbaa3b3ea0d9c789 # v2
+        with:
+          version: ${{ env.GODOT_VERSION }}
+          use-dotnet: false
+          include-templates: false
+
+      - name: Verify Godot version
+        shell: bash
+        run: test "$(godot --version)" = "4.5.2.stable.official.6ce3de25a"
+
+      - name: Import resources
+        run: godot --headless --editor --path game --quit
+
+      - name: Run campaign soak
+        shell: bash
+        env:
+          DISPATCH_CAMPAIGN_COUNT: ${{ inputs.campaign_count }}
+          DISPATCH_SEED_BASE: ${{ inputs.seed_base }}
+        run: |
+          set -euo pipefail
+          campaign_count="${DISPATCH_CAMPAIGN_COUNT:-${DEFAULT_CAMPAIGN_COUNT}}"
+          seed_base="${DISPATCH_SEED_BASE:-${DEFAULT_SEED_BASE}}"
+          mkdir -p game/test-results
+          set +e
+          timeout --signal=TERM --kill-after=10s 900s \
+            godot --headless --path game -- \
+              --test=res://tests/campaign_soak_test.gd \
+              --campaign-count="$campaign_count" \
+              --seed-base="$seed_base" \
+            2>&1 | tee game/test-results/campaign-soak.log
+          godot_status=${PIPESTATUS[0]}
+          set -e
+          if [ "$godot_status" -ne 0 ]; then
+            echo "Campaign soak exited with status $godot_status."
+            exit "$godot_status"
+          fi
+          grep -F "CAMPAIGN SOAK SUMMARY: completed=${campaign_count}/${campaign_count}" game/test-results/campaign-soak.log
+          grep -F 'failures=0' game/test-results/campaign-soak.log
+          grep -F 'Campaign multi-run headless soak test: OK' game/test-results/campaign-soak.log
+
+      - name: Upload campaign soak diagnostics
+        if: always()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        with:
+          name: campaign-soak-results-${{ github.run_attempt }}
+          path: game/test-results/campaign-soak.log
+          if-no-files-found: warn
+          retention-days: 14

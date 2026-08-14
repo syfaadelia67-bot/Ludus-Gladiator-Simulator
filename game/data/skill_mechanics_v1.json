@@ -1,0 +1,170 @@
+[
+  {
+    "id": "counterattack",
+    "status": "frozen",
+    "source": "approved_combat_v1_design",
+    "mechanics": {
+      "action_mapping": {"base_action": "parry", "runtime_effect": "riposte_on_success"},
+      "cost": {"stamina": 4},
+      "timing": {"phase": "preparation", "trigger": "incoming_attack"},
+      "targets": {"relationship": "self", "count": 0},
+      "equipment_requirements": ["weapon"],
+      "effects": {"riposte_damage_ratio": 0.5, "requires_successful_parry": true}
+    },
+    "progression": {"status": "frozen", "model": "mastery_3", "ranks": [{"rank": 1, "riposte_damage_ratio": 0.5}, {"rank": 2, "riposte_damage_ratio": 0.65}, {"rank": 3, "riposte_damage_ratio": 0.8}]}
+  },
+  {
+    "id": "charge",
+    "status": "frozen",
+    "source": "approved_combat_v1_design",
+    "mechanics": {
+      "action_mapping": {"base_action": "heavy", "runtime_effect": "charge_attack"},
+      "cost": {"stamina": 6},
+      "timing": {"phase": "offense", "trigger": "declared_action"},
+      "targets": {"relationship": "enemy", "count": 1},
+      "equipment_requirements": [],
+      "effects": {"damage_bonus": 2, "self_vulnerable_after_commit": true}
+    },
+    "progression": {"status": "frozen", "model": "mastery_3", "ranks": [{"rank": 1, "damage_bonus": 2}, {"rank": 2, "damage_bonus": 3}, {"rank": 3, "damage_bonus": 4}]}
+  },
+  {
+    "id": "closed_guard",
+    "status": "frozen",
+    "source": "approved_combat_v1_design",
+    "mechanics": {
+      "action_mapping": {"base_action": "block", "runtime_effect": "enhanced_block"},
+      "cost": {"stamina": 3},
+      "timing": {"phase": "preparation", "trigger": "declared_action"},
+      "targets": {"relationship": "self", "count": 0},
+      "equipment_requirements": ["shield"],
+      "effects": {"flat_damage_reduction_bonus": 2, "applies_to_exchange": true}
+    },
+    "progression": {"status": "frozen", "model": "mastery_3", "ranks": [{"rank": 1, "flat_damage_reduction_bonus": 2}, {"rank": 2, "flat_damage_reduction_bonus": 3}, {"rank": 3, "flat_damage_reduction_bonus": 4}]}
+  },
+  {
+    "id": "demolisher",
+    "status": "frozen",
+    "source": "approved_combat_v1_design",
+    "mechanics": {
+      "action_mapping": {"base_action": "heavy", "runtime_effect": "armor_break_attack"},
+      "cost": {"stamina": 6},
+      "timing": {"phase": "offense", "trigger": "declared_action"},
+      "targets": {"relationship": "enemy", "count": 1},
+      "equipment_requirements": ["weapon"],
+      "effects": {"defense_ignore": 2, "minimum_damage": 1}
+    },
+    "progression": {"status": "frozen", "model": "mastery_3", "ranks": [{"rank": 1, "defense_ignore": 2}, {"rank": 2, "defense_ignore": 3}, {"rank": 3, "defense_ignore": 4}]}
+  },
+  {
+    "id": "feint",
+    "status": "frozen",
+    "source": "approved_combat_v1_design",
+    "mechanics": {
+      "action_mapping": {"base_action": "light", "runtime_effect": "defense_bypass_attack"},
+      "cost": {"stamina": 4},
+      "timing": {"phase": "offense", "trigger": "declared_action"},
+      "targets": {"relationship": "enemy", "count": 1},
+      "equipment_requirements": ["weapon"],
+      "effects": {"ignore_block_bonus": true, "ignore_parry_bonus": false}
+    },
+    "progression": {"status": "frozen", "model": "mastery_3", "ranks": [{"rank": 1, "bypass": "block_bonus"}, {"rank": 2, "bypass": "block_and_half_parry_bonus"}, {"rank": 3, "bypass": "block_and_parry_bonus"}]}
+  },
+  {
+    "id": "provoke",
+    "status": "frozen",
+    "source": "approved_combat_v1_design",
+    "mechanics": {
+      "action_mapping": {"base_action": "reposition", "runtime_effect": "mark_target"},
+      "cost": {"stamina": 2},
+      "timing": {"phase": "preparation", "trigger": "declared_action"},
+      "targets": {"relationship": "enemy", "count": 1},
+      "equipment_requirements": [],
+      "effects": {"mark_duration_exchanges": 1, "marked_target_damage_penalty_vs_others": 2}
+    },
+    "progression": {"status": "frozen", "model": "mastery_3", "ranks": [{"rank": 1, "damage_penalty": 2}, {"rank": 2, "damage_penalty": 3}, {"rank": 3, "damage_penalty": 4}]}
+  },
+  {
+    "id": "execution",
+    "status": "frozen",
+    "source": "approved_combat_v1_design",
+    "mechanics": {
+      "action_mapping": {"base_action": "heavy", "runtime_effect": "finisher_attack"},
+      "cost": {"stamina": 6},
+      "timing": {"phase": "offense", "trigger": "declared_action"},
+      "targets": {"relationship": "enemy", "count": 1},
+      "equipment_requirements": ["weapon"],
+      "effects": {"target_pv_ratio_threshold": 0.3, "damage_bonus_when_threshold_met": 4}
+    },
+    "progression": {"status": "frozen", "model": "mastery_3", "ranks": [{"rank": 1, "damage_bonus": 4}, {"rank": 2, "damage_bonus": 5}, {"rank": 3, "damage_bonus": 6}]}
+  },
+  {
+    "id": "aid",
+    "status": "frozen",
+    "source": "approved_combat_v1_design",
+    "mechanics": {
+      "action_mapping": {"base_action": "reposition", "runtime_effect": "ally_support"},
+      "cost": {"stamina": 3},
+      "timing": {"phase": "preparation", "trigger": "declared_action"},
+      "targets": {"relationship": "ally", "count": 1},
+      "equipment_requirements": [],
+      "effects": {"ally_stamina_restore": 2, "clear_vulnerable": true}
+    },
+    "progression": {"status": "frozen", "model": "mastery_3", "ranks": [{"rank": 1, "ally_stamina_restore": 2}, {"rank": 2, "ally_stamina_restore": 3}, {"rank": 3, "ally_stamina_restore": 4}]}
+  },
+  {
+    "id": "anchor",
+    "status": "frozen",
+    "source": "approved_combat_v1_design",
+    "mechanics": {
+      "action_mapping": {"base_action": "block", "runtime_effect": "hold_position"},
+      "cost": {"stamina": 3},
+      "timing": {"phase": "preparation", "trigger": "declared_action"},
+      "targets": {"relationship": "self", "count": 0},
+      "equipment_requirements": ["shield"],
+      "effects": {"flat_damage_reduction_bonus": 1, "cannot_be_forced_vulnerable": true}
+    },
+    "progression": {"status": "frozen", "model": "mastery_3", "ranks": [{"rank": 1, "flat_damage_reduction_bonus": 1}, {"rank": 2, "flat_damage_reduction_bonus": 2}, {"rank": 3, "flat_damage_reduction_bonus": 3}]}
+  },
+  {
+    "id": "disarm",
+    "status": "frozen",
+    "source": "approved_combat_v1_design",
+    "mechanics": {
+      "action_mapping": {"base_action": "light", "runtime_effect": "weapon_suppression"},
+      "cost": {"stamina": 5},
+      "timing": {"phase": "offense", "trigger": "successful_hit"},
+      "targets": {"relationship": "enemy", "count": 1},
+      "equipment_requirements": ["weapon"],
+      "effects": {"duration_exchanges": 1, "target_power_penalty": 2}
+    },
+    "progression": {"status": "frozen", "model": "mastery_3", "ranks": [{"rank": 1, "target_power_penalty": 2}, {"rank": 2, "target_power_penalty": 3}, {"rank": 3, "target_power_penalty": 4}]}
+  },
+  {
+    "id": "immobilization",
+    "status": "frozen",
+    "source": "approved_combat_v1_design",
+    "mechanics": {
+      "action_mapping": {"base_action": "light", "runtime_effect": "movement_suppression"},
+      "cost": {"stamina": 5},
+      "timing": {"phase": "offense", "trigger": "successful_hit"},
+      "targets": {"relationship": "enemy", "count": 1},
+      "equipment_requirements": [],
+      "effects": {"duration_exchanges": 1, "forbidden_actions": ["dodge", "reposition"]}
+    },
+    "progression": {"status": "frozen", "model": "mastery_3", "ranks": [{"rank": 1, "duration_exchanges": 1}, {"rank": 2, "duration_exchanges": 1, "stamina_penalty": 1}, {"rank": 3, "duration_exchanges": 2}]}
+  },
+  {
+    "id": "interception",
+    "status": "frozen",
+    "source": "approved_combat_v1_design",
+    "mechanics": {
+      "action_mapping": {"base_action": "block", "runtime_effect": "ally_intercept"},
+      "cost": {"stamina": 4},
+      "timing": {"phase": "preparation", "trigger": "incoming_attack_on_ally"},
+      "targets": {"relationship": "ally", "count": 1},
+      "equipment_requirements": ["shield"],
+      "effects": {"redirect_one_attack": true, "interceptor_damage_reduction_bonus": 1}
+    },
+    "progression": {"status": "frozen", "model": "mastery_3", "ranks": [{"rank": 1, "damage_reduction_bonus": 1}, {"rank": 2, "damage_reduction_bonus": 2}, {"rank": 3, "damage_reduction_bonus": 3}]}
+  }
+]

@@ -1,20 +1,36 @@
 extends Node
 
-func run() -> void:
-    var combat := FileAccess.get_file_as_string("res://scripts/systems/combat_manager_weekly.gd")
-    var arena := FileAccess.get_file_as_string("res://scripts/ui/arena_screen.gd")
-    var scene := FileAccess.get_file_as_string("res://scenes/ArenaScreen.tscn")
 
-    assert(combat.contains("func get_current_opponent_preview"))
-    assert(combat.contains("RivalUniqueGladiatorController.get_opponent_for_week"))
-    assert(combat.contains("Bestia no revelada"))
-    assert(combat.contains("GladiatorRivalryController.get_rivalry"))
-    assert(arena.contains("func _refresh_encounter()"))
-    assert(arena.contains("CombatManager.get_current_opponent_preview(selected_fighter_id)"))
-    assert(arena.contains("GladiatorRivalryController.rivalry_changed.connect"))
-    assert(arena.contains("Marcador personal"))
-    assert(arena.contains('var estimated_health := maxi(1, int(opponent.get("health", 100)))'))
-    assert(arena.contains("_set_bar(enemy_health, estimated_health, estimated_health)"))
-    assert(scene.contains('name="OpponentInfo"') or scene.contains('name = "OpponentInfo"'))
-    assert(scene.contains('name="EnemyHealth"') or scene.contains('name = "EnemyHealth"'))
-    print("Arena hosted opponent preview contract: OK")
+func run() -> void:
+	var arena := FileAccess.get_file_as_string("res://scripts/ui/arena_screen.gd")
+	var combat_runtime := FileAccess.get_file_as_string(
+		"res://scripts/ui/combat_v1_arena_runtime.gd"
+	)
+	var setup_runtime := FileAccess.get_file_as_string(
+		"res://scripts/ui/gt1_series_setup_runtime.gd"
+	)
+	var setup_panel := FileAccess.get_file_as_string("res://scripts/ui/gt1_series_setup_panel.gd")
+	var scene := FileAccess.get_file_as_string("res://scenes/ArenaScreen.tscn")
+
+	assert(arena.contains("CombatV1ArenaRuntimeScript"))
+	assert(arena.contains("RIVAL GT I CANÓNICO"))
+	assert(arena.contains("Elegí un Ludus y los perfiles Combat V1"))
+	assert(arena.contains("GT1SeriesSetupPanelScene"))
+	assert(arena.contains("_arena_runtime.get_active_enemy_ids(_session)"))
+	assert(not arena.contains("CombatManager.get_current_opponent_preview"))
+	assert(not arena.contains("RivalUniqueGladiatorController"))
+	assert(combat_runtime.contains('"player_facing_setup_authority": "gt1_series_setup_runtime"'))
+	assert(combat_runtime.contains('"default_target_allowed": false'))
+	assert(
+		setup_runtime.contains(
+			'"human_opponent_selection_authority": "gt1_rival_combat_snapshot_provider"'
+		)
+	)
+	assert(setup_runtime.contains('"rival_catalog": "DataRepository.rival_combat_v1_snapshots"'))
+	assert(setup_runtime.contains('"month_16_beast_catalog": "DataRepository.beasts"'))
+	assert(setup_runtime.contains('"generated_opponents_allowed": false'))
+	assert(setup_panel.contains('"explicit_selection_required": true'))
+	assert(setup_panel.contains('"generated_opponents_allowed": false'))
+	assert(scene.contains('name="OpponentInfo"') or scene.contains('name = "OpponentInfo"'))
+	assert(scene.contains('name="EnemyHealth"') or scene.contains('name = "EnemyHealth"'))
+	print("Arena Combat V1 canonical opponent setup preview contract: OK")

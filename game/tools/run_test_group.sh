@@ -5,6 +5,7 @@ GROUP="${1:-}"
 GODOT_COMMAND="${GODOT_COMMAND:-godot}"
 TEST_TIMEOUT_SECONDS="${TEST_TIMEOUT_SECONDS:-90}"
 SCENETREE_QUIT_AFTER_ITERATIONS="${SCENETREE_QUIT_AFTER_ITERATIONS:-600}"
+NORMAL_COMBAT_COUNT="${NORMAL_COMBAT_COUNT:-3}"
 
 case "$GROUP" in
   core|ui)
@@ -71,7 +72,9 @@ for test_path in "${TEST_PATHS[@]}"; do
     # instead of waiting for the outer wall-clock timeout.
     arguments+=(--quit-after "$SCENETREE_QUIT_AFTER_ITERATIONS" --script "$test_path")
   else
-    arguments+=(-- "--test=$test_path")
+    # Normal grouped CI keeps heavyweight combat soak coverage to one fight
+    # per supported format. The dedicated Combat Soak workflow owns stress scale.
+    arguments+=(-- "--test=$test_path" "--combat-count=$NORMAL_COMBAT_COUNT")
   fi
 
   set +e

@@ -1,0 +1,120 @@
+extends RefCounted
+
+const CombatContractScript = preload("res://scripts/combat/combat_contract.gd")
+const CombatFighterActionPolicyScript = preload(
+	"res://scripts/combat/combat_fighter_action_policy.gd"
+)
+const CombatTargetResolverScript = preload("res://scripts/combat/combat_target_resolver.gd")
+
+var _combat_contract = CombatContractScript.new()
+var _fighter_action_policy = CombatFighterActionPolicyScript.new()
+var _target_resolver = CombatTargetResolverScript.new()
+
+
+func build_context(
+	state: Dictionary, actor_id: String, decision_context: Dictionary = {}
+) -> Dictionary:
+	var errors: Array[String] = _combat_contract.validate_state(state)
+	if not errors.is_empty():
+		return {
+			"status": "invalid_state",
+			"errors": errors,
+			"context": {},
+		}
+
+	var actor := _find_fighter(state, actor_id)
+	if actor.is_empty():
+		return {
+			"status": "invalid_actor",
+			"errors": ["Policy context references unknown actor: %s" % actor_id],
+			"context": {},
+		}
+
+	var allies: Array[Dictionary] = []
+	var enemies: Array[Dictionary] = []
+	var actor_team := str(actor.get("team", ""))
+	for raw_fighter in state.get("fighters", []) as Array:
+		if raw_fighter is not Dictionary:
+			continue
+		var fighter := raw_fighter as Dictionary
+		var fighter_id := str(fighter.get("id", ""))
+		if fighter_id == actor_id:
+			continue
+		var fighter_copy := fighter.duplicate(true)
+		if str(fighter.get("team", "")) == actor_team:
+			allies.append(fighter_copy)
+		else:
+			enemies.append(fighter_copy)
+
+	var target_result := _target_resolver.get_candidate_groups(state, actor_id)
+	if target_result.get("status") != "ready":
+		return {
+			"status": str(target_result.get("status", "invalid_target_context")),
+			"errors": (target_result.get("errors", []) as Array).duplicate(),
+			"context": {},
+		}
+
+	var available_action_ids := _fighter_action_policy.get_allowed_action_ids(actor)
+	var legal_targets: Dictionary = {}
+	for action_id in available_action_ids:
+		var action_target_result: Dictionary = _target_resolver.inspect_action_targets(
+			state, actor_id, action_id
+		)
+		if action_target_result.get("status") != "ready":
+			return {
+				"status": str(action_target_result.get("status", "invalid_target_context")),
+				"errors": (action_target_result.get("errors", []) as Array).duplicate(),
+				"context": {},
+			}
+		legal_targets[action_id] = (
+			(action_target_result.get("legal_targets", []) as Array).duplicate()
+		)
+
+	var tactical_plan: Array = []
+	var plan_value: Variant = decision_context.get("tactical_plan", [])
+	if plan_value is Array:
+		tactical_plan = (plan_value as Array).duplicate(true)
+	var skill_mechanics: Array = []
+	var mechanics_value: Variant = decision_context.get("skill_mechanics", [])
+	if mechanics_value is Array:
+		skill_mechanics = (mechanics_value as Array).duplicate(true)
+	var last_exchange_result: Dictionary = {}
+	var last_exchange_value: Variant = decision_context.get("last_exchange_result", {})
+	if last_exchange_value is Dictionary:
+		last_exchange_result = (last_exchange_value as Dictionary).duplicate(true)
+
+	return {
+		"status": "ready",
+		"errors": [],
+		"context":
+		{
+			"format": str(state.get("format", "")),
+			"actor": actor.duplicate(true),
+			"actor_id": actor_id,
+			"allies": allies,
+			"enemies": enemies,
+			"available_action_ids": available_action_ids.duplicate(),
+			"action_contracts": _fighter_action_policy.get_allowed_action_contracts(actor),
+			"target_candidates":
+			(target_result.get("candidates", {}) as Dictionary).duplicate(true),
+			"legal_targets": legal_targets.duplicate(true),
+			"combat_state": state.duplicate(true),
+			"tactical_plan": tactical_plan,
+			"skill_mechanics": skill_mechanics,
+			"exchange_index": maxi(0, int(decision_context.get("exchange_index", 0))),
+			"last_exchange_result": last_exchange_result,
+			"desired_action": {},
+		},
+	}
+
+
+func _find_fighter(state: Dictionary, fighter_id: String) -> Dictionary:
+	if fighter_id.is_empty():
+		return {}
+	for raw_fighter in state.get("fighters", []) as Array:
+		if (
+			raw_fighter is Dictionary
+			and str((raw_fighter as Dictionary).get("id", "")) == fighter_id
+		):
+			return raw_fighter as Dictionary
+	return {}

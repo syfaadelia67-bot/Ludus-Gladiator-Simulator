@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3]
 
-[ext_resource path="res://scripts/ui/forge_screen.gd" type="Script" id="1"]
+[ext_resource path="res://scripts/ui/forge_screen_v1.gd" type="Script" id="1"]
 
 [node name="ForgeScreen" type="HSplitContainer"]
 layout_mode = 3
@@ -36,14 +36,15 @@ text = "Volver a la finca"
 tooltip_text = "Regresar al centro del ludus."
 
 [node name="RecipeDetails" type="RichTextLabel" parent="ForgePanel"]
-custom_minimum_size = Vector2(450, 210)
+custom_minimum_size = Vector2(450, 240)
 layout_mode = 2
 bbcode_enabled = true
-text = "Seleccioná una receta."
+text = "Seleccioná una receta del catálogo de la forja."
 
 [node name="CraftItem" type="Button" parent="ForgePanel"]
 layout_mode = 2
-text = "Fabricar"
+text = "SELECCIONÁ UNA RECETA"
+disabled = true
 
 [node name="InventoryTitle" type="Label" parent="ForgePanel"]
 layout_mode = 2

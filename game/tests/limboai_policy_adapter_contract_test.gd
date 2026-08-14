@@ -1,0 +1,258 @@
+extends SceneTree
+
+const LimboAIPolicyAdapterScript = preload("res://scripts/combat/limboai_policy_adapter.gd")
+
+const EXPECTED_ACTION_IDS: Array[String] = [
+	"light",
+	"heavy",
+	"block",
+	"parry",
+	"dodge",
+	"reposition",
+	"recover",
+]
+
+var _failures: Array[String] = []
+
+
+func _initialize() -> void:
+	var adapter = LimboAIPolicyAdapterScript.new()
+	var status: Dictionary = adapter.get_runtime_status()
+	_assert_eq(status.get("provider"), "limboai", "adapter provider must stay LimboAI")
+	_assert_eq(
+		status.get("version_contract"), "1.6.0", "LimboAI integration must stay pinned to 1.6.0"
+	)
+
+	var available := bool(status.get("available", false))
+	_assert_eq(adapter.is_limboai_available(), available, "runtime availability APIs must agree")
+
+	var state := _valid_state()
+	var policy_bridge: Dictionary = adapter.build_policy_context(state, "a")
+	_assert_eq(policy_bridge.get("status"), "ready", "known actor must build policy context")
+	var context_value: Variant = policy_bridge.get("context", {})
+	_assert_true(context_value is Dictionary, "ready policy bridge must expose context")
+
+	var runtime: Dictionary = adapter.prepare_runtime_objects()
+	if available:
+		_assert_eq(runtime.get("status"), "ready", "available LimboAI runtime must initialize")
+		var objects_value: Variant = runtime.get("objects", {})
+		_assert_true(objects_value is Dictionary, "ready runtime must expose its objects")
+		if objects_value is Dictionary:
+			var objects := objects_value as Dictionary
+			_assert_true(objects.get("bt_player") != null, "BTPlayer must initialize")
+			_assert_true(objects.get("behavior_tree") != null, "BehaviorTree must initialize")
+			_assert_true(objects.get("blackboard") != null, "Blackboard must initialize")
+			if context_value is Dictionary:
+				_test_blackboard_bridge(
+					adapter, runtime, objects, (context_value as Dictionary).duplicate(true)
+				)
+		adapter.release_runtime_objects(runtime)
+	else:
+		_assert_eq(runtime.get("status"), "unavailable", "missing extension must degrade safely")
+		var missing_value: Variant = status.get("missing_classes", [])
+		_assert_true(
+			missing_value is Array and not (missing_value as Array).is_empty(),
+			"unavailable runtime must report missing classes"
+		)
+
+	if context_value is Dictionary:
+		var context := context_value as Dictionary
+		_assert_eq(context.get("actor_id"), "a", "policy context must preserve actor id")
+		_assert_true(context.get("combat_state") is Dictionary, "policy context must expose state")
+		_assert_true(context.get("actor") is Dictionary, "policy context must expose actor view")
+		_assert_true(context.get("enemies") is Array, "policy context must expose enemies")
+		_assert_true(
+			context.get("available_action_ids") is Array,
+			"policy context must expose canonical actions",
+		)
+		_assert_eq(
+			context.get("available_action_ids"),
+			EXPECTED_ACTION_IDS,
+			"policy context action ids must stay canonical",
+		)
+		_assert_action_contracts(context.get("action_contracts", []))
+		var legal_targets := context.get("legal_targets", {}) as Dictionary
+		_assert_eq(
+			legal_targets.get("light"), ["b"], "LimboAI context must expose light enemy target"
+		)
+		_assert_eq(
+			legal_targets.get("heavy"), ["b"], "LimboAI context must expose heavy enemy target"
+		)
+		_assert_eq(legal_targets.get("block"), [], "block must have no explicit legal targets")
+		_assert_eq(legal_targets.get("recover"), [], "recover must have no explicit legal targets")
+		_assert_true(
+			context.get("desired_action") is Dictionary, "policy context needs output slot"
+		)
+		var isolated_state := context.get("combat_state") as Dictionary
+		isolated_state["format"] = "2v2"
+		_assert_eq(state.get("format"), "1v1", "policy context must not mutate authoritative state")
+		context["desired_action"] = {"actor_id": "a", "action_id": "light", "target_id": "b"}
+		var extracted: Dictionary = adapter.extract_desired_action(context)
+		_assert_eq(extracted.get("action_id"), "light", "adapter must extract policy output")
+		extracted["action_id"] = "heavy"
+		_assert_eq(
+			(context.get("desired_action") as Dictionary).get("action_id"),
+			"light",
+			"extracted policy output must be isolated from context",
+		)
+
+	var invalid_context: Dictionary = adapter.build_policy_context(state, "missing")
+	_assert_eq(invalid_context.get("status"), "invalid_actor", "unknown actor must be rejected")
+
+	var desired_action := {"actor_id": "a", "action_id": "light", "target_id": "b"}
+	_assert_true(
+		adapter.validate_policy_output(state, desired_action).is_empty(),
+		"LimboAI output must pass canonical policy validation"
+	)
+	var invalid_target_action := {"actor_id": "a", "action_id": "block", "target_id": "b"}
+	_assert_true(
+		not adapter.validate_policy_output(state, invalid_target_action).is_empty(),
+		"LimboAI cannot bypass frozen D1 target validation",
+	)
+	var invalid_action := {"actor_id": "a", "action_id": "invented_action", "target_id": "b"}
+	_assert_true(
+		not adapter.validate_policy_output(state, invalid_action).is_empty(),
+		"LimboAI cannot bypass canonical action validation"
+	)
+
+	if _failures.is_empty():
+		print("LimboAI policy adapter contract: OK")
+		quit(0)
+	else:
+		for failure in _failures:
+			push_error(failure)
+		quit(1)
+
+
+func _test_blackboard_bridge(
+	adapter, runtime: Dictionary, objects: Dictionary, policy_context: Dictionary
+) -> void:
+	var write_result: Dictionary = adapter.write_policy_context_to_blackboard(
+		runtime, policy_context
+	)
+	_assert_eq(write_result.get("status"), "ready", "policy context must seed LimboAI Blackboard")
+	var blackboard: Object = objects.get("blackboard") as Object
+	_assert_true(bool(blackboard.call("has_var", &"actor_id")), "Blackboard must contain actor_id")
+	_assert_true(
+		bool(blackboard.call("has_var", &"action_contracts")),
+		"Blackboard must contain action contracts",
+	)
+	_assert_true(
+		bool(blackboard.call("has_var", &"legal_targets")),
+		"Blackboard must contain frozen D1 legal targets",
+	)
+	_assert_eq(
+		blackboard.call("get_var", &"actor_id", ""),
+		"a",
+		"Blackboard must preserve policy actor id",
+	)
+
+	var stored_state := blackboard.call("get_var", &"combat_state", {}) as Dictionary
+	(policy_context.get("combat_state") as Dictionary)["format"] = "2v2"
+	_assert_eq(stored_state.get("format"), "1v1", "Blackboard state must be isolated from context")
+
+	var stored_contracts := blackboard.call("get_var", &"action_contracts", []) as Array
+	_assert_action_contracts(stored_contracts)
+	var context_contracts := policy_context.get("action_contracts") as Array
+	(context_contracts[0] as Dictionary)["target_relationship"] = "invented"
+	_assert_eq(
+		(stored_contracts[0] as Dictionary).get("target_relationship"),
+		"enemy",
+		"Blackboard action contracts must be isolated from policy context",
+	)
+	var stored_legal_targets := blackboard.call("get_var", &"legal_targets", {}) as Dictionary
+	((policy_context.get("legal_targets", {}) as Dictionary).get("light") as Array).clear()
+	_assert_eq(
+		stored_legal_targets.get("light"),
+		["b"],
+		"Blackboard legal targets must be isolated from policy context",
+	)
+
+	(
+		blackboard
+		. call(
+			"set_var",
+			&"desired_action",
+			{"actor_id": "a", "action_id": "light", "target_id": "b"},
+		)
+	)
+	var desired_action: Dictionary = adapter.read_desired_action_from_blackboard(runtime)
+	_assert_eq(desired_action.get("action_id"), "light", "adapter must read Blackboard output")
+	desired_action["action_id"] = "heavy"
+	_assert_eq(
+		(adapter.read_desired_action_from_blackboard(runtime)).get("action_id"),
+		"light",
+		"Blackboard output must be isolated when returned",
+	)
+
+
+func _assert_action_contracts(value: Variant) -> void:
+	_assert_true(value is Array, "policy surface must expose action contracts")
+	if value is not Array:
+		return
+	var contracts := value as Array
+	_assert_eq(
+		contracts.size(), EXPECTED_ACTION_IDS.size(), "seven action contracts must be exposed"
+	)
+	for index in range(contracts.size()):
+		var action_contract := contracts[index] as Dictionary
+		_assert_eq(
+			action_contract.get("id"),
+			EXPECTED_ACTION_IDS[index],
+			"action contract order must match canonical ids",
+		)
+		_assert_eq(
+			action_contract.get("target_rule_status"),
+			"frozen",
+			"target rules must stay frozen in policy metadata",
+		)
+		_assert_eq(
+			action_contract.get("resolution_timing_status"),
+			"frozen",
+			"D3 resolution timing must stay frozen in policy metadata",
+		)
+		_assert_eq(
+			action_contract.get("stamina_cost_status"),
+			"frozen",
+			"D6 Stamina costs must stay frozen in policy metadata",
+		)
+		_assert_eq(
+			action_contract.get("stat_scaling_status"),
+			"pending",
+			"stat scaling must remain pending until numerical design freeze",
+		)
+		_assert_eq(
+			action_contract.get("effect_status"),
+			"pending",
+			"action effects must remain pending until defensive effects freeze",
+		)
+
+
+func _valid_state() -> Dictionary:
+	return {
+		"format": "1v1",
+		"fighters":
+		[
+			_fighter("a", "alpha"),
+			_fighter("b", "beta"),
+		],
+	}
+
+
+func _fighter(id: String, team: String) -> Dictionary:
+	return {
+		"id": id,
+		"team": team,
+		"stats": {"FUE": 10, "AGI": 10, "TEC": 10, "RES": 10, "PV": 100},
+		"stamina": 100,
+	}
+
+
+func _assert_true(condition: bool, message: String) -> void:
+	if not condition:
+		_failures.append(message)
+
+
+func _assert_eq(actual: Variant, expected: Variant, message: String) -> void:
+	if actual != expected:
+		_failures.append("%s (expected=%s actual=%s)" % [message, str(expected), str(actual)])

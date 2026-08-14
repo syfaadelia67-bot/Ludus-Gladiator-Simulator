@@ -1,31 +1,36 @@
 extends Node
 
+
 func run() -> void:
-    for week in range(1, 17):
-        var details: Dictionary = CombatManager.get_event_details_for_week(week)
-        assert(not details.is_empty())
-        assert(str(details.get("type", "none")) != "none")
-        assert(str(details.get("name", "")).length() > 0)
+	assert(TournamentManager.is_grand_tournament_month(13))
+	assert(TournamentManager.is_grand_tournament_month(16))
+	assert(TournamentManager.is_grand_tournament_month(20))
+	assert(not TournamentManager.is_grand_tournament_month(12))
+	assert(not TournamentManager.is_grand_tournament_month(19))
 
-    var finale: Dictionary = CombatManager.get_event_details_for_week(16)
-    assert(str(finale.get("type", "")) == "demo_finale")
-    assert(str(finale.get("name", "")) == "Combate final de la demo")
-    assert(bool(finale.get("finale", false)))
-    assert(str(CombatManager.get_event_type_for_week(12)) == "official")
-    assert(str(CombatManager.get_event_type_for_week(15)) == "beast_hunt")
+	var month_13 := TournamentManager.get_gt1_encounter(13)
+	var month_16 := TournamentManager.get_gt1_encounter(16)
+	var month_20 := TournamentManager.get_gt1_encounter(20)
+	assert(str(month_13.get("format", "")) == "1v1")
+	assert(str(month_16.get("format", "")) == "1v1")
+	assert(str(month_20.get("format", "")) == "2v2")
+	assert(int(month_13.get("series_bouts", 0)) == 3)
+	assert(int(month_16.get("series_bouts", 0)) == 3)
+	assert(int(month_20.get("series_bouts", 0)) == 3)
 
-    var calendar_source := FileAccess.get_file_as_string("res://scripts/ui/weekly_calendar_presenter.gd")
-    var start_source := FileAccess.get_file_as_string("res://scripts/ui/start_screen_controller.gd")
-    assert(calendar_source.contains("week > DEMO_FINAL_WEEK"))
-    assert(calendar_source.contains("— FINAL"))
-    assert(calendar_source.contains("PREPARACIÓN PARA EL COMBATE FINAL"))
-    assert(calendar_source.contains("Victorias acumuladas: %d/%d"))
-    assert(calendar_source.contains("REQUIRED_FINALE_WINS := 6"))
-    assert(calendar_source.contains("CampaignManager.get_summary()"))
-    assert(calendar_source.contains("final_combat_resolved"))
-    assert(calendar_source.contains("Entrá en Arena"))
-    assert(calendar_source.contains("faltan %d victorias"))
-    assert(start_source.contains("if week == 16"))
-    assert(start_source.contains("return _t(\"BATTLE_DEMO_FINAL\")"))
+	var calendar_source := FileAccess.get_file_as_string(
+		"res://scripts/ui/weekly_calendar_presenter.gd"
+	)
+	assert(calendar_source.contains("DEMO_FINAL_MONTH := 20"))
+	assert(calendar_source.contains("GameState.month_advanced.connect"))
+	assert(calendar_source.contains("TournamentManager.is_grand_tournament_month(month)"))
+	assert(calendar_source.contains("TournamentManager.get_gt1_encounter(month)"))
+	assert(calendar_source.contains("CALENDARIO MENSUAL"))
+	assert(not calendar_source.contains("DEMO_FINAL_WEEK"))
+	assert(not calendar_source.contains("CombatManager.get_event_details_for_week"))
 
-    print("Localized weekly campaign calendar contract: OK")
+	var game_state_source := FileAccess.get_file_as_string("res://scripts/core/game_state.gd")
+	assert(game_state_source.contains("TournamentManager.get_gt1_encounter(get_month())"))
+	assert(not game_state_source.contains("CombatManager.get_current_event_details()"))
+
+	print("Monthly campaign calendar and GT I contract: OK")

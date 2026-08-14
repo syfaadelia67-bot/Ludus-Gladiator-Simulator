@@ -1,6 +1,6 @@
 [gd_scene load_steps=6 format=3]
 
-[ext_resource path="res://scripts/ui/market_screen.gd" type="Script" id="1"]
+[ext_resource path="res://scripts/ui/market_screen_monthly.gd" type="Script" id="1"]
 [ext_resource path="res://assets/placeholders/pack_000/ui/facilities/facility_market.png" type="Texture2D" id="2_market"]
 [ext_resource path="res://assets/placeholders/pack_000/ui/arena_combat/combat_attack.png" type="Texture2D" id="3_fighter"]
 [ext_resource path="res://assets/placeholders/pack_000/ui/equipment/equipment_weapon_sword.png" type="Texture2D" id="4_equipment"]
@@ -41,7 +41,7 @@ custom_minimum_size = Vector2(390, 0)
 layout_mode = 2
 horizontal_alignment = 2
 vertical_alignment = 1
-text = "RENOVACIÓN GENERAL"
+text = "ROTACIÓN DEL MERCADO"
 
 [node name="Landing" type="VBoxContainer" parent="."]
 layout_mode = 2
@@ -183,7 +183,7 @@ text = "OFERTAS DE LUCHADORES"
 [node name="Help" type="Label" parent="ContentShell/FightersView/OffersPanel/Margin/Content"]
 layout_mode = 2
 autowrap_mode = 3
-text = "Estas ofertas cambian automáticamente junto con todo el mercado cada tres semanas."
+text = "Los gladiadores únicos disponibles se actualizan con el avance mensual."
 
 [node name="List" type="ItemList" parent="ContentShell/FightersView/OffersPanel/Margin/Content"]
 custom_minimum_size = Vector2(0, 420)
@@ -277,12 +277,13 @@ custom_minimum_size = Vector2(310, 48)
 layout_mode = 2
 icon = ExtResource("5_gold")
 expand_icon = true
-text = "RENOVAR EQUIPAMIENTO · 100"
+disabled = true
+text = "RENOVACIÓN MANUAL NO DISPONIBLE"
 
 [node name="Help" type="Label" parent="ContentShell/EquipmentView/OffersPanel/Margin/Content"]
 layout_mode = 2
 autowrap_mode = 3
-text = "La renovación manual cambia únicamente estos objetos. Los luchadores permanecen iguales."
+text = "Durante la demo, las armas y protecciones se obtienen mediante la Forja."
 
 [node name="List" type="ItemList" parent="ContentShell/EquipmentView/OffersPanel/Margin/Content"]
 custom_minimum_size = Vector2(0, 390)
@@ -327,11 +328,12 @@ custom_minimum_size = Vector2(0, 280)
 layout_mode = 2
 bbcode_enabled = true
 fit_content = true
-text = "Seleccioná un objeto."
+text = "Durante la demo, fabricá equipamiento desde la Forja."
 
 [node name="Buy" type="Button" parent="ContentShell/EquipmentView/DetailsPanel/Margin/Scroll/Content"]
 custom_minimum_size = Vector2(0, 58)
 layout_mode = 2
 icon = ExtResource("5_gold")
 expand_icon = true
-text = "COMPRAR EQUIPAMIENTO"
+disabled = true
+text = "EQUIPAMIENTO DISPONIBLE EN FORJA"

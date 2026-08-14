@@ -1,0 +1,127 @@
+name: Combat Soak
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/combat-soak.yml'
+      - 'game/tests/combat_soak_test.gd'
+      - 'game/scripts/combat/**'
+      - 'game/scripts/ui/combat_v1_arena_runtime*.gd'
+      - 'game/scripts/ui/arena_screen_monthly.gd'
+      - 'game/scripts/systems/gladiator_progression_manager.gd'
+      - 'game/scripts/systems/tournament_manager_demo_monthly.gd'
+      - 'game/data/skill_mechanics_v1.json'
+      - 'game/data/rival_ludi*.json'
+  workflow_dispatch:
+    inputs:
+      combat_count:
+        description: 'Total complete Combat V1 fights; must be divisible by 6'
+        required: true
+        default: '1500'
+        type: string
+      seed_base:
+        description: 'First deterministic combat seed'
+        required: true
+        default: '61001'
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: combat-soak-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  GODOT_VERSION: 4.5.2
+  DEFAULT_COMBAT_COUNT: '1500'
+  DEFAULT_SEED_BASE: '61001'
+  SHARD_COUNT: '6'
+
+jobs:
+  combat-soak:
+    name: Combat soak shard ${{ matrix.shard }}/6
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1, 2, 3, 4, 5]
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Set up Godot
+        uses: chickensoft-games/setup-godot@f166999204a4f2722c6fe042fbaa3b3ea0d9c789 # v2
+        with:
+          version: ${{ env.GODOT_VERSION }}
+          use-dotnet: false
+          include-templates: false
+
+      - name: Verify Godot version
+        shell: bash
+        run: test "$(godot --version)" = "4.5.2.stable.official.6ce3de25a"
+
+      - name: Import resources
+        run: godot --headless --editor --path game --quit
+
+      - name: Run Combat V1 soak shard
+        shell: bash
+        env:
+          DISPATCH_COMBAT_COUNT: ${{ inputs.combat_count }}
+          DISPATCH_SEED_BASE: ${{ inputs.seed_base }}
+          SHARD_INDEX: ${{ matrix.shard }}
+        run: |
+          set -euo pipefail
+          combat_count="${DISPATCH_COMBAT_COUNT:-${DEFAULT_COMBAT_COUNT}}"
+          seed_base="${DISPATCH_SEED_BASE:-${DEFAULT_SEED_BASE}}"
+          shard_index="$SHARD_INDEX"
+
+          if ! [[ "$combat_count" =~ ^[0-9]+$ ]] || [ "$combat_count" -lt "$SHARD_COUNT" ]; then
+            echo "combat_count must be an integer >= ${SHARD_COUNT}."
+            exit 2
+          fi
+          if [ $((combat_count % SHARD_COUNT)) -ne 0 ]; then
+            echo "combat_count=${combat_count} must be divisible by ${SHARD_COUNT}."
+            exit 2
+          fi
+          if ! [[ "$seed_base" =~ ^[0-9]+$ ]]; then
+            echo 'seed_base must be a positive integer.'
+            exit 2
+          fi
+
+          per_shard=$((combat_count / SHARD_COUNT))
+          shard_seed_base=$((seed_base + shard_index * per_shard))
+          mkdir -p game/test-results
+          log_path="game/test-results/combat-soak-shard-${shard_index}.log"
+
+          echo "COMBAT SOAK SHARD: index=${shard_index}/${SHARD_COUNT} · combats=${per_shard} · seed_base=${shard_seed_base}"
+          set +e
+          timeout --signal=TERM --kill-after=10s 1200s \
+            godot --headless --path game -- \
+              --test=res://tests/combat_soak_test.gd \
+              --combat-count="$per_shard" \
+              --combat-seed-base="$shard_seed_base" \
+            2>&1 | tee "$log_path"
+          godot_status=${PIPESTATUS[0]}
+          set -e
+          if [ "$godot_status" -ne 0 ]; then
+            echo "Combat soak shard ${shard_index} exited with status $godot_status."
+            exit "$godot_status"
+          fi
+          grep -F "COMBAT SOAK SUMMARY: completed=${per_shard}/${per_shard}" "$log_path"
+          grep -F 'failures=0' "$log_path"
+          grep -F 'Combat V1 multi-format headless soak test: OK' "$log_path"
+
+      - name: Upload Combat V1 soak diagnostics
+        if: always()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        with:
+          name: combat-soak-shard-${{ matrix.shard }}-results-${{ github.run_attempt }}
+          path: game/test-results/combat-soak-shard-${{ matrix.shard }}.log
+          if-no-files-found: warn
+          retention-days: 14

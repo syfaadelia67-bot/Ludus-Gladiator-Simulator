@@ -168,7 +168,22 @@ jobs:
         run: |
           set -euo pipefail
           mapfile -d '' FILES < changed-gdscript.bin
+          set +e
           .ci-venv/bin/gdformat --check "${FILES[@]}"
+          FORMAT_STATUS=$?
+          set -e
+          if [ "$FORMAT_STATUS" -ne 0 ]; then
+            echo 'gdformat requires the following changes:'
+            .ci-venv/bin/gdformat "${FILES[@]}"
+            git diff -- "${FILES[@]}"
+            {
+              echo '### Required gdformat diff'
+              echo '```diff'
+              git diff -- "${FILES[@]}"
+              echo '```'
+            } >> "$GITHUB_STEP_SUMMARY"
+            exit "$FORMAT_STATUS"
+          fi
 
       - name: Lint GDScript
         if: steps.changed-gdscript.outputs.has_files == 'true'

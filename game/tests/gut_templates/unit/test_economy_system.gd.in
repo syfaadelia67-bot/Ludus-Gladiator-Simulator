@@ -4,87 +4,90 @@ const ECONOMY_MANAGER_SCRIPT := preload("res://scripts/systems/economy_manager_w
 
 var manager
 
+
 func before_each() -> void:
     manager = autofree(ECONOMY_MANAGER_SCRIPT.new())
 
-func test_weekly_projection_combines_income_fixed_costs_and_debt_payments() -> void:
+
+func test_monthly_projection_uses_only_frozen_operating_costs() -> void:
     manager.active_contracts.assign([
-        {"weekly_income":30, "weeks_remaining":4},
-        {"daily_income":20, "days_remaining":2}
+        {"monthly_income": 30, "months_remaining": 4},
+        {"daily_income": 20, "days_remaining": 2},
     ])
     manager.active_loans.assign([
-        {"installment":25, "remaining":10, "weeks_remaining":3},
-        {"installment":12, "remaining":30, "days_remaining":4}
+        {"installment": 25, "remaining": 10, "months_remaining": 3},
+        {"installment": 12, "remaining": 30, "days_remaining": 4},
     ])
 
-    var fixed_costs: int = manager.get_weekly_fixed_costs()
-    var projection: Dictionary = manager.get_weekly_projection()
+    var fixed_costs: int = manager.get_monthly_fixed_costs()
+    var projection: Dictionary = manager.get_monthly_projection()
 
-    assert_eq(int(projection.get("sponsor_income", -1)), 50)
-    assert_eq(int(projection.get("loan_payments", -1)), 22)
+    assert_eq(str(projection.get("period", "")), "month")
+    assert_eq(int(projection.get("sponsor_income", -1)), 0)
+    assert_eq(int(projection.get("loan_payments", -1)), 0)
     assert_eq(int(projection.get("fixed_costs", -1)), fixed_costs)
-    assert_eq(int(projection.get("expenses", -1)), fixed_costs + 22)
-    assert_eq(int(projection.get("net", 999999)), 50 - fixed_costs - 22)
-    assert_eq(int(projection.get("debt", -1)), 40)
+    assert_eq(int(projection.get("net", 999999)), -fixed_costs)
+    assert_eq(str(projection.get("sponsor_balance_status", "")), "pending_monthly_design")
+    assert_eq(str(projection.get("loan_balance_status", "")), "pending_monthly_design")
+    assert_eq(manager.get_total_debt(), 40)
 
-func test_import_normalizes_legacy_daily_fields_to_weekly_aliases() -> void:
-    manager.import_state({
-        "active_contracts":[{
-            "sponsor_id":"local_merchant",
-            "days_remaining":3,
-            "daily_income":18
-        }],
-        "active_loans":[{
-            "loan_id":"small",
-            "days_remaining":5,
-            "remaining":100,
-            "installment":20
-        }],
-        "ledger":[{
-            "day":4,
-            "amount":18,
-            "reason":"Ingreso diario de Mercaderes"
-        }],
-        "missed_payments":0,
-        "insolvency_days":0,
-        "serial":2
-    })
 
-    var contract: Dictionary = manager.active_contracts[0]
-    var loan: Dictionary = manager.active_loans[0]
-    var entry: Dictionary = manager.ledger[0]
+func test_legacy_wrapper_has_no_daily_or_weekly_authority() -> void:
+    var contract: Dictionary = manager.get_contract()
 
-    assert_eq(int(contract.get("weeks_remaining", -1)), 3)
-    assert_eq(int(contract.get("days_remaining", -1)), 3)
-    assert_eq(int(contract.get("weekly_income", -1)), 18)
-    assert_eq(int(contract.get("daily_income", -1)), 18)
-    assert_eq(int(loan.get("weeks_remaining", -1)), 5)
-    assert_eq(int(loan.get("days_remaining", -1)), 5)
-    assert_eq(int(entry.get("week", -1)), 4)
-    assert_eq(int(entry.get("day", -1)), 4)
-    assert_true(str(entry.get("reason", "")).contains("Ingreso semanal de"))
+    assert_eq(str(contract.get("status", "")), "compatibility_only")
+    assert_eq(str(contract.get("canonical_authority", "")), "monthly_economy_runtime")
+    assert_false(bool(contract.get("weekly_scheduler_authority", true)))
+    assert_false(bool(contract.get("daily_scheduler_authority", true)))
+    assert_false(bool(contract.get("sponsor_balance_authority", true)))
+    assert_false(bool(contract.get("loan_balance_authority", true)))
+    assert_false(bool(contract.get("save_version_change_required", true)))
 
-func test_export_preserves_weekly_insolvency_and_normalized_collections() -> void:
-    manager.insolvency_days = 6
-    manager.active_contracts.assign([{"days_remaining":2, "daily_income":11}])
-    manager.active_loans.assign([{"days_remaining":3, "remaining":44, "installment":9}])
+
+func test_export_import_preserves_monthly_runtime_state_without_schema_bump() -> void:
+    manager.last_processed_month = 6
+    manager.last_monthly_report = {
+        "status": "resolved",
+        "period": "month",
+        "month": 6,
+        "operating_costs": 88,
+    }
+    manager.active_loans.assign([{"remaining": 44}])
 
     var exported: Dictionary = manager.export_state()
-    var contract: Dictionary = exported.get("active_contracts", [])[0]
-    var loan: Dictionary = exported.get("active_loans", [])[0]
+    assert_eq(int(exported.get("last_processed_month", 0)), 6)
+    assert_eq(int((exported.get("last_monthly_report", {}) as Dictionary).get("month", 0)), 6)
 
-    assert_eq(int(exported.get("insolvency_weeks", -1)), 6)
-    assert_eq(int(contract.get("weeks_remaining", -1)), 2)
-    assert_eq(int(contract.get("weekly_income", -1)), 11)
-    assert_eq(int(loan.get("weeks_remaining", -1)), 3)
+    var restored = autofree(ECONOMY_MANAGER_SCRIPT.new())
+    restored.import_state(exported)
+    assert_eq(restored.last_processed_month, 6)
+    assert_eq(int(restored.last_monthly_report.get("operating_costs", 0)), 88)
+    assert_eq(restored.get_total_debt(), 44)
 
-func test_bankruptcy_levels_are_monotonic() -> void:
-    manager.missed_payments = 0
-    manager.insolvency_days = 0
-    assert_eq(manager.get_bankruptcy_level(), 0)
-    manager.missed_payments = 1
-    assert_eq(manager.get_bankruptcy_level(), 1)
-    manager.missed_payments = 3
-    assert_eq(manager.get_bankruptcy_level(), 2)
+
+func test_bankruptcy_legacy_thresholds_are_quarantined() -> void:
     manager.missed_payments = 6
-    assert_eq(manager.get_bankruptcy_level(), 3)
+    manager.insolvency_days = 20
+
+    assert_eq(manager.get_bankruptcy_level(), 0)
+    assert_true(manager.get_bankruptcy_message().contains("fuera del alcance"))
+
+
+func test_sponsors_and_loans_fail_closed_without_mutating_legacy_state() -> void:
+    var contracts_before: int = manager.active_contracts.size()
+    var loans_before: int = manager.active_loans.size()
+    var serial_before: int = manager.serial
+
+    assert_false(manager.sign_contract("local_merchant"))
+    assert_false(manager.take_loan("small"))
+
+    assert_eq(manager.active_contracts.size(), contracts_before)
+    assert_eq(manager.active_loans.size(), loans_before)
+    assert_eq(manager.serial, serial_before)
+    assert_false(bool(manager.get_sponsor("local_merchant").get("demo_available", true)))
+    assert_false(bool(manager.get_loan_product("small").get("demo_available", true)))
+    var contract: Dictionary = manager.get_monthly_runtime_contract()
+    assert_true(bool(contract.get("unfrozen_actions_fail_closed", false)))
+    assert_false(bool(contract.get("sponsor_demo_available", true)))
+    assert_false(bool(contract.get("loan_demo_available", true)))
+    assert_false(bool(contract.get("bankruptcy_demo_available", true)))

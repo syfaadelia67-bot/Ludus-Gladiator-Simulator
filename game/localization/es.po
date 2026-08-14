@@ -38,7 +38,7 @@ msgid "START_GAME_TITLE"
 msgstr "GLADIATOR SIMULATOR"
 
 msgid "START_SUBTITLE"
-msgstr "Forjá una casa de gladiadores. Sobreviví dieciséis semanas."
+msgstr "Forjá una casa de gladiadores. Alcanzá el mes 20 y competí por Roma."
 
 msgid "START_VIEW_FINAL_RESULT"
 msgstr "Ver resultado final"
@@ -131,10 +131,10 @@ msgid "START_RESULT_DEFEAT"
 msgstr "DERROTA"
 
 msgid "START_CAMPAIGN_FINISHED_SUMMARY"
-msgstr "{owner}\nCampaña finalizada — {result}\nSemana {week} de 16 | Combates: {wins} victorias, {losses} derrotas"
+msgstr "{owner}\nCampaña finalizada — {result}\nMes {week} de 20 | Torneo de Marte: {wins} victorias, {losses} derrotas"
 
 msgid "START_ACTIVE_CAMPAIGN_SUMMARY"
-msgstr "{owner}\nSemana {week} de 16 — Capítulo {chapter}: {chapter_name}\nPróximo combate: {battle}"
+msgstr "{owner}\nMes {week} de 20 — Capítulo {chapter}: {chapter_name}\nActividad: {battle}"
 
 msgid "OWNER_TITLE_DOMINUS"
 msgstr "Dominus"
@@ -155,7 +155,7 @@ msgid "BATTLE_DEMO_FINAL"
 msgstr "Combate final de la demo"
 
 msgid "BATTLE_OFFICIAL_TOURNAMENT"
-msgstr "Torneo oficial de la arena"
+msgstr "Torneo de Marte"
 
 msgid "BATTLE_BEAST_HUNT"
 msgstr "Cacería de bestias del anfiteatro"
@@ -164,4 +164,4 @@ msgid "BATTLE_UNDERGROUND"
 msgstr "Combate clandestino del bajo mundo"
 
 msgid "BATTLE_WEEKLY_EXHIBITION"
-msgstr "Exhibición semanal del ludus"
+msgstr "Mes de gestión · Arena disponible"

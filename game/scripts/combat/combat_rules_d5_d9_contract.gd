@@ -1,0 +1,117 @@
+extends RefCounted
+
+const FROZEN_STATUS := "frozen"
+
+const CONTRACT := {
+	"D5":
+	{
+		"id": "armor_and_vulnerability",
+		"status": FROZEN_STATUS,
+		"armor_source": "equipment_defense",
+		"armor_is_separate_from_res": true,
+		"body_part_armor_model": false,
+		"vulnerability_authority": "combat_simulator",
+		"vulnerability_is_explicit_state": true,
+		"numeric_mitigation_status": FROZEN_STATUS,
+		"penetration_status": "disabled_v1",
+	},
+	"D6":
+	{
+		"id": "stamina",
+		"status": FROZEN_STATUS,
+		"resource_field": "stamina",
+		"capacity_field": "stamina_capacity",
+		"minimum": 0,
+		"negative_values_allowed": false,
+		"insufficient_stamina_behavior": "reject_action",
+		"action_costs":
+		{
+			"light": 3,
+			"heavy": 5,
+			"block": 2,
+			"parry": 3,
+			"dodge": 4,
+			"reposition": 2,
+			"recover": 0,
+		},
+		"recovery_amount": 2,
+		"recovery_timing": "end_exchange",
+		"recovery_action_id": "recover",
+		"recovery_action_cost": 0,
+		"cost_table_status": FROZEN_STATUS,
+		"recovery_amount_status": FROZEN_STATUS,
+		"recovery_timing_status": FROZEN_STATUS,
+	},
+	"D7":
+	{
+		"id": "accuracy_and_critical",
+		"status": FROZEN_STATUS,
+		"hit_rng_allowed": false,
+		"critical_hits_enabled": false,
+		"accuracy_resolution_owner": "combat_simulator",
+		"accuracy_formula_status": FROZEN_STATUS,
+		"attacker_stat": "TEC",
+		"defender_stat": "AGI",
+		"action_accuracy_modifiers": {"light": 1.0, "heavy": 0.0},
+		"hit_rule": "attack_score_gte_evasion_score",
+	},
+	"D8":
+	{
+		"id": "stat_scaling",
+		"status": FROZEN_STATUS,
+		"roles":
+		{
+			"FUE": ["offensive_power"],
+			"AGI": ["evasion", "reposition"],
+			"TEC": ["accuracy", "parry"],
+			"RES": ["mitigation", "block"],
+			"PV": ["maximum_health"],
+		},
+		"weights":
+		{
+			"FUE": {"light_damage": 0.35, "heavy_damage": 0.50},
+			"AGI": {"base_evasion": 1.0},
+			"TEC": {"accuracy": 1.0, "parry": 1.0},
+			"RES": {"damage_mitigation": 0.15, "block_reduction": 0.25},
+			"PV": {"maximum_health": 1.0},
+		},
+		"flat_action_modifiers":
+		{
+			"light_accuracy": 1.0,
+			"heavy_accuracy": 0.0,
+			"dodge_evasion": 2.0,
+			"reposition_evasion": 1.0,
+		},
+		"legacy_endurance_substitution_allowed": false,
+		"weights_status": FROZEN_STATUS,
+	},
+	"D9":
+	{
+		"id": "ko_and_surrender",
+		"status": FROZEN_STATUS,
+		"runtime_health_field": "current_pv",
+		"maximum_health_source": "stats.PV",
+		"ko_condition": "current_pv_lte_zero",
+		"ko_authority": "combat_simulator",
+		"combat_end_condition": "team_elimination",
+		"double_ko_outcome": "double_ko",
+		"surrender_is_base_action": false,
+		"surrender_rng_allowed": false,
+		"automatic_surrender": "disabled_v1",
+		"surrender_rules_status": FROZEN_STATUS,
+	},
+}
+
+
+func get_contract(decision_id: String) -> Dictionary:
+	if not CONTRACT.has(decision_id):
+		return {}
+	return (CONTRACT[decision_id] as Dictionary).duplicate(true)
+
+
+func get_contracts() -> Dictionary:
+	return CONTRACT.duplicate(true)
+
+
+func get_pending_numeric_requirements() -> Array[String]:
+	return []
