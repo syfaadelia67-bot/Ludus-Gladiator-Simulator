@@ -24,6 +24,9 @@ const POLICY_CONTEXT_KEYS := [
 	"target_candidates",
 	"legal_targets",
 	"combat_state",
+	"tactical_plan",
+	"exchange_index",
+	"last_exchange_result",
 	"desired_action",
 ]
 
@@ -51,8 +54,10 @@ func get_runtime_status() -> Dictionary:
 	}
 
 
-func build_policy_context(state: Dictionary, actor_id: String) -> Dictionary:
-	return _context_builder.build_context(state, actor_id)
+func build_policy_context(
+	state: Dictionary, actor_id: String, decision_context: Dictionary = {}
+) -> Dictionary:
+	return _context_builder.build_context(state, actor_id, decision_context)
 
 
 func extract_desired_action(policy_context: Dictionary) -> Dictionary:
