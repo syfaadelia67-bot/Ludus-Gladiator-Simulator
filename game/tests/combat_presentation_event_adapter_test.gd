@@ -9,6 +9,7 @@ func _ready() -> void:
 	var adapter = CombatPresentationEventAdapterScript.new()
 	_assert_contract(adapter)
 	_assert_resolved_exchange_is_projected_without_new_math(adapter)
+	_assert_skill_activation_is_projected_from_resolved_intent(adapter)
 	_assert_unresolved_input_emits_nothing(adapter)
 	print("Combat presentation event adapter: OK")
 	get_tree().quit(0)
@@ -113,6 +114,33 @@ func _assert_resolved_exchange_is_projected_without_new_math(adapter) -> void:
 	assert(str(events[9].get("type", "")) == "combat_finished")
 	assert(str(events[9].get("winner_team_id", "")) == "alpha")
 	assert(str(events[9].get("loser_team_id", "")) == "beta")
+
+
+func _assert_skill_activation_is_projected_from_resolved_intent(adapter) -> void:
+	var exchange_result := {
+		"status": "resolved",
+		"submitted_intents":
+		[
+			{
+				"actor_id": "a",
+				"action_id": "heavy",
+				"target_id": "b",
+				"skill_activation": {"skill_id": "charge", "rank": 1},
+			},
+		],
+		"stamina_spend_results": [],
+		"attack_results": [],
+		"ko_fighter_ids": [],
+		"stamina_recovery_results": [],
+		"combat_end_resolved": false,
+	}
+	var before := exchange_result.duplicate(true)
+	var events: Array[Dictionary] = adapter.build_exchange_events(2, exchange_result)
+	assert(exchange_result == before, "Skill projection must not mutate simulator output")
+	assert(events.size() == 2)
+	assert(str(events[1].get("type", "")) == "action_declared")
+	assert(str(events[1].get("skill_id", "")) == "charge")
+	assert(str(events[1].get("action_id", "")) == "heavy")
 
 
 func _assert_unresolved_input_emits_nothing(adapter) -> void:
