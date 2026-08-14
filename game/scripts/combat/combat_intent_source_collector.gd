@@ -32,19 +32,15 @@ func collect(
 	var active_fighters := _active_fighters(state)
 	var active_ids: Array[String] = []
 	var player_ids: Array[String] = []
-	var ai_ids: Array[String] = []
 	for fighter in active_fighters:
 		var actor_id := str(fighter.get("id", ""))
 		active_ids.append(actor_id)
 		if str(fighter.get("team", "")) == player_team_id:
 			player_ids.append(actor_id)
-		else:
-			ai_ids.append(actor_id)
 
 	var source_errors := _validate_source_keys(
 		active_ids,
 		player_ids,
-		ai_ids,
 		player_intents_by_actor,
 		ai_requests_by_actor,
 	)
@@ -89,8 +85,11 @@ func collect(
 func get_contract() -> Dictionary:
 	return {
 		"status": "frozen",
-		"player_source": "explicit_desired_action",
-		"ai_source": "limboai_policy_runner",
+		"primary_source": "limboai_policy_runner",
+		"legacy_player_source": "explicit_desired_action",
+		"legacy_player_source_runtime_required": false,
+		"limboai_allowed_for_player_fighters": true,
+		"limboai_allowed_for_rival_fighters": true,
 		"collection_scope": "exactly_one_source_per_active_fighter",
 		"inactive_or_unknown_source": "reject",
 		"missing_source": "reject",
@@ -109,9 +108,13 @@ func _resolve_fighter_intent(
 	ai_requests_by_actor: Dictionary
 ) -> Dictionary:
 	var actor_id := str(fighter.get("id", ""))
+	if ai_requests_by_actor.has(actor_id):
+		return _resolve_ai_intent(state, actor_id, ai_requests_by_actor.get(actor_id, null))
 	if str(fighter.get("team", "")) == player_team_id:
 		return _resolve_player_intent(state, actor_id, player_intents_by_actor.get(actor_id, null))
-	return _resolve_ai_intent(state, actor_id, ai_requests_by_actor.get(actor_id, null))
+	return _actor_rejected(
+		"missing_ai_request", ["Fighter %s requires one LimboAI request" % actor_id]
+	)
 
 
 func _resolve_player_intent(state: Dictionary, actor_id: String, raw_intent: Variant) -> Dictionary:
@@ -131,7 +134,7 @@ func _resolve_player_intent(state: Dictionary, actor_id: String, raw_intent: Var
 			_to_string_array(translated.get("errors", [])),
 		)
 	return _actor_ready(
-		"player",
+		"player_legacy",
 		translated.get("desired_action", {}) as Dictionary,
 		translated.get("skill_activation", {}) as Dictionary,
 	)
@@ -141,15 +144,19 @@ func _resolve_ai_intent(state: Dictionary, actor_id: String, raw_request: Varian
 	if not raw_request is Dictionary:
 		return _actor_rejected(
 			"invalid_ai_request",
-			["AI fighter %s requires one LimboAI request Dictionary" % actor_id],
+			["Fighter %s requires one LimboAI request Dictionary" % actor_id],
 		)
 	var ai_request := raw_request as Dictionary
 	var proposal_value: Variant = ai_request.get("policy_proposal", null)
 	if not proposal_value is Dictionary:
 		return _actor_rejected(
 			"invalid_ai_request",
-			["AI fighter %s request requires policy_proposal" % actor_id],
+			["Fighter %s request requires policy_proposal" % actor_id],
 		)
+	var decision_context: Dictionary = {}
+	var decision_context_value: Variant = ai_request.get("decision_context", {})
+	if decision_context_value is Dictionary:
+		decision_context = (decision_context_value as Dictionary).duplicate(true)
 	var agent := ai_request.get("agent", null) as Node
 	var instance_owner := ai_request.get("instance_owner", null) as Node
 	var ai_result: Dictionary = (
@@ -160,6 +167,7 @@ func _resolve_ai_intent(state: Dictionary, actor_id: String, raw_request: Varian
 			proposal_value as Dictionary,
 			agent,
 			instance_owner,
+			decision_context,
 		)
 	)
 	if ai_result.get("status") != "ready":
@@ -225,7 +233,6 @@ func _active_fighters(state: Dictionary) -> Array[Dictionary]:
 func _validate_source_keys(
 	active_ids: Array[String],
 	player_ids: Array[String],
-	ai_ids: Array[String],
 	player_intents_by_actor: Dictionary,
 	ai_requests_by_actor: Dictionary
 ) -> Array[String]:
@@ -242,14 +249,13 @@ func _validate_source_keys(
 		var actor_id := str(raw_actor_id)
 		if not active_ids.has(actor_id):
 			errors.append("AI intent source references inactive or unknown fighter %s" % actor_id)
-		elif not ai_ids.has(actor_id):
-			errors.append("AI intent source references player fighter %s" % actor_id)
-	for actor_id in player_ids:
-		if not player_intents_by_actor.has(actor_id):
-			errors.append("Missing player intent source for active fighter %s" % actor_id)
-	for actor_id in ai_ids:
-		if not ai_requests_by_actor.has(actor_id):
-			errors.append("Missing AI intent source for active fighter %s" % actor_id)
+	for actor_id in active_ids:
+		var has_player_intent := player_intents_by_actor.has(actor_id)
+		var has_ai_request := ai_requests_by_actor.has(actor_id)
+		if has_player_intent and has_ai_request:
+			errors.append("Fighter %s has more than one intent source" % actor_id)
+		elif not has_player_intent and not has_ai_request:
+			errors.append("Missing intent source for active fighter %s" % actor_id)
 	return errors
 
 
