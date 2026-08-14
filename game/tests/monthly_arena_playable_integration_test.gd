@@ -26,8 +26,11 @@ func run() -> void:
 	_add_test_gladiator("qa_arena_1v2", "QA Arena 1v2")
 	_add_test_gladiator("qa_arena_2v2_a", "QA Arena 2v2 A")
 	_add_test_gladiator("qa_arena_2v2_b", "QA Arena 2v2 B")
-	GladiatorProgressionManager.set_tactical_plan(
-		"qa_arena_1v1", [{"ability_id": "charge", "condition": "always"}]
+	assert(
+		GladiatorProgressionManager.set_tactical_plan(
+			"qa_arena_1v1", [{"ability_id": "charge", "condition": "always"}]
+		),
+		"Arena QA gladiator must accept the learned charge Tactical Plan",
 	)
 
 	_assert_month_one_real_ui_flow("qa_arena_1v1")
@@ -268,3 +271,5 @@ func _add_test_gladiator(person_id: String, display_name: String) -> void:
 		)
 	)
 	assert(RosterManager.add_person(person))
+	var record := GladiatorProgressionManager.ensure_record(person_id)
+	record["abilities"] = {"charge": 1}
