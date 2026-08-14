@@ -170,7 +170,28 @@ func _append_presentation_events(events: Array, session: Dictionary) -> void:
 	if exchange_result.is_empty():
 		return
 	var exchange_index := int(combat_result.get("exchange_index", 0))
+	var knocked_out_fighters := _presented_knockout_fighters(events)
 	for raw_event in _presentation_event_adapter.build_exchange_events(
 		exchange_index, exchange_result
 	):
-		events.append((raw_event as Dictionary).duplicate(true))
+		var event := (raw_event as Dictionary).duplicate(true)
+		if str(event.get("type", "")) == "fighter_knocked_out":
+			var fighter_id := str(event.get("fighter_id", ""))
+			if knocked_out_fighters.has(fighter_id):
+				continue
+			knocked_out_fighters[fighter_id] = true
+		events.append(event)
+
+
+func _presented_knockout_fighters(events: Array) -> Dictionary:
+	var result: Dictionary = {}
+	for raw_event in events:
+		if not raw_event is Dictionary:
+			continue
+		var event := raw_event as Dictionary
+		if str(event.get("type", "")) != "fighter_knocked_out":
+			continue
+		var fighter_id := str(event.get("fighter_id", ""))
+		if not fighter_id.is_empty():
+			result[fighter_id] = true
+	return result
