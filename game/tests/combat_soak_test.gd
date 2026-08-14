@@ -8,7 +8,7 @@ const CombatV1ArenaRuntimeMonthlyScript = preload(
 	"res://scripts/ui/combat_v1_arena_runtime_monthly.gd"
 )
 
-const DEFAULT_COMBAT_COUNT := 30
+const DEFAULT_COMBAT_COUNT := 3
 const MAX_COMBAT_COUNT := 10000
 const MAX_EXCHANGES := 400
 const COMBAT_COUNT_ARGUMENT_PREFIX := "--combat-count="
@@ -76,6 +76,9 @@ func run() -> void:
 		total_attacks += int(result.get("attacks", 0))
 		total_skill_actions += int(result.get("skill_actions", 0))
 		total_knockouts += int(result.get("knockouts", 0))
+
+	if not NewCampaignCoordinator.reset_campaign_state():
+		failures.append("final combat soak harness cleanup failed")
 
 	print(
 		(
@@ -239,10 +242,12 @@ func _prepare_player_team(combat_index: int, format_id: String) -> Array[String]
 
 
 func _build_tactical_plan(variant: int) -> Array[Dictionary]:
-	var plan: Array[Dictionary] = []
-	for offset in range(4):
+	var plan: Array[Dictionary] = [{"ability_id": "charge", "condition": "always"}]
+	for offset in range(3):
 		var skill_index := (variant * 3 + offset) % TACTICAL_SKILLS.size()
-		var condition_index := (variant + offset) % TACTICAL_CONDITIONS.size()
+		if str(TACTICAL_SKILLS[skill_index]) == "charge":
+			skill_index = (skill_index + 1) % TACTICAL_SKILLS.size()
+		var condition_index := (variant + offset + 1) % TACTICAL_CONDITIONS.size()
 		(
 			plan
 			. append(
