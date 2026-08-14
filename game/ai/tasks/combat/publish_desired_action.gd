@@ -60,9 +60,7 @@ func _select_automatic_action(state: Dictionary, actor_id: String) -> Dictionary
 			var order := raw_order as Dictionary
 			if not _condition_matches(state, actor, str(order.get("condition", "always"))):
 				continue
-			var skill_action := _build_skill_action(
-				state, actor, str(order.get("ability_id", ""))
-			)
+			var skill_action := _build_skill_action(state, actor, str(order.get("ability_id", "")))
 			if not skill_action.is_empty():
 				return skill_action
 	return _build_basic_fallback(state, actor)
@@ -122,11 +120,17 @@ func _condition_matches(state: Dictionary, actor: Dictionary, condition: String)
 		"opening":
 			return int(blackboard.get_var(&"exchange_index", 0)) == 0
 		"target_vulnerable":
-			return _any_enemy_matches(state, actor, func(enemy: Dictionary): return bool(enemy.get("vulnerable", false)))
+			return _any_enemy_matches(
+				state, actor, func(enemy: Dictionary): return bool(enemy.get("vulnerable", false))
+			)
 		"target_guarding":
 			return _target_was_guarding(actor)
 		"target_low_energy":
-			return _any_enemy_matches(state, actor, func(enemy: Dictionary): return _stamina_ratio(enemy) <= LOW_RESOURCE_RATIO)
+			return _any_enemy_matches(
+				state,
+				actor,
+				func(enemy: Dictionary): return _stamina_ratio(enemy) <= LOW_RESOURCE_RATIO
+			)
 		"self_low_health":
 			return _health_ratio(actor) <= LOW_RESOURCE_RATIO
 		"self_low_energy":
@@ -246,7 +250,10 @@ func _skill_mechanics(skill_id: String) -> Dictionary:
 
 func _find_fighter(state: Dictionary, fighter_id: String) -> Dictionary:
 	for raw_fighter in state.get("fighters", []) as Array:
-		if raw_fighter is Dictionary and str((raw_fighter as Dictionary).get("id", "")) == fighter_id:
+		if (
+			raw_fighter is Dictionary
+			and str((raw_fighter as Dictionary).get("id", "")) == fighter_id
+		):
 			return raw_fighter as Dictionary
 	return {}
 
