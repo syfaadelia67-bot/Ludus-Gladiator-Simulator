@@ -1,0 +1,101 @@
+name: Combat Soak
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/combat-soak.yml'
+      - 'game/tests/combat_soak_test.gd'
+      - 'game/scripts/combat/**'
+      - 'game/scripts/ui/combat_v1_arena_runtime*.gd'
+      - 'game/scripts/ui/arena_screen_monthly.gd'
+      - 'game/scripts/systems/gladiator_progression_manager.gd'
+      - 'game/scripts/systems/tournament_manager_demo_monthly.gd'
+      - 'game/data/skill_mechanics_v1.json'
+      - 'game/data/rival_ludi*.json'
+  workflow_dispatch:
+    inputs:
+      combat_count:
+        description: 'Number of complete Combat V1 fights to simulate'
+        required: true
+        default: '1500'
+        type: string
+      seed_base:
+        description: 'First deterministic combat seed'
+        required: true
+        default: '61001'
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: combat-soak-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  GODOT_VERSION: 4.5.2
+  DEFAULT_COMBAT_COUNT: '1500'
+  DEFAULT_SEED_BASE: '61001'
+
+jobs:
+  combat-soak:
+    name: 1500-combat headless soak
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Set up Godot
+        uses: chickensoft-games/setup-godot@f166999204a4f2722c6fe042fbaa3b3ea0d9c789 # v2
+        with:
+          version: ${{ env.GODOT_VERSION }}
+          use-dotnet: false
+          include-templates: false
+
+      - name: Verify Godot version
+        shell: bash
+        run: test "$(godot --version)" = "4.5.2.stable.official.6ce3de25a"
+
+      - name: Import resources
+        run: godot --headless --editor --path game --quit
+
+      - name: Run Combat V1 soak
+        shell: bash
+        env:
+          DISPATCH_COMBAT_COUNT: ${{ inputs.combat_count }}
+          DISPATCH_SEED_BASE: ${{ inputs.seed_base }}
+        run: |
+          set -euo pipefail
+          combat_count="${DISPATCH_COMBAT_COUNT:-${DEFAULT_COMBAT_COUNT}}"
+          seed_base="${DISPATCH_SEED_BASE:-${DEFAULT_SEED_BASE}}"
+          mkdir -p game/test-results
+          set +e
+          timeout --signal=TERM --kill-after=10s 1200s \
+            godot --headless --path game -- \
+              --test=res://tests/combat_soak_test.gd \
+              --combat-count="$combat_count" \
+              --combat-seed-base="$seed_base" \
+            2>&1 | tee game/test-results/combat-soak.log
+          godot_status=${PIPESTATUS[0]}
+          set -e
+          if [ "$godot_status" -ne 0 ]; then
+            echo "Combat soak exited with status $godot_status."
+            exit "$godot_status"
+          fi
+          grep -F "COMBAT SOAK SUMMARY: completed=${combat_count}/${combat_count}" game/test-results/combat-soak.log
+          grep -F 'failures=0' game/test-results/combat-soak.log
+          grep -F 'Combat V1 multi-format headless soak test: OK' game/test-results/combat-soak.log
+
+      - name: Upload Combat V1 soak diagnostics
+        if: always()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        with:
+          name: combat-soak-results-${{ github.run_attempt }}
+          path: game/test-results/combat-soak.log
+          if-no-files-found: warn
+          retention-days: 14
