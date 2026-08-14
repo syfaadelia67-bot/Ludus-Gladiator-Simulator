@@ -25,6 +25,7 @@ const POLICY_CONTEXT_KEYS := [
 	"legal_targets",
 	"combat_state",
 	"tactical_plan",
+	"skill_mechanics",
 	"exchange_index",
 	"last_exchange_result",
 	"desired_action",
