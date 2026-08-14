@@ -11,7 +11,9 @@ var _fighter_action_policy = CombatFighterActionPolicyScript.new()
 var _target_resolver = CombatTargetResolverScript.new()
 
 
-func build_context(state: Dictionary, actor_id: String) -> Dictionary:
+func build_context(
+	state: Dictionary, actor_id: String, decision_context: Dictionary = {}
+) -> Dictionary:
 	var errors: Array[String] = _combat_contract.validate_state(state)
 	if not errors.is_empty():
 		return {
@@ -68,6 +70,15 @@ func build_context(state: Dictionary, actor_id: String) -> Dictionary:
 			(action_target_result.get("legal_targets", []) as Array).duplicate()
 		)
 
+	var tactical_plan: Array = []
+	var plan_value: Variant = decision_context.get("tactical_plan", [])
+	if plan_value is Array:
+		tactical_plan = (plan_value as Array).duplicate(true)
+	var last_exchange_result: Dictionary = {}
+	var last_exchange_value: Variant = decision_context.get("last_exchange_result", {})
+	if last_exchange_value is Dictionary:
+		last_exchange_result = (last_exchange_value as Dictionary).duplicate(true)
+
 	return {
 		"status": "ready",
 		"errors": [],
@@ -84,6 +95,9 @@ func build_context(state: Dictionary, actor_id: String) -> Dictionary:
 			(target_result.get("candidates", {}) as Dictionary).duplicate(true),
 			"legal_targets": legal_targets.duplicate(true),
 			"combat_state": state.duplicate(true),
+			"tactical_plan": tactical_plan,
+			"exchange_index": maxi(0, int(decision_context.get("exchange_index", 0))),
+			"last_exchange_result": last_exchange_result,
 			"desired_action": {},
 		},
 	}
