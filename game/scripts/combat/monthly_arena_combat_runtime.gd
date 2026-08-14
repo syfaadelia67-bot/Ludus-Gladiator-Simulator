@@ -149,12 +149,11 @@ func get_contract() -> Dictionary:
 
 func _complete_combat(session: Dictionary, combat_result: Dictionary) -> Dictionary:
 	var player_team_id := str(session.get("player_team_id", ""))
-	var player_won := (
-		str(combat_result.get("outcome", "")) == "team_win"
-		and str(combat_result.get("winner_team_id", "")) == player_team_id
-	)
-	var tournament_result := TournamentManager.register_combat_result(
-		str(session.get("fighter_id", "")), player_won
+	var outcome := str(combat_result.get("outcome", ""))
+	var winner_team_id := str(combat_result.get("winner_team_id", ""))
+	var player_won := outcome == "team_win" and winner_team_id == player_team_id
+	var tournament_result := TournamentManager.register_combat_outcome(
+		str(session.get("fighter_id", "")), outcome, winner_team_id, player_team_id
 	)
 	if tournament_result.is_empty():
 		return _rejected(
