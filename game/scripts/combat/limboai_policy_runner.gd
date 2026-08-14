@@ -14,14 +14,17 @@ func evaluate_proposal(
 	actor_id: String,
 	policy_proposal: Dictionary,
 	agent: Node,
-	instance_owner: Node
+	instance_owner: Node,
+	decision_context: Dictionary = {}
 ) -> Dictionary:
 	if agent == null or instance_owner == null:
 		return _rejected(
 			"invalid_runtime_owner", ["Policy runner requires agent and instance_owner"]
 		)
 
-	var context_result: Dictionary = _adapter.build_policy_context(state, actor_id)
+	var context_result: Dictionary = _adapter.build_policy_context(
+		state, actor_id, decision_context
+	)
 	if context_result.get("status") != "ready":
 		return _rejected(
 			str(context_result.get("status", "invalid_context")),
