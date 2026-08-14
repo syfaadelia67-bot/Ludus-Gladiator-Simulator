@@ -79,7 +79,10 @@ func advance_exchange(
 func get_contract() -> Dictionary:
 	return {
 		"status": "frozen",
-		"player_intents": "explicit_desired_actions",
+		"player_intents": "limboai_policy_runner",
+		"rival_intents": "limboai_policy_runner",
+		"legacy_player_intents": "explicit_desired_actions",
+		"legacy_player_intents_runtime_required": false,
 		"ai_intents": "limboai_policy_runner",
 		"collector": "combat_intent_source_collector",
 		"skill_translation": "combat_skill_runtime_resolver",
