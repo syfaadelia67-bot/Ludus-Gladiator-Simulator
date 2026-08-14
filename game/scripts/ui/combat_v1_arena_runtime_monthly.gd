@@ -3,6 +3,9 @@ extends "res://scripts/ui/combat_v1_arena_runtime.gd"
 const CombatIntentSourceCollectorScript = preload(
 	"res://scripts/combat/combat_intent_source_collector.gd"
 )
+const CombatPresentationEventAdapterScript = preload(
+	"res://scripts/combat/combat_presentation_event_adapter.gd"
+)
 const MonthlyArenaCombatRuntimeScript = preload(
 	"res://scripts/combat/monthly_arena_combat_runtime.gd"
 )
@@ -11,6 +14,7 @@ const MAX_AUTOBATTLE_EXCHANGES := 400
 
 var _monthly_runtime = MonthlyArenaCombatRuntimeScript.new()
 var _monthly_intent_collector = CombatIntentSourceCollectorScript.new()
+var _presentation_event_adapter = CombatPresentationEventAdapterScript.new()
 
 
 func start_non_gt_contract(contract: Dictionary, player_team_id: String = "player") -> Dictionary:
@@ -65,6 +69,9 @@ func resolve_autobattle(session: Dictionary, request_provider: Callable) -> Dict
 			["La política LimboAI no está conectada al autobattle."],
 		)
 	var current := session.duplicate(true)
+	var presentation_events: Array = (
+		(current.get("presentation_events", []) as Array).duplicate(true)
+	)
 	var exchanges := 0
 	while str(current.get("status", "")) == "combat_running":
 		if exchanges >= MAX_AUTOBATTLE_EXCHANGES:
@@ -81,6 +88,8 @@ func resolve_autobattle(session: Dictionary, request_provider: Callable) -> Dict
 		var next := advance_exchange(current, {}, request_value as Dictionary)
 		if str(next.get("status", "")) == "rejected":
 			return next
+		_append_presentation_events(presentation_events, next)
+		next["presentation_events"] = presentation_events.duplicate(true)
 		current = next.duplicate(true)
 		exchanges += 1
 	return current
@@ -134,6 +143,7 @@ func build_snapshot(session: Dictionary) -> Dictionary:
 		"rival_ludus_name": str(session.get("rival_ludus_name", "")),
 		"tournament_result":
 		(session.get("last_tournament_result", {}) as Dictionary).duplicate(true),
+		"presentation_events": (session.get("presentation_events", []) as Array).duplicate(true),
 	}
 
 
@@ -147,6 +157,20 @@ func get_contract() -> Dictionary:
 	contract["generated_opponents_allowed"] = false
 	contract["autobattle"] = "limboai_for_all_active_fighters_until_encounter_finished"
 	contract["autobattle_exchange_limit"] = MAX_AUTOBATTLE_EXCHANGES
+	contract["presentation_events"] = "derived_from_combat_simulator_exchange_results"
+	contract["presentation_math_authority"] = false
 	contract["manual_midfight_input_required"] = false
 	contract["save_version_change_required"] = false
 	return contract
+
+
+func _append_presentation_events(events: Array, session: Dictionary) -> void:
+	var combat_result := session.get("last_combat_result", {}) as Dictionary
+	var exchange_result := combat_result.get("last_exchange_result", {}) as Dictionary
+	if exchange_result.is_empty():
+		return
+	var exchange_index := int(combat_result.get("exchange_index", 0))
+	for raw_event in _presentation_event_adapter.build_exchange_events(
+		exchange_index, exchange_result
+	):
+		events.append((raw_event as Dictionary).duplicate(true))
