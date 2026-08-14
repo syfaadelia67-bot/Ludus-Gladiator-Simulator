@@ -74,6 +74,10 @@ func build_context(
 	var plan_value: Variant = decision_context.get("tactical_plan", [])
 	if plan_value is Array:
 		tactical_plan = (plan_value as Array).duplicate(true)
+	var skill_mechanics: Array = []
+	var mechanics_value: Variant = decision_context.get("skill_mechanics", [])
+	if mechanics_value is Array:
+		skill_mechanics = (mechanics_value as Array).duplicate(true)
 	var last_exchange_result: Dictionary = {}
 	var last_exchange_value: Variant = decision_context.get("last_exchange_result", {})
 	if last_exchange_value is Dictionary:
@@ -96,6 +100,7 @@ func build_context(
 			"legal_targets": legal_targets.duplicate(true),
 			"combat_state": state.duplicate(true),
 			"tactical_plan": tactical_plan,
+			"skill_mechanics": skill_mechanics,
 			"exchange_index": maxi(0, int(decision_context.get("exchange_index", 0))),
 			"last_exchange_result": last_exchange_result,
 			"desired_action": {},
