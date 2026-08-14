@@ -22,38 +22,46 @@ func run() -> void:
 	var total_gt1_bouts := 0
 
 	print(
-		"CAMPAIGN SOAK START: campaigns=%d · final_month=%d · seed_base=%d"
-		% [campaign_count, DEMO_FINAL_MONTH, seed_base]
+		(
+			"CAMPAIGN SOAK START: campaigns=%d · final_month=%d · seed_base=%d"
+			% [campaign_count, DEMO_FINAL_MONTH, seed_base]
+		)
 	)
 	for campaign_index in range(campaign_count):
-		var campaign_result := _run_campaign(campaign_index, seed_base + campaign_index)
-		total_months_advanced += int(campaign_result.get("months_advanced", 0))
-		total_events_resolved += int(campaign_result.get("events_resolved", 0))
-		total_gt1_bouts += int(campaign_result.get("gt1_bouts", 0))
-		var campaign_errors := campaign_result.get("errors", []) as Array
+		var result := _run_campaign(campaign_index, seed_base + campaign_index)
+		total_months_advanced += int(result.get("months_advanced", 0))
+		total_events_resolved += int(result.get("events_resolved", 0))
+		total_gt1_bouts += int(result.get("gt1_bouts", 0))
+		var campaign_errors := result.get("errors", []) as Array
 		if campaign_errors.is_empty():
 			completed += 1
 		else:
 			for raw_error in campaign_errors:
-				failures.append("campaign=%d seed=%d · %s" % [campaign_index + 1, seed_base + campaign_index, str(raw_error)])
+				failures.append(
+					(
+						"campaign=%d seed=%d · %s"
+						% [campaign_index + 1, seed_base + campaign_index, str(raw_error)]
+					)
+				)
 
 	print(
 		(
-			"CAMPAIGN SOAK SUMMARY: completed=%d/%d · months_advanced=%d · "
-			+ "events_resolved=%d · gt1_bouts=%d · failures=%d"
+			(
+				"CAMPAIGN SOAK SUMMARY: completed=%d/%d · months_advanced=%d · "
+				+ "events_resolved=%d · gt1_bouts=%d · failures=%d"
+			)
+			% [
+				completed,
+				campaign_count,
+				total_months_advanced,
+				total_events_resolved,
+				total_gt1_bouts,
+				failures.size(),
+			]
 		)
-		% [
-			completed,
-			campaign_count,
-			total_months_advanced,
-			total_events_resolved,
-			total_gt1_bouts,
-			failures.size(),
-		]
 	)
-	if not failures.is_empty():
-		for failure in failures:
-			push_error("CAMPAIGN SOAK FAILURE: %s" % failure)
+	for failure in failures:
+		push_error("CAMPAIGN SOAK FAILURE: %s" % failure)
 	assert(failures.is_empty(), "Campaign soak detected %d failing campaign(s)." % failures.size())
 	print("Campaign multi-run headless soak test: OK")
 
@@ -80,7 +88,9 @@ func _run_campaign(campaign_index: int, campaign_seed: int) -> Dictionary:
 
 		var event_result := _resolve_pending_event()
 		if not bool(event_result.get("success", false)):
-			errors.append("month %d event blocker: %s" % [month, str(event_result.get("reason", "unknown"))])
+			errors.append(
+				"month %d event blocker: %s" % [month, str(event_result.get("reason", "unknown"))]
+			)
 			break
 		if bool(event_result.get("resolved", false)):
 			events_resolved += 1
@@ -88,14 +98,24 @@ func _run_campaign(campaign_index: int, campaign_seed: int) -> Dictionary:
 		if GT1_MONTHS.has(month):
 			var encounter_result := _resolve_gt1_encounter(campaign_index, month)
 			if not bool(encounter_result.get("success", false)):
-				errors.append("month %d GT1 blocker: %s" % [month, str(encounter_result.get("reason", "unknown"))])
+				errors.append(
+					(
+						"month %d GT1 blocker: %s"
+						% [month, str(encounter_result.get("reason", "unknown"))]
+					)
+				)
 				break
 			gt1_bouts += int(encounter_result.get("bouts", 0))
 
 		if month == DEMO_FINAL_MONTH:
 			var rivals_result := _register_rival_results()
 			if not bool(rivals_result.get("success", false)):
-				errors.append("month %d rival standings blocker: %s" % [month, str(rivals_result.get("reason", "unknown"))])
+				errors.append(
+					(
+						"month %d rival standings blocker: %s"
+						% [month, str(rivals_result.get("reason", "unknown"))]
+					)
+				)
 				break
 			CampaignManager.evaluate_progress()
 			if not CampaignManager.campaign_over:
@@ -106,29 +126,20 @@ func _run_campaign(campaign_index: int, campaign_seed: int) -> Dictionary:
 		if not bool(closure.get("can_close", false)):
 			errors.append("month %d cannot close: %s" % [month, str(closure.get("blockers", []))])
 			break
-		var gt_points_before := int(TournamentManager.get_gt1_summary().get("player_points", 0))
+		var points_before := int(TournamentManager.get_gt1_summary().get("player_points", 0))
 		GameState.advance_month()
 		months_advanced += 1
 		if GameState.get_month() != month + 1:
 			errors.append("month progression stalled at %d" % month)
 			break
 		if not GT1_MONTHS.has(month):
-			var gt_points_after := int(TournamentManager.get_gt1_summary().get("player_points", 0))
-			if gt_points_after != gt_points_before:
+			var points_after := int(TournamentManager.get_gt1_summary().get("player_points", 0))
+			if points_after != points_before:
 				errors.append("non-GT month %d changed Torneo de Marte points" % month)
 				break
 
 	if errors.is_empty():
-		if not CampaignManager.campaign_over:
-			errors.append("campaign exited soak loop without completing")
-		elif GameState.get_month() != DEMO_FINAL_MONTH:
-			errors.append("campaign completed on unexpected month %d" % GameState.get_month())
-		var gt1_summary := TournamentManager.get_gt1_summary()
-		if int(gt1_summary.get("player_bouts", 0)) != 9:
-			errors.append("campaign completed with %d/9 GT1 bouts" % int(gt1_summary.get("player_bouts", 0)))
-		if not bool(gt1_summary.get("standings_resolved", false)):
-			errors.append("campaign completed without resolved GT1 standings")
-
+		_validate_completion(errors)
 	return _result(errors, months_advanced, events_resolved, gt1_bouts)
 
 
@@ -148,23 +159,27 @@ func _resolve_pending_event() -> Dictionary:
 	return {
 		"success": false,
 		"resolved": false,
-		"reason": "pending event has no valid deterministic choice: %s" % str(pending.get("id", "unknown")),
+		"reason":
+		"pending event has no valid deterministic choice: %s" % str(pending.get("id", "unknown")),
 	}
 
 
 func _resolve_gt1_encounter(campaign_index: int, month: int) -> Dictionary:
-	var summary := TournamentManager.get_gt1_summary()
-	var progress := summary.get("encounter_progress", {}) as Dictionary
+	var progress := TournamentManager.get_gt1_summary().get("encounter_progress", {}) as Dictionary
 	var already_resolved := int(progress.get(str(month), 0))
-	var global_bout_offset := GT1_MONTHS.find(month) * GT1_BOUTS_PER_ENCOUNTER
+	var bout_offset := GT1_MONTHS.find(month) * GT1_BOUTS_PER_ENCOUNTER
 	var loss_count := campaign_index % 3
 	var resolved := 0
 	for local_bout in range(already_resolved, GT1_BOUTS_PER_ENCOUNTER):
-		var global_bout := global_bout_offset + local_bout
+		var global_bout := bout_offset + local_bout
 		var victory := ((global_bout + campaign_index) % 9) >= loss_count
 		var result := TournamentManager.register_grand_tournament_fight_result(victory, month)
 		if result.is_empty():
-			return {"success": false, "reason": "bout %d was rejected" % (local_bout + 1), "bouts": resolved}
+			return {
+				"success": false,
+				"reason": "bout %d was rejected" % (local_bout + 1),
+				"bouts": resolved
+			}
 		resolved += 1
 	return {"success": true, "bouts": resolved}
 
@@ -180,7 +195,9 @@ func _register_rival_results() -> Dictionary:
 	for index in range(rivals.size()):
 		var rival := rivals[index] as Dictionary
 		var wins := index
-		results.append({"rival_id": str(rival.get("id", "")), "wins": wins, "points": wins * POINTS_PER_WIN})
+		results.append(
+			{"rival_id": str(rival.get("id", "")), "wins": wins, "points": wins * POINTS_PER_WIN}
+		)
 	var registration := CampaignManager.register_gt1_rival_results(results)
 	if str(registration.get("status", "")) != "registered":
 		return {"success": false, "reason": str(registration.get("reason", registration))}
@@ -202,13 +219,36 @@ func _validate_invariants(campaign_index: int, month: int) -> Array[String]:
 	var wins := int(summary.get("player_wins", 0))
 	var bouts := int(summary.get("player_bouts", 0))
 	if points != wins * POINTS_PER_WIN:
-		errors.append("month %d GT1 points/wins invariant failed: %d != %d*%d" % [month, points, wins, POINTS_PER_WIN])
+		errors.append(
+			(
+				"month %d GT1 points/wins invariant failed: %d != %d*%d"
+				% [month, points, wins, POINTS_PER_WIN]
+			)
+		)
 	if wins < 0 or bouts < wins or bouts > 9:
-		errors.append("month %d GT1 win/bout counters are invalid: wins=%d bouts=%d" % [month, wins, bouts])
+		errors.append(
+			"month %d GT1 win/bout counters are invalid: wins=%d bouts=%d" % [month, wins, bouts]
+		)
 	return errors
 
 
-func _result(errors: Array[String], months_advanced: int, events_resolved: int, gt1_bouts: int) -> Dictionary:
+func _validate_completion(errors: Array[String]) -> void:
+	if not CampaignManager.campaign_over:
+		errors.append("campaign exited soak loop without completing")
+	elif GameState.get_month() != DEMO_FINAL_MONTH:
+		errors.append("campaign completed on unexpected month %d" % GameState.get_month())
+	var summary := TournamentManager.get_gt1_summary()
+	if int(summary.get("player_bouts", 0)) != 9:
+		errors.append(
+			"campaign completed with %d/9 GT1 bouts" % int(summary.get("player_bouts", 0))
+		)
+	if not bool(summary.get("standings_resolved", false)):
+		errors.append("campaign completed without resolved GT1 standings")
+
+
+func _result(
+	errors: Array[String], months_advanced: int, events_resolved: int, gt1_bouts: int
+) -> Dictionary:
 	return {
 		"errors": errors.duplicate(),
 		"months_advanced": months_advanced,
