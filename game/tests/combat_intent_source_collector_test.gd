@@ -54,11 +54,14 @@ func _test_limboai_sources_collect_for_both_teams_without_mutation() -> void:
 func _test_legacy_player_source_remains_compatible() -> void:
 	var fixture := _runtime_fixture()
 	var collector = CombatIntentSourceCollectorScript.new()
-	var result: Dictionary = collector.collect(
-		_valid_state(),
-		"alpha",
-		{"a": {"actor_id": "a", "action_id": "light", "target_id": "b"}},
-		{"b": _request({"actor_id": "b", "action_id": "light", "target_id": "a"}, fixture)},
+	var result: Dictionary = (
+		collector
+		. collect(
+			_valid_state(),
+			"alpha",
+			{"a": {"actor_id": "a", "action_id": "light", "target_id": "b"}},
+			{"b": _request({"actor_id": "b", "action_id": "light", "target_id": "a"}, fixture)},
+		)
 	)
 	assert(result.get("status") == "ready")
 	assert(
@@ -71,11 +74,14 @@ func _test_legacy_player_source_remains_compatible() -> void:
 func _test_missing_source_fails_closed() -> void:
 	var fixture := _runtime_fixture()
 	var collector = CombatIntentSourceCollectorScript.new()
-	var result: Dictionary = collector.collect(
-		_valid_state(),
-		"alpha",
-		{},
-		{"b": _request({"actor_id": "b", "action_id": "light", "target_id": "a"}, fixture)},
+	var result: Dictionary = (
+		collector
+		. collect(
+			_valid_state(),
+			"alpha",
+			{},
+			{"b": _request({"actor_id": "b", "action_id": "light", "target_id": "a"}, fixture)},
+		)
 	)
 	assert(result.get("status") == "rejected")
 	assert(result.get("reason") == "invalid_intent_sources")
@@ -86,16 +92,20 @@ func _test_missing_source_fails_closed() -> void:
 func _test_invalid_limboai_proposal_fails_closed() -> void:
 	var fixture := _runtime_fixture()
 	var collector = CombatIntentSourceCollectorScript.new()
-	var result: Dictionary = collector.collect(
-		_valid_state(),
-		"alpha",
-		{},
-		{
-			"a": _request({"actor_id": "a", "action_id": "light", "target_id": "b"}, fixture),
-			"b": _request(
-				{"actor_id": "b", "action_id": "invented_action", "target_id": "a"}, fixture
-			),
-		},
+	var result: Dictionary = (
+		collector
+		. collect(
+			_valid_state(),
+			"alpha",
+			{},
+			{
+				"a": _request({"actor_id": "a", "action_id": "light", "target_id": "b"}, fixture),
+				"b":
+				_request(
+					{"actor_id": "b", "action_id": "invented_action", "target_id": "a"}, fixture
+				),
+			},
+		)
 	)
 	assert(result.get("status") == "rejected")
 	assert(result.get("reason") == "limboai_intent_rejected")
@@ -106,16 +116,19 @@ func _test_invalid_limboai_proposal_fails_closed() -> void:
 func _test_stale_inactive_source_fails_closed() -> void:
 	var fixture := _runtime_fixture()
 	var collector = CombatIntentSourceCollectorScript.new()
-	var result: Dictionary = collector.collect(
-		_valid_2v2_state_with_knocked_out_beta(),
-		"alpha",
-		{},
-		{
-			"a": _request({"actor_id": "a", "action_id": "light", "target_id": "b"}, fixture),
-			"a2": _request({"actor_id": "a2", "action_id": "light", "target_id": "b"}, fixture),
-			"b": _request({"actor_id": "b", "action_id": "light", "target_id": "a"}, fixture),
-			"ko": _request({"actor_id": "ko", "action_id": "light", "target_id": "a"}, fixture),
-		},
+	var result: Dictionary = (
+		collector
+		. collect(
+			_valid_2v2_state_with_knocked_out_beta(),
+			"alpha",
+			{},
+			{
+				"a": _request({"actor_id": "a", "action_id": "light", "target_id": "b"}, fixture),
+				"a2": _request({"actor_id": "a2", "action_id": "light", "target_id": "b"}, fixture),
+				"b": _request({"actor_id": "b", "action_id": "light", "target_id": "a"}, fixture),
+				"ko": _request({"actor_id": "ko", "action_id": "light", "target_id": "a"}, fixture),
+			},
+		)
 	)
 	assert(result.get("status") == "rejected")
 	assert(result.get("reason") == "invalid_intent_sources")
