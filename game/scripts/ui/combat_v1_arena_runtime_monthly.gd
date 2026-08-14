@@ -83,8 +83,6 @@ func resolve_autobattle(session: Dictionary, request_provider: Callable) -> Dict
 			return next
 		current = next.duplicate(true)
 		exchanges += 1
-	current["autobattle_exchanges"] = exchanges
-	current["autobattle_authority"] = "limboai_intents_plus_combat_simulator"
 	return current
 
 
