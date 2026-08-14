@@ -10,8 +10,6 @@ const ArenaScreenMonthlyScript = preload("res://scripts/ui/arena_screen_monthly.
 const ArenaScreenScene = preload("res://scenes/ArenaScreenMonthly.tscn")
 const FunctionalUiStatePolicyScript = preload("res://scripts/ui/demo_functional_ui_state_policy.gd")
 
-const MAX_EXCHANGES_PER_COMBAT := 400
-
 
 func run() -> void:
 	DataRepository.load_all()
@@ -32,7 +30,7 @@ func run() -> void:
 	_assert_month_one_real_ui_flow("qa_arena_1v1")
 	_assert_playable_format("1v2", ["qa_arena_1v2"], 2, false)
 	_assert_playable_format("2v2", ["qa_arena_2v2_a", "qa_arena_2v2_b"], 2, false)
-	print("Monthly Arena playable integration tests passed")
+	print("Monthly Arena playable autobattle integration tests passed")
 
 
 func _assert_month_one_real_ui_flow(fighter_id: String) -> void:
@@ -70,11 +68,21 @@ func _assert_month_one_real_ui_flow(fighter_id: String) -> void:
 	assert(not contract.is_empty(), "Pressing the real Arena button must create the contract")
 	assert(enroll_button.text.begins_with("INICIAR Bajo Mundo"))
 
+	# From this press onward the test deliberately supplies no combat input.
 	enroll_button.pressed.emit()
 	var session := CombatV1SessionStore.get_non_gt_session(1)
-	assert(str(session.get("status", "")) == "combat_running")
-	assert(enroll_button.disabled)
-	assert(enroll_button.text == "COMBATE EN CURSO")
+	assert(
+		str(session.get("status", "")) == "encounter_finished",
+		"The real Arena must finish after one start press and no mid-fight input",
+	)
+	assert(int(session.get("autobattle_exchanges", 0)) > 0)
+	var combat_result := session.get("last_combat_result", {}) as Dictionary
+	assert(str(combat_result.get("status", "")) == "combat_finished")
+	assert(not str(combat_result.get("winner_team_id", "")).is_empty())
+	var providers := session.get("last_intent_providers", {}) as Dictionary
+	assert(not providers.is_empty())
+	for provider_name in providers.values():
+		assert(str(provider_name) == "limboai")
 	arena_screen.queue_free()
 
 
@@ -116,7 +124,7 @@ func _assert_playable_format(
 		(
 			"%s must start a real monthly combat session: %s"
 			% [format_id, str(session.get("errors", []))]
-		)
+		),
 	)
 	if str(session.get("status", "")) != "combat_running":
 		return
@@ -124,16 +132,24 @@ func _assert_playable_format(
 	assert((session.get("opponent_fighter_ids", []) as Array).size() == opponent_count)
 	assert(not str(session.get("rival_ludus_id", "")).is_empty())
 
-	var final_session := _resolve_combat_to_completion(runtime, session, format_id)
+	var ai_provider = ArenaLimboAIRequestProviderScript.new()
+	var request_provider := Callable(ai_provider, "build_requests").bind(self, self)
+	var final_session: Dictionary = runtime.resolve_autobattle(session, request_provider)
 	assert(
 		str(final_session.get("status", "")) == "encounter_finished",
 		(
-			"%s must reach encounter_finished instead of deadlocking: %s"
+			"%s must reach encounter_finished automatically instead of deadlocking: %s"
 			% [format_id, str(final_session.get("errors", []))]
-		)
+		),
 	)
 	if str(final_session.get("status", "")) != "encounter_finished":
 		return
+
+	assert(int(final_session.get("autobattle_exchanges", 0)) > 1)
+	var providers := final_session.get("last_intent_providers", {}) as Dictionary
+	assert(not providers.is_empty())
+	for provider_name in providers.values():
+		assert(str(provider_name) == "limboai")
 
 	var combat_result := final_session.get("last_combat_result", {}) as Dictionary
 	var tournament_result := final_session.get("last_tournament_result", {}) as Dictionary
@@ -146,84 +162,6 @@ func _assert_playable_format(
 		int(TournamentManager.get_gt1_summary().get("player_points", 0)) == gt_points_before,
 		"Non-GT Arena combat must never award Torneo de Marte points",
 	)
-
-
-func _resolve_combat_to_completion(
-	runtime, initial_session: Dictionary, format_id: String
-) -> Dictionary:
-	var session := initial_session.duplicate(true)
-	var ai_provider = ArenaLimboAIRequestProviderScript.new()
-	var exchanges := 0
-	while str(session.get("status", "")) == "combat_running":
-		if exchanges >= MAX_EXCHANGES_PER_COMBAT:
-			assert(false, "%s exceeded exchange limit and likely deadlocked" % format_id)
-			return session
-
-		var player_ids: Array[String] = runtime.get_active_player_ids(session)
-		var enemy_ids: Array[String] = runtime.get_active_enemy_ids(session)
-		assert(not player_ids.is_empty())
-		assert(not enemy_ids.is_empty())
-		if player_ids.is_empty() or enemy_ids.is_empty():
-			return session
-
-		var action_id := _choose_player_action(session, player_ids)
-		var targets_by_actor: Dictionary = {}
-		if action_id == "light":
-			for actor_id in player_ids:
-				targets_by_actor[actor_id] = enemy_ids[0]
-		var player_intents: Dictionary = runtime.build_player_intents(
-			session, action_id, targets_by_actor
-		)
-		assert(
-			str(player_intents.get("status", "")) == "ready",
-			"%s player intent %s must remain legal" % [format_id, action_id],
-		)
-		if str(player_intents.get("status", "")) != "ready":
-			return player_intents
-
-		var ai_requests: Dictionary = ai_provider.build_requests(session, self, self)
-		assert(ai_requests.size() == enemy_ids.size())
-		for actor_id in enemy_ids:
-			assert(ai_requests.has(actor_id))
-
-		var next: Dictionary = (
-			runtime
-			. advance_exchange(
-				session,
-				player_intents.get("player_intents_by_actor", {}) as Dictionary,
-				ai_requests,
-			)
-		)
-		assert(
-			str(next.get("status", "")) != "rejected",
-			(
-				"%s exchange %d must resolve through LimboAI + CombatSimulator: %s"
-				% [format_id, exchanges + 1, str(next.get("errors", []))]
-			)
-		)
-		if str(next.get("status", "")) == "rejected":
-			return next
-
-		var providers := next.get("last_intent_providers", {}) as Dictionary
-		for actor_id in enemy_ids:
-			assert(str(providers.get(actor_id, "")) == "limboai")
-		session = next.duplicate(true)
-		exchanges += 1
-
-	assert(exchanges > 1, "%s must exercise a real multi-exchange combat" % format_id)
-	return session
-
-
-func _choose_player_action(session: Dictionary, player_ids: Array[String]) -> String:
-	var active_loop := session.get("active_loop", {}) as Dictionary
-	var state := active_loop.get("state", {}) as Dictionary
-	for raw_fighter in state.get("fighters", []) as Array:
-		var fighter := raw_fighter as Dictionary
-		if not player_ids.has(str(fighter.get("id", ""))):
-			continue
-		if float(fighter.get("stamina", 0.0)) < 3.0:
-			return "recover"
-	return "light"
 
 
 func _prepare_real_event(format_id: String, require_underworld: bool) -> Dictionary:
