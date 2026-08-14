@@ -57,8 +57,8 @@ func run() -> void:
 
 	print("COMBAT SOAK START: combats=%d · seed_base=%d" % [combat_count, seed_base])
 	for combat_index in range(combat_count):
-		var format_id := str(FORMATS[combat_index % FORMATS.size()])
 		var combat_seed := seed_base + combat_index
+		var format_id := _format_for_seed(combat_seed)
 		var result := _run_combat(combat_index, combat_seed, format_id)
 		if (result.get("errors", []) as Array).is_empty():
 			completed += 1
@@ -113,12 +113,11 @@ func run() -> void:
 
 func _run_combat(combat_index: int, combat_seed: int, format_id: String) -> Dictionary:
 	var errors: Array[String] = []
-	seed(combat_seed)
 	if not NewCampaignCoordinator.reset_campaign_state():
 		errors.append("new campaign reset failed")
 		return _result(errors)
 
-	var player_ids := _prepare_player_team(combat_index, format_id)
+	var player_ids := _prepare_player_team(combat_index, combat_seed, format_id)
 	var contract := _prepare_contract(format_id, player_ids, errors)
 	if contract.is_empty():
 		return _result(errors)
@@ -212,12 +211,15 @@ func _prepare_contract(
 	return contract
 
 
-func _prepare_player_team(combat_index: int, format_id: String) -> Array[String]:
+func _prepare_player_team(
+	combat_index: int, combat_seed: int, format_id: String
+) -> Array[String]:
 	var required := 2 if format_id == "2v2" else 1
 	var result: Array[String] = []
 	for slot in range(required):
-		var fighter_id := "qa_soak_%s_%d_%d" % [format_id, combat_index, slot]
-		var stat_shift := (combat_index + slot) % 5
+		var fighter_id := "qa_soak_%s_%d_%d" % [format_id, combat_seed, slot]
+		var fixture_variant := combat_seed + slot * 17
+		var stat_shift := fixture_variant % 5
 		var person := (
 			LudusPerson
 			. new(
@@ -226,25 +228,33 @@ func _prepare_player_team(combat_index: int, format_id: String) -> Array[String]
 					"name": "QA Combat Soak %d/%d" % [combat_index + 1, slot + 1],
 					"role": "gladiator",
 					"strength": 5 + stat_shift,
-					"agility": 5 + ((stat_shift + 1) % 5),
-					"endurance": 6 + ((stat_shift + 2) % 4),
-					"resistance": 5 + ((stat_shift + 3) % 5),
-					"intelligence": 5 + ((stat_shift + 4) % 4),
-					"technique": 5 + ((stat_shift + 2) % 5),
-					"health": 48 + stat_shift * 4,
+					"agility": 5 + _fixture_digit(fixture_variant, 5, 5),
+					"endurance": 6 + _fixture_digit(fixture_variant, 25, 4),
+					"resistance": 5 + _fixture_digit(fixture_variant, 100, 5),
+					"intelligence": 5 + _fixture_digit(fixture_variant, 500, 4),
+					"technique": 5 + _fixture_digit(fixture_variant, 2000, 5),
+					"health": 48 + _fixture_digit(fixture_variant, 10000, 5) * 4,
 					"fatigue": 0,
 				}
 			)
 		)
 		assert(RosterManager.add_person(person))
 		_teach_tactical_skills(fighter_id)
-		var plan := _build_tactical_plan(combat_index + slot)
+		var plan := _build_tactical_plan(fixture_variant)
 		assert(
 			GladiatorProgressionManager.set_tactical_plan(fighter_id, plan),
 			"Combat Soak QA gladiator must accept learned Tactical Plan skills",
 		)
 		result.append(fighter_id)
 	return result
+
+
+func _format_for_seed(combat_seed: int) -> String:
+	return str(FORMATS[combat_seed % FORMATS.size()])
+
+
+func _fixture_digit(value: int, divisor: int, modulo: int) -> int:
+	return floori(float(value) / float(divisor)) % modulo
 
 
 func _teach_tactical_skills(fighter_id: String) -> void:
