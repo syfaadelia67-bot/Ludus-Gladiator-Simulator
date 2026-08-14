@@ -40,7 +40,7 @@ env:
 
 jobs:
   combat-soak:
-    name: Combat soak shard ${{ matrix.shard + 1 }}/6
+    name: Combat soak shard ${{ matrix.shard }}/6
     runs-on: ubuntu-24.04
     timeout-minutes: 25
     strategy:
