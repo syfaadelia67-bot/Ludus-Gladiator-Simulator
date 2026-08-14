@@ -26,6 +26,9 @@ func run() -> void:
 	_add_test_gladiator("qa_arena_1v2", "QA Arena 1v2")
 	_add_test_gladiator("qa_arena_2v2_a", "QA Arena 2v2 A")
 	_add_test_gladiator("qa_arena_2v2_b", "QA Arena 2v2 B")
+	GladiatorProgressionManager.set_tactical_plan(
+		"qa_arena_1v1", [{"ability_id": "charge", "condition": "always"}]
+	)
 
 	_assert_month_one_real_ui_flow("qa_arena_1v1")
 	_assert_playable_format("1v2", ["qa_arena_1v2"], 2, false)
@@ -84,6 +87,7 @@ func _assert_month_one_real_ui_flow(fighter_id: String) -> void:
 		not manual_exchange_button.visible, "Autobattle must not expose a resolve-exchange button"
 	)
 	_assert_presentation_events(session, "1v1")
+	_assert_presented_skill(session, fighter_id, "charge")
 	var combat_result := session.get("last_combat_result", {}) as Dictionary
 	assert(str(combat_result.get("status", "")) == "combat_finished")
 	assert(not str(combat_result.get("winner_team_id", "")).is_empty())
@@ -202,6 +206,18 @@ func _assert_presentation_events(session: Dictionary, format_id: String) -> void
 	assert(has_ko, "%s presentation must expose knockout facts" % format_id)
 	assert(has_finished, "%s presentation must expose the authoritative combat finish" % format_id)
 	assert(str((events[-1] as Dictionary).get("type", "")) == "combat_finished")
+
+
+func _assert_presented_skill(session: Dictionary, fighter_id: String, skill_id: String) -> void:
+	for raw_event in session.get("presentation_events", []) as Array:
+		var event := raw_event as Dictionary
+		if (
+			str(event.get("type", "")) == "action_declared"
+			and str(event.get("actor_id", "")) == fighter_id
+			and str(event.get("skill_id", "")) == skill_id
+		):
+			return
+	assert(false, "Validated Tactical Plan skill must survive into read-only presentation metadata")
 
 
 func _prepare_real_event(format_id: String, require_underworld: bool) -> Dictionary:
