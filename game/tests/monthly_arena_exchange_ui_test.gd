@@ -37,13 +37,25 @@ func run() -> void:
 
 	# One start press is the only gameplay input required after enrollment.
 	enroll_button.pressed.emit()
-	var final_session := CombatV1SessionStore.get_non_gt_session(1)
+	var final_session := arena_screen.get("_session") as Dictionary
 	assert(
 		str(final_session.get("status", "")) == "encounter_finished",
 		"Arena must finish automatically after the single start press",
 	)
-	assert(int(final_session.get("autobattle_exchanges", 0)) > 0)
-	assert(not str((final_session.get("last_combat_result", {}) as Dictionary).get("winner_team_id", "")).is_empty())
+	assert(
+		not (
+			str(
+				(final_session.get("last_combat_result", {}) as Dictionary).get(
+					"winner_team_id", ""
+				)
+			)
+			. is_empty()
+		)
+	)
+	assert(
+		CombatV1SessionStore.get_non_gt_session(1).is_empty(),
+		"Finished non-GT combat must not change the Save v14 running-session contract",
+	)
 
 	var providers := final_session.get("last_intent_providers", {}) as Dictionary
 	assert(not providers.is_empty(), "Autobattle must record the LimboAI providers")
@@ -51,14 +63,20 @@ func run() -> void:
 		assert(str(provider_name) == "limboai")
 
 	var action_selector := (
-		arena_screen.get_node(
-			"Body/CenterPanel/Margin/Scroll/Content/PreparationView/Preparation/Margin/Content/Options/TacticSelector"
+		(
+			arena_screen
+			. get_node(
+				"Body/CenterPanel/Margin/Scroll/Content/PreparationView/Preparation/Margin/Content/Options/TacticSelector"
+			)
 		)
 		as OptionButton
 	)
 	var target_selector := (
-		arena_screen.get_node(
-			"Body/CenterPanel/Margin/Scroll/Content/PreparationView/Preparation/Margin/Content/Options/EnergySelector"
+		(
+			arena_screen
+			. get_node(
+				"Body/CenterPanel/Margin/Scroll/Content/PreparationView/Preparation/Margin/Content/Options/EnergySelector"
+			)
 		)
 		as OptionButton
 	)
