@@ -120,6 +120,50 @@ func register_combat_result(fighter_id: String, victory: bool) -> Dictionary:
 	return result
 
 
+func register_combat_outcome(
+	fighter_id: String, outcome: String, winner_team_id: String, player_team_id: String
+) -> Dictionary:
+	if outcome == "team_win":
+		if winner_team_id.is_empty() or player_team_id.is_empty():
+			return {}
+		var result := register_combat_result(fighter_id, winner_team_id == player_team_id)
+		if not result.is_empty():
+			result["result_kind"] = "team_win"
+			result["draw"] = false
+			result["winner_team_id"] = winner_team_id
+		return result
+	if outcome != "double_ko":
+		return {}
+
+	var matching := _find_due_contract_for_fighter(fighter_id)
+	if matching.is_empty():
+		return {}
+	var competition := str(matching.get("competition", "official_minor"))
+	if not _is_canonical_competition(competition) or competition == "grand_tournament":
+		contract_failed.emit("El doble KO sólo está definido para combates mensuales no-GT.")
+		return {}
+
+	var result: Dictionary = matching.duplicate(true)
+	result["victory"] = false
+	result["draw"] = true
+	result["result_kind"] = "double_ko"
+	result["winner_team_id"] = ""
+	result["resolved_month"] = GameState.get_month()
+	result["resolved_week"] = GameState.get_month()
+	result["resolved_day"] = GameState.get_month()
+	result["reward_paid"] = 0
+	result["reputation_change"] = 0
+	result["points"] = 0
+	result["status"] = "doble_ko"
+	matching["bouts_resolved"] = int(matching.get("bouts_resolved", 0)) + 1
+	active_contracts.erase(matching)
+	history.push_front(result.duplicate(true))
+	tournament_resolved.emit(result.duplicate(true))
+	GameState.resources_changed.emit()
+	calendar_changed.emit()
+	return result
+
+
 func register_grand_tournament_fight_result(
 	victory: bool, month: int = 0, forfeit: bool = false
 ) -> Dictionary:
