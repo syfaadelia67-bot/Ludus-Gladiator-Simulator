@@ -91,9 +91,7 @@ func _assert_month_one_real_ui_flow(fighter_id: String) -> void:
 	)
 	_assert_presentation_events(session, "1v1")
 	_assert_presented_skill(session, fighter_id, "charge")
-	var combat_result := session.get("last_combat_result", {}) as Dictionary
-	assert(str(combat_result.get("status", "")) == "combat_finished")
-	assert(not str(combat_result.get("winner_team_id", "")).is_empty())
+	_assert_finished_outcome_contract(session)
 	var providers := session.get("last_intent_providers", {}) as Dictionary
 	assert(not providers.is_empty())
 	for provider_name in providers.values():
@@ -170,10 +168,8 @@ func _assert_playable_format(
 	for provider_name in providers.values():
 		assert(str(provider_name) == "limboai")
 
-	var combat_result := final_session.get("last_combat_result", {}) as Dictionary
+	_assert_finished_outcome_contract(final_session)
 	var tournament_result := final_session.get("last_tournament_result", {}) as Dictionary
-	assert(str(combat_result.get("status", "")) == "combat_finished")
-	assert(not str(combat_result.get("winner_team_id", "")).is_empty())
 	assert(not tournament_result.is_empty())
 	assert(str(tournament_result.get("competition", "")) != "grand_tournament")
 	assert(int(final_session.get("player_points", -1)) == 0)
@@ -181,6 +177,31 @@ func _assert_playable_format(
 		int(TournamentManager.get_gt1_summary().get("player_points", 0)) == gt_points_before,
 		"Non-GT Arena combat must never award Torneo de Marte points",
 	)
+
+
+func _assert_finished_outcome_contract(session: Dictionary) -> void:
+	var combat_result := session.get("last_combat_result", {}) as Dictionary
+	var tournament_result := session.get("last_tournament_result", {}) as Dictionary
+	assert(str(combat_result.get("status", "")) == "combat_finished")
+	assert(not tournament_result.is_empty())
+	var outcome := str(combat_result.get("outcome", ""))
+	var winner_team_id := str(combat_result.get("winner_team_id", ""))
+	match outcome:
+		"team_win":
+			assert(not winner_team_id.is_empty(), "team_win requires an authoritative winner")
+			assert(str(tournament_result.get("result_kind", "")) == "team_win")
+			assert(not bool(tournament_result.get("draw", true)))
+			assert(str(tournament_result.get("winner_team_id", "")) == winner_team_id)
+		"double_ko":
+			assert(winner_team_id.is_empty(), "double_ko must never invent a winner")
+			assert(str(tournament_result.get("result_kind", "")) == "double_ko")
+			assert(bool(tournament_result.get("draw", false)))
+			assert(str(tournament_result.get("status", "")) == "doble_ko")
+			assert(int(tournament_result.get("reward_paid", -1)) == 0)
+			assert(int(tournament_result.get("reputation_change", -1)) == 0)
+			assert(int(tournament_result.get("points", -1)) == 0)
+		_:
+			assert(false, "Finished Combat V1 result must be team_win or double_ko")
 
 
 func _assert_presentation_events(session: Dictionary, format_id: String) -> void:
