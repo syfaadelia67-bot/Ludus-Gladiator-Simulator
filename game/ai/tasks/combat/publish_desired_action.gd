@@ -114,31 +114,31 @@ func _build_basic_fallback(state: Dictionary, actor: Dictionary) -> Dictionary:
 
 
 func _condition_matches(state: Dictionary, actor: Dictionary, condition: String) -> bool:
+	var matches := false
 	match condition:
 		"always":
-			return true
+			matches = true
 		"opening":
-			return int(blackboard.get_var(&"exchange_index", 0)) == 0
+			matches = int(blackboard.get_var(&"exchange_index", 0)) == 0
 		"target_vulnerable":
-			return _any_enemy_matches(
+			matches = _any_enemy_matches(
 				state, actor, func(enemy: Dictionary): return bool(enemy.get("vulnerable", false))
 			)
 		"target_guarding":
-			return _target_was_guarding(actor)
+			matches = _target_was_guarding(actor)
 		"target_low_energy":
-			return _any_enemy_matches(
+			matches = _any_enemy_matches(
 				state,
 				actor,
 				func(enemy: Dictionary): return _stamina_ratio(enemy) <= LOW_RESOURCE_RATIO
 			)
 		"self_low_health":
-			return _health_ratio(actor) <= LOW_RESOURCE_RATIO
+			matches = _health_ratio(actor) <= LOW_RESOURCE_RATIO
 		"self_low_energy":
-			return _stamina_ratio(actor) <= LOW_RESOURCE_RATIO
+			matches = _stamina_ratio(actor) <= LOW_RESOURCE_RATIO
 		"after_defense":
-			return _actor_defended_last_exchange(str(actor.get("id", "")))
-		_:
-			return false
+			matches = _actor_defended_last_exchange(str(actor.get("id", "")))
+	return matches
 
 
 func _target_was_guarding(actor: Dictionary) -> bool:
