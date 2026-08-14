@@ -276,9 +276,7 @@ func _accept_event(event: Dictionary, player_ids: Array[String]) -> bool:
 	if int(event.get("team_size", 1)) > 1:
 		return TournamentManager.accept_event_team(event_id, player_ids)
 	var arena_screen = ArenaScreenMonthlyScript.new()
-	var accepted: bool = bool(
-		arena_screen.accept_non_gt_event_for_fighter(event_id, player_ids[0])
-	)
+	var accepted: bool = bool(arena_screen.accept_non_gt_event_for_fighter(event_id, player_ids[0]))
 	arena_screen.free()
 	return accepted
 
