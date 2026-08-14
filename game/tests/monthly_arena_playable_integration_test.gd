@@ -75,6 +75,13 @@ func _assert_month_one_real_ui_flow(fighter_id: String) -> void:
 		str(session.get("status", "")) == "encounter_finished",
 		"The real Arena must finish after one start press and no mid-fight input",
 	)
+	var action_selector := arena_screen.get("action_selector") as Control
+	var target_selector := arena_screen.get("target_selector") as Control
+	var manual_exchange_button := arena_screen.get("start_button") as Control
+	assert(not action_selector.visible, "Autobattle must not expose a manual action selector")
+	assert(not target_selector.visible, "Autobattle must not expose a manual target selector")
+	assert(not manual_exchange_button.visible, "Autobattle must not expose a resolve-exchange button")
+	_assert_presentation_events(session, "1v1")
 	var combat_result := session.get("last_combat_result", {}) as Dictionary
 	assert(str(combat_result.get("status", "")) == "combat_finished")
 	assert(not str(combat_result.get("winner_team_id", "")).is_empty())
@@ -148,6 +155,7 @@ func _assert_playable_format(
 	if str(final_session.get("status", "")) != "encounter_finished":
 		return
 
+	_assert_presentation_events(final_session, format_id)
 	var providers := final_session.get("last_intent_providers", {}) as Dictionary
 	assert(not providers.is_empty())
 	for provider_name in providers.values():
@@ -164,6 +172,34 @@ func _assert_playable_format(
 		int(TournamentManager.get_gt1_summary().get("player_points", 0)) == gt_points_before,
 		"Non-GT Arena combat must never award Torneo de Marte points",
 	)
+
+
+func _assert_presentation_events(session: Dictionary, format_id: String) -> void:
+	var events := session.get("presentation_events", []) as Array
+	assert(not events.is_empty(), "%s autobattle must publish presentation events" % format_id)
+	if events.is_empty():
+		return
+	assert(str((events[0] as Dictionary).get("type", "")) == "exchange_started")
+	var has_action := false
+	var has_attack := false
+	var has_ko := false
+	var has_finished := false
+	for raw_event in events:
+		var event := raw_event as Dictionary
+		match str(event.get("type", "")):
+			"action_declared":
+				has_action = true
+			"attack_resolved":
+				has_attack = true
+			"fighter_knocked_out":
+				has_ko = true
+			"combat_finished":
+				has_finished = true
+	assert(has_action, "%s presentation must expose resolved action facts" % format_id)
+	assert(has_attack, "%s presentation must expose simulator attack facts" % format_id)
+	assert(has_ko, "%s presentation must expose knockout facts" % format_id)
+	assert(has_finished, "%s presentation must expose the authoritative combat finish" % format_id)
+	assert(str((events[-1] as Dictionary).get("type", "")) == "combat_finished")
 
 
 func _prepare_real_event(format_id: String, require_underworld: bool) -> Dictionary:
