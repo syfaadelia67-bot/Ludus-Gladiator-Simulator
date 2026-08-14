@@ -234,11 +234,22 @@ func _prepare_player_team(combat_index: int, format_id: String) -> Array[String]
 			)
 		)
 		assert(RosterManager.add_person(person))
-		GladiatorProgressionManager.set_tactical_plan(
-			fighter_id, _build_tactical_plan(combat_index + slot)
+		_teach_tactical_skills(fighter_id)
+		var plan := _build_tactical_plan(combat_index + slot)
+		assert(
+			GladiatorProgressionManager.set_tactical_plan(fighter_id, plan),
+			"Combat Soak QA gladiator must accept learned Tactical Plan skills",
 		)
 		result.append(fighter_id)
 	return result
+
+
+func _teach_tactical_skills(fighter_id: String) -> void:
+	var learned: Dictionary = {}
+	for skill_id in TACTICAL_SKILLS:
+		learned[str(skill_id)] = 1
+	var record := GladiatorProgressionManager.ensure_record(fighter_id)
+	record["abilities"] = learned
 
 
 func _build_tactical_plan(variant: int) -> Array[Dictionary]:
