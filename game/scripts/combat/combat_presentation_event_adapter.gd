@@ -62,6 +62,9 @@ func _append_action_events(
 			"target_id": str(intent.get("target_id", "")),
 		}
 		var skill_id := str(intent.get("skill_id", ""))
+		if skill_id.is_empty():
+			var activation := intent.get("skill_activation", {}) as Dictionary
+			skill_id = str(activation.get("skill_id", ""))
 		if not skill_id.is_empty():
 			event["skill_id"] = skill_id
 		events.append(event)
