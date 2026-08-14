@@ -11,6 +11,14 @@ const INTERNAL_PRESENTATION_REPLACEMENTS := [
 	["TournamentManager", "Arena"],
 	["Save v14", "partida guardada"],
 	["recover", "Recuperar"],
+	[
+		"Elegí una acción y usá RESOLVER INTERCAMBIO.",
+		"El combate se resuelve automáticamente.",
+	],
+	[
+		"COMBATE ACTIVO · RESOLVÉ INTERCAMBIOS ABAJO",
+		"COMBATE AUTOMÁTICO EN CURSO",
+	],
 ]
 
 var _arena_ai_provider = ArenaLimboAIRequestProviderScript.new()
@@ -57,6 +65,18 @@ func _resolve_current_autobattle() -> Dictionary:
 		_render_encounter_finished()
 		_show_result_view()
 	return _session.duplicate(true)
+
+
+func advance_exchange_with_ai_requests(_ai_requests_by_actor: Dictionary) -> Dictionary:
+	return _ui_rejected(
+		"manual_midfight_input_disabled",
+		["La Arena final no acepta órdenes manuales durante el combate."],
+	)
+
+
+func _focus_running_combat_controls() -> void:
+	# The final Arena has no mid-fight controls to focus; autobattle owns the running phase.
+	pass
 
 
 func _refresh_all() -> void:
