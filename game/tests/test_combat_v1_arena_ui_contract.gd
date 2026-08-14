@@ -1,6 +1,7 @@
 extends Node
 
 const ARENA_PATH := "res://scripts/ui/arena_screen.gd"
+const PRESENTATION_GUARD_PATH := "res://scripts/ui/arena_tournament_presentation_guard.gd"
 const SETUP_PANEL_PATH := "res://scripts/ui/gt1_series_setup_panel.gd"
 const SETUP_RUNTIME_PATH := "res://scripts/ui/gt1_series_setup_runtime.gd"
 
@@ -11,9 +12,11 @@ func _ready() -> void:
 
 func _run() -> void:
 	var source := FileAccess.get_file_as_string(ARENA_PATH)
+	var presentation_guard := FileAccess.get_file_as_string(PRESENTATION_GUARD_PATH)
 	var setup_panel := FileAccess.get_file_as_string(SETUP_PANEL_PATH)
 	var setup_runtime := FileAccess.get_file_as_string(SETUP_RUNTIME_PATH)
 	assert(not source.is_empty(), "ArenaScreen source must be readable")
+	assert(not presentation_guard.is_empty(), "Final Arena presentation guard must be readable")
 	assert(not setup_panel.is_empty(), "GT I series setup panel source must be readable")
 	assert(not setup_runtime.is_empty(), "GT I series setup runtime source must be readable")
 	assert(source.contains("CombatV1ArenaRuntimeScript"))
@@ -36,6 +39,13 @@ func _run() -> void:
 	assert(source.contains("RES"))
 	assert(source.contains("PV"))
 	assert(source.contains("Stamina"))
+	assert(presentation_guard.contains("_resolve_current_autobattle"))
+	assert(presentation_guard.contains('"manual_midfight_input_disabled"'))
+	assert(presentation_guard.contains("func _focus_running_combat_controls() -> void:"))
+	assert(presentation_guard.contains("action_selector.visible = false"))
+	assert(presentation_guard.contains("target_selector.visible = false"))
+	assert(presentation_guard.contains("start_button.visible = false"))
+	assert(presentation_guard.contains("El combate se resuelve automáticamente."))
 	assert(not source.contains("CombatManager"))
 	assert(not setup_panel.contains("CombatManager"))
 	assert(not setup_runtime.contains("CombatManager"))
