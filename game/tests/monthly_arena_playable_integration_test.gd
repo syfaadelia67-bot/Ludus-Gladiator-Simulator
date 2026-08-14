@@ -80,7 +80,9 @@ func _assert_month_one_real_ui_flow(fighter_id: String) -> void:
 	var manual_exchange_button := arena_screen.get("start_button") as Control
 	assert(not action_selector.visible, "Autobattle must not expose a manual action selector")
 	assert(not target_selector.visible, "Autobattle must not expose a manual target selector")
-	assert(not manual_exchange_button.visible, "Autobattle must not expose a resolve-exchange button")
+	assert(
+		not manual_exchange_button.visible, "Autobattle must not expose a resolve-exchange button"
+	)
 	_assert_presentation_events(session, "1v1")
 	var combat_result := session.get("last_combat_result", {}) as Dictionary
 	assert(str(combat_result.get("status", "")) == "combat_finished")
