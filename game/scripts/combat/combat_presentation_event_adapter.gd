@@ -6,11 +6,14 @@ func build_exchange_events(exchange_index: int, exchange_result: Dictionary) -> 
 	if str(exchange_result.get("status", "")) != "resolved":
 		return events
 
-	events.append(
-		{
-			"type": "exchange_started",
-			"exchange_index": exchange_index,
-		}
+	(
+		events
+		. append(
+			{
+				"type": "exchange_started",
+				"exchange_index": exchange_index,
+			}
+		)
 	)
 	_append_action_events(events, exchange_index, exchange_result)
 	_append_stamina_spend_events(events, exchange_index, exchange_result)
@@ -31,7 +34,8 @@ func get_contract() -> Dictionary:
 		"stamina_math_allowed": false,
 		"winner_math_allowed": false,
 		"intent_selection_allowed": false,
-		"events": [
+		"events":
+		[
 			"exchange_started",
 			"action_declared",
 			"stamina_spent",
