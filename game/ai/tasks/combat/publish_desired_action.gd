@@ -108,7 +108,9 @@ func _build_basic_fallback(state: Dictionary, actor: Dictionary) -> Dictionary:
 		if _policy_contract.validate_desired_action(state, recover_action).is_empty():
 			return recover_action
 
-	var preferred_actions: Array[String] = ["light", "heavy", "block", "parry", "reposition", "recover"]
+	var preferred_actions: Array[String] = [
+		"light", "heavy", "block", "parry", "reposition", "recover"
+	]
 	for action_id in preferred_actions:
 		if not available_actions.has(action_id):
 			continue
